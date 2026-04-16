@@ -1,0 +1,292 @@
+// app/api/agente-sugerencias/route.ts
+// 🏆 CAPA 4 — Alertas Proactivas al Terapeuta
+// "Este objetivo lleva 6 semanas sin avance — considera ajustar"
+// Corre automáticamente y genera sugerencias antes de que el terapeuta las pida
+
+import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
+import { buildAIContext } from '@/lib/ai-context-builder'
+
+interface Sugerencia {
+  tipo: 'objetivo_estancado' | 'cambio_fase' | 'reforzador' | 'conducta_desafiante' | 'logro_celebrar' | 'carga_sesiones'
+  prioridad: 'alta' | 'media' | 'baja'
+  titulo: string
+  descripcion: string
+  accion_concreta: string
+  child_id: string
+  child_name: string
+  semanas_detectado: number
+  dato_clave: string
+}
+
+function parseLogro(val: any): number | null {
+  if (val == null || val === "") return null
+  if (typeof val === "number") return Math.min(100, Math.max(0, Math.round(val)))
+  const s = String(val).trim()
+  const range = s.match(/(\d+)\s*[-–]\s*(\d+)/)
+  if (range) return Math.round((parseInt(range[1]) + parseInt(range[2])) / 2)
+  const num = s.match(/(\d+)/)
+  if (num) return Math.min(100, Math.max(0, parseInt(num[1])))
+  const lower = s.toLowerCase()
+  if (lower.includes("completamente") || lower.includes("dominado")) return 90
+  if (lower.includes("mayormente") || lower.includes("alto")) return 75
+  if (lower.includes("parcialmente") || lower.includes("medio") || lower.includes("proceso")) return 50
+  if (lower.includes("mínimo") || lower.includes("bajo") || lower.includes("emergente")) return 20
+  if (lower.includes("no logrado")) return 5
+  return null
+}
+
+async function analizarPaciente(childId: string, childName: string): Promise<Sugerencia[]> {
+  const sugerencias: Sugerencia[] = []
+
+  const hace8semanas = new Date(); hace8semanas.setDate(hace8semanas.getDate() - 56)
+  const hace4semanas = new Date(); hace4semanas.setDate(hace4semanas.getDate() - 28)
+
+  const [sesionesRes, programasRes] = await Promise.all([
+    supabaseAdmin.from('registro_aba').select('fecha_sesion, datos')
+      .eq('child_id', childId)
+      .gte('fecha_sesion', hace8semanas.toISOString().split('T')[0])
+      .order('fecha_sesion', { ascending: true }),
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, estado, criterio_dominio_pct, objetivos_cp(nombre, estado)')
+      .eq('child_id', childId).not('estado', 'in', '("archivado","alta","dado_de_alta","inactivo","cancelado")')
+  ])
+
+  const sesiones = sesionesRes.data || []
+  const programas = programasRes.data || []
+
+  // ── REGLA 1: Objetivo estancado > 4 semanas ──────────────────────────────
+  const sesiones4sem = sesiones.filter(s => s.fecha_sesion >= hace4semanas.toISOString().split('T')[0])
+  if (sesiones4sem.length >= 4) {
+    const logros4sem = sesiones4sem.map(s => parseLogro(s.datos?.nivel_logro_objetivos)).filter((v): v is number => v !== null)
+    if (logros4sem.length === 0) { /* no hay datos suficientes */ } else {
+    const prom4sem = logros4sem.reduce((a, b) => a + b, 0) / logros4sem.length
+    const max4sem = Math.max(...logros4sem)
+    const min4sem = Math.min(...logros4sem)
+
+    if (prom4sem < 60 && (max4sem - min4sem) < 10) {
+      const objetivoActual = sesiones4sem[sesiones4sem.length - 1]?.datos?.objetivo_principal || 'objetivo actual'
+      sugerencias.push({
+        tipo: 'objetivo_estancado',
+        prioridad: 'alta',
+        titulo: `${childName}: Objetivo sin avance por 4+ semanas`,
+        descripcion: `"${objetivoActual}" muestra estancamiento. Promedio de logro: ${Math.round(prom4sem)}% con variación mínima (${Math.round(min4sem)}-${Math.round(max4sem)}%).`,
+        accion_concreta: 'Considera dividir el objetivo en pasos más pequeños, cambiar el reforzador o revisar si hay factores ambientales nuevos.',
+        child_id: childId,
+        child_name: childName,
+        semanas_detectado: 4,
+        dato_clave: `Logro promedio: ${Math.round(prom4sem)}%`
+      })
+    }
+    } // end logros4sem.length check
+  }
+
+  // ── REGLA 2: Objetivos listos para subir de fase ────────────────────────
+  for (const prog of programas) {
+    const objetivos = (prog as any).objetivos_cp || []
+    const dominados = objetivos.filter((o: any) => o.estado === 'dominado').length
+    const total = objetivos.length
+    const pct = total > 0 ? (dominados / total) * 100 : 0
+    const criterio = prog.criterio_dominio_pct || 80
+
+    if (pct >= criterio && total > 0) {
+      sugerencias.push({
+        tipo: 'cambio_fase',
+        prioridad: 'media',
+        titulo: `${childName}: "${prog.titulo}" listo para avanzar de fase`,
+        descripcion: `${Math.round(pct)}% de los objetivos dominados (${dominados}/${total}). Supera el criterio de ${criterio}% establecido.`,
+        accion_concreta: `Evalúa avanzar de "${prog.fase_actual}" a la siguiente fase o iniciar generalización.`,
+        child_id: childId,
+        child_name: childName,
+        semanas_detectado: 0,
+        dato_clave: `${dominados}/${total} objetivos dominados`
+      })
+    }
+  }
+
+  // ── REGLA 3: Conductas desafiantes frecuentes ────────────────────────────
+  const sesionesConConducas = sesiones.filter(s => s.datos?.conductas_desafiantes && String(s.datos.conductas_desafiantes).length > 5)
+  if (sesionesConConducas.length >= 3) {
+    const pct = Math.round((sesionesConConducas.length / sesiones.length) * 100)
+    sugerencias.push({
+      tipo: 'conducta_desafiante',
+      prioridad: pct > 50 ? 'alta' : 'media',
+      titulo: `${childName}: Conductas desafiantes en ${pct}% de las sesiones`,
+      descripcion: `Se registraron conductas desafiantes en ${sesionesConConducas.length} de ${sesiones.length} sesiones recientes.`,
+      accion_concreta: 'Revisar análisis funcional ABC. Considerar reunión de equipo o consulta con comportamentalista senior.',
+      child_id: childId,
+      child_name: childName,
+      semanas_detectado: Math.ceil(sesiones.length / 2),
+      dato_clave: `${pct}% sesiones con conductas`
+    })
+  }
+
+  // ── REGLA 4: Progreso excelente — celebrar y capitalizar ─────────────────
+  if (sesiones4sem.length >= 3) {
+    const logros = sesiones4sem.map(s => parseLogro(s.datos?.nivel_logro_objetivos)).filter((v): v is number => v !== null)
+    if (logros.length > 0) {
+    const prom = logros.reduce((a, b) => a + b, 0) / logros.length
+    if (prom >= 80) {
+      sugerencias.push({
+        tipo: 'logro_celebrar',
+        prioridad: 'baja',
+        titulo: `${childName}: ¡Excelente progreso! ${Math.round(prom)}% de logro`,
+        descripcion: `Las últimas ${sesiones4sem.length} sesiones muestran un promedio del ${Math.round(prom)}%. Momento ideal para subir la complejidad.`,
+        accion_concreta: 'Comunica este logro a la familia en el próximo mensaje. Considera incrementar la complejidad del objetivo o iniciar generalización.',
+        child_id: childId,
+        child_name: childName,
+        semanas_detectado: 4,
+        dato_clave: `Promedio: ${Math.round(prom)}%`
+      })
+    }
+    } // end if(logros.length > 0)
+  } // end if(sesiones4sem.length >= 3)
+
+  // ── REGLA 5: Pocas sesiones recientes (baja frecuencia) ─────────────────
+  if (sesiones.length > 0) {
+    const ultimas4Semanas = sesiones.filter(s => s.fecha_sesion >= hace4semanas.toISOString().split('T')[0]).length
+    if (ultimas4Semanas < 4 && sesiones.length > 4) {
+      sugerencias.push({
+        tipo: 'carga_sesiones',
+        prioridad: 'media',
+        titulo: `${childName}: Baja frecuencia de sesiones`,
+        descripcion: `Solo ${ultimas4Semanas} sesiones en las últimas 4 semanas. La frecuencia recomendada es 2-4/semana.`,
+        accion_concreta: 'Revisar agenda con la familia. Alta frecuencia en fase inicial es crítica para el progreso.',
+        child_id: childId,
+        child_name: childName,
+        semanas_detectado: 4,
+        dato_clave: `${ultimas4Semanas} sesiones/4 semanas`
+      })
+    }
+  }
+
+  return sugerencias
+}
+
+// ── GET: Generar sugerencias de todos los pacientes (para dashboard) ──────────
+
+// i18n: responder en el idioma del usuario
+function getLangInstruction(locale?: string | null): string {
+  return ''
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const userLocale = searchParams.get('locale') || req.headers.get('x-locale') || 'es'
+  const childId = searchParams.get('child_id')
+  const soloGuardadas = searchParams.get('guardadas') === 'true'
+
+  try {
+    // Si pide las guardadas, retornarlas directamente
+    if (soloGuardadas) {
+      let q = supabaseAdmin
+        .from('sugerencias_terapeutas')
+        .select('*, children(name)')
+        .eq('resuelta', false)
+        .order('prioridad_orden', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (childId) q = q.eq('child_id', childId)
+      const { data } = await q
+      return NextResponse.json({ sugerencias: data || [] })
+    }
+
+    // Generar en tiempo real
+    let queryPacientes = supabaseAdmin.from('children').select('id, name')
+    if (childId) queryPacientes = queryPacientes.eq('id', childId)
+    const { data: pacientes } = await queryPacientes.limit(30)
+
+    if (!pacientes || pacientes.length === 0) {
+      return NextResponse.json({ sugerencias: [], total: 0 })
+    }
+
+    // Analizar todos los pacientes en paralelo (máx 5 simultáneos)
+    const BATCH = 5
+    const todasSugerencias: Sugerencia[] = []
+
+    for (let i = 0; i < pacientes.length; i += BATCH) {
+      const batch = pacientes.slice(i, i + BATCH)
+      const resultados = await Promise.all(
+        batch.map(p => analizarPaciente(p.id, p.name).catch(() => []))
+      )
+      todasSugerencias.push(...resultados.flat())
+    }
+
+    // Ordenar: alta → media → baja, luego por tipo
+    const orden = { alta: 0, media: 1, baja: 2 }
+    todasSugerencias.sort((a, b) => orden[a.prioridad] - orden[b.prioridad])
+
+    // Guardar en Supabase (upsert por child_id + tipo)
+    for (const s of todasSugerencias) {
+      try {
+        await supabaseAdmin.from('sugerencias_terapeutas').upsert({
+          child_id: s.child_id,
+          tipo: s.tipo,
+          prioridad: s.prioridad,
+          prioridad_orden: orden[s.prioridad],
+          titulo: s.titulo,
+          descripcion: s.descripcion,
+          accion_concreta: s.accion_concreta,
+          dato_clave: s.dato_clave,
+          semanas_detectado: s.semanas_detectado,
+          resuelta: false,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'child_id,tipo' })
+      } catch { /* no bloquear */ }
+    }
+
+    // Generar insight global con IA si hay muchas sugerencias
+    
+    // ━━━ CEREBRO IA ━━━
+    let _cerebroCtx = ''
+    try {
+      const _kb = await buildAIContext(undefined, undefined, undefined, 'sugerencias estrategias ABA TEA intervención')
+      _cerebroCtx = _kb.knowledgeContext
+    } catch { /* fallback */ }
+    // ━━━ FIN CEREBRO IA ━━━
+    let insightGlobal: string | null = null
+    const urgentes = todasSugerencias.filter(s => s.prioridad === 'alta')
+    if (urgentes.length >= 2) {
+      try {
+        insightGlobal = await callGroqSimple(
+          'Eres un supervisor clínico ABA analizando el estado del centro terapéutico. Fundamenta con libros clínicos del Cerebro IA.',
+          `SUGERENCIAS URGENTES DETECTADAS EN EL CENTRO (${urgentes.length} de ${pacientes.length} pacientes):
+${urgentes.slice(0, 5).map(s => `- ${s.titulo}: ${s.descripcion}`).join('\n')}
+
+Genera un RESUMEN EJECUTIVO para la directora del centro (2-3 oraciones). Qué patrón global ves y cuál es la prioridad de acción de esta semana.
+
+CONOCIMIENTO CLÍNICO (Cerebro IA): ${_cerebroCtx || 'No disponible'}`,
+          { model: GROQ_MODELS.FAST, temperature: 0.3, maxTokens: 200 }
+        )
+      } catch { /* no bloquear */ }
+    }
+
+    return NextResponse.json({
+      sugerencias: todasSugerencias,
+      total: todasSugerencias.length,
+      urgentes: urgentes.length,
+      pacientes_analizados: pacientes.length,
+      insight_global: insightGlobal,
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (e: any) {
+    console.error('❌ Error agente-sugerencias:', e)
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
+
+// ── POST: Marcar sugerencia como resuelta ────────────────────────────────────
+export async function POST(req: NextRequest) {
+  try {
+    const { sugerenciaId, nota } = await req.json()
+    await supabaseAdmin.from('sugerencias_terapeutas').update({
+      resuelta: true,
+      nota_resolucion: nota || null,
+      resuelta_at: new Date().toISOString()
+    }).eq('id', sugerenciaId)
+    return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}

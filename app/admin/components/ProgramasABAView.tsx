@@ -1,0 +1,1475 @@
+'use client'
+
+import { useI18n } from '@/lib/i18n-context'
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '@/lib/supabase'
+import GraficoProgramaABA from '@/components/graficos/GraficoProgramaABA'
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ReferenceLine, ResponsiveContainer, Legend, Cell, PieChart, Pie, ComposedChart, Area
+} from 'recharts'
+import {
+  Plus, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
+  Target, BarChart3, BarChart2, Edit3, CheckCircle2, AlertTriangle, Clock,
+  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight
+} from 'lucide-react'
+import { useToast } from '@/components/Toast'
+
+// ── Tipo de gráfico por programa (guardado en estado) ─────────────────────────
+type TipoGrafico = 'lineas' | 'barras' | 'histograma' | 'pie'
+
+const TIPOS_GRAFICO_PROGRAMA = [
+  { id: 'lineas'    as TipoGrafico, emoji: '📈', label: 'Líneas' },
+  { id: 'barras'    as TipoGrafico, emoji: '📊', label: 'Barras' },
+  { id: 'histograma'as TipoGrafico, emoji: '🗂️', label: 'Histograma' },
+  { id: 'pie'       as TipoGrafico, emoji: '🥧', label: 'Pie' },
+]
+
+function colorPorPct(pct: number) {
+  if (pct >= 90) return '#059669'
+  if (pct >= 70) return '#6366f1'
+  if (pct >= 45) return '#f59e0b'
+  return '#ef4444'
+}
+
+// ── Colores por área ────────────────────────────────────────────────────────
+const AREA_COLOR: Record<string, { dot: string }> = {
+  comunicacion: { dot: '#3d6eaa' },
+  conducta:     { dot: '#aa4a4a' },
+  cognitivo:    { dot: '#6a4aaa' },
+  social:       { dot: '#2e8a60' },
+  autonomia:    { dot: '#9a7020' },
+  academico:    { dot: '#3a7aaa' },
+  sensorial:    { dot: '#aa5a80' },
+}
+
+const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string }> = {
+  comunicacion: { color: 'text-blue-700 dark:text-blue-300',   bg: 'bg-blue-50 dark:bg-blue-900/25 border-blue-200 dark:border-blue-800',   label: 'Comunicación',   emoji: '💬' },
+  conducta:     { color: 'text-red-700 dark:text-red-300',     bg: 'bg-red-50 dark:bg-red-900/25 border-red-200 dark:border-red-800',       label: 'Conducta',       emoji: '🎯' },
+  cognitivo:    { color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50 dark:bg-violet-900/25 border-violet-200 dark:border-violet-800', label: 'Cognitivo', emoji: '🧠' },
+  social:       { color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-900/25 border-emerald-200 dark:border-emerald-800', label: 'Social', emoji: '👥' },
+  autonomia:    { color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/25 border-amber-200 dark:border-amber-800', label: 'Autonomía',    emoji: '🌟' },
+  academico:    { color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-50 dark:bg-indigo-900/25 border-indigo-200 dark:border-indigo-800', label: 'Académico', emoji: '📚' },
+  sensorial:    { color: 'text-pink-700 dark:text-pink-300',   bg: 'bg-pink-50 dark:bg-pink-900/25 border-pink-200 dark:border-pink-800',   label: 'Sensorial',      emoji: '✋' },
+}
+
+// Removed 'seguimiento' — mantenimiento covers it
+const FASE_COLORS: Record<string, string> = {
+  linea_base: '#94a3b8', intervencion: '#6366f1',
+  mantenimiento: '#10b981',
+}
+
+
+export default function ProgramasABAView({ childId, childName }: { childId: string; childName: string }) {
+  const toast = useToast()
+  const { t } = useI18n()
+
+  const FASE_LABELS: Record<string, string> = {
+    linea_base:    'Baseline',
+    intervencion:  t('programas.intervencion'),
+    mantenimiento: t('programas.mantenimiento'),
+  }
+  const CHART_TIPO_LABELS: Record<string, string> = {
+    lineas:     t('reportes.lineas'),
+    barras:     t('reportes.barras'),
+    histograma: t('reportes.histograma'),
+    pie:        t('reportes.pie'),
+  }
+
+  const AREA_LABELS: Record<string, string> = {
+    comunicacion: t('programas.areaComunicacion') || 'Communication',
+    conducta:     t('programas.areaConducca') || 'Behavior',
+    cognitivo:    t('programas.areaCognitivo') || 'Cognitive',
+    social:       t('programas.areaSocial') || 'Social',
+    autonomia:    t('programas.areaAutonomia') || 'Autonomy',
+    academico:    t('programas.areaAcademico') || 'Academic',
+    sensorial:    t('programas.areaSensorial') || 'Sensory',
+  }
+
+  const [programas, setProgramas] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showCrear, setShowCrear] = useState(false)
+  const [programaActivo, setProgramaActivo] = useState<any>(null)
+  const [showRegistrarSesion, setShowRegistrarSesion] = useState(false)
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null)
+  const [loadingAI, setLoadingAI] = useState(false)
+  const [filtroArea, setFiltroArea] = useState<string>('todos')
+  // Tipo de gráfico por programa: { [programaId]: TipoGrafico }
+  const [tiposGrafico, setTiposGrafico] = useState<Record<string, TipoGrafico>>({})
+
+  function setTipoGrafico(programaId: string, tipo: TipoGrafico) {
+    setTiposGrafico(prev => ({ ...prev, [programaId]: tipo }))
+  }
+
+  const loadProgramas = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/programas-aba?child_id=${childId}`)
+      const json = await res.json()
+      setProgramas(json.data || [])
+    } catch { toast.error('Error cargando programas') }
+    finally { setLoading(false) }
+  }, [childId])
+
+  useEffect(() => { loadProgramas() }, [loadProgramas])
+
+  // Análisis proactivo del agente al cargar
+  useEffect(() => {
+    if (!childId) return
+    setLoadingAI(true)
+    fetch(`/api/agente/chat?action=analisis_proactivo&child_id=${childId}`)
+      .then(r => r.json())
+      .then(data => setAiAnalysis(data))
+      .catch(() => {})
+      .finally(() => setLoadingAI(false))
+  }, [childId])
+
+  const areas = ['todos', ...Object.keys(AREA_CONFIG)]
+  const programasFiltrados = filtroArea === 'todos'
+    ? programas
+    : programas.filter(p => p.area === filtroArea)
+
+  // Helper: misma lógica que el badge "Criterio alcanzado" en ProgramaCard
+  const programaCriterioAlcanzado = (p: any) => {
+    const sesiones = p.sesiones_datos_aba || []
+    const crit = p.criterio_dominio_pct || 90
+    const critSesiones = p.criterio_sesiones_consecutivas || 2
+    if (sesiones.length < critSesiones) return false
+    const last = sesiones.slice(-critSesiones)
+    return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
+  }
+
+  const stats = {
+    activos: programas.filter(p => p.estado === 'activo').length,
+    dominados: programas.filter(p => p.estado === 'dominado' || programaCriterioAlcanzado(p)).length,
+    enIntervencion: programas.filter(p => p.fase_actual === 'intervencion' || p.fase_actual === 'linea_base').length,
+    alertas: aiAnalysis?.alertas?.length || 0,
+  }
+
+  const STAT_CFG = [
+    { label: t('programas.activos'),        value: stats.activos,        icon: '◉', lightBg: '#f0f4ff', lightNum: '#3d5a99', lightLabel: '#6b7a9a', darkBg: 'rgba(61,90,153,0.12)', darkNum: '#7b9cd4', darkLabel: '#6b7a9a', bar: '#3d5a99' },
+    { label: t('programas.dominados'),       value: stats.dominados,      icon: '✓', lightBg: '#f0faf5', lightNum: '#2d7a56', lightLabel: '#5a8a70', darkBg: 'rgba(45,122,86,0.12)',  darkNum: '#6ab890', darkLabel: '#5a8a70', bar: '#2d7a56' },
+    { label: t('programas.enIntervencion'),  value: stats.enIntervencion, icon: '▶', lightBg: '#f5f0ff', lightNum: '#5a3d99', lightLabel: '#7a6a9a', darkBg: 'rgba(90,61,153,0.12)',  darkNum: '#9d80d4', darkLabel: '#7a6a9a', bar: '#5a3d99' },
+    { label: t('programas.alertasIA'),       value: stats.alertas,        icon: '⚑', lightBg: '#fff8ee', lightNum: '#956020', lightLabel: '#9a7a4a', darkBg: 'rgba(149,96,32,0.12)',  darkNum: '#d4a060', darkLabel: '#9a7a4a', bar: '#956020' },
+  ]
+
+  return (
+    <div className="pb-10">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+            <Activity size={16} style={{ color: 'var(--text-secondary)' }} />
+          </div>
+          <div>
+            <h2 className="font-black text-lg leading-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              {t('programas.titulo')}
+            </h2>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Registro conductual · {childName}</p>
+          </div>
+        </div>
+
+        <button onClick={() => setShowCrear(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all"
+          style={{ background: 'var(--text-primary)', color: 'var(--card)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.88'}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
+          <Plus size={15} /> {t('programas.nuevo')}
+        </button>
+      </div>
+
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {STAT_CFG.map(s => (
+          <div key={s.label} className="rounded-2xl p-4 relative overflow-hidden"
+            style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+            <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ background: s.bar }} />
+            <p className="text-3xl font-black pl-1 leading-none mb-1"
+              style={{ color: s.bar }}>
+              {s.value}
+            </p>
+            <p className="text-[11px] font-semibold pl-1" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Alertas IA ── */}
+      {loadingAI && (
+        <div className="rounded-xl p-3.5 flex items-center gap-3 mb-4"
+          style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+          <Loader2 size={14} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+          <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{t('dashboard.ariAnalizando')}</p>
+        </div>
+      )}
+      {aiAnalysis && aiAnalysis.alertas?.length > 0 && (
+        <div className="space-y-2 mb-5">
+          <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2"
+            style={{ color: 'var(--text-muted)' }}>
+            <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
+          </p>
+          {aiAnalysis.resumen && (
+            <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
+            </div>
+          )}
+          {aiAnalysis.alertas.map((alerta: any, i: number) => (
+            <AlertaCard key={i} alerta={alerta} />
+          ))}
+        </div>
+      )}
+
+      {/* ── Filtros por área ── */}
+      <div className="flex flex-wrap gap-2 mb-5">
+        {areas.map(area => (
+          <button key={area} onClick={() => setFiltroArea(area)}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={filtroArea === area
+              ? { background: 'var(--text-primary)', color: 'var(--card)', border: '1px solid transparent' }
+              : { background: 'var(--card)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
+            {area === 'todos' ? `${t('programas.todos')}` : `${AREA_CONFIG[area]?.emoji} ${AREA_LABELS[area] || AREA_CONFIG[area]?.label}`}
+          </button>
+        ))}
+      </div>
+
+      {/* Lista de programas */}
+      {loading ? (
+        <div className="flex flex-col items-center py-16 gap-3">
+          <Loader2 className="animate-spin text-indigo-400" size={28} />
+          <p className="text-sm" style={{color:"var(--text-muted)"}}>{t('programas.sinProgramas')}</p>
+        </div>
+      ) : programasFiltrados.length === 0 ? (
+        <div className="border-2 border-dashed border-[var(--card-border)] bg-[var(--card)] rounded-3xl p-14 text-center">
+          <div className="w-14 h-14 dark:bg-indigo-900/30 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <BarChart3 size={26} className="text-indigo-300" />
+          </div>
+          <p className="font-bold text-slate-500 mb-1">{t('programas.sinProgramas')}{filtroArea !== 'todos' ? ` ${t('programas.enArea').replace('{area}', AREA_CONFIG[filtroArea]?.label || '')}` : ''}</p>
+          <p className="text-xs" style={{color:"var(--text-muted)",opacity:0.6}}>{t('programas.creaElPrimero').replace('{nombre}', childName)}</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {programasFiltrados.map(prog => (
+            <ProgramaCard
+              key={prog.id}
+              programa={prog}
+              onRegistrarSesion={() => { setProgramaActivo(prog); setShowRegistrarSesion(true) }}
+              onReload={loadProgramas}
+              tipoGrafico={tiposGrafico[prog.id] || 'lineas'}
+              onChangeTipoGrafico={(tipo: TipoGrafico) => setTipoGrafico(prog.id, tipo)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Modales */}
+      {showCrear && (
+        <CrearProgramaModal
+          childId={childId}
+          onClose={() => setShowCrear(false)}
+          onCreated={() => { setShowCrear(false); loadProgramas() }}
+        />
+      )}
+      {showRegistrarSesion && programaActivo && (
+        <RegistrarSesionModal
+          programa={programaActivo}
+          childId={childId}
+          onClose={() => { setShowRegistrarSesion(false); setProgramaActivo(null) }}
+          onSaved={() => { setShowRegistrarSesion(false); setProgramaActivo(null); loadProgramas() }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ── Tarjeta de alerta IA ─────────────────────────────────────────────────────
+function AlertaCard({ alerta }: { alerta: any; key?: any }) {
+  const cfg: Record<string, { border: string; icon: string; label: string }> = {
+    alta:  { border: '#c0524a', icon: '⚠', label: '#c0524a' },
+    media: { border: '#b07830', icon: '!', label: '#b07830' },
+    baja:  { border: '#4a7aaa', icon: 'i', label: '#4a7aaa' },
+  }
+  const c = cfg[alerta.prioridad] || cfg.media
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `3px solid ${c.border}` }}>
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+          style={{ background: `${c.border}18`, color: c.border }}>
+          {c.icon}
+        </span>
+        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
+      </div>
+      <p className="text-xs leading-relaxed pl-6" style={{ color: 'var(--text-secondary)' }}>{alerta.mensaje}</p>
+    </div>
+  )
+}
+
+// ── Tarjeta de programa con gráfica ─────────────────────────────────────────
+function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'lineas', onChangeTipoGrafico }: any) {
+  const { t } = useI18n()
+  const [expanded, setExpanded] = useState(false)
+  const [loadingDetalle, setLoadingDetalle] = useState(false)
+  const [detalle, setDetalle] = useState<any>(null)
+  const toast = useToast()
+
+  const area = AREA_CONFIG[programa.area] || AREA_CONFIG.comunicacion
+  const sesiones = programa.sesiones_datos_aba || []
+
+  // Calcular tendencia local
+  const recientes = sesiones.slice(-5).map((s: any) => s.porcentaje_exito).filter(Boolean)
+  const promedio = recientes.length > 0 ? recientes.reduce((a: number, b: number) => a + b, 0) / recientes.length : 0
+  const ultimoPct = sesiones[sesiones.length - 1]?.porcentaje_exito ?? null
+  const anterior = sesiones[sesiones.length - 2]?.porcentaje_exito ?? null
+  const tendencia = ultimoPct !== null && anterior !== null
+    ? ultimoPct > anterior + 3 ? 'up' : ultimoPct < anterior - 3 ? 'down' : 'stable'
+    : 'stable'
+
+  // ── Check for criterion streak (2 consecutive sessions at or above criterio) ──
+  const crit = programa.criterio_dominio_pct || 90
+  const critSesiones = programa.criterio_sesiones_consecutivas || 2
+  const criterioAlcanzado = (() => {
+    if (sesiones.length < critSesiones) return false
+    const last = sesiones.slice(-critSesiones)
+    return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
+  })()
+  // Check if 1 away (one session at criterion, one needed)
+  const unaFalta = !criterioAlcanzado && critSesiones >= 2 && sesiones.length >= 1 && (() => {
+    const last = sesiones.slice(-(critSesiones - 1))
+    return last.length === critSesiones - 1 && last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
+  })()
+
+  const loadDetalle = async () => {
+    if (detalle) { setExpanded(!expanded); return }
+    setExpanded(true)
+    setLoadingDetalle(true)
+    try {
+      const res = await fetch(`/api/programas-aba?id=${programa.id}`)
+      const json = await res.json()
+      setDetalle(json.data || programa)
+    } catch {
+      setDetalle(programa)
+    }
+    finally { setLoadingDetalle(false) }
+  }
+
+  // Preparar datos para la gráfica
+  const chartData = sesiones.map((s: any, i: number) => ({
+    sesion: i + 1,
+    pct: s.porcentaje_exito,
+    fase: s.fase,
+    fecha: s.fecha,
+    set: s.set || s.objetivo_set || null,
+  }))
+
+  // Detectar cambios de fase para líneas verticales
+  const cambiosFase: number[] = []
+  for (let i = 1; i < chartData.length; i++) {
+    if (chartData[i].fase !== chartData[i - 1].fase) cambiosFase.push(i + 0.5)
+  }
+
+  const faseLabel: Record<string, string> = {
+    linea_base: 'Baseline', intervencion: t('programas.intervencion'),
+    mantenimiento: t('programas.mantenimiento'),
+  }
+
+  return (
+    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      {/* Header */}
+      <div className="p-5 cursor-pointer" onClick={loadDetalle}>
+        <div className="flex items-start gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${area.bg} border shrink-0`}>
+            {area.emoji}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{programa.titulo}</h3>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
+                {area.label}
+              </span>
+              <FaseTag fase={programa.fase_actual} />
+              {criterioAlcanzado && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  🏆 Criterio alcanzado
+                </span>
+              )}
+              {unaFalta && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-200">
+                  ⚡ ¡Vas bien! Falta 1 sesión
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-1 line-clamp-1">{programa.objetivo_lp}</p>
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-xs flex items-center gap-1" style={{color:"var(--text-muted)"}}>
+                <BarChart3 size={10} /> {sesiones.length} {t('programas.sesiones') || 'sesiones'}
+              </span>
+              {ultimoPct !== null && (
+                <span className="text-xs font-bold flex items-center gap-1">
+                  {tendencia === 'up' && <TrendingUp size={12} className="text-emerald-500" />}
+                  {tendencia === 'down' && <TrendingDown size={12} className="text-red-500" />}
+                  {tendencia === 'stable' && <Minus size={12} className="text-slate-400" />}
+                  <span className={tendencia === 'up' ? 'text-emerald-600' : tendencia === 'down' ? 'text-red-600' : 'text-slate-500'}>
+                    {ultimoPct.toFixed(0)}%
+                  </span>
+                </span>
+              )}
+              <span className="text-xs" style={{color:"var(--text-muted)"}}>
+                {t('programas.criterio')}: {programa.criterio_dominio_pct}%
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={e => { e.stopPropagation(); onRegistrarSesion() }}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all" style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
+              {t('programas.agregarSesion')}
+            </button>
+            {expanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+          </div>
+        </div>
+
+        {/* Mini gráfica */}
+        {sesiones.length >= 2 && (
+          <div className="mt-3 h-16">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
+                <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} />
+                <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      {/* Detalle expandido */}
+      {expanded && (
+        <div className="p-5 space-y-5" style={{ borderTop: '1px solid var(--card-border)', background: 'var(--muted-bg)' }}>
+          {loadingDetalle ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="animate-spin text-indigo-400" size={24} />
+            </div>
+          ) : detalle ? (
+            <>
+              {/* Gráfica completa con selector de tipo */}
+              {chartData.length >= 2 && (
+                <div>
+                  {/* Header con selector de tipo */}
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                      📈 Gráfica de progreso
+                    </p>
+                    {/* Selector de tipo */}
+                    <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                      {([
+                        { id: 'lineas'     as const, label: t('reportes.lineas'),     emoji: '📈' },
+                        { id: 'barras'     as const, label: t('reportes.barras'),     emoji: '📊' },
+                        { id: 'histograma' as const, label: t('reportes.histograma'), emoji: '🗂️' },
+                        { id: 'pie'        as const, label: t('reportes.pie'),        emoji: '🥧' },
+                      ] as const).map(t => (
+                        <button key={t.id} onClick={() => onChangeTipoGrafico(t.id)}
+                          title={t.label}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          style={tipoGrafico === t.id
+                            ? { background: 'var(--card)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', color: 'var(--text-primary)' }
+                            : { color: 'var(--text-muted)', background: 'transparent' }}>
+                          {t.emoji}
+                          <span className="ml-1 hidden sm:inline">{t.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+
+                    {/* ── ABA Phase Chart — segmentos con líneas verticales y labels ── */}
+                    {tipoGrafico === 'lineas' && (() => {
+                      // Build segments: each unique (set+fase) combo is a segment
+                      type Seg = { label: string; fase: string; set: string | null; startIdx: number; endIdx: number }
+                      const segments: Seg[] = []
+                      if (chartData.length > 0) {
+                        let segStart = 0
+                        let curKey = `${chartData[0].fase}||${chartData[0].set}`
+                        chartData.forEach((d: any, i: number) => {
+                          const key = `${d.fase}||${d.set}`
+                          if (key !== curKey || i === chartData.length - 1) {
+                            const endIdx = i === chartData.length - 1 ? i : i - 1
+                            const prev = chartData[segStart]
+                            const setLabel = prev.set || ''
+                            const fLabel = faseLabel[prev.fase] || prev.fase
+                            segments.push({
+                              label: setLabel ? `${setLabel}` : fLabel,
+                              fase: prev.fase,
+                              set: prev.set,
+                              startIdx: segStart,
+                              endIdx,
+                            })
+                            curKey = key
+                            segStart = i
+                          }
+                        })
+                      }
+
+                      // Color palette per segment index
+                      const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
+                      // Map each segment to a color
+                      const segColorMap = segments.map((_, i) => segColors[i % segColors.length])
+
+                      // Divider x-positions (between segments)
+                      const dividers = segments.slice(0, -1).map(seg => seg.endIdx + 1.5)
+
+                      // Build per-point color: dot color matches its segment
+                      const dotColorByIdx = chartData.map((_: any, i: number) => {
+                        const segIdx = segments.findIndex(s => i >= s.startIdx && i <= s.endIdx)
+                        return segIdx >= 0 ? segColorMap[segIdx] : '#6366f1'
+                      })
+
+                      const total = chartData.length
+                      const chartHeight = 260
+
+                      return (
+                        <div>
+                          {/* ── Phase header labels — proportional width per segment ── */}
+                          <div className="flex" style={{ paddingLeft: '30px', paddingRight: '10px' }}>
+                            {segments.map((seg, i) => {
+                              const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
+                              const color = segColorMap[i]
+                              return (
+                                <div key={i}
+                                  className="flex flex-col items-center justify-end pb-1 border-r last:border-r-0"
+                                  style={{ width: `${width}%`, minWidth: '28px', borderColor: '#cbd5e1' }}>
+                                  <span className="text-[10px] font-black truncate px-1 text-center w-full" style={{ color }}>
+                                    {seg.label}
+                                  </span>
+                                  <span className="text-[9px] font-semibold text-slate-400 truncate px-1 text-center w-full">
+                                    {seg.set ? (faseLabel[seg.fase] || seg.fase) : ''}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </div>
+
+                          {/* ── Main line chart ── */}
+                          <ResponsiveContainer width="100%" height={chartHeight}>
+                            <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 20, left: -15 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                              <XAxis
+                                dataKey="sesion"
+                                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                                interval={Math.max(0, Math.floor(total / 8) - 1)}
+                                label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 10, fill: 'var(--text-muted)' }}
+                              />
+                              <YAxis
+                                domain={[0, 100]}
+                                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                                tickFormatter={(v: number) => `${v}%`}
+                              />
+                              <Tooltip
+                                formatter={(value: any) => [`${value}%`, 'Éxito']}
+                                labelFormatter={(label: any) => {
+                                  const d = chartData[label - 1]
+                                  if (!d) return `Sesión ${label}`
+                                  const segIdx = segments.findIndex(s => (label - 1) >= s.startIdx && (label - 1) <= s.endIdx)
+                                  const segName = segIdx >= 0 ? segments[segIdx].label : ''
+                                  return `Sesión ${label} · ${d.fecha}${segName ? ` · ${segName}` : ''}`
+                                }}
+                                contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
+                              />
+
+                              {/* Vertical phase dividers */}
+                              {dividers.map((x, i) => (
+                                <ReferenceLine key={`div-${i}`} x={x} stroke="#475569" strokeWidth={1.5} />
+                              ))}
+
+                              {/* Criterion line */}
+                              <ReferenceLine
+                                y={programa.criterio_dominio_pct}
+                                stroke="#10b981"
+                                strokeDasharray="6 3"
+                                strokeWidth={2}
+                                label={{ value: `${programa.criterio_dominio_pct}%`, position: 'right', fontSize: 10, fill: '#10b981' }}
+                              />
+
+                              {/* The line — dots colored by segment */}
+                              <Line
+                                type="linear"
+                                dataKey="pct"
+                                stroke="#6366f1"
+                                strokeWidth={0}
+                                dot={false}
+                                activeDot={{ r: 6, fill: '#6366f1' }}
+                              />
+
+                              {/* Render segment lines separately with correct color */}
+                              {segments.map((seg, si) => {
+                                const color = segColorMap[si]
+                                const segPoints = chartData.slice(seg.startIdx, seg.endIdx + 1)
+                                // We render individual SVG lines via a custom dot approach
+                                // Instead use a masked Line per segment using data filtering
+                                return null // handled below via CustomLine
+                              })}
+                            </LineChart>
+                          </ResponsiveContainer>
+
+                          {/* ── Overlay: segment colored lines drawn as SVG on top ── */}
+                          {/* We use a separate recharts chart overlaid for per-segment colors */}
+                          <div style={{ marginTop: `-${chartHeight}px`, pointerEvents: 'none' }}>
+                            <ResponsiveContainer width="100%" height={chartHeight}>
+                              <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 20, left: -15 }}>
+                                <XAxis dataKey="sesion" hide />
+                                <YAxis domain={[0, 100]} hide />
+                                {segments.map((seg, si) => {
+                                  const color = segColorMap[si]
+                                  // Create a dataKey that only has values for this segment's range
+                                  const segKey = `seg_${si}`
+                                  // Inject data with only this segment's values, null elsewhere
+                                  return (
+                                    <Line
+                                      key={segKey}
+                                      type="linear"
+                                      dataKey={(d: any) => {
+                                        const idx = chartData.indexOf(d)
+                                        return idx >= seg.startIdx && idx <= seg.endIdx ? d.pct : null
+                                      }}
+                                      stroke={color}
+                                      strokeWidth={2.5}
+                                      dot={(props: any) => {
+                                        const { cx, cy, index } = props
+                                        if (index < seg.startIdx || index > seg.endIdx) return <g key={index} />
+                                        const dotColor = (chartData[index]?.pct ?? 0) >= crit ? '#059669' : color
+                                        return <circle key={index} cx={cx} cy={cy} r={4} fill={dotColor} stroke="white" strokeWidth={1.5} />
+                                      }}
+                                      connectNulls={false}
+                                      isAnimationActive={false}
+                                    />
+                                  )
+                                })}
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          {/* ── Legend ── */}
+                          <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
+                            {segments.map((seg, i) => (
+                              <span key={i} className="flex items-center gap-1 text-[10px] font-bold" style={{ color: segColorMap[i] }}>
+                                <span className="w-4 border-t-2 inline-block" style={{ borderColor: segColorMap[i] }} />
+                                {seg.label}{seg.set && seg.fase ? ` (${faseLabel[seg.fase] || seg.fase})` : ''}
+                              </span>
+                            ))}
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+                              <span className="w-4 border-t-2 border-dashed border-emerald-500 inline-block" />
+                              Criterio {programa.criterio_dominio_pct}%
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* ── Barras con divisores de fase/set ── */}
+                    {tipoGrafico === 'barras' && (() => {
+                      // Build segments same as lineas
+                      type Seg = { label: string; fase: string; set: string | null; startIdx: number; endIdx: number }
+                      const segs: Seg[] = []
+                      if (chartData.length > 0) {
+                        let sStart = 0
+                        let curK = `${chartData[0].fase}||${chartData[0].set}`
+                        chartData.forEach((d: any, i: number) => {
+                          const k = `${d.fase}||${d.set}`
+                          if (k !== curK || i === chartData.length - 1) {
+                            const endIdx = i === chartData.length - 1 ? i : i - 1
+                            const prev = chartData[sStart]
+                            segs.push({ label: prev.set || (faseLabel[prev.fase] || prev.fase), fase: prev.fase, set: prev.set, startIdx: sStart, endIdx })
+                            curK = k; sStart = i
+                          }
+                        })
+                      }
+                      const total = chartData.length
+                      const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
+                      const dividers = segs.slice(0, -1).map(s => s.endIdx + 1.5)
+
+                      return (
+                        <div>
+                          {segs.length > 1 && (
+                            <div className="flex" style={{ paddingLeft: '30px', paddingRight: '10px' }}>
+                              {segs.map((seg, i) => {
+                                const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
+                                const color = segColors[i % segColors.length]
+                                return (
+                                  <div key={i} className="flex flex-col items-center justify-end pb-1 border-r last:border-r-0"
+                                    style={{ width: `${width}%`, minWidth: '28px', borderColor: '#cbd5e1' }}>
+                                    <span className="text-[10px] font-black truncate px-1 text-center w-full" style={{ color }}>{seg.label}</span>
+                                    <span className="text-[9px] font-semibold text-slate-400 truncate px-1 text-center w-full">
+                                      {seg.set ? (faseLabel[seg.fase] || seg.fase) : ''}
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+                          <ResponsiveContainer width="100%" height={260}>
+                            <BarChart data={chartData} margin={{ top: 4, right: 16, bottom: 24, left: -15 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                              <XAxis dataKey="sesion" tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                                interval={Math.max(0, Math.floor(total / 8) - 1)}
+                                label={{ value: 'Sesión', position: 'insideBottom', offset: -10, fontSize: 10, fill: 'var(--text-muted)' }} />
+                              <YAxis domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: any) => `${v}%`} />
+                              <Tooltip
+                                formatter={(value: any) => [`${value}%`, 'Éxito']}
+                                labelFormatter={(label) => { const d = chartData[label - 1]; return d ? `Sesión ${label} · ${d.fecha}${d.set ? ` · ${d.set}` : ''}` : `Sesión ${label}` }}
+                                contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
+                              />
+                              {dividers.map((x, i) => <ReferenceLine key={`bd-${i}`} x={x} stroke="#475569" strokeWidth={1.5} />)}
+                              <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2}
+                                label={{ value: `${programa.criterio_dominio_pct}%`, position: 'right', fontSize: 10, fill: '#10b981' }} />
+                              <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                                {chartData.map((entry: any, index: number) => (
+                                  <Cell key={index} fill={
+                                    entry.pct >= programa.criterio_dominio_pct ? '#059669'
+                                    : entry.pct >= 70 ? '#6366f1'
+                                    : entry.pct >= 45 ? '#D97706' : '#DC2626'
+                                  } />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )
+                    })()}
+
+                    {/* ── Histograma de distribución ── */}
+                    {tipoGrafico === 'histograma' && (() => {
+                      const critPct = programa.criterio_dominio_pct
+                      const histData = [
+                        { rango: '0-25%',        count: chartData.filter((d: any) => d.pct < 26).length,                    color: '#DC2626' },
+                        { rango: '26-50%',       count: chartData.filter((d: any) => d.pct >= 26 && d.pct < 51).length,     color: '#D97706' },
+                        { rango: '51-75%',       count: chartData.filter((d: any) => d.pct >= 51 && d.pct < 76).length,     color: '#6366f1' },
+                        { rango: '76-89%',       count: chartData.filter((d: any) => d.pct >= 76 && d.pct < critPct).length, color: '#0891B2' },
+                        { rango: `${critPct}%+`, count: chartData.filter((d: any) => d.pct >= critPct).length,              color: '#059669' },
+                      ]
+                      const maxCount = Math.max(...histData.map(h => h.count), 1)
+                      return (
+                        <div className="p-4">
+                          <ResponsiveContainer width="100%" height={240}>
+                            <BarChart data={histData} margin={{ top: 8, right: 16, bottom: 8, left: -10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                              <XAxis dataKey="rango" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                              <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                                label={{ value: 'Sesiones', angle: -90, position: 'insideLeft', fontSize: 10, fill: 'var(--text-muted)' }} />
+                              <Tooltip
+                                formatter={(v: any) => [`${v} sesiones`, 'Cantidad']}
+                                contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
+                              />
+                              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={60}>
+                                {histData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )
+                    })()}
+
+                    {/* ── Pie chart mejorado ── */}
+                    {tipoGrafico === 'pie' && (() => {
+                      const critPct = programa.criterio_dominio_pct
+                      const pieRaw = [
+                        { name: `≥${critPct}% · Criterio`, value: chartData.filter((d: any) => d.pct >= critPct).length, color: '#059669', bg: '#d1fae5' },
+                        { name: '70-89% · Cerca',          value: chartData.filter((d: any) => d.pct >= 70 && d.pct < critPct).length, color: '#6366f1', bg: '#ede9fe' },
+                        { name: '45-69% · En proceso',     value: chartData.filter((d: any) => d.pct >= 45 && d.pct < 70).length, color: '#D97706', bg: '#fef3c7' },
+                        { name: '<45% · Inicial',          value: chartData.filter((d: any) => d.pct < 45).length, color: '#DC2626', bg: '#fee2e2' },
+                      ].filter(p => p.value > 0)
+                      const total = chartData.length
+                      const pct = (v: number) => total > 0 ? Math.round((v / total) * 100) : 0
+
+                      const RADIAN = Math.PI / 180
+                      const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, value }: any) => {
+                        if (value === 0) return null
+                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                        return <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="bold">{pct(value)}%</text>
+                      }
+
+                      return (
+                        <div className="p-4">
+                          <div className="flex items-center gap-6">
+                            {/* Donut */}
+                            <div className="shrink-0">
+                              <ResponsiveContainer width={220} height={220}>
+                                <PieChart>
+                                  <Pie data={pieRaw} dataKey="value" nameKey="name"
+                                    cx="50%" cy="50%"
+                                    innerRadius={55} outerRadius={95}
+                                    paddingAngle={2}
+                                    labelLine={false}
+                                    label={renderLabel}>
+                                    {pieRaw.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                                  </Pie>
+                                  <Tooltip
+                                    formatter={(v: any, name: any) => [`${v} sesiones (${pct(v)}%)`, name]}
+                                    contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
+                                  />
+                                </PieChart>
+                              </ResponsiveContainer>
+                              {/* Center label */}
+                              <p className="text-center -mt-2 text-xs font-bold text-slate-400">{total} sesiones</p>
+                            </div>
+
+                            {/* Legend cards */}
+                            <div className="flex-1 grid grid-cols-2 gap-2">
+                              {pieRaw.map(p => (
+                                <div key={p.name} className="rounded-xl p-3 flex items-center gap-2.5" style={{ background: p.bg }}>
+                                  <div className="w-3 h-3 rounded-full shrink-0" style={{ background: p.color }} />
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-black truncate" style={{ color: p.color }}>{p.value} sesiones</p>
+                                    <p className="text-[10px] text-slate-500 font-semibold truncate">{p.name}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Sets / Objetivos CP */}
+              {detalle.objetivos_cp?.length > 0 && (
+                <div>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
+                  <div className="space-y-2">
+                    {detalle.objetivos_cp.map((obj: any) => (
+                      <div key={obj.id} className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${
+                        obj.estado === 'dominado' ? 'bg-emerald-50 border-emerald-200' :
+                        obj.estado === 'en_progreso' ? 'bg-indigo-50 border-indigo-200' :
+                        'bg-white border-slate-100'
+                      }`}>
+                        <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0">
+                          {obj.numero_set}
+                        </span>
+                        <span className="flex-1 font-medium text-slate-700">{obj.descripcion}</span>
+                        <select
+                          value={obj.estado || 'pendiente'}
+                          onChange={async (e) => {
+                            const nuevoEstado = e.target.value
+                            const res = await fetch('/api/programas-aba', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ action: 'actualizar_objetivo', objetivo_id: obj.id, estado: nuevoEstado }),
+                            })
+                            const json = await res.json()
+                            if (json.error) { toast.error(json.error); return }
+                            toast.success(`Set ${obj.numero_set} → ${nuevoEstado === 'dominado' ? '✅ Dominado' : nuevoEstado === 'en_progreso' ? '🔄 En progreso' : '⏳ Pendiente'}`)
+                            // Actualizar detalle local sin recargar todo
+                            setDetalle((prev: any) => prev ? {
+                              ...prev,
+                              objetivos_cp: prev.objetivos_cp.map((o: any) =>
+                                o.id === obj.id ? { ...o, estado: nuevoEstado } : o
+                              )
+                            } : prev)
+                          }}
+                          className={`text-[10px] font-black px-2 py-1 rounded-full border-0 cursor-pointer outline-none ${
+                            obj.estado === 'dominado' ? 'bg-emerald-100 text-emerald-700' :
+                            obj.estado === 'en_progreso' ? 'bg-indigo-100 text-indigo-700' :
+                            'bg-[var(--muted-bg)] text-[var(--text-muted)]'
+                          }`}
+                        >
+                          <option value="pendiente">⏳ {t('programas.pendiente')}</option>
+                          <option value="en_progreso">🔄 {t('programas.enProgreso')}</option>
+                          <option value="dominado">✅ {t('programas.dominado')}</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Últimas sesiones */}
+              {detalle.sesiones_datos_aba?.length > 0 && (
+                <div>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📋 {t('programas.ultimasSesiones')}</p>
+                  <div className="space-y-1.5">
+                    {detalle.sesiones_datos_aba.slice(-6).reverse().map((s: any) => (
+                      <div key={s.id} className="flex items-center gap-3 rounded-xl p-3 border border-[var(--card-border)] bg-[var(--card)] text-xs">
+                        <span className="text-slate-400 w-20 shrink-0">{s.fecha}</span>
+                        <FaseTag fase={s.fase} small />
+                        {s.set && <span className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md">{s.set}</span>}
+                        {s.porcentaje_exito !== null && (
+                          <span className={`font-black ${
+                            s.porcentaje_exito >= programa.criterio_dominio_pct ? 'text-emerald-600' :
+                            s.porcentaje_exito >= 70 ? 'text-amber-600' : 'text-red-500'
+                          }`}>{s.porcentaje_exito}%</span>
+                        )}
+                        {s.oportunidades_totales > 0 && (
+                          <span className="text-slate-400">{s.respuestas_correctas}/{s.oportunidades_totales}</span>
+                        )}
+                        {s.notas && <span className="text-slate-400 italic flex-1 truncate">{s.notas}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Detalles del procedimiento */}
+              {(detalle.sd_estimulo || detalle.reforzadores || detalle.materiales) && (
+                <div>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
+                  <div className="rounded-xl p-4 border border-[var(--card-border)] bg-[var(--card)] space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                    {detalle.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {detalle.sd_estimulo}</p>}
+                    {detalle.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {detalle.unidad_positiva}</p>}
+                    {detalle.unidad_negativa && <p><span className="font-bold">❎ Unidad -:</span> {detalle.unidad_negativa}</p>}
+                    {(detalle.reforzadores || detalle.ayudas) && <p><span className="font-bold">🤝🏼 Ayudas:</span> {detalle.reforzadores || detalle.ayudas}</p>}
+                    {detalle.correccion_error && <p><span className="font-bold">{t('programas.correccion')}</span> {detalle.correccion_error}</p>}
+                    {detalle.reforzadores && <p><span className="font-bold">Reforzadores:</span> {detalle.reforzadores}</p>}
+                    {detalle.materiales && <p><span className="font-bold">Materiales:</span> {detalle.materiales}</p>}
+                  </div>
+                </div>
+              )}
+              {/* Práctica en casa del padre */}
+              <PracticaCasaPanel programaId={programa.id} programaNombre={programa.titulo} objetivos={detalle?.objetivos_cp || []} />
+
+            </>
+          ) : null}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Panel de práctica en casa registrada por el padre ──────────────────────────
+function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { programaId: string; programaNombre: string; objetivos?: any[] }) {
+  const [registros, setRegistros] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const desde = new Date()
+        desde.setDate(desde.getDate() - 56)
+        const { data, error: sbError } = await supabase
+          .from('programa_practica_casa')
+          .select('fecha, objetivo_id')
+          .eq('programa_id', programaId)
+          .gte('fecha', desde.toISOString().split('T')[0])
+          .order('fecha', { ascending: false })
+        if (sbError) throw new Error(sbError.message)
+        // Cualquier registro existente = practicado ese día
+        setRegistros((data || []).map((r: any) => ({ ...r, practicado: true })))
+      } catch (e: any) {
+        setError(e.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [programaId])
+
+  // Agrupar por semana (lun-dom)
+  const weeks: { label: string; days: { fecha: string; practicado: boolean; label: string; objetivoId?: string }[] }[] = []
+  const hoy = new Date()
+
+  for (let w = 0; w < 4; w++) {
+    const dias: { fecha: string; practicado: boolean; label: string; objetivoId?: string }[] = []
+    for (let d = 6; d >= 0; d--) {
+      const date = new Date(hoy)
+      date.setDate(hoy.getDate() - w * 7 - d)
+      const fechaStr = date.toISOString().split('T')[0]
+      const reg = registros.find((r: any) => r.fecha === fechaStr)
+      dias.push({
+        fecha: fechaStr,
+        practicado: !!reg,
+        label: ['D','L','M','X','J','V','S'][date.getDay()],
+        objetivoId: reg?.objetivo_id || undefined,
+      })
+    }
+    const semanaLabel = w === 0 ? 'Esta semana' : w === 1 ? 'Semana pasada' : `Hace ${w} semanas`
+    const count = dias.filter(d => d.practicado).length
+    weeks.push({ label: `${semanaLabel} · ${count}/7 días`, days: dias })
+  }
+
+  const totalDias = registros.length
+  const adherencia = totalDias > 0 ? Math.round((totalDias / 56) * 100) : 0
+
+  const adherenciaColor = adherencia >= 70 ? '#059669' : adherencia >= 40 ? '#d97706' : '#dc2626'
+  const adherenciaLabel = adherencia >= 70 ? 'Buena adherencia' : adherencia >= 40 ? 'Adherencia moderada' : 'Baja adherencia'
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          🏠 Práctica en casa (padre)
+        </p>
+        {!loading && (
+          <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: `${adherenciaColor}18`, color: adherenciaColor, border: `1px solid ${adherenciaColor}30` }}>
+            {adherenciaLabel} · {adherencia}%
+          </span>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="flex items-center gap-2 py-3">
+          <Loader2 size={14} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cargando registros...</span>
+        </div>
+      ) : error ? (
+        <div className="rounded-xl p-4 text-center" style={{ background: 'var(--card)', border: '1px solid #fca5a5' }}>
+          <p className="text-xs font-medium text-red-500">Error al cargar: {error}</p>
+          <p className="text-[10px] text-red-400 mt-1">Tabla: programa_practica_casa · ID: {programaId?.slice(0,8)}...</p>
+        </div>
+      ) : registros.length === 0 ? (
+        <div className="rounded-xl p-4 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+          <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+            El padre aún no ha registrado práctica en casa para este programa.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {weeks.map((week, wi) => (
+            <div key={wi} className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+              <p className="text-[10px] font-bold mb-2.5" style={{ color: 'var(--text-muted)' }}>{week.label}</p>
+              <div className="grid grid-cols-7 gap-1">
+                {week.days.map((day, di) => {
+                  const obj = day.objetivoId ? objetivos.find((o: any) => o.id === day.objetivoId) : null
+                  return (
+                    <div key={di} className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold" style={{ color: 'var(--text-muted)' }}>{day.label}</span>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                        style={{
+                          background: day.practicado ? 'rgba(5,150,105,0.15)' : 'var(--muted-bg)',
+                          border: `1.5px solid ${day.practicado ? '#059669' : 'var(--card-border)'}`,
+                        }}>
+                        {day.practicado
+                          ? <CheckCircle2 size={14} color="#059669" />
+                          : <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--card-border)', display: 'block' }} />
+                        }
+                      </div>
+                      {obj && (
+                        <span className="text-[8px] font-black text-center leading-tight" style={{ color: '#059669' }}>
+                          Set {obj.numero_set}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FaseTag({ fase, small }: { fase: string; small?: boolean }) {
+  const { t } = useI18n()
+  const labels: Record<string, { label: string; border: string; color: string }> = {
+    linea_base:    { label: 'Baseline',                         border: '#94a3b8', color: '#64748b' },
+    intervencion:  { label: 'Intervención',                     border: '#4a6eaa', color: '#4a6eaa' },
+    mantenimiento: { label: t('programas.mantenimiento'),       border: '#3a8a60', color: '#3a8a60' },
+    dominado:      { label: t('programas.dominado'),            border: '#3a8a60', color: '#3a8a60' },
+  }
+  const cfg = labels[fase] || { label: fase, border: '#94a3b8', color: '#64748b' }
+  return (
+    <span className={`rounded-md font-semibold ${small ? 'text-[9px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'}`}
+      style={{ border: `1px solid ${cfg.border}40`, color: cfg.color, background: `${cfg.border}12` }}>
+      {cfg.label}
+    </span>
+  )
+}
+
+// ── Modal: Registrar Sesión ──────────────────────────────────────────────────
+function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
+  const { t } = useI18n()
+  const toast = useToast()
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    fase: programa.fase_actual || 'intervencion',
+    oportunidades_totales: '',
+    respuestas_correctas: '',
+    set_activo: '',
+    notas: '',
+    fecha: new Date().toISOString().split('T')[0],
+  })
+
+  const pct = form.oportunidades_totales && form.respuestas_correctas
+    ? ((Number(form.respuestas_correctas) / Number(form.oportunidades_totales)) * 100).toFixed(1)
+    : null
+
+  const crit = programa.criterio_dominio_pct || 90
+  const critSesiones = programa.criterio_sesiones_consecutivas || 2
+
+  // Check recent sessions for criterion progress
+  const sesiones = programa.sesiones_datos_aba || []
+  const recentAtCrit = sesiones.slice(-critSesiones + 1).filter((s: any) => (s.porcentaje_exito ?? 0) >= crit).length
+  const currentPctNum = pct ? Number(pct) : null
+  const meetsThisSession = currentPctNum !== null && currentPctNum >= crit
+
+  let criterioMsg = null
+  if (pct) {
+    if (meetsThisSession && recentAtCrit >= critSesiones - 1) {
+      criterioMsg = { type: 'success', msg: `🏆 ¡Criterio alcanzado! ${critSesiones} sesiones consecutivas al ${crit}%` }
+    } else if (meetsThisSession && critSesiones > 1) {
+      const remaining = critSesiones - 1 - recentAtCrit
+      if (remaining === 1) criterioMsg = { type: 'close', msg: `⚡ ¡Vas muy bien! Falta 1 sesión más al ${crit}% para dominar` }
+      else criterioMsg = { type: 'progress', msg: `👍 Buen trabajo, sigue así` }
+    }
+  }
+
+  const handleSave = async () => {
+    if (!form.oportunidades_totales) {
+      toast.error('Ingresa oportunidades totales')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/programas-aba', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        body: JSON.stringify({
+          action: 'registrar_sesion',
+          sesion: {
+            programa_id: programa.id,
+            child_id: childId,
+            fecha: form.fecha,
+            fase: form.fase,
+            oportunidades_totales: Number(form.oportunidades_totales) || 0,
+            respuestas_correctas: Number(form.respuestas_correctas) || 0,
+            respuestas_incorrectas: Math.max(0, Number(form.oportunidades_totales) - Number(form.respuestas_correctas)),
+            set: form.set_activo || null,
+            notas: form.notas,
+          },
+        }),
+      })
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      toast.success('✅ Sesión registrada')
+      onSaved()
+    } catch (e: any) {
+      toast.error(e.message)
+    } finally { setSaving(false) }
+  }
+
+  // Fetch sets for this program
+  const sets = programa.objetivos_cp || []
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
+      <div className="rounded-3xl bg-[var(--card)] w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h3 className="font-black text-lg" style={{color:"var(--text-primary)"}}>{t('programas.registrarSesion')}</h3>
+              <p className="text-sm text-slate-400 mt-0.5">{programa.titulo}</p>
+            </div>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--muted-bg)]"><X size={18} /></button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1.5">{t('common.fecha')}</label>
+                <input type="date" value={form.fecha}
+                  onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))}
+                  className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+              <div>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1.5">{t('ui.phase')}</label>
+                <select value={form.fase} onChange={e => setForm(f => ({ ...f, fase: e.target.value }))}
+                  className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-indigo-400">
+                  <option value="linea_base">Baseline</option>
+                  <option value="intervencion">{t('ui.intervention')}</option>
+                  <option value="mantenimiento">{t('programas.mantenimiento')}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* % de éxito */}
+            <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
+              <p className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3">{t('programas.pctExito')}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-500 font-bold block mb-1">{t('ui.total_opportunities')}</label>
+                  <input type="number" min="0" value={form.oportunidades_totales}
+                    onChange={e => setForm(f => ({ ...f, oportunidades_totales: e.target.value }))}
+                    placeholder="10" className="w-full p-3 bg-white border-2 border-indigo-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 text-center text-lg" />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500 font-bold block mb-1">{t('ui.correct_responses')}</label>
+                  <input type="number" min="0" value={form.respuestas_correctas}
+                    onChange={e => setForm(f => ({ ...f, respuestas_correctas: e.target.value }))}
+                    placeholder="8" className="w-full p-3 bg-white border-2 border-indigo-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 text-center text-lg" />
+                </div>
+              </div>
+              {pct && (
+                <div className={`mt-3 text-center py-2 rounded-xl font-black text-2xl ${
+                  Number(pct) >= crit ? 'bg-emerald-100 text-emerald-700' :
+                  Number(pct) >= 70 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'
+                }`}>
+                  {pct}%
+                  {Number(pct) >= crit && <span className="text-sm ml-1">✅ Criterio!</span>}
+                </div>
+              )}
+              {criterioMsg && (
+                <div className={`mt-2 text-center py-1.5 px-3 rounded-lg text-xs font-bold ${
+                  criterioMsg.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                  criterioMsg.type === 'close' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                  'bg-slate-50 text-slate-500'
+                }`}>
+                  {criterioMsg.msg}
+                </div>
+              )}
+            </div>
+
+            {/* Sets — reemplaza nivel de ayuda */}
+            {sets.length > 0 && (
+              <div>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">🎯 Set activo</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {sets.map((s: any) => (
+                    <button key={s.id}
+                      onClick={() => setForm(f => ({ ...f, set_activo: s.numero_set ? `Set ${s.numero_set}` : s.descripcion }))}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                        form.set_activo === (s.numero_set ? `Set ${s.numero_set}` : s.descripcion)
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-indigo-300'
+                      }`}>
+                      {s.numero_set ? `Set ${s.numero_set}` : s.descripcion}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  value={form.set_activo}
+                  onChange={e => setForm(f => ({ ...f, set_activo: e.target.value }))}
+                  placeholder="Ej: Set 2, Nivel 3 (opcional)"
+                  className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+            )}
+
+            {/* Notas */}
+            <div>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1.5">📝 Notas</label>
+              <textarea value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
+                rows={2} placeholder="Observaciones de la sesión..."
+                className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-5">
+            <button onClick={onClose} className="flex-1 py-3 text-slate-400 font-bold border-2 border-slate-100 rounded-xl hover:bg-[var(--muted-bg)]">
+              Cancelar
+            </button>
+            <button onClick={handleSave} disabled={saving}
+              className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              {saving ? 'Guardando...' : 'Guardar Sesión'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Modal: Crear Programa ────────────────────────────────────────────────────
+function CrearProgramaModal({ childId, onClose, onCreated }: any) {
+  const { t } = useI18n()
+  const toast = useToast()
+  const [saving, setSaving] = useState(false)
+  const [step, setStep] = useState(1)
+  const [form, setForm] = useState({
+    titulo: '', area: 'comunicacion', area_tags: [] as string[], objetivo_lp: '',
+    sd_estimulo: '', correccion_error: '', reforzadores: '', materiales: '',
+    unidad_positiva: '', unidad_negativa: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.',
+    total_unidades: '10u.', notas_programa: '', drive_url: '',
+    tipo_medicion: 'porcentaje', criterio_dominio_pct: 90, criterio_sesiones_consecutivas: 2,
+  })
+  const [objetivos, setObjetivos] = useState([{ descripcion: '' }])
+
+  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+  const toggleAreaTag = (tag: string) => {
+    setForm(f => ({
+      ...f,
+      area_tags: f.area_tags.includes(tag) ? f.area_tags.filter(t => t !== tag) : [...f.area_tags, tag]
+    }))
+  }
+
+  const handleSave = async () => {
+    if (!form.titulo || !form.objetivo_lp) { toast.error('Título y objetivo son requeridos'); return }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/programas-aba', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        body: JSON.stringify({
+          action: 'crear_programa',
+          programa: { ...form, child_id: childId,
+            ayudas: form.reforzadores, // backward compat
+          },
+          objetivos: objetivos.filter(o => o.descripcion.trim()),
+        }),
+      })
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      toast.success('✅ Programa creado')
+      onCreated()
+    } catch (e: any) { toast.error(e.message) }
+    finally { setSaving(false) }
+  }
+
+  const AREA_TAG_OPTIONS = Object.entries(AREA_CONFIG).map(([k, v]) => ({ key: k, ...v }))
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
+      <div className="rounded-3xl bg-[var(--card)] w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-black text-lg" style={{color:"var(--text-primary)"}}>{t('programas.nuevoPrograma')}</h3>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--muted-bg)]"><X size={18} /></button>
+          </div>
+
+          {/* Steps */}
+          <div className="flex gap-1 mb-5">
+            {[1, 2, 3].map(s => (
+              <div key={s} className={`flex-1 h-1.5 rounded-full transition-all ${s <= step ? 'bg-indigo-500' : 'bg-slate-100'}`} />
+            ))}
+          </div>
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('programas.paso1Info')}</p>
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.nombrePrograma')} *</label>
+                <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
+                  placeholder={t('programas.placeholderNombre')}
+                  className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+              {/* Área — texto libre + tags opcionales */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.area')} *</label>
+                <input value={form.area === 'comunicacion' && form.area_tags.length === 0 ? '' : form.area}
+                  onChange={e => set('area', e.target.value || 'comunicacion')}
+                  placeholder="Ej: Comunicación, Conducta..."
+                  className="w-full rounded-xl text-sm font-bold outline-none transition-all mb-2" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+                <p className="text-[10px] text-slate-400 mb-1.5">Tags rápidos (opcional):</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {AREA_TAG_OPTIONS.map(({ key, label, emoji }) => (
+                    <button key={key}
+                      onClick={() => { set('area', key); }}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                        form.area === key
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-indigo-200'
+                      }`}>
+                      {emoji} {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.objetivoLargoPlazo')} *</label>
+                <textarea value={form.objetivo_lp} onChange={e => set('objetivo_lp', e.target.value)}
+                  rows={3} placeholder={t('ui.mastery_criterion_placeholder')}
+                  className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Paso 2 · Sets / Objetivos CP</p>
+              <p className="text-xs" style={{color:"var(--text-muted)"}}>{t('programas.definePasos')}</p>
+              {objetivos.map((obj, i) => (
+                <div key={i} className="flex gap-2">
+                  <span className="w-7 h-7 bg-indigo-600 text-white rounded-full text-xs font-black flex items-center justify-center shrink-0 mt-2.5">{i + 1}</span>
+                  <input value={obj.descripcion}
+                    onChange={e => {
+                      const updated = [...objetivos]
+                      updated[i] = { descripcion: e.target.value }
+                      setObjetivos(updated)
+                    }}
+                    placeholder={`Set ${i + 1}: ej: Permanece sentado ${(i + 1) * 3} minutos`}
+                    className="flex-1 p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+                  {objetivos.length > 1 && (
+                    <button onClick={() => setObjetivos(objetivos.filter((_, j) => j !== i))}
+                      className="p-2.5 text-slate-300 hover:text-red-400 mt-1"><X size={14} /></button>
+                  )}
+                </div>
+              ))}
+              <button onClick={() => setObjetivos([...objetivos, { descripcion: '' }])}
+                className="w-full py-2.5 border-2 border-dashed border-[var(--card-border)] rounded-xl text-sm font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500">
+                + Agregar set
+              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.criterioDominio')}</label>
+                  <input type="number" min="0" max="100" value={form.criterio_dominio_pct}
+                    onChange={e => set('criterio_dominio_pct', Number(e.target.value))}
+                    className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-indigo-400 text-center" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500 block mb-1.5">Sesiones consecutivas</label>
+                  <input type="number" min="1" value={form.criterio_sesiones_consecutivas}
+                    onChange={e => set('criterio_sesiones_consecutivas', Number(e.target.value))}
+                    className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-indigo-400 text-center" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-3">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Paso 3 · Procedimiento</p>
+              {[
+                { key: 'materiales',       label: '📚 Materiales',                    placeholder: 'Materiales necesarios para la sesión' },
+                { key: 'sd_estimulo',      label: '📍 Sd / Estímulo discriminativo',  placeholder: 'Instrucción verbal o gesto que inicia la conducta' },
+                { key: 'unidad_positiva',  label: '✅ Unidad positiva',               placeholder: 'Respuesta correcta esperada' },
+                { key: 'unidad_negativa',  label: '❎ Unidad negativa',              placeholder: 'Respuesta incorrecta / error' },
+                { key: 'reforzadores',     label: '🤝🏼 Ayudas',                       placeholder: 'Las indicadas en el set. Ej: Gesto + verbal' },
+                { key: 'correccion_error', label: '📍 Corrección del error',          placeholder: 'Cómo se corrige si la respuesta es incorrecta' },
+                { key: 'generalizacion',   label: '➡️ Generalización',               placeholder: 'Promover con la familia que realicen este ejercicio en casa.' },
+                { key: 'notas_programa',   label: '🙈 Notas',                         placeholder: 'Observaciones generales del programa...' },
+              ].map(({ key, label, placeholder }) => (
+                <div key={key}>
+                  <label className="text-xs font-bold text-slate-500 block mb-1">{label}</label>
+                  <textarea value={(form as any)[key] ?? ''} onChange={e => set(key, e.target.value)}
+                    rows={key === 'generalizacion' || key === 'notas_programa' ? 2 : 1} placeholder={placeholder}
+                    className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+                </div>
+              ))}
+              {/* Total unidades */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1">📍 Total</label>
+                <input value={(form as any).total_unidades ?? '10u.'} onChange={e => set('total_unidades', e.target.value)}
+                  placeholder="10u."
+                  className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-6">
+            {step > 1 && (
+              <button onClick={() => setStep(s => s - 1)}
+                className="flex-1 py-3 text-slate-500 font-bold border-2 border-slate-100 rounded-xl hover:bg-[var(--muted-bg)]">
+                ← Atrás
+              </button>
+            )}
+            {step < 3 ? (
+              <button onClick={() => setStep(s => s + 1)} disabled={!form.titulo || !form.objetivo_lp}
+                className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                {t('programas.siguiente')} <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button onClick={handleSave} disabled={saving}
+                className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                {saving ? 'Creando...' : 'Crear Programa'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,43 @@
+{
+  "functions": {
+    "app/api/generate-report/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/analyze-parent-form-submission/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/analyze-neurodivergent-form/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/analyze-professional-evaluation/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/generate-session-report/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/generate-home-environment-report/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/admin-chat/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/knowledge/ingest/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/knowledge/upload/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/engagement-padres/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/reporte-word/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/knowledge/index/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/knowledge/aprender/route.ts": {
+      "maxDuration": 120
+    }
+  }
+}

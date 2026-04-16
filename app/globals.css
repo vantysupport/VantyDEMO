@@ -1,0 +1,702 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   CSS VARIABLES - LIGHT & DARK
+   ============================================================ */
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #f1f5f9;
+  --input-bg: #f8fafc;
+  --input-border: #e2e8f0;
+  --muted: #94a3b8;
+  --muted-bg: #f1f5f9;
+  --primary: #7c3aed;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;  /* dark gray — más visible */
+  /* stat card backgrounds */
+  --c-stat-blue: #eff6ff;
+  --c-stat-green: #f0fdf4;
+  --c-stat-purple: #f5f3ff;
+  --c-stat-amber: #fffbeb;
+  /* shared component vars */
+  --c-card: #ffffff;
+  --c-surface: #f8fafc;
+  --c-bg: #f1f5f9;
+  --c-border: #e2e8f0;
+  --c-border-light: #f1f5f9;
+  --c-text-primary: #0f172a;
+  --c-text-secondary: #374151;
+  --c-text-muted: #64748b;
+  --c-text-placeholder: #94a3b8;
+}
+
+.dark {
+  --background: #0d1117;
+  --foreground: #e2e8f0;
+  --card: #161b22;
+  --card-border: #21262d;
+  --sidebar-bg: #0d1117;
+  --sidebar-border: #21262d;
+  --input-bg: #21262d;
+  --input-border: #30363d;
+  --muted: #6b7280;
+  --muted-bg: #21262d;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.6);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #9ca3af;  /* dark mode — más visible */
+  /* stat card backgrounds dark */
+  --c-stat-blue: rgba(59,130,246,0.12);
+  --c-stat-green: rgba(16,185,129,0.12);
+  --c-stat-purple: rgba(139,92,246,0.12);
+  --c-stat-amber: rgba(245,158,11,0.12);
+  /* shared component vars dark */
+  --c-card: #161b22;
+  --c-surface: #0d1117;
+  --c-bg: #090d12;
+  --c-border: #30363d;
+  --c-border-light: #21262d;
+  --c-text-primary: #f0f6fc;
+  --c-text-secondary: #c9d1d9;
+  --c-text-muted: #8b949e;
+  --c-text-placeholder: #6e7681;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* ============================================================
+   DARK MODE — solo afecta admin-content y modales fixed
+   NO usa !important para no romper dark: de Tailwind
+   ============================================================ */
+
+/* Fondo principal */
+.dark .admin-content {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Cards blancas — admin, modales, y nested divs */
+.dark .admin-content .bg-white,
+.dark .fixed .bg-white {
+  background-color: var(--card) !important;
+}
+
+/* Fondos slate claros en dark */
+.dark .admin-content .bg-slate-50:not([class*="dark:"]),
+.dark .admin-content .bg-slate-100:not([class*="dark:"]),
+.dark .fixed .bg-slate-50:not([class*="dark:"]),
+.dark .fixed .bg-slate-100:not([class*="dark:"]) {
+  background-color: var(--muted-bg) !important;
+}
+
+/* Bordes claros en dark */
+.dark .admin-content .border-slate-100:not([class*="dark:"]),
+.dark .admin-content .border-slate-200:not([class*="dark:"]),
+.dark .fixed .border-slate-100:not([class*="dark:"]),
+.dark .fixed .border-slate-200:not([class*="dark:"]) {
+  border-color: var(--card-border) !important;
+}
+
+/* Textos oscuros que no se ven en dark */
+.dark .admin-content .text-slate-800:not([class*="dark:"]),
+.dark .admin-content .text-slate-700:not([class*="dark:"]),
+.dark .fixed .text-slate-800:not([class*="dark:"]),
+.dark .fixed .text-slate-700:not([class*="dark:"]) {
+  color: var(--text-primary) !important;
+}
+.dark .admin-content .text-slate-600:not([class*="dark:"]),
+.dark .fixed .text-slate-600:not([class*="dark:"]) {
+  color: var(--text-secondary) !important;
+}
+.dark .admin-content .text-slate-500:not([class*="dark:"]),
+.dark .admin-content .text-slate-400:not([class*="dark:"]),
+.dark .fixed .text-slate-500:not([class*="dark:"]),
+.dark .fixed .text-slate-400:not([class*="dark:"]) {
+  color: var(--text-muted) !important;
+}
+
+
+/* CRÍTICO: Preservar inline styles — los !important del CSS global NO deben
+   sobreescribir background/color definidos como atributos style= en el HTML.
+   Los estilos inline tienen mayor especificidad que cualquier clase CSS. */
+
+/* Asegurarse que bg-slate-700 y bg-slate-800 NO se sobreescriban en dark */
+.dark .admin-content .bg-slate-700 { background-color: #334155 !important; }
+.dark .admin-content .bg-slate-800 { background-color: #1e293b !important; }
+.dark .admin-content .bg-slate-900 { background-color: #0f172a !important; }
+
+/* Borders */
+.dark .admin-content .border-slate-100:not([class*="dark:"]),
+.dark .fixed .border-slate-100:not([class*="dark:"]) {
+  border-color: var(--card-border) !important;
+}
+.dark .admin-content .border-slate-200:not([class*="dark:"]),
+.dark .fixed .border-slate-200:not([class*="dark:"]) {
+  border-color: var(--input-border) !important;
+}
+
+/* Texto — el global sólo actúa si no hay dark: variant explícita */
+.dark .admin-content .text-slate-800:not([class*="dark:"]),
+.dark .fixed .text-slate-800:not([class*="dark:"]) {
+  color: var(--text-primary) !important;
+}
+.dark .admin-content .text-slate-700:not([class*="dark:"]),
+.dark .fixed .text-slate-700:not([class*="dark:"]) {
+  color: var(--text-secondary) !important;
+}
+.dark .admin-content .text-slate-600:not([class*="dark:"]),
+.dark .fixed .text-slate-600:not([class*="dark:"]) {
+  color: var(--text-secondary) !important;
+}
+.dark .admin-content .text-slate-500:not([class*="dark:"]) {
+  color: var(--text-muted) !important;
+}
+.dark .admin-content .text-slate-400:not([class*="dark:"]) {
+  color: #6b7280 !important;
+}
+.dark .admin-content .text-slate-900:not([class*="dark:"]),
+.dark .fixed .text-slate-900:not([class*="dark:"]) {
+  color: var(--foreground) !important;
+}
+
+/* Hovers */
+.dark .admin-content .hover\:bg-slate-50:hover,
+.dark .admin-content .hover\:bg-slate-100:hover {
+  background-color: var(--muted-bg) !important;
+}
+
+/* Inputs — solo los que NO tienen dark: prefix ya */
+.dark .admin-content input:not([class*="dark:"]),
+.dark .admin-content select:not([class*="dark:"]),
+.dark .admin-content textarea:not([class*="dark:"]),
+.dark .fixed input:not([class*="dark:"]),
+.dark .fixed select:not([class*="dark:"]),
+.dark .fixed textarea:not([class*="dark:"]) {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+.dark .admin-content input::placeholder,
+.dark .admin-content textarea::placeholder,
+.dark .fixed input::placeholder,
+.dark .fixed textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Tables */
+.dark .admin-content thead,
+.dark .admin-content thead th {
+  background-color: var(--muted-bg) !important;
+  color: var(--text-muted) !important;
+}
+
+/* Status badges - ajustados para dark sin perder color */
+.dark .admin-content .bg-emerald-50:not([class*="dark:"]) {
+  background-color: rgba(6,78,59,0.25) !important;
+}
+.dark .admin-content .bg-amber-50:not([class*="dark:"]) {
+  background-color: rgba(92,57,0,0.25) !important;
+}
+.dark .admin-content .bg-red-50:not([class*="dark:"]) {
+  background-color: rgba(127,29,29,0.25) !important;
+}
+.dark .admin-content .bg-violet-50:not([class*="dark:"]) {
+  background-color: rgba(109,40,217,0.18) !important;
+}
+.dark .admin-content .bg-blue-50:not([class*="dark:"]) {
+  background-color: rgba(29,78,216,0.18) !important;
+}
+.dark .admin-content .bg-indigo-50:not([class*="dark:"]) {
+  background-color: rgba(55,48,163,0.18) !important;
+}
+.dark .admin-content .bg-purple-50:not([class*="dark:"]),
+.dark .admin-content .bg-purple-100:not([class*="dark:"]) {
+  background-color: rgba(109,40,217,0.18) !important;
+}
+.dark .admin-content .bg-blue-100:not([class*="dark:"]) {
+  background-color: rgba(29,78,216,0.18) !important;
+}
+.dark .admin-content .bg-slate-800:not([class*="dark:"]) {
+  background-color: var(--muted-bg) !important;
+}
+
+/* Badge text colors */
+.dark .admin-content .text-emerald-700:not([class*="dark:"]) { color: #6ee7b7 !important; }
+.dark .admin-content .text-amber-700:not([class*="dark:"])   { color: #fcd34d !important; }
+.dark .admin-content .text-red-700:not([class*="dark:"])     { color: #fca5a5 !important; }
+.dark .admin-content .text-blue-700:not([class*="dark:"])    { color: #93c5fd !important; }
+.dark .admin-content .text-purple-700:not([class*="dark:"])  { color: #c4b5fd !important; }
+.dark .admin-content .text-violet-700:not([class*="dark:"])  { color: #c4b5fd !important; }
+
+/* Borders de badges */
+.dark .admin-content .border-emerald-200:not([class*="dark:"]) { border-color: #065f46 !important; }
+.dark .admin-content .border-amber-200:not([class*="dark:"])   { border-color: #78350f !important; }
+.dark .admin-content .border-red-200:not([class*="dark:"])     { border-color: #7f1d1d !important; }
+
+/* Divide */
+.dark .admin-content .divide-slate-50 > * + *,
+.dark .admin-content .divide-y > * + * {
+  border-color: var(--card-border) !important;
+}
+
+/* Modales fixed */
+.dark .fixed .bg-white {
+  background-color: var(--card) !important;
+}
+.dark .fixed .bg-slate-50:not([class*="dark:"]) {
+  background-color: var(--muted-bg) !important;
+}
+.dark .fixed .text-slate-700:not([class*="dark:"]),
+.dark .fixed .text-slate-800:not([class*="dark:"]) {
+  color: var(--text-primary) !important;
+}
+.dark .fixed .hover\:bg-slate-100:hover {
+  background-color: var(--muted-bg) !important;
+}
+
+/* ============================================================
+   GLASS MORPHISM
+   ============================================================ */
+.glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); }
+.dark .glass { background: rgba(22,27,34,0.9); }
+
+/* ============================================================
+   CARD PRO
+   ============================================================ */
+.card-pro {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-pro:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+/* ============================================================
+   ANIMACIONES
+   ============================================================ */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.35s ease-out; }
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fade-in-up 0.4s ease-out; }
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in { animation: scale-in 0.25s ease-out; }
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.4s ease-out; }
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--muted-bg) 25%, var(--card-border) 50%, var(--muted-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   SCROLLBAR CUSTOM
+   ============================================================ */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ============================================================
+   BADGES DE ROLES
+   ============================================================ */
+.role-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 10px; border-radius: 999px; border: 1px solid; text-transform: uppercase;
+}
+.role-jefe          { background: #f5f3ff; color: #6d28d9; border-color: #c4b5fd; }
+.role-especialista  { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+.role-padre         { background: #ecfdf5; color: #065f46; border-color: #6ee7b7; }
+.dark .role-jefe         { background: #2e1065; color: #c4b5fd; border-color: #6d28d9; }
+.dark .role-especialista { background: #1e3a5f; color: #93c5fd; border-color: #2563eb; }
+.dark .role-padre        { background: #064e3b; color: #6ee7b7; border-color: #059669; }
+
+/* ============================================================
+   LOGIN PAGE - Protegida de dark mode global
+   ============================================================ */
+.login-root { background: #f5f4fe !important; color: #1e1b4b !important; }
+.dark .login-root,
+.dark .login-root * { background: revert !important; color: revert !important; border-color: revert !important; }
+.dark .login-root { background: #f5f4fe !important; }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS — Vanty v5 (clean)
+   ============================================================ */
+
+/* 1. Prevent ALL horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* 2. Dynamic viewport height — fixes iOS Safari bottom bar */
+@supports (height: 100dvh) {
+  .h-screen   { height: 100dvh; }
+  .min-h-screen { min-height: 100dvh; }
+}
+
+/* 3. Safe area insets (notch / home indicator) */
+.safe-top    { padding-top:    env(safe-area-inset-top,    0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* 4. Global touch improvements */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-overflow-scrolling: touch;
+}
+button { user-select: none; -webkit-user-select: none; }
+
+/* 5. Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* 6. Prevent iOS font zoom on inputs */
+input, select, textarea {
+  font-size: 16px;
+  -webkit-appearance: none;
+}
+
+/* 7. Bottom nav safe area */
+nav.fixed.bottom-0 {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* 8. Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── MOBILE (≤767px) ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Layout — prevent overflow */
+  * { box-sizing: border-box; }
+  .flex.min-h-screen { display: block !important; }
+
+  /* Admin content */
+  .admin-content {
+    padding-left:  0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Padding reducido en mobile */
+  .p-8  { padding: 16px !important; }
+  .p-6  { padding: 14px !important; }
+  .px-8 { padding-left: 16px !important; padding-right: 16px !important; }
+  .px-6 { padding-left: 12px !important; padding-right: 12px !important; }
+
+  /* Touch targets */
+  button, a, [role="button"] { min-height: 44px; min-width: 44px; }
+  button svg, a svg { min-height: unset !important; min-width: unset !important; }
+
+  /* Cards */
+  .rounded-3xl { border-radius: 1.25rem; }
+  .rounded-2xl { border-radius: 1rem; }
+
+  /* Spacing */
+  .space-y-6 > * + * { margin-top: 1rem; }
+  .space-y-5 > * + * { margin-top: 0.875rem; }
+
+  /* Typography */
+  h1, h2, h3 { word-break: break-word; overflow-wrap: break-word; }
+  img { max-width: 100%; height: auto; }
+
+  /* Tables */
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Modals */
+  .fixed.inset-0 > .bg-white,
+  .fixed.inset-0 > div > .bg-white {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-height: 100dvh !important;
+    overflow-y: auto;
+  }
+
+  /* Sticky */
+  .sticky { position: -webkit-sticky; position: sticky; }
+
+  /* Body safe area */
+  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* Nav icons */
+  .mobile-nav-icon { width: 28px !important; height: 28px !important; }
+
+  /* Tabs scroll */
+  .tabs-scroll-mobile {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tabs-scroll-mobile::-webkit-scrollbar { display: none; }
+
+  /* Charts */
+  .recharts-wrapper { font-size: 11px !important; }
+
+  /* Sticky bottom actions */
+  .sticky-bottom-mobile {
+    position: sticky;
+    bottom: 0;
+    background: var(--card);
+    padding: 12px;
+    border-top: 1px solid var(--card-border);
+    z-index: 10;
+  }
+}
+
+/* ── TABLET (768px–1023px) ───────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid-cols-3,
+  .grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .p-8 { padding: 24px !important; }
+}
+
+/* ── iOS Safari overrides ────────────────────────────────────── */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .lp-nav, nav { padding-top: env(safe-area-inset-top, 0); }
+  .lp-wa { bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ── PADRE APP specific ──────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Main content scroll area — account for header + bottom nav */
+  .padre-main {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Bottom nav — always visible, correct height */
+  .padre-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(226,232,240,0.8);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+
+  /* Cards en padre — no se desborden */
+  .padre-card {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Hero card en inicio */
+  .padre-hero {
+    border-radius: 1.25rem !important;
+    overflow: hidden;
+  }
+
+  /* Cita cards */
+  .cita-card {
+    flex-direction: column !important;
+  }
+
+  /* Badge chips — no se corten */
+  .chip-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chip-scroll::-webkit-scrollbar { display: none; }
+  .chip-scroll > * { flex-shrink: 0; }
+}
+
+/* ── CalendarView ───────────────────────────────────────────────────────── */
+.dark .admin-content .bg-gradient-to-br.from-slate-50,
+.dark .admin-content .from-slate-50.via-white {
+  background: var(--background) !important;
+}
+.dark .admin-content .bg-blue-50 {
+  background-color: rgba(37,99,235,0.1) !important;
+}
+.dark .admin-content .hover\:bg-blue-50\/50:hover {
+  background-color: rgba(37,99,235,0.06) !important;
+}
+.dark .admin-content .bg-slate-50\/30 {
+  background-color: var(--muted-bg) !important;
+}
+.dark .admin-content .divide-slate-50 > * + * {
+  border-color: var(--card-border) !important;
+}
+.dark .admin-content input[type="date"],
+.dark .admin-content input[type="time"],
+.dark .admin-content select {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+  color-scheme: dark;
+}
+
+
+/* ── DARK MODE - PORTAL PADRES ───────────────────────────────── */
+.dark .padre-portal .bg-white { background-color: var(--card) !important; }
+.dark .padre-portal .bg-slate-50 { background-color: var(--muted-bg) !important; }
+.dark .padre-portal .bg-slate-100 { background-color: var(--muted-bg) !important; }
+.dark .padre-portal .border-slate-100 { border-color: var(--card-border) !important; }
+.dark .padre-portal .border-slate-200 { border-color: var(--card-border) !important; }
+.dark .padre-portal .text-slate-800 { color: var(--text-primary) !important; }
+.dark .padre-portal .text-slate-900 { color: var(--text-primary) !important; }
+.dark .padre-portal .text-slate-600 { color: var(--text-secondary) !important; }
+.dark .padre-portal .text-slate-700 { color: var(--text-secondary) !important; }
+.dark .padre-portal .text-slate-400 { color: var(--text-muted) !important; }
+.dark .padre-portal .text-slate-500 { color: var(--text-muted) !important; }
+
+/* ── PADRE APP COMPONENT FIXES ───────────────────────────────── */
+@media (max-width: 480px) {
+
+  /* Hero card — no overflow */
+  .padre-hero-card {
+    border-radius: 1.25rem !important;
+    padding: 1rem !important;
+  }
+
+  /* Stats grid — 3 cols muy ajustado en 320px */
+  .padre-stats-grid {
+    gap: 6px !important;
+  }
+  .padre-stats-grid > * {
+    padding: 10px 8px !important;
+  }
+  .padre-stats-grid .text-2xl,
+  .padre-stats-grid .text-3xl {
+    font-size: 1.25rem !important;
+  }
+
+  /* Appointment card — stacked on tiny screens */
+  .cita-card-inner {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Bottom nav labels — smaller */
+  .padre-bottom-nav span {
+    font-size: 9px !important;
+  }
+
+  /* Profile card — no side overflow */
+  .profile-section {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 1.25rem !important;
+  }
+
+  /* Modals */
+  .modal-padre {
+    border-radius: 1.5rem 1.5rem 0 0 !important;
+    max-height: 90dvh !important;
+  }
+
+  /* Chips / badges — no wrap break */
+  .badge-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* ── ADMIN PANEL MOBILE FIXES ────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Sidebar hidden properly */
+  .admin-sidebar {
+    display: none !important;
+  }
+
+  /* Content full width */
+  .admin-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 12px !important;
+  }
+
+  /* Cards no overflow */
+  .admin-card {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Tables — horizontal scroll */
+  .admin-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  /* Modal panels */
+  .admin-modal {
+    margin: 0 !important;
+    border-radius: 1.5rem 1.5rem 0 0 !important;
+    max-height: 95dvh !important;
+    overflow-y: auto !important;
+  }
+
+  /* Grid adjustments */
+  .grid-cols-2.admin-force-1 { grid-template-columns: 1fr !important; }
+  .grid-cols-3.admin-force-2 { grid-template-columns: repeat(2, 1fr) !important; }
+  .grid-cols-4.admin-force-2 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ── MISC ─────────────────────────────────────────────────────── */
+
+/* Prevent any element from breaking layout width */
+@media (max-width: 767px) {
+  .overflow-x-hidden { overflow-x: hidden !important; }
+  [class*="max-w-"]:not([class*="max-w-full"]) {
+    max-width: min(100vw, var(--tw-max-w, 100vw));
+  }
+}
