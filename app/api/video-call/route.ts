@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const { appointment_id, child_id, initiated_by } = await req.json()
 
     // Generar nombre de sala único y legible
-    const roomName = `JugandoAprendo-${appointment_id || Date.now()}`
+    const roomName = `SantiMeet-${appointment_id || Date.now()}`
     const roomUrl = `${JITSI_BASE}/${roomName}`
 
     // Guardar sesión en Supabase

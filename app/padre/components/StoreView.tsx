@@ -409,7 +409,7 @@ export default function StoreView({ profile }: { profile: any }) {
               <p className="text-xs text-blue-500 leading-relaxed">
                 {t('ui.physical_items_note')}
                 Los <strong>{t('ui.digitales')}</strong> te los enviamos por WhatsApp tras confirmar el pago.
-                ¿Dudas? Escríbenos al <a href="https://wa.me/51924807183" className="underline font-bold">+51 924 807 183</a>.
+                ¿Dudas? Escríbenos al <a href="https://wa.me/51924807183" className="underline font-bold">+51 XXX XXX XXX</a>.
               </p>
             </div>
           </div>

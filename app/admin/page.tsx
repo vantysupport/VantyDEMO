@@ -289,7 +289,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className={`font-black text-[13px] leading-tight truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-              Jugando Aprendo
+              Neuropsicología y Terapias SANTI
             </p>
             <p className={`text-[10px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
               Panel {roleName}
@@ -383,7 +383,7 @@ export default function AdminDashboard() {
                 {PAGE_TITLES[currentView] || 'Panel'}
               </h1>
               <p className={`text-[10px] hidden sm:block ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-                Jugando Aprendo · Gestión Integral
+                Neuropsicología y Terapias SANTI · Gestión Integral
               </p>
             </div>
           </div>

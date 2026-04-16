@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       let meeting_link: string | null = null
       if (modalidad === 'virtual') {
         const tempId = `${child_id}-${fecha}-${hora_inicio}`.replace(/:/g, '-')
-        meeting_link = `https://meet.jit.si/JugandoAprendo-${tempId}`
+        meeting_link = `https://meet.jit.si/SantiMeet-${tempId}`
       }
 
       const { data, error } = await supabaseAdmin

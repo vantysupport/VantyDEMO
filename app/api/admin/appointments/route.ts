@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const appointmentsConLink = appointments.map((apt: any) => {
       if (apt.modalidad === 'virtual' && !apt.video_link && !apt.videoLink) {
         const tempId = `${apt.child_id}-${apt.appointment_date}-${(apt.appointment_time || '').replace(/:/g, '-')}`
-        return { ...apt, video_link: `https://meet.jit.si/JugandoAprendo-${tempId}` }
+        return { ...apt, video_link: `https://meet.jit.si/SantiMeet-${tempId}` }
       }
       return apt
     })

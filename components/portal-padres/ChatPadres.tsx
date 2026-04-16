@@ -93,7 +93,7 @@ export default function ChatPadres({ childId, parentUserId, childName }: ChatPad
           </div>
           <div>
             <p className="font-semibold">Asistente Virtual</p>
-            <p className="text-blue-100 text-xs">Jugando Aprendo • Siempre disponible</p>
+            <p className="text-blue-100 text-xs">Neuropsicología y Terapias SANTI • Siempre disponible</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />

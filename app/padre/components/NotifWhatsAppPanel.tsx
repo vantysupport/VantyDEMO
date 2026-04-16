@@ -27,7 +27,7 @@ export default function NotifWhatsAppPanel({ profile, onUpdated }: Props) {
     // Validar formato básico con código país
     const clean = phone.replace(/\s/g, '')
     if (!clean.startsWith('+') || clean.length < 10) {
-      setError('Incluí el código de país, ej: +51 924 807 183')
+      setError('Incluí el código de país, ej: +51 XXX XXX XXX')
       return
     }
     setSaving(true)
@@ -131,7 +131,7 @@ export default function NotifWhatsAppPanel({ profile, onUpdated }: Props) {
               type="tel"
               value={phone}
               onChange={e => { setPhone(e.target.value); setError('') }}
-              placeholder="+51 924 807 183"
+              placeholder="+51 XXX XXX XXX"
               className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-green-400 transition-all text-slate-800 placeholder:text-slate-300"
             />
             {error && <p className="text-xs text-red-500 font-medium">{error}</p>}

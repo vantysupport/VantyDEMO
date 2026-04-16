@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
             children: [new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({ text: `Jugando Aprendo  ·  Historia Clínica — ${nombrePaciente}  ·  `, size: 16, font: 'Arial', color: '9CA3AF' }),
+                new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  Historia Clínica — ${nombrePaciente}  ·  `, size: 16, font: 'Arial', color: '9CA3AF' }),
                 new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' }),
               ],
             })],
@@ -287,7 +287,7 @@ export async function POST(req: NextRequest) {
           }),
           new Paragraph({
             spacing: { before: 60, after: 0 },
-            children: [new TextRun({ text: `Jugando Aprendo  ·  ${hoy}  ·  Documento clínico confidencial`, size: 16, font: 'Arial', color: '94A3B8' })],
+            children: [new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  ${hoy}  ·  Documento clínico confidencial`, size: 16, font: 'Arial', color: '94A3B8' })],
           }),
         ],
       }],

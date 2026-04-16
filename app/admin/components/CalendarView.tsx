@@ -458,7 +458,7 @@ function MonthlyCalendarView() {
           roomUrl={videoSession.roomUrl}
           sessionId={videoSession.sessionId}
           appointmentId={videoSession.appointmentId}
-          participantName="Terapeuta – Jugando Aprendo"
+          participantName="Terapeuta – Neuropsicología y Terapias SANTI"
           onClose={() => { setVideoSession(null); cargarCitas() }}
         />
       )}

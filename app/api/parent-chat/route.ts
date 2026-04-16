@@ -269,7 +269,7 @@ async function generarRespuestaPadre(
   const userLocale = locale
   const localeNamesPC: Record<string,string> = { es:'español', en:'English', pt:'português', fr:'français', de:'Deutsch', it:'italiano' }
   const langNote = userLocale !== 'es' ? `\n\n[RESPONDE SIEMPRE EN: ${localeNamesPC[userLocale] || 'español'}. No uses español si el idioma es diferente.]` : ''
-  const systemPrompt = `Eres ARIA, el asistente virtual del Centro Jugando Aprendo para familias.
+  const systemPrompt = `Eres ARIA, el asistente virtual del Centro Neuropsicología y Terapias SANTI para familias.
 Eres cálida, paciente, positiva y muy accesible. Conoces en detalle el caso de ${contexto.nombre}.
 
 ━━━ INFORMACIÓN DEL PACIENTE ━━━

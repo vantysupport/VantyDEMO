@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files - NUNCA subir a GitHub (contienen claves secretas)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude tools (personal)
+.claude-flow/
+.claude/
+
+# sistema / editores
+.vscode/
+.wget-hsts
+.idea/
+*.swp

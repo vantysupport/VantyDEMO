@@ -101,7 +101,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
     if (!phone.trim()) { setError('Ingresá tu número'); return }
     const clean = phone.replace(/\s/g, '')
     if (!clean.startsWith('+') || clean.length < 10) {
-      setError('Incluí el código de país, ej: +51 924 807 183'); return
+      setError('Incluí el código de país, ej: +51 XXX XXX XXX'); return
     }
     setSaving(true); setError('')
     try {
@@ -168,7 +168,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
               type="tel"
               value={phone}
               onChange={e => { setPhone(e.target.value); setError('') }}
-              placeholder="+51 924 807 183"
+              placeholder="+51 XXX XXX XXX"
               style={{ flex:1,padding:'11px 14px',borderRadius:14,border:`1.5px solid ${error?'#fca5a5':'#e2e8f0'}`,fontSize:13,fontWeight:600,color:'var(--c-text-primary)',outline:'none',fontFamily:'inherit',background:'#f8fafc' }}
               onKeyDown={e => e.key==='Enter' && handleSave()}
             />
@@ -284,7 +284,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
               </p>
             )}
             <p className="text-[10px] mt-2 font-bold uppercase tracking-widest" style={{ color:'rgba(255,255,255,.4)' }}>
-              Portal Familias · Jugando Aprendo
+              Portal Familias · Neuropsicología y Terapias SANTI
             </p>
           </div>
         </div>

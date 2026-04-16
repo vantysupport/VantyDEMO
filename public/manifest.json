@@ -1,8 +1,8 @@
 {
-  "name": "Vanty — Terapia Conductual",
-  "short_name": "Vanty",
-  "description": "Plataforma integral de gestión terapéutica conductual para familias y especialistas.",
-  "start_url": "/",
+  "name": "Neuropsicología y Terapias SANTI",
+  "short_name": "SANTI",
+  "description": "Plataforma integral de gestión terapéutica para Neuropsicología y Terapias SANTI.",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#5B3FC8",
@@ -42,7 +42,7 @@
       "sizes": "1200x630",
       "type": "image/jpeg",
       "form_factor": "wide",
-      "label": "Panel de gestión Vanty"
+      "label": "Panel de gestión SANTI"
     }
   ]
 }

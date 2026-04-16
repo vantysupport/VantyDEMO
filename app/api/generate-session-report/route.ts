@@ -118,7 +118,7 @@ REGLAS ESTRICTAS:
   5. Un área que seguimos trabajando y por qué importa
   6. Qué reportar en la próxima sesión
   7. Mensaje motivador para la familia
-  8. Firma "Con afecto y compromiso, Equipo Jugando Aprendo"
+  8. Firma "Con afecto y compromiso, Equipo Neuropsicología y Terapias SANTI"
   ⚠️ PROHIBIDO incluir actividades para casa aquí.
 
 - "actividades_casa": UNA SOLA actividad terapéutica para el hogar, basada exactamente en lo trabajado HOY. Formato exacto:
@@ -148,7 +148,7 @@ Responde SOLAMENTE con JSON válido (sin texto adicional, sin backticks, sin com
   "actividad_casa": "Actividad: [nombre]\n Objetivo: [objetivo]\n Cómo hacerlo:\n 1. [paso]\n 2. [paso]\n 3. [paso]\n Frecuencia: [frecuencia]\n Qué observar: [observación]",
   "instrucciones_padres": "1. [paso]\n2. [paso]\n3. [paso]",
   "objetivo_tarea": "objetivo conductual y neuropsicológico de la actividad en casa",
-  "mensaje_padres": "Estimados papás de [Nombre real],\n\n[6-8 oraciones cálidas e informativas SIN actividades para casa]\n\nCon afecto y compromiso,\nEquipo Jugando Aprendo",
+  "mensaje_padres": "Estimados papás de [Nombre real],\n\n[6-8 oraciones cálidas e informativas SIN actividades para casa]\n\nCon afecto y compromiso,\nEquipo Neuropsicología y Terapias SANTI",
   "destacar_positivo": "Logro 1 | Logro 2 | Logro 3",
   "proximos_pasos": "En las próximas sesiones continuaremos...",
   "efectividad_sesion": 4,

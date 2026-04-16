@@ -98,7 +98,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
       spacing: { before: 0, after: 20 },
       border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '2563EB', space: 8 } },
       children: [
-        new TextRun({ text: 'Jugando Aprendo', bold: true, size: 36, font: 'Arial', color: '1E40AF' }),
+        new TextRun({ text: 'Neuropsicología y Terapias SANTI', bold: true, size: 36, font: 'Arial', color: '1E40AF' }),
         new TextRun({ text: '  ·  Registro de Sesión ABA', size: 22, font: 'Arial', color: '9CA3AF' }),
       ],
     }),
@@ -248,7 +248,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
     new Paragraph({
       spacing: { before: 400 },
       border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0', space: 8 } },
-      children: [new TextRun({ text: 'Jugando Aprendo  ·  Terapeuta ABA Certificado', size: 20, font: 'Arial', color: '2563EB', bold: true, italics: true })],
+      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI  ·  Terapeuta ABA Certificado', size: 20, font: 'Arial', color: '2563EB', bold: true, italics: true })],
     }),
     new Paragraph({
       spacing: { before: 40, after: 0 },
@@ -265,7 +265,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
             children: [
-              new TextRun({ text: `Jugando Aprendo · Sesión ABA ${nombreCorto} · Pág. `, size: 16, font: 'Arial', color: '9CA3AF' }),
+              new TextRun({ text: `Neuropsicología y Terapias SANTI · Sesión ABA ${nombreCorto} · Pág. `, size: 16, font: 'Arial', color: '9CA3AF' }),
               new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' }),
             ],
           })],

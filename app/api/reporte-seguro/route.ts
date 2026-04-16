@@ -178,8 +178,8 @@ Usa terminología DSM-5 y CIE-10. Tono objetivo, formal y basado en evidencia. N
 
     const reporte = {
       tipo: 'INFORME_SEGURO_CONTINUIDAD',
-      numero_referencia: `JA-${childId.slice(0, 8).toUpperCase()}-${hoy.getFullYear()}${String(hoy.getMonth()+1).padStart(2,'0')}`,
-      centro: 'Centro Jugando Aprendo',
+      numero_referencia: `SAN-${childId.slice(0, 8).toUpperCase()}-${hoy.getFullYear()}${String(hoy.getMonth()+1).padStart(2,'0')}`,
+      centro: 'Centro Neuropsicología y Terapias SANTI',
       paciente: {
         nombre,
         diagnostico,

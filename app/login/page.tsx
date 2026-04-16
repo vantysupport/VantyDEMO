@@ -175,7 +175,7 @@ export default function LoginPage(props: PageProps) {
                 <Image src="/images/logo.png" alt="Logo" width={30} height={30} style={{ objectFit: 'contain' }} />
               </div>
               <div>
-                <p style={{ color: '#fff', fontWeight: 800, fontSize: 17, lineHeight: 1.1 }}>Jugando Aprendo</p>
+                <p style={{ color: '#fff', fontWeight: 800, fontSize: 17, lineHeight: 1.1 }}>Neuropsicología y Terapias SANTI</p>
                 <p style={{ color: 'rgba(255,255,255,.45)', fontSize: 12 }}>{t('auth.centroTerapeutico')}</p>
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function LoginPage(props: PageProps) {
 
             <div className="mobile-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 30 }}>
               <Image src="/images/logo.png" alt="Logo" width={34} height={34} style={{ objectFit: 'contain' }} />
-              <p style={{ fontWeight: 800, color: '#1e1b4b', fontSize: 16 }}>Jugando Aprendo</p>
+              <p style={{ fontWeight: 800, color: '#1e1b4b', fontSize: 16 }}>Neuropsicología y Terapias SANTI</p>
             </div>
 
             <div className="lp-pill">✦ {isSignUp ? 'Crea tu cuenta gratis' : 'Acceso seguro'}</div>
@@ -261,7 +261,7 @@ export default function LoginPage(props: PageProps) {
 
               {showForgotInfo && (
                 <div className="lp-forgot">
-                  <p>Comunícate con <strong>Jugando Aprendo</strong> {t('auth.restablecen')}</p>
+                  <p>Comunícate con <strong>Neuropsicología y Terapias SANTI</strong> {t('auth.restablecen')}</p>
                   <a href="https://wa.me/51924807183?text=Hola,%20olvidé%20mi%20contraseña." target="_blank" rel="noopener noreferrer">
                     <MessageCircle size={14} /> Contactar por WhatsApp
                   </a>

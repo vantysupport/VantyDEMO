@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { notifyAsync, notifyParentDirect } from '@/lib/notifications'
 import { sendEmail, buildEmailCita, buildEmailAdmin } from '@/lib/email'
 
-const CENTRO_EMAIL = 'tallerjugandoaprendoind@gmail.com'
+const CENTRO_EMAIL = 'contacto@santi.com'
 const APP_URL      = process.env.NEXT_PUBLIC_APP_URL || 'https://taller-jugando-aprendo.vercel.app'
 
 // ── Sincronizar cita al calendario (Google o Microsoft) del admin ─────────────
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
       const tempId = crypto.randomUUID()
       const fecha  = (aptPayload.appointment_date || '').replace(/-/g, '-')
       const hora   = (aptPayload.appointment_time || '').slice(0, 5).replace(':', '-')
-      aptPayload.video_link = `https://meet.jit.si/JugandoAprendo-${tempId}-${fecha}-${hora}`
+      aptPayload.video_link = `https://meet.jit.si/SantiMeet-${tempId}-${fecha}-${hora}`
     }
 
     const { data: apt, error } = await supabaseAdmin

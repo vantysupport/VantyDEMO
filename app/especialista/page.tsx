@@ -231,7 +231,7 @@ export default function EspecialistaDashboard() {
           </div>
         </div>
         <div className="text-center">
-          <p className="font-black text-slate-800 text-sm">Jugando Aprendo</p>
+          <p className="font-black text-slate-800 text-sm">Neuropsicología y Terapias SANTI</p>
           <p className="text-xs text-slate-400 mt-0.5">{t('especialista.cargandoPanel')}</p>
         </div>
         <Loader2 size={18} className="animate-spin text-blue-500" />
@@ -261,7 +261,7 @@ export default function EspecialistaDashboard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className={`font-black text-[13px] leading-tight truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-              Jugando Aprendo
+              Neuropsicología y Terapias SANTI
             </p>
             <p className={`text-[10px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
               Panel Clínico
@@ -330,7 +330,7 @@ export default function EspecialistaDashboard() {
                 {PAGE_TITLES[activeView] || 'Panel'}
               </h1>
               <p className={`text-[10px] hidden sm:block ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-                Jugando Aprendo · {t('especialista.titulo')}
+                Neuropsicología y Terapias SANTI · {t('especialista.titulo')}
               </p>
             </div>
           </div>

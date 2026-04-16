@@ -104,8 +104,8 @@ export default function AgendaView({ selectedChild, onChangeView }: { selectedCh
         <p style={{ fontSize:13,fontWeight:800,color:'#075985',margin:'0 0 6px',display:'flex',alignItems:'center',gap:6 }}><Info size={14} color="#0284c7"/>Las citas son asignadas por el equipo del centro</p>
         <p style={{ fontSize:12,color:'#0284c7',margin:'0 0 12px',lineHeight:1.5 }}>Para solicitar, cambiar o cancelar, contactá directamente con recepción.</p>
         <div style={{ display:'flex',flexWrap:'wrap',gap:10 }}>
-          <a href="tel:+51924807183" style={{ display:'inline-flex',alignItems:'center',gap:6,padding:'8px 14px',background:'var(--c-card)',border:'1.5px solid #bae6fd',borderRadius:12,fontSize:12,fontWeight:700,color:'#0369a1',textDecoration:'none' }}><Phone size={12}/>+51 924 807 183</a>
-          <a href="mailto:tallerjugandoaprendoind@gmail.com" style={{ display:'inline-flex',alignItems:'center',gap:6,padding:'8px 14px',background:'var(--c-card)',border:'1.5px solid #bae6fd',borderRadius:12,fontSize:12,fontWeight:700,color:'#0369a1',textDecoration:'none' }}><Mail size={12}/>Escribir email</a>
+          <a href="tel:+51924807183" style={{ display:'inline-flex',alignItems:'center',gap:6,padding:'8px 14px',background:'var(--c-card)',border:'1.5px solid #bae6fd',borderRadius:12,fontSize:12,fontWeight:700,color:'#0369a1',textDecoration:'none' }}><Phone size={12}/>+51 XXX XXX XXX</a>
+          <a href="mailto:contacto@santi.com" style={{ display:'inline-flex',alignItems:'center',gap:6,padding:'8px 14px',background:'var(--c-card)',border:'1.5px solid #bae6fd',borderRadius:12,fontSize:12,fontWeight:700,color:'#0369a1',textDecoration:'none' }}><Mail size={12}/>Escribir email</a>
         </div>
       </div>
 

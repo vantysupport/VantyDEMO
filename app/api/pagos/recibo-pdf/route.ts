@@ -26,7 +26,7 @@ async function getCenterInfo() {
   try {
     const { data } = await supabase.from('centro_instrucciones').select('*').limit(1).single()
     if (data) return {
-      nombre: data.nombre_centro || process.env.NEXT_PUBLIC_APP_NAME || 'Jugando Aprendo',
+      nombre: data.nombre_centro || process.env.NEXT_PUBLIC_APP_NAME || 'Neuropsicología y Terapias SANTI',
       ruc:    data.ruc || '',
       direccion: data.direccion || '',
       telefono:  data.telefono || '',
@@ -34,7 +34,7 @@ async function getCenterInfo() {
     }
   } catch {}
   return {
-    nombre:    process.env.NEXT_PUBLIC_APP_NAME || 'Jugando Aprendo',
+    nombre:    process.env.NEXT_PUBLIC_APP_NAME || 'Neuropsicología y Terapias SANTI',
     ruc:       process.env.CENTER_RUC || '',
     direccion: process.env.CENTER_ADDRESS || '',
     telefono:  process.env.CENTER_PHONE || '',

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
       // Auto-generar número de factura
       const { count } = await supabaseAdmin.from('facturas').select('*', { count: 'exact', head: true })
-      const numero = `JA-${new Date().getFullYear()}-${String((count || 0) + 1).padStart(4, '0')}`
+      const numero = `SAN-${new Date().getFullYear()}-${String((count || 0) + 1).padStart(4, '0')}`
 
       const { data, error } = await supabaseAdmin
         .from('facturas')

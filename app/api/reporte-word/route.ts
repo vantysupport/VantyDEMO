@@ -98,7 +98,7 @@ function makeDoc(sections: DocChild[], fileName: string) {
       properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
       footers: { default: new Footer({ children: [
         new Paragraph({ alignment: AlignmentType.CENTER, children: [
-          new TextRun({ text: `Jugando Aprendo · ${fileName} · `, size: 16, font: 'Arial', color: '9CA3AF' }),
+          new TextRun({ text: `Neuropsicología y Terapias SANTI · ${fileName} · `, size: 16, font: 'Arial', color: '9CA3AF' }),
           // ✅ FIX: PageNumber.CURRENT es un valor, no una función — sin paréntesis
           new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' })
         ]})
@@ -204,7 +204,7 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
   const sections: DocChild[] = [
     // ENCABEZADO CÁLIDO
     new Paragraph({ spacing:{before:0,after:20}, border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'7C3AED',space:8}},
-      children:[new TextRun({text:'🌟  Jugando Aprendo',bold:true,size:38,font:'Arial',color:'5B21B6'}),
+      children:[new TextRun({text:'🌟  Neuropsicología y Terapias SANTI',bold:true,size:38,font:'Arial',color:'5B21B6'}),
                 new TextRun({text:'  ·  Centro de Terapia ABA',size:22,font:'Arial',color:'9CA3AF'})] }),
     new Paragraph({ spacing:{before:180,after:60},
       children:[new TextRun({text:`Reporte de Progreso de ${nombreCorto}`,bold:true,size:44,font:'Arial',color:'4C1D95'})] }),
@@ -308,7 +308,7 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
 
     // CIERRE
     new Paragraph({spacing:{before:400},border:{top:{style:BorderStyle.SINGLE,size:2,color:'E2E8F0',space:8}},
-      children:[new TextRun({text:'Con cariño, el equipo de Jugando Aprendo',size:20,font:'Arial',color:'7C3AED',bold:true,italics:true})]}),
+      children:[new TextRun({text:'Con cariño, el equipo de Neuropsicología y Terapias SANTI',size:20,font:'Arial',color:'7C3AED',bold:true,italics:true})]}),
     new Paragraph({spacing:{before:40,after:0},
       children:[new TextRun({text:`${hoy}  ·  Este reporte es personal y confidencial`,size:16,font:'Arial',color:'94A3B8'})]}),
   ]
@@ -613,7 +613,7 @@ Incluye: ajustes al plan actual, objetivos para el próximo período, frecuencia
       children:[new TextRun({text:'Nota metodológica: ',bold:true,size:16,font:'Arial',color:'64748B'}),
                 new TextRun({text:confianzaNota,size:16,font:'Arial',color:'94A3B8',italics:true})]}),
     new Paragraph({spacing:{before:40,after:0},
-      children:[new TextRun({text:`Jugando Aprendo  ·  ${hoy}  ·  Documento Nº ${docNum}  ·  Uso confidencial`,size:16,font:'Arial',color:'94A3B8'})]}),
+      children:[new TextRun({text:`Neuropsicología y Terapias SANTI  ·  ${hoy}  ·  Documento Nº ${docNum}  ·  Uso confidencial`,size:16,font:'Arial',color:'94A3B8'})]}),
   ]
 
   return { doc: makeDoc(sections, fileName), fileName }
@@ -754,7 +754,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
       kv('Diagnóstico principal', diagnostico),
       kv('Clasificación CIE-10', cie),
       kv('Modalidad de intervención', 'Análisis Aplicado de la Conducta (ABA) — Terapia Individual'),
-      kv('Centro terapéutico', 'Jugando Aprendo — Centro Especializado en Neurodesarrollo'),
+      kv('Centro terapéutico', 'Neuropsicología y Terapias SANTI — Centro Especializado en Neurodesarrollo'),
       kv('Inicio del tratamiento', fechaInicio),
       kv('Última sesión registrada', fechaFin),
       kv('Duración total del proceso', `${semanasTratamiento} semanas (${totalSesiones} sesiones)`),
@@ -905,7 +905,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
     // X. FIRMA
     h2('X.  ACREDITACIÓN PROFESIONAL Y FIRMA'),
     new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[3200,6160],rows:[
-      kv('Centro terapéutico','Jugando Aprendo — Centro Especializado en Neurodesarrollo'),
+      kv('Centro terapéutico','Neuropsicología y Terapias SANTI — Centro Especializado en Neurodesarrollo'),
       kv('Especialidad','Análisis Aplicado de la Conducta (ABA)'),
       kv('Tipo de intervención','Terapia individual — intervención temprana y desarrollo'),
       kv('Fecha de emisión',hoy),
@@ -914,13 +914,13 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
       kv('Vigencia','6 meses a partir de la fecha de emisión'),
     ]}),
     new Paragraph({spacing:{before:600,after:80},children:[new TextRun({text:'_'.repeat(50),size:20,font:'Arial',color:'1E293B'})]}),
-    new Paragraph({spacing:{before:0,after:20},children:[new TextRun({text:'Responsable del Tratamiento — Jugando Aprendo',bold:true,size:18,font:'Arial',color:'1E293B'})]}),
+    new Paragraph({spacing:{before:0,after:20},children:[new TextRun({text:'Responsable del Tratamiento — Neuropsicología y Terapias SANTI',bold:true,size:18,font:'Arial',color:'1E293B'})]}),
     new Paragraph({spacing:{before:0,after:40},children:[new TextRun({text:'Terapeuta ABA Certificado / Neuropsicólogo Clínico',size:17,font:'Arial',color:'64748B',italics:true})]}),
 
     new Paragraph({spacing:{before:320},border:{top:{style:BorderStyle.SINGLE,size:2,color:'E2E8F0',space:8}},
       shading:{fill:'FFF7ED',type:ShadingType.CLEAR},
       children:[new TextRun({text:'⚠  DOCUMENTO CONFIDENCIAL — Uso exclusivo para trámites médico-legales con aseguradoras autorizadas. Prohibida su reproducción parcial o total sin autorización del centro emisor.',size:17,font:'Arial',color:'B45309',bold:true})]}),
-    new Paragraph({spacing:{before:40,after:0},children:[new TextRun({text:`Jugando Aprendo  ·  ${hoy}  ·  Documento Nº ${docNum}`,size:16,font:'Arial',color:'94A3B8'})]}),
+    new Paragraph({spacing:{before:40,after:0},children:[new TextRun({text:`Neuropsicología y Terapias SANTI  ·  ${hoy}  ·  Documento Nº ${docNum}`,size:16,font:'Arial',color:'94A3B8'})]}),
   ]
 
   return { doc: makeDoc(sections, fileName), fileName }

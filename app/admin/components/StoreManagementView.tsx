@@ -615,7 +615,7 @@ export default function StoreManagementView() {
                         </div>
 
                         {order.parent_phone && (
-                          <a href={`https://wa.me/51${order.parent_phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola! Su pedido está ${ESTADO_CFG[order.estado]?.label?.toLowerCase()}. Total: S/ ${Number(order.total_soles).toFixed(2)} — Jugando Aprendo`)}`}
+                          <a href={`https://wa.me/51${order.parent_phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola! Su pedido está ${ESTADO_CFG[order.estado]?.label?.toLowerCase()}. Total: S/ ${Number(order.total_soles).toFixed(2)} — Neuropsicología y Terapias SANTI`)}`}
                             target="_blank" rel="noopener noreferrer"
                             className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-green-200 hover:-translate-y-0.5 active:scale-95">
                             <Phone size={15}/> Contactar por WhatsApp

@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
     const nombre = (child as any)?.name || 'el paciente'
 
     // Generar narrativa predictiva
-    const promptPredictivo = `Eres ARIA, el asistente del Centro Jugando Aprendo. Escribe una narrativa PREDICTIVA y MOTIVADORA para los padres de ${nombre}.
+    const promptPredictivo = `Eres ARIA, el asistente del Centro Neuropsicología y Terapias SANTI. Escribe una narrativa PREDICTIVA y MOTIVADORA para los padres de ${nombre}.
 
 EVOLUCIÓN COMPARATIVA (del más antiguo al más reciente):
 ${datosPeriodos.reverse().map(p => `${p.label}: logro=${p.logro ?? 'N/A'}%, atención=${p.atencion ?? 'N/A'}%, sesiones=${p.sesiones}`).join('\n')}
@@ -160,7 +160,7 @@ Nunca uses porcentajes directamente — tradúcelos: "${pred3meses}%" = "de cada
 
 
     const narrativa = await callGroqSimple(
-      'Eres ARIA, asistente de comunicación familiar cálida del Centro Jugando Aprendo.',
+      'Eres ARIA, asistente de comunicación familiar cálida del Centro Neuropsicología y Terapias SANTI.',
       promptPredictivo,
       { model: GROQ_MODELS.SMART, temperature: 0.65, maxTokens: 700 }
     )

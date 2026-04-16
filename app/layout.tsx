@@ -12,34 +12,34 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Vanty | Terapia ABA y Neurodivergencia en Pisco, Ica",
-  description: "Centro especializado en terapia ABA y desarrollo infantil en Pisco, Ica. Atendemos niños con autismo, TEA, TDAH y neurodivergencia con metodología basada en evidencia e IA. +50 familias.",
-  keywords: "terapeuta ABA Pisco, terapia autismo Ica, centro neurodivergencia Pisco, TEA Pisco, TDAH Pisco, desarrollo infantil Ica, terapia conductual niños Pisco",
-  authors: [{ name: "Vanty" }],
+  title: "Neuropsicología y Terapias SANTI | Terapia ABA y Neurodivergencia",
+  description: "Centro especializado en neuropsicología y terapia ABA. Atendemos niños con autismo, TEA, TDAH y neurodivergencia con metodología basada en evidencia e IA.",
+  keywords: "neuropsicología, terapia ABA, autismo, TEA, TDAH, neurodivergencia, desarrollo infantil, terapia conductual, SANTI",
+  authors: [{ name: "Neuropsicología y Terapias SANTI" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Vanty",
+    title: "SANTI",
     startupImage: "/icons/apple-touch-icon.png",
   },
   formatDetection: { telephone: false },
   openGraph: {
-    title: "Vanty | Terapia ABA en Pisco, Ica",
-    description: "Centro especializado en neurodivergencia. Terapia ABA con IA para niños en Pisco, Ica, Perú.",
+    title: "Neuropsicología y Terapias SANTI",
+    description: "Centro especializado en neuropsicología y terapia ABA con IA para niños con neurodivergencia.",
     type: "website",
     locale: "es_PE",
-    url: "https://jugandoaprendo.com",
-    siteName: "Vanty",
-    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: "Vanty - Terapia ABA Pisco" }],
+    url: "https://santi.vantyaba.com",
+    siteName: "Neuropsicología y Terapias SANTI",
+    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: "Neuropsicología y Terapias SANTI" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vanty | Terapia ABA en Pisco, Ica",
-    description: "Centro especializado en neurodivergencia. Terapia ABA + IA para niños.",
+    title: "Neuropsicología y Terapias SANTI",
+    description: "Centro especializado en neuropsicología. Terapia ABA + IA para niños.",
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: "https://jugandoaprendo.com" },
+  alternates: { canonical: "https://santi.vantyaba.com" },
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
@@ -61,7 +61,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Vanty" />
+        <meta name="apple-mobile-web-app-title" content="SANTI" />
         <meta name="mobile-web-app-capable" content="yes" />
         {/* Aplicar tema ANTES de hidratación para evitar flash */}
         <script dangerouslySetInnerHTML={{

@@ -90,7 +90,7 @@ export default function VideoCallModal({
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-sm"
             style={{ background:'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>JA</div>
           <div>
-            <p className="text-white font-bold text-sm">Jugando Aprendo · Videollamada</p>
+            <p className="text-white font-bold text-sm">Neuropsicología y Terapias SANTI · Videollamada</p>
             <p className="text-xs font-medium" style={{ color:'rgba(255,255,255,0.4)' }}>{participantName}</p>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function VideoCallModal({
           className="w-full h-full border-0"
           style={{ display: connStatus==='connecting' ? 'none' : 'block' }}
           onLoad={() => setConnStatus('connected')}
-          title="Videollamada Jugando Aprendo"
+          title="Videollamada Neuropsicología y Terapias SANTI"
         />
       </div>
 

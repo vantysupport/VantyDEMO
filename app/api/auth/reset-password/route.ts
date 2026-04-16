@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Si el correo existe, recibirás instrucciones.' })
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jugandoaprendo.vercel.app'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://santi.vantyaba.com'
 
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
       redirectTo: `${siteUrl}/auth/callback?type=recovery`,

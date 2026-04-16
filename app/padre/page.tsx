@@ -376,7 +376,7 @@ export default function ParentDashboard() {
               ¡Bienvenido/a, {profile?.full_name?.split(' ')[0]}! 🎉
             </h1>
             <p className="text-slate-500 text-base leading-relaxed mb-8">
-              Estamos felices de tenerte en <strong className="text-violet-600">Jugando Aprendo</strong>.
+              Estamos felices de tenerte en <strong className="text-violet-600">Neuropsicología y Terapias SANTI</strong>.
               Para comenzar, necesitamos registrar a tu hijo/a y podrás acceder a todo el sistema de seguimiento con IA.
             </p>
 
@@ -410,7 +410,7 @@ export default function ParentDashboard() {
           <p className="text-center text-sm text-slate-400 mt-6">
             ¿Tienes dudas? Escríbenos:{' '}
             <a href="https://wa.me/51924807183" className="text-violet-600 font-bold hover:underline">
-              +51 924 807 183
+              +51 XXX XXX XXX
             </a>
           </p>
         </div>
@@ -580,7 +580,7 @@ export default function ParentDashboard() {
                     <h1 className="text-sm font-black" style={{ color: "var(--text-primary)" }}>
                         {PAGE_TITLES_MOBILE[activeView as keyof typeof PAGE_TITLES_MOBILE] || 'Inicio'}
                     </h1>
-                    <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Jugando Aprendo · Portal Familias</p>
+                    <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Neuropsicología y Terapias SANTI · Portal Familias</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <LocaleSelector compact={true} />
@@ -1263,10 +1263,10 @@ export default function ParentDashboard() {
                             </h4>
                             <div className="space-y-2 text-sm text-green-700">
                                 <p className="flex items-center gap-2">
-                                    <Mail size={14}/> <a href="mailto:tallerjugandoaprendoind@gmail.com" className="hover:underline">tallerjugandoaprendoind@gmail.com</a>
+                                    <Mail size={14}/> <a href="mailto:contacto@santi.com" className="hover:underline">contacto@santi.com</a>
                                 </p>
                                 <p className="flex items-center gap-2">
-                                    <Phone size={14}/> <a href="tel:+51924807183" className="hover:underline">+51 924 807 183</a>
+                                    <Phone size={14}/> <a href="tel:+51924807183" className="hover:underline">+51 XXX XXX XXX</a>
                                 </p>
                                 <p className="text-xs text-green-600 mt-2">Horario: Lun-Vie 8:00 AM - 6:00 PM</p>
                             </div>

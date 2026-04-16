@@ -14,7 +14,7 @@ export type WspLocale = 'es'
 // ── Templates de mensajes ─────────────────────────────────────────────────────
 export function wspTemplate(tipo: WspTipo, vars: Record<string, string> = {}): string {
   const v = vars
-  const centro = process.env.CENTRO_NOMBRE || 'Jugando Aprendo'
+  const centro = process.env.CENTRO_NOMBRE || 'Neuropsicología y Terapias SANTI'
   const T: Record<WspTipo, string> = {
     cita_confirmada:   `✅ *Cita confirmada — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}${v.link ? `\n🔗 Videollamada: ${v.link}` : ''}\n\nVe los detalles en tu portal Vanty 💜`,
     cita_cancelada:    `❌ *Cita cancelada — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n\nLamentamos el inconveniente. Contactá a recepción para reagendar.\n_Vanty_ 💜`,

@@ -133,7 +133,7 @@ function getEmotionalPrefix(text: string): string {
   if (l.includes('no avanza') || l.includes('no mejora'))
     return '💙 El progreso en terapia ABA no siempre es lineal, pero sí real. Hay avances que se acumulan aunque no los veamos cada día.\n\n'
   if (l.includes('solo') || l.includes('sola') || l.includes('nadie entiende'))
-    return '💙 No estás solo/a. Todo el equipo de Jugando Aprendo está aquí para acompañarte — a ti y a tu familia.\n\n'
+    return '💙 No estás solo/a. Todo el equipo de Neuropsicología y Terapias SANTI está aquí para acompañarte — a ti y a tu familia.\n\n'
   return '💙 Escucho cómo te sientes, y es completamente válido. Estoy aquí.\n\n'
 }
 
@@ -346,7 +346,7 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
         ¡Hola! Soy <span style={{ color: '#6366f1' }}>ARIA</span> 🤖
       </h3>
       <p className="text-sm text-slate-500 font-medium mb-1">
-        Tu asistente clínico de Jugando Aprendo
+        Tu asistente clínico de Neuropsicología y Terapias SANTI
       </p>
       <p className="text-xs text-slate-400 mb-6 leading-relaxed max-w-xs">
         {t('aria.revisadoHistorial')} <strong className="text-slate-600">{childName || 'tu hijo/a'}</strong> y estoy lista para ayudarte en lo que necesites.
@@ -580,7 +580,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
               )}
             </div>
             <p className="text-xs text-slate-400 font-medium truncate">
-              Asistente clínico IA · {childName ? `Historial de ${childName}` : 'Jugando Aprendo'}
+              Asistente clínico IA · {childName ? `Historial de ${childName}` : 'Neuropsicología y Terapias SANTI'}
             </p>
           </div>
           {/* Botón silenciar voz */}

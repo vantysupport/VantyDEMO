@@ -6,8 +6,8 @@
 // SETUP (3 minutos):
 //
 //  1. Abrir Telegram → buscar @BotFather → /newbot
-//     → Nombre del bot: "Vanty Jugando Aprendo"
-//     → Username: vanty_jugandoaprendo_bot (o el que quieras)
+//     → Nombre del bot: "Vanty Neuropsicología y Terapias SANTI"
+//     → Username: vanty_santi_bot (o el que quieras)
 //     → BotFather te da el TOKEN → guardarlo
 //
 //  2. Crear un grupo en Telegram "Vanty Alertas"
@@ -45,7 +45,7 @@ export function telegramTemplate(
   locale: NotifLocale = 'es'
 ): string {
   const v = vars
-  const centro = process.env.CENTRO_NOMBRE || 'Jugando Aprendo'
+  const centro = process.env.CENTRO_NOMBRE || 'Neuropsicología y Terapias SANTI'
 
   const T: Record<NotifTipo, string> = {
     cita_confirmada:   `✅ *Cita confirmada*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}\n\n_${centro} · Vanty_`,
