@@ -62,7 +62,7 @@ function wrapHTML(content: string): string {
   <div class="card">
     <div class="header">
       <h1>${CENTRO}</h1>
-      <p>Sistema de citas — Vanty</p>
+      <p>Sistema de citas — SANTI</p>
     </div>
     <div class="body">${content}</div>
     <div class="footer">Este es un mensaje automático. Por favor no respondas a este email.</div>
@@ -100,7 +100,7 @@ export function buildEmailCita(accion: 'nueva' | 'actualizada' | 'cancelada', va
     </div>
     ${accion === 'cancelada'
       ? '<p style="color:#dc2626">Si tenés preguntas, contactá directamente con el centro.</p>'
-      : '<p>Podés ver todos los detalles en tu portal <strong>Vanty</strong>.</p>'
+      : '<p>Podés ver todos los detalles en tu portal <strong>SANTI</strong>.</p>'
     }
   `)
   return { subject, html }
@@ -121,7 +121,7 @@ export function buildEmailAdmin(accion: 'nueva' | 'actualizada' | 'cancelada', v
       <p><strong>Hora:</strong> ${hora}</p>
       <p><strong>Servicio:</strong> ${servicio}</p>
     </div>
-    <p>Revisá los detalles en el panel de administración de <strong>Vanty</strong>.</p>
+    <p>Revisá los detalles en el panel de administración de <strong>SANTI</strong>.</p>
   `)
   return { subject, html }
 }

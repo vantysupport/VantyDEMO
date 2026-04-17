@@ -1,16 +1,16 @@
 // lib/telegram.ts
-// Sistema de notificaciones Telegram para Vanty
+// Sistema de notificaciones Telegram para SANTI
 // 100% GRATIS, sin límites prácticos, sin registro de empresa
 //
 // ══════════════════════════════════════════════════════════════
 // SETUP (3 minutos):
 //
 //  1. Abrir Telegram → buscar @BotFather → /newbot
-//     → Nombre del bot: "Vanty Neuropsicología y Terapias SANTI"
+//     → Nombre del bot: "SANTI Neuropsicología y Terapias SANTI"
 //     → Username: vanty_santi_bot (o el que quieras)
 //     → BotFather te da el TOKEN → guardarlo
 //
-//  2. Crear un grupo en Telegram "Vanty Alertas"
+//  2. Crear un grupo en Telegram "SANTI Alertas"
 //     → Agregar el bot al grupo
 //     → Enviar cualquier mensaje en el grupo
 //     → Abrir en navegador:
@@ -48,13 +48,13 @@ export function telegramTemplate(
   const centro = process.env.CENTRO_NOMBRE || 'Neuropsicología y Terapias SANTI'
 
   const T: Record<NotifTipo, string> = {
-    cita_confirmada:   `✅ *Cita confirmada*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}\n\n_${centro} · Vanty_`,
-    cita_cancelada:    `❌ *Cita cancelada*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n\nContactar recepción para reagendar.\n_${centro} · Vanty_`,
-    formulario_nuevo:  `📋 *Formulario subido*\nTipo: ${v.tipo}\nPaciente: ${v.paciente}${v.especialista ? `\nEspecialista: ${v.especialista}` : ''}\n\nRevisar en portal 👆\n_${centro} · Vanty_`,
-    informe_nuevo:     `📊 *Nuevo informe disponible*\nPaciente: ${v.paciente}${v.periodo ? `\nPeríodo: ${v.periodo}` : ''}\n\nVer en Vanty 👆\n_${centro}_`,
-    alerta_clinica:    `⚠️ *Alerta clínica*\nPaciente: ${v.paciente}\n${v.descripcion}\n\nRevisar Análisis Predictivo 🤖\n_${centro} · Vanty_`,
-    mensaje_terapeuta: `💬 *Mensaje del terapeuta*\n👤 ${v.terapeuta}\n\n"${v.preview}"\n\nResponder en Vanty 👆\n_${centro}_`,
-    recurso_nuevo:     `📚 *Nuevo recurso disponible*\n${v.titulo}${v.descripcion ? `\n${v.descripcion}` : ''}\n\nBiblioteca 📖\n_${centro} · Vanty_`,
+    cita_confirmada:   `✅ *Cita confirmada*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}\n\n_${centro} · SANTI_`,
+    cita_cancelada:    `❌ *Cita cancelada*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n\nContactar recepción para reagendar.\n_${centro} · SANTI_`,
+    formulario_nuevo:  `📋 *Formulario subido*\nTipo: ${v.tipo}\nPaciente: ${v.paciente}${v.especialista ? `\nEspecialista: ${v.especialista}` : ''}\n\nRevisar en portal 👆\n_${centro} · SANTI_`,
+    informe_nuevo:     `📊 *Nuevo informe disponible*\nPaciente: ${v.paciente}${v.periodo ? `\nPeríodo: ${v.periodo}` : ''}\n\nVer en SANTI 👆\n_${centro}_`,
+    alerta_clinica:    `⚠️ *Alerta clínica*\nPaciente: ${v.paciente}\n${v.descripcion}\n\nRevisar Análisis Predictivo 🤖\n_${centro} · SANTI_`,
+    mensaje_terapeuta: `💬 *Mensaje del terapeuta*\n👤 ${v.terapeuta}\n\n"${v.preview}"\n\nResponder en SANTI 👆\n_${centro}_`,
+    recurso_nuevo:     `📚 *Nuevo recurso disponible*\n${v.titulo}${v.descripcion ? `\n${v.descripcion}` : ''}\n\nBiblioteca 📖\n_${centro} · SANTI_`,
     custom:            v.mensaje || '',
   }
 

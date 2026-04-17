@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     description: "Centro especializado en neurodivergencia. Terapia ABA con IA para niños en Pisco, Ica, Perú.",
     type: "website",
     locale: "es_PE",
-    url: "https://santi.vantyaba.com",
+    url: "https://santi.santi.vercel.app",
     siteName: "Neuropsicología y Terapias SANTI",
     images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: "Neuropsicología y Terapias SANTI" }],
   },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     description: "Centro especializado en neurodivergencia. Terapia ABA + IA para niños.",
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: "https://santi.vantyaba.com" },
+  alternates: { canonical: "https://santi.santi.vercel.app" },
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },

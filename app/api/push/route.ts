@@ -5,7 +5,7 @@ import webpush from 'web-push'
 export async function POST(request: NextRequest) {
   // Configure VAPID inside the handler so env vars are available at runtime
   webpush.setVapidDetails(
-    'mailto:hola@vanty.app',
+    'mailto:hola@santi.app',
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
   )
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = JSON.stringify({
-      title: title || 'Vanty',
+      title: title || 'SANTI',
       body: body || 'Tienes un nuevo mensaje',
       url: url || '/padre',
       icon: '/icons/icon-192x192.png',
