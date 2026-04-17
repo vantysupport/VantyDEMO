@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -16,6 +14,7 @@
 # next.js
 /.next/
 /out/
+app/.next/
 
 # production
 /build
@@ -30,7 +29,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files - NUNCA subir a GitHub (contienen claves secretas)
+# env files
 .env*
 !.env.example
 
@@ -41,12 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# claude tools (personal)
+# claude tools
 .claude-flow/
 .claude/
 
-# sistema / editores
+# editor
 .vscode/
 .wget-hsts
 .idea/
-*.swp

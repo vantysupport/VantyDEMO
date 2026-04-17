@@ -12,30 +12,30 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Neuropsicología y Terapias SANTI",
+  title: "Vanty | Terapia ABA y Neurodivergencia en Pisco, Ica",
   description: "Centro especializado en terapia ABA y desarrollo infantil en Pisco, Ica. Atendemos niños con autismo, TEA, TDAH y neurodivergencia con metodología basada en evidencia e IA. +50 familias.",
   keywords: "terapeuta ABA Pisco, terapia autismo Ica, centro neurodivergencia Pisco, TEA Pisco, TDAH Pisco, desarrollo infantil Ica, terapia conductual niños Pisco",
-  authors: [{ name: "Neuropsicología y Terapias SANTI" }],
+  authors: [{ name: "Vanty" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SANTI",
+    title: "Vanty",
     startupImage: "/icons/apple-touch-icon.png",
   },
   formatDetection: { telephone: false },
   openGraph: {
-    title: "Neuropsicología y Terapias SANTI",
+    title: "Vanty | Terapia ABA en Pisco, Ica",
     description: "Centro especializado en neurodivergencia. Terapia ABA con IA para niños en Pisco, Ica, Perú.",
     type: "website",
     locale: "es_PE",
     url: "https://santi.vantyaba.com",
-    siteName: "Neuropsicología y Terapias SANTI",
-    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: "Neuropsicología y Terapias SANTI" }],
+    siteName: "Vanty",
+    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: "Vanty - Terapia ABA Pisco" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Neuropsicología y Terapias SANTI",
+    title: "Vanty | Terapia ABA en Pisco, Ica",
     description: "Centro especializado en neurodivergencia. Terapia ABA + IA para niños.",
   },
   robots: { index: true, follow: true },
@@ -61,24 +61,8 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="SANTI" />
+        <meta name="apple-mobile-web-app-title" content="Vanty" />
         <meta name="mobile-web-app-capable" content="yes" />
-        {/* Aplicar tema ANTES de hidratación para evitar flash */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              try {
-                var isLogin = window.location.pathname === '/login' || window.location.pathname === '/';
-                if (isLogin) {
-                  document.documentElement.classList.remove('dark');
-                } else {
-                  var theme = localStorage.getItem('app-theme');
-                  if (theme === 'dark') document.documentElement.classList.add('dark');
-                }
-              } catch(e) {}
-            })();
-          `
-        }} />
       </head>
       <body className="antialiased">
         <ThemeProvider>
