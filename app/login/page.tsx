@@ -106,6 +106,7 @@ export default function LoginPage(props: PageProps) {
           min-height: 100vh;
           display: flex;
           background: #f5f4fe;
+          overflow-x: hidden;
         }
         .lp-left {
           display: none;
@@ -135,9 +136,10 @@ export default function LoginPage(props: PageProps) {
         }
         .lp-card:hover { background: rgba(255,255,255,.12); }
         .lp-card-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; background: rgba(255,255,255,.12); }
-        .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+        .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 28px 20px 40px; min-height: 100vh; overflow-y: auto; }
+        @media(min-width: 900px) { .lp-right { justify-content: center; padding: 40px 24px; } }
         .lp-form-box { width: 100%; max-width: 430px; }
-        .lp-field { position: relative; margin-bottom: 15px; }
+        .lp-field { position: relative; margin-bottom: 12px; }
         .lp-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; margin-bottom: 7px; }
         .lp-field input { width: 100%; padding: 13px 16px 13px 44px; background: #fff; border: 2px solid #e5e7eb; border-radius: 13px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; }
         .lp-field input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79,70,229,.1); }
@@ -154,7 +156,7 @@ export default function LoginPage(props: PageProps) {
         .lp-forgot p { font-size: 13px; color: #3730a3; line-height: 1.6; margin-bottom: 11px; }
         .lp-forgot a { display: flex; align-items: center; justify-content: center; gap: 8px; background: #16a34a; color: #fff; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 700; text-decoration: none; transition: background .2s; }
         .lp-forgot a:hover { background: #15803d; }
-        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(79,70,229,.08); border: 1px solid rgba(79,70,229,.15); color: #4f46e5; border-radius: 99px; padding: 5px 13px; font-size: 12px; font-weight: 700; margin-bottom: 22px; }
+        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(79,70,229,.08); border: 1px solid rgba(79,70,229,.15); color: #4f46e5; border-radius: 99px; padding: 5px 13px; font-size: 12px; font-weight: 700; margin-bottom: 14px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
         @media(min-width:900px) { .mobile-logo { display: none !important; } }
@@ -214,17 +216,20 @@ export default function LoginPage(props: PageProps) {
         <div className="lp-right">
           <div className="lp-form-box">
 
-            <div className="mobile-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 30 }}>
-              <Image src="/images/logo.png" alt="Logo" width={34} height={34} style={{ objectFit: 'contain' }} />
-              <p style={{ fontWeight: 800, color: '#1e1b4b', fontSize: 16 }}>Neuropsicología y Terapias SANTI</p>
+            <div className="mobile-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+              <Image src="/images/logo.png" alt="Logo" width={40} height={40} style={{ objectFit: 'contain', flexShrink: 0 }} />
+              <div>
+                <p style={{ fontWeight: 800, color: '#1e1b4b', fontSize: 14, lineHeight: 1.2, margin: 0 }}>Neuropsicología y Terapias SANTI</p>
+                <p style={{ color: '#6b7280', fontSize: 11, margin: 0 }}>Centro Terapéutico · Pueblo Libre</p>
+              </div>
             </div>
 
             <div className="lp-pill">✦ {isSignUp ? 'Crea tu cuenta gratis' : 'Acceso seguro'}</div>
 
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#111827', marginBottom: 6, lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: 'clamp(22px, 6vw, 28px)', fontWeight: 800, color: '#111827', marginBottom: 6, lineHeight: 1.2 }}>
               {isSignUp ? 'Bienvenido al equipo' : 'Ingresa a tu cuenta'}
             </h1>
-            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 28 }}>
+            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
               {isSignUp ? 'Completa los datos para comenzar' : 'Continúa el seguimiento de tu hijo'}
             </p>
 
