@@ -9,16 +9,16 @@ export default function TerminosPage() {
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1e1b4b', marginBottom: 8 }}>Términos de Servicio</h1>
-      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 40 }}>Última actualización: marzo 2025 · Pisco, Ica, Perú</p>
+      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 40 }}>Última actualización: abril 2025 · Pueblo Libre, Lima</p>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>1. Aceptación de los términos</h2>
-        <p>Al crear una cuenta y usar la plataforma Vanty de Neuropsicología y Terapias SANTI, aceptás estos Términos de Servicio. Si no estás de acuerdo, por favor no uses la plataforma.</p>
+        <p>Al crear una cuenta y usar la plataforma SANTI de Neuropsicología y Terapias SANTI, aceptás estos Términos de Servicio. Si no estás de acuerdo, por favor no uses la plataforma.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>2. Descripción del servicio</h2>
-        <p>Vanty es una plataforma digital de gestión clínica para el centro Neuropsicología y Terapias SANTI. Permite a los profesionales registrar y hacer seguimiento de programas ABA, y a las familias consultar el progreso de sus hijos, coordinar citas y comunicarse con el equipo terapéutico.</p>
+        <p>SANTI es una plataforma digital de gestión clínica para el centro Neuropsicología y Terapias SANTI. Permite a los profesionales registrar y hacer seguimiento de programas ABA, y a las familias consultar el progreso de sus hijos, coordinar citas y comunicarse con el equipo terapéutico.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -34,7 +34,7 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>4. Naturaleza clínica del servicio</h2>
-        <p>La inteligencia artificial integrada en Vanty (ARIA) es una herramienta de apoyo clínico. Sus análisis y sugerencias son de carácter orientativo y <strong>no reemplazan el criterio del terapeuta certificado</strong>. Todas las decisiones clínicas son responsabilidad exclusiva del profesional a cargo.</p>
+        <p>La inteligencia artificial integrada en SANTI (ARIA) es una herramienta de apoyo clínico. Sus análisis y sugerencias son de carácter orientativo y <strong>no reemplazan el criterio del terapeuta certificado</strong>. Todas las decisiones clínicas son responsabilidad exclusiva del profesional a cargo.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -44,7 +44,7 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>6. Cuentas de usuario</h2>
-        <p>Sos responsable de mantener la seguridad de tu contraseña y de todas las actividades realizadas desde tu cuenta. Si detectás acceso no autorizado, notificanos de inmediato a contacto@santi.com.</p>
+        <p>Sos responsable de mantener la seguridad de tu contraseña y de todas las actividades realizadas desde tu cuenta. Si detectás acceso no autorizado, notificanos de inmediato a aprendizaje.santi@gmail.com.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -59,7 +59,7 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 48 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>9. Contacto</h2>
-        <p><strong>Neuropsicología y Terapias SANTI</strong><br/>Pisco, Ica, Perú<br/>📧 contacto@santi.com<br/>📱 +51 XXX XXX XXX</p>
+        <p><strong>Neuropsicología y Terapias SANTI</strong><br/>Av. Brasil 2730, Pueblo Libre 15084<br/>📧 aprendizaje.santi@gmail.com<br/>📱 991 070 734</p>
       </section>
 
       <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>

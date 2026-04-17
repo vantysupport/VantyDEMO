@@ -16,14 +16,14 @@ export function wspTemplate(tipo: WspTipo, vars: Record<string, string> = {}): s
   const v = vars
   const centro = process.env.CENTRO_NOMBRE || 'Neuropsicología y Terapias SANTI'
   const T: Record<WspTipo, string> = {
-    cita_confirmada:   `✅ *Cita confirmada — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}${v.link ? `\n🔗 Videollamada: ${v.link}` : ''}\n\nVe los detalles en tu portal Vanty 💜`,
-    cita_cancelada:    `❌ *Cita cancelada — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n\nLamentamos el inconveniente. Contactá a recepción para reagendar.\n_Vanty_ 💜`,
-    sesion_iniciada:   `🟢 *¡Tu sesión está comenzando! — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}${v.link ? `\n\n🔗 *Únete ahora:*\n${v.link}` : ''}\n\n¡El terapeuta te está esperando! 💜\n_Vanty_`,
-    formulario_nuevo:  `📋 *Nuevo formulario — ${centro}*\nTipo: ${v.tipo || 'Formulario'}\nPaciente: ${v.paciente}\n\nRevisalo en tu portal 👆\n_Vanty_ 💜`,
-    informe_nuevo:     `📊 *Nuevo informe disponible — ${centro}*\nPaciente: ${v.paciente}${v.periodo ? `\nPeríodo: ${v.periodo}` : ''}\n\nYa podés verlo en Vanty 👆\n_${centro}_ 💜`,
-    alerta_clinica:    `⚠️ *Alerta — ${centro}*\nPaciente: ${v.paciente}\n${v.descripcion || ''}\n_Vanty_ 💜`,
-    mensaje_terapeuta: `💬 *Mensaje de tu terapeuta — ${centro}*\n👤 ${v.terapeuta || 'Tu terapeuta'}\n\n"${v.preview || ''}"\n\nRespondé en Vanty 👆\n_${centro}_ 💜`,
-    recurso_nuevo:     `📚 *Nuevo recurso — ${centro}*\n${v.titulo || ''}${v.descripcion ? `\n${v.descripcion}` : ''}\n\nEncontralo en la Biblioteca 📖\n_Vanty_ 💜`,
+    cita_confirmada:   `✅ *Cita confirmada — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}${v.link ? `\n🔗 Videollamada: ${v.link}` : ''}\n\nVe los detalles en tu portal SANTI 💜`,
+    cita_cancelada:    `❌ *Cita cancelada — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n\nLamentamos el inconveniente. Contactá a recepción para reagendar.\n_SANTI_ 💜`,
+    sesion_iniciada:   `🟢 *¡Tu sesión está comenzando! — ${centro}*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}${v.link ? `\n\n🔗 *Únete ahora:*\n${v.link}` : ''}\n\n¡El terapeuta te está esperando! 💜\n_SANTI_`,
+    formulario_nuevo:  `📋 *Nuevo formulario — ${centro}*\nTipo: ${v.tipo || 'Formulario'}\nPaciente: ${v.paciente}\n\nRevisalo en tu portal 👆\n_SANTI_ 💜`,
+    informe_nuevo:     `📊 *Nuevo informe disponible — ${centro}*\nPaciente: ${v.paciente}${v.periodo ? `\nPeríodo: ${v.periodo}` : ''}\n\nYa podés verlo en SANTI 👆\n_${centro}_ 💜`,
+    alerta_clinica:    `⚠️ *Alerta — ${centro}*\nPaciente: ${v.paciente}\n${v.descripcion || ''}\n_SANTI_ 💜`,
+    mensaje_terapeuta: `💬 *Mensaje de tu terapeuta — ${centro}*\n👤 ${v.terapeuta || 'Tu terapeuta'}\n\n"${v.preview || ''}"\n\nRespondé en SANTI 👆\n_${centro}_ 💜`,
+    recurso_nuevo:     `📚 *Nuevo recurso — ${centro}*\n${v.titulo || ''}${v.descripcion ? `\n${v.descripcion}` : ''}\n\nEncontralo en la Biblioteca 📖\n_SANTI_ 💜`,
     custom:            v.mensaje || '',
   }
   return T[tipo] ?? v.mensaje ?? ''

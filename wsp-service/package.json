@@ -1,7 +1,7 @@
 {
   "name": "wsp-service",
   "version": "1.0.0",
-  "description": "Microservicio WhatsApp Baileys para Jugando Aprendo",
+  "description": "Microservicio WhatsApp Baileys para Neuropsicología y Terapias SANTI",
   "type": "module",
   "main": "index.js",
   "scripts": {

@@ -42,7 +42,7 @@ export default function WhatsAppConfigView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: adminPhone,
-          message: `🧪 *Test Vanty* — ${new Date().toLocaleTimeString()} ✅\nLas notificaciones están funcionando correctamente.`,
+          message: `🧪 *Test SANTI** — ${new Date().toLocaleTimeString()} ✅\nLas notificaciones están funcionando correctamente.`,
         }),
       })
       const d = await res.json()

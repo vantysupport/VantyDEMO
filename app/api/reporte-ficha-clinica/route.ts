@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
             spacing: { before: 0, after: 20 },
             border: { bottom: { style: BorderStyle.SINGLE, size: 10, color: '4F46E5', space: 8 } },
             children: [
-              new TextRun({ text: 'JUGANDO APRENDO', bold: true, size: 36, font: 'Arial', color: '4C1D95' }),
+              new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS SANTI', bold: true, size: 36, font: 'Arial', color: '4C1D95' }),
               new TextRun({ text: '  ·  Centro Especializado en Neurodesarrollo', size: 20, font: 'Arial', color: '9CA3AF' }),
             ],
           }),

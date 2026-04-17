@@ -471,7 +471,7 @@ Incluye: ajustes al plan actual, objetivos para el próximo período, frecuencia
   const sections: DocChild[] = [
     // PORTADA
     new Paragraph({spacing:{before:0,after:20},border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'0F172A',space:8}},
-      children:[new TextRun({text:'JUGANDO APRENDO',bold:true,size:38,font:'Arial',color:'0F172A'}),
+      children:[new TextRun({text:'NEUROPSICOLOGÍA Y TERAPIAS SANTI',bold:true,size:38,font:'Arial',color:'0F172A'}),
                 new TextRun({text:'  ·  Centro Especializado de Terapia ABA',size:22,font:'Arial',color:'64748B'})] }),
     new Paragraph({spacing:{before:180,after:60},
       children:[new TextRun({text:'ANÁLISIS COMPARATIVO DE PERÍODOS',bold:true,size:44,font:'Arial',color:'0F172A'})] }),
@@ -739,7 +739,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
   const sections: DocChild[] = [
     // PORTADA
     new Paragraph({ spacing:{before:0,after:20}, border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'1E40AF',space:8}},
-      children:[new TextRun({text:'JUGANDO APRENDO',bold:true,size:38,font:'Arial',color:'1E293B'}),
+      children:[new TextRun({text:'NEUROPSICOLOGÍA Y TERAPIAS SANTI',bold:true,size:38,font:'Arial',color:'1E293B'}),
                 new TextRun({text:'  ·  Centro Especializado de Terapia ABA',size:22,font:'Arial',color:'64748B'})] }),
     new Paragraph({ spacing:{before:180,after:60},
       children:[new TextRun({text:'REPORTE NEUROPSICOLÓGICO Y CLÍNICO',bold:true,size:46,font:'Arial',color:'1E40AF'})] }),

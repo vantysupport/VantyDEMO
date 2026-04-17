@@ -320,7 +320,7 @@ export async function POST(req: NextRequest) {
                 isReminderOn: true,
                 reminderMinutesBeforeStart: 60,
                 ...(esVirtual && videoLink ? {
-                  location: { displayName: '📹 Videollamada Vanty', uniqueId: videoLink, uniqueIdType: 'locationStore' },
+                  location: { displayName: '📹 Videollamada SANTI', uniqueId: videoLink, uniqueIdType: 'locationStore' },
                 } : {}),
               }
 

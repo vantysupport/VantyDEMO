@@ -9,11 +9,11 @@ export default function PrivacidadPage() {
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1e1b4b', marginBottom: 8 }}>Política de Privacidad</h1>
-      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 40 }}>Última actualización: marzo 2025 · Pisco, Ica, Perú</p>
+      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 40 }}>Última actualización: abril 2025 · Pueblo Libre, Lima</p>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>1. Quiénes somos</h2>
-        <p>Neuropsicología y Terapias SANTI es un centro de terapia especializada en intervención infantil ABA, TEA y TDAH ubicado en Pisco, Ica, Perú. Operamos la plataforma digital Vanty para la gestión clínica y comunicación con familias.</p>
+        <p>Neuropsicología y Terapias SANTI es un centro de terapia especializada en intervención infantil ABA, TEA y TDAH ubicado en Av. Brasil 2730, Pueblo Libre 15084. Operamos la plataforma digital SANTI para la gestión clínica y comunicación con familias.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -33,7 +33,7 @@ export default function PrivacidadPage() {
           <li>Gestionar el historial clínico y seguimiento terapéutico del paciente.</li>
           <li>Generar reportes de progreso para familias y profesionales.</li>
           <li>Enviar notificaciones de citas y recordatorios.</li>
-          <li>Mejorar nuestros servicios clínicos y la plataforma Vanty.</li>
+          <li>Mejorar nuestros servicios clínicos y la plataforma SANTI.</li>
         </ul>
       </section>
 
@@ -59,7 +59,7 @@ export default function PrivacidadPage() {
           <li>Corrección de datos incorrectos o desactualizados.</li>
           <li>Eliminación de tu cuenta y datos asociados.</li>
         </ul>
-        <p style={{ marginTop: 8 }}>Para ejercer estos derechos, escribinos a: <strong>contacto@santi.com</strong></p>
+        <p style={{ marginTop: 8 }}>Para ejercer estos derechos, escribinos a: <strong>aprendizaje.santi@gmail.com</strong></p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -75,7 +75,7 @@ export default function PrivacidadPage() {
       <section style={{ marginBottom: 48 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>9. Contacto</h2>
         <p>Para cualquier consulta sobre esta política:</p>
-        <p style={{ marginTop: 8 }}><strong>Neuropsicología y Terapias SANTI</strong><br/>Pisco, Ica, Perú<br/>📧 contacto@santi.com<br/>📱 +51 XXX XXX XXX</p>
+        <p style={{ marginTop: 8 }}><strong>Neuropsicología y Terapias SANTI</strong><br/>Av. Brasil 2730, Pueblo Libre 15084<br/>📧 aprendizaje.santi@gmail.com<br/>📱 991 070 734</p>
       </section>
 
       <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>

@@ -650,7 +650,7 @@ async function generarDocx(
     new Paragraph({
       children: [
         new TextRun({
-          text: '▮ VANTY',
+          text: '▮ SANTI',
           bold: true,
           size: 28,
           color: COLOR_PRIMARIO,
@@ -922,9 +922,9 @@ async function generarDocx(
 
   // ── Crear documento ──────────────────────────────────────────────────────
   const doc = new Document({
-    creator: 'Vanty — Plataforma de Neuropsicología Infantil',
+    creator: 'SANTI — Plataforma de Neuropsicología Infantil',
     title: `${config.titulo} — ${childName}`,
-    description: `Informe clínico generado por Vanty. Paciente: ${childName}. Fecha: ${fechaHoy}`,
+    description: `Informe clínico generado por SANTI. Paciente: ${childName}. Fecha: ${fechaHoy}`,
     styles: {
       default: {
         document: {
@@ -955,7 +955,7 @@ async function generarDocx(
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `VANTY — ${config.titulo.substring(0, 60)}`,
+                  text: `SANTI — ${config.titulo.substring(0, 60)}`,
                   size: 16,
                   color: COLOR_GRIS,
                   font: 'Calibri',

@@ -185,7 +185,7 @@ async function fetchAndExtractFromUrl(url: string): Promise<string> {
 
   const response = await fetch(processedUrl, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; Vanty-Bot/1.0)',
+      'User-Agent': 'Mozilla/5.0 (compatible; SANTI-Bot/1.0)',
       'Accept': 'text/html,application/pdf,*/*',
     },
     redirect: 'follow',
@@ -224,7 +224,7 @@ async function fetchAndExtractFromUrl(url: string): Promise<string> {
 // ── Descargar desde Supabase Storage y extraer texto ─────────────────────
 async function fetchAndExtractFromStorage(storageUrl: string, fileName: string): Promise<string> {
   const response = await fetch(storageUrl, {
-    headers: { 'User-Agent': 'Vanty-Bot/1.0' },
+    headers: { 'User-Agent': 'SANTI-Bot/1.0' },
   })
 
   if (!response.ok) {
