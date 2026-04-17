@@ -103,7 +103,7 @@ export default function LoginPage(props: PageProps) {
         body { margin: 0; }
         .login-root {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          min-height: 100vh;
+          min-height: 100svh;
           display: flex;
           background: #f5f4fe;
           overflow-x: hidden;
@@ -136,8 +136,7 @@ export default function LoginPage(props: PageProps) {
         }
         .lp-card:hover { background: rgba(255,255,255,.12); }
         .lp-card-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; background: rgba(255,255,255,.12); }
-        .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 28px 20px 40px; min-height: 100vh; overflow-y: auto; }
-        @media(min-width: 900px) { .lp-right { justify-content: center; padding: 40px 24px; } }
+        .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px 40px; }
         .lp-form-box { width: 100%; max-width: 430px; }
         .lp-field { position: relative; margin-bottom: 12px; }
         .lp-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; margin-bottom: 7px; }
@@ -160,6 +159,11 @@ export default function LoginPage(props: PageProps) {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
         @media(min-width:900px) { .mobile-logo { display: none !important; } }
+        /* Neutralizar reglas globales de móvil dentro del login */
+        .login-root button, .login-root a { min-height: unset !important; min-width: unset !important; }
+        .login-root .lp-btn { min-height: 50px !important; width: 100% !important; }
+        .login-root .lp-oauth-btn { min-height: 48px !important; }
+        .login-root input { font-size: 16px; } /* evita zoom en iOS */
       `}</style>
 
       <div className="login-root" style={{ background: '#f5f4fe', colorScheme: 'light' }}>
