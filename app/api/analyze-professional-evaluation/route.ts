@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // ==============================================================================
 // API: ANÁLISIS IA PARA EVALUACIONES PROFESIONALES (VERSIÓN CORREGIDA)
 // Ruta: /api/analyze-professional-evaluation/route.ts

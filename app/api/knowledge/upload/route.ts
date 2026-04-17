@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/knowledge/upload/route.ts
 // Sube archivos al Storage usando service role key (bypassa RLS del bucket)
 // IMPORTANTE: Vercel limita el body a 4.5MB en el plan gratuito.

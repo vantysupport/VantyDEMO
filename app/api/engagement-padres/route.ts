@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/engagement-padres/route.ts
 // 👨‍👩‍👧 Módulo de Engagement para Padres
 // Genera planes semanales personalizados de actividades en casa

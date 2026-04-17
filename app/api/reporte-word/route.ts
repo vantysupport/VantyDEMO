@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/reporte-word/route.ts
 // 📄 Genera documentos Word profesionales para cada tipo de reporte IA
 // Devuelve el .docx como stream descargable — sin jsPDF, sin lab()

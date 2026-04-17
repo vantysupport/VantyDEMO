@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/analyze-neurodivergent-form/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'

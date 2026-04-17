@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/knowledge/ingest/route.ts
 // ============================================================================
 // API: Ingesta e Indexado de Documentos — Base de Conocimiento de ARIA

@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/knowledge/aprender/route.ts
 // 🧠 CEREBRO IA — Aprendizaje automático desde internet
 //

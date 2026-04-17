@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // app/api/generate-report/route.ts
 // ============================================================================
 // API: Generador de Reportes Clínicos Profesionales

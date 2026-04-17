@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 // ==============================================================================
 // API: ANALIZAR FORMULARIO DE PADRES + GENERAR REPORTE WORD
 // Ruta: /app/api/analyze-parent-form-submission/route.ts
