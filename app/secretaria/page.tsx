@@ -126,7 +126,7 @@ export default function SecretariaDashboard() {
 
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 h-[60px] flex-shrink-0" style={{ borderBottom: '1px solid var(--card-border)' }}>
-          <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-white p-0.5 shadow-sm">
+          <div className="relative w-9 h-9 flex-shrink-0 rounded-full bg-white p-1 shadow-md ring-1 ring-slate-200">
             <Image src="/images/logo.png" alt="Logo" fill className="object-contain" />
           </div>
           <div className="flex-1 min-w-0">
