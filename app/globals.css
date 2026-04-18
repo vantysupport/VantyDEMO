@@ -455,15 +455,3 @@ body {
 
 /* ═══ DARK MODE UNIVERSAL — solo clases seguras sin conflicto ═══════════════════════════ */
 .dark-mode-aiReport { color: inherit; }
-
-/* ── Login: proteger de reglas globales de móvil ── */
-@media (max-width: 767px) {
-  .login-root .flex.min-h-screen { display: flex !important; }
-  .login-root input,
-  .login-root select,
-  .login-root textarea { width: 100% !important; font-size: 16px !important; }
-  .login-root button,
-  .login-root a { min-height: unset; min-width: unset; }
-  .login-root .lp-btn { min-height: 48px; }
-  .login-root { display: flex !important; flex-direction: column; }
-}
