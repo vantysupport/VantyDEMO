@@ -2,7 +2,6 @@
   "name": "jugando-aprendo",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +14,7 @@
     "@google/generative-ai": "^0.24.1",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.95.3",
+    "@supabase/supabase-js": "^2.103.3",
     "docx": "^9.5.1",
     "dotenv": "^17.3.1",
     "exceljs": "^4.4.0",
@@ -45,5 +44,22 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tallerjugandoaprendoind-glitch/Santi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tallerjugandoaprendoind-glitch/Santi/issues"
+  },
+  "homepage": "https://github.com/tallerjugandoaprendoind-glitch/Santi#readme"
 }

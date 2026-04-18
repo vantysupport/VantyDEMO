@@ -12,10 +12,10 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Neuropsicología y Terapias SANTI",
+  title: " Terapias SANTI | Terapia ABA y Neurodivergencia en Pisco, Ica",
   description: "Centro especializado en terapia ABA y desarrollo infantil en Pisco, Ica. Atendemos niños con autismo, TEA, TDAH y neurodivergencia con metodología basada en evidencia e IA. +50 familias.",
   keywords: "terapeuta ABA Pisco, terapia autismo Ica, centro neurodivergencia Pisco, TEA Pisco, TDAH Pisco, desarrollo infantil Ica, terapia conductual niños Pisco",
-  authors: [{ name: "Neuropsicología y Terapias SANTI" }],
+  authors: [{ name: "SANTI" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -25,21 +25,21 @@ export const metadata: Metadata = {
   },
   formatDetection: { telephone: false },
   openGraph: {
-    title: "Neuropsicología y Terapias SANTI",
+    title: " Terapias SANTI | Terapia ABA en Pisco, Ica",
     description: "Centro especializado en neurodivergencia. Terapia ABA con IA para niños en Pisco, Ica, Perú.",
     type: "website",
     locale: "es_PE",
-    url: "https://santi.santi.vercel.app",
-    siteName: "Neuropsicología y Terapias SANTI",
-    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: "Neuropsicología y Terapias SANTI" }],
+    url: "https://centro-santi.vercel.app",
+    siteName: "SANTI",
+    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: " Terapias SANTI - Terapia ABA Pisco" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Neuropsicología y Terapias SANTI",
+    title: " Terapias SANTI | Terapia ABA en Pisco, Ica",
     description: "Centro especializado en neurodivergencia. Terapia ABA + IA para niños.",
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: "https://santi.santi.vercel.app" },
+  alternates: { canonical: "https://centro-santi.vercel.app" },
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
@@ -63,22 +63,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SANTI" />
         <meta name="mobile-web-app-capable" content="yes" />
-        {/* Aplicar tema ANTES de hidratación para evitar flash */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              try {
-                var isLogin = window.location.pathname === '/login' || window.location.pathname === '/';
-                if (isLogin) {
-                  document.documentElement.classList.remove('dark');
-                } else {
-                  var theme = localStorage.getItem('app-theme');
-                  if (theme === 'dark') document.documentElement.classList.add('dark');
-                }
-              } catch(e) {}
-            })();
-          `
-        }} />
       </head>
       <body className="antialiased">
         <ThemeProvider>
@@ -86,6 +70,16 @@ export default function RootLayout({
             {children}
           </ToastProvider>
         </ThemeProvider>
+
+        {/* Footer con links legales para Google OAuth */}
+        <footer className="text-center text-sm text-gray-400 py-6 border-t mt-auto">
+          <div className="flex justify-center gap-6">
+            <a href="/privacy" className="hover:underline">Política de Privacidad</a>
+            <a href="/terms" className="hover:underline">Términos de Servicio</a>
+          </div>
+          <p className="mt-2">© 2026 Neuropsicología y Terapias SANTI</p>
+        </footer>
+
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
