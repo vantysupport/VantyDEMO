@@ -57,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        <meta name="google-site-verification" content="xQbKWmWgeRRPlZbv5h7rEDXAOw0TPHC3140_cyWT9OI" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
