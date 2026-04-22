@@ -745,24 +745,25 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
               </div>
             </div>
 
-            {/* Tabs — scroll horizontal en pantallas pequeñas */}
+            {/* Tabs — íconos en móvil, ícono+label en desktop */}
             <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <div className="flex w-full">
+              <div className="flex w-full overflow-x-auto scrollbar-hide">
               {TABS.map(tb => (
                 <button key={tb.id} onClick={()=>setTab(tb.id)}
-                  className={`flex flex-1 flex-col items-center gap-1 px-2 pt-3 pb-2.5 font-semibold border-b-2 transition-all whitespace-nowrap
+                  className={`flex flex-col items-center gap-0.5 px-3 sm:px-2 pt-2.5 pb-2 font-semibold border-b-2 transition-all shrink-0 sm:flex-1
                     ${tab===tb.id ? 'border-blue-500' : 'border-transparent'}`}
-                  style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)' }}
+                  style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)', minWidth: 44 }}
                   title={tb.label}>
                   <span className="flex-shrink-0" style={{ opacity: tab===tb.id ? 1 : 0.6 }}>
-                    {tb.id === 'info'         && <User size={16}/>}
-                    {tb.id === 'programas'    && <BarChart3 size={16}/>}
-                    {tb.id === 'evaluaciones' && <ClipboardList size={16}/>}
-                    {tb.id === 'historial'    && <Brain size={16}/>}
-                    {tb.id === 'fichas'       && <FileText size={16}/>}
-                    {tb.id === 'documentos'   && <FolderOpen size={16}/>}
+                    {tb.id === 'info'         && <User size={18}/>}
+                    {tb.id === 'programas'    && <BarChart3 size={18}/>}
+                    {tb.id === 'evaluaciones' && <ClipboardList size={18}/>}
+                    {tb.id === 'historial'    && <Brain size={18}/>}
+                    {tb.id === 'fichas'       && <FileText size={18}/>}
+                    {tb.id === 'documentos'   && <FolderOpen size={18}/>}
                   </span>
-                  <span className="text-[11px] font-bold">{tb.label}</span>
+                  <span className="hidden sm:block text-[10px] font-bold whitespace-nowrap">{tb.label}</span>
+                  {tab===tb.id && <span className="sm:hidden w-1 h-1 rounded-full bg-blue-500 mt-0.5" />}
                 </button>
               ))}
               </div>
