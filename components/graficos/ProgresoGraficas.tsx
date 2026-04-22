@@ -105,7 +105,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
   // X domain: show actual sessions with a small right-padding of 1 slot
   // Always minimum 10 slots so the chart doesn't look cramped
   const totalSessions = graficaABA.length
-  const xDomainMax = Math.max(10, totalSessions + 1)
+  const xDomainMax = totalSessions + 1
   // Number each session for a clean numeric X axis
   const graficaNum   = graficaABA.map((s: any, i: number) => ({ ...s, n: i + 1 }))
   const conColorNum  = conColor.map((s: any, i: number) => ({ ...s, n: i + 1 }))
@@ -251,11 +251,11 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <ReferenceLine y={CRITERIO_PCT} stroke={C.criterio} strokeDasharray="6 3" strokeWidth={2}
                   label={{ value: `${t('reportes.meta')} ${CRITERIO_PCT}%`, position: 'insideTopLeft', fontSize: 9, fill: C.criterio, fontWeight: 700 }} />
-                <Line type="linear" dataKey="logro" stroke={C.logro} strokeWidth={3} dot={{ r: 5, fill: C.logro, stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 7 }} name="Logro obj." />
+                <Line connectNulls={false} type="linear" dataKey="logro" stroke={C.logro} strokeWidth={3} dot={{ r: 5, fill: C.logro, stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 7 }} name="Logro obj." />
                 {!modoParent && <>
-                  <Line type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Atención" />
-                  <Line type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Tolerancia" />
-                  <Line type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Comunicación" />
+                  <Line connectNulls={false} type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Atención" />
+                  <Line connectNulls={false} type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Tolerancia" />
+                  <Line connectNulls={false} type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Comunicación" />
                 </>}
               </LineChart>
             </ResponsiveContainer>
@@ -266,7 +266,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={conColorNum} margin={MARGINS}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" />
-                <XAxis dataKey="n" type="number" domain={[1, xDomainMax]} ticks={xTicks} tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickFormatter={(v: any) => `S${v}`} label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 9, fill: 'var(--text-muted)' }} />
+                <XAxis dataKey="n" tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickFormatter={(v: any) => `S${v}`} label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 9, fill: 'var(--text-muted)' }} />
                 <YAxis domain={[0, 100]} tick={<TickY />} ticks={TICKS} />
                 <Tooltip content={<TooltipABA />} />
                 <ReferenceLine y={CRITERIO_PCT} stroke={C.criterio} strokeDasharray="6 3" strokeWidth={2}
@@ -297,9 +297,9 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                 <ReferenceLine y={CRITERIO_PCT} stroke={C.criterio} strokeDasharray="6 3" strokeWidth={2} />
                 <Area type="linear" dataKey="logro" fill="url(#gLogro)" stroke={C.logro} strokeWidth={2.5} name="Logro obj." dot={{ r: 4, fill: C.logro, stroke: '#fff', strokeWidth: 2 }} />
                 {!modoParent && <>
-                  <Line type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} name="Atención"     dot={false} strokeDasharray="4 2" />
-                  <Line type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} name="Tolerancia"   dot={false} strokeDasharray="4 2" />
-                  <Line type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} name="Comunicación" dot={false} strokeDasharray="4 2" />
+                  <Line connectNulls={false} type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} name="Atención"     dot={false} strokeDasharray="4 2" />
+                  <Line connectNulls={false} type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} name="Tolerancia"   dot={false} strokeDasharray="4 2" />
+                  <Line connectNulls={false} type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} name="Comunicación" dot={false} strokeDasharray="4 2" />
                 </>}
               </ComposedChart>
             </ResponsiveContainer>
