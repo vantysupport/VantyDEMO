@@ -36,7 +36,7 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
   }))
   const cambiosFase: number[] = []
   for (let i = 1; i < data.length; i++) {
-    if (data[i].fase !== data[i - 1].fase) cambiosFase.push(i + 0.5)
+    if (data[i].fase !== data[i - 1].fase) cambiosFase.push(i + 1)
   }
   const faseLabel: Record<string, string> = {
     linea_base: 'Línea Base', intervencion: 'Intervención',
@@ -117,7 +117,7 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
                 <Tooltip
                   formatter={(v: any) => [`${v}%`, 'Éxito']}
                   labelFormatter={(l) => {
-                    const d = data[l - 1]
+                    const d = data.find((s: any) => s.sesion === l)
                     return d ? `Sesión ${l} · ${d.fecha} · ${faseLabel[d.fase] || d.fase}` : `Sesión ${l}`
                   }}
                 />
