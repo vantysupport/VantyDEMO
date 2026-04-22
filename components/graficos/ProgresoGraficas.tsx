@@ -103,13 +103,13 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
   const conColor = graficaABA.map((s: any) => ({ ...s, fill: colorLogro(s.logro) }))
 
   // X domain: show actual sessions with a small right-padding of 1 slot
-  // If few sessions, still show a minimum width of 5 so the chart doesn't squish
+  // Always minimum 10 slots so the chart doesn't look cramped
   const totalSessions = graficaABA.length
-  const xDomainMax = Math.max(5, totalSessions + 1)
+  const xDomainMax = Math.max(10, totalSessions + 1)
   // Number each session for a clean numeric X axis
   const graficaNum   = graficaABA.map((s: any, i: number) => ({ ...s, n: i + 1 }))
   const conColorNum  = conColor.map((s: any, i: number) => ({ ...s, n: i + 1 }))
-  // Build sensible ticks: always show S1, then every 2 or 5 depending on count
+  // Build sensible ticks: every 1 if ≤10, every 5 if ≤30, every 10 beyond
   const tickStep = totalSessions <= 10 ? 1 : totalSessions <= 30 ? 5 : 10
   const xTicks = Array.from({ length: Math.ceil(xDomainMax / tickStep) + 1 }, (_, i) => i * tickStep).filter(v => v >= 1 && v <= xDomainMax)
 
