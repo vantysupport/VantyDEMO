@@ -634,12 +634,12 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const TABS = [
-    { id:'info',         icon:<User size={14}/>,          label: t('pacientes.informacion') },
-    { id:'programas',    icon:<BarChart3 size={14}/>,     label: t('nav.programas') },
-    { id:'evaluaciones', icon:<ClipboardList size={14}/>, label: t('nav.evaluaciones') },
-    { id:'historial',    icon:<Brain size={14}/>,         label: 'Historial & IA' },
-    { id:'fichas',       icon:<FileText size={14}/>,      label: 'Fichas' },
-    { id:'documentos',   icon:<FolderOpen size={14}/>,    label: 'Documentos' },
+    { id:'info',         icon:<User size={14}/>,          label: t('pacientes.informacion'), short: 'Info'  },
+    { id:'programas',    icon:<BarChart3 size={14}/>,     label: t('nav.programas'),          short: 'ABA'   },
+    { id:'evaluaciones', icon:<ClipboardList size={14}/>, label: t('nav.evaluaciones'),       short: 'Eval.' },
+    { id:'historial',    icon:<Brain size={14}/>,         label: 'Historial & IA',            short: 'Hist.' },
+    { id:'fichas',       icon:<FileText size={14}/>,      label: 'Fichas',                    short: 'Fichas'},
+    { id:'documentos',   icon:<FolderOpen size={14}/>,    label: 'Documentos',                short: 'Docs'  },
   ] as const
 
   // ── PANEL LISTA ───────────────────────────────────────────────────────────
@@ -745,25 +745,25 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
               </div>
             </div>
 
-            {/* Tabs — íconos en móvil, ícono+label en desktop */}
+            {/* Tabs — etiqueta corta en móvil, etiqueta completa en desktop */}
             <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <div className="flex w-full overflow-x-auto scrollbar-hide">
+              <div className="flex w-full">
               {TABS.map(tb => (
                 <button key={tb.id} onClick={()=>setTab(tb.id)}
-                  className={`flex flex-col items-center gap-0.5 px-3 sm:px-2 pt-2.5 pb-2 font-semibold border-b-2 transition-all shrink-0 sm:flex-1
+                  className={`flex flex-1 flex-col items-center gap-0.5 px-1 pt-2.5 pb-2 font-semibold border-b-2 transition-all
                     ${tab===tb.id ? 'border-blue-500' : 'border-transparent'}`}
-                  style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)', minWidth: 44 }}
+                  style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)' }}
                   title={tb.label}>
                   <span className="flex-shrink-0" style={{ opacity: tab===tb.id ? 1 : 0.6 }}>
-                    {tb.id === 'info'         && <User size={18}/>}
-                    {tb.id === 'programas'    && <BarChart3 size={18}/>}
-                    {tb.id === 'evaluaciones' && <ClipboardList size={18}/>}
-                    {tb.id === 'historial'    && <Brain size={18}/>}
-                    {tb.id === 'fichas'       && <FileText size={18}/>}
-                    {tb.id === 'documentos'   && <FolderOpen size={18}/>}
+                    {tb.id === 'info'         && <User         size={16}/>}
+                    {tb.id === 'programas'    && <BarChart3    size={16}/>}
+                    {tb.id === 'evaluaciones' && <ClipboardList size={16}/>}
+                    {tb.id === 'historial'    && <Brain        size={16}/>}
+                    {tb.id === 'fichas'       && <FileText     size={16}/>}
+                    {tb.id === 'documentos'   && <FolderOpen   size={16}/>}
                   </span>
+                  <span className="sm:hidden text-[9px] font-bold whitespace-nowrap">{tb.short}</span>
                   <span className="hidden sm:block text-[10px] font-bold whitespace-nowrap">{tb.label}</span>
-                  {tab===tb.id && <span className="sm:hidden w-1 h-1 rounded-full bg-blue-500 mt-0.5" />}
                 </button>
               ))}
               </div>
