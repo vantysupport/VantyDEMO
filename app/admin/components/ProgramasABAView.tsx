@@ -337,100 +337,76 @@ function MiniChart({ chartData, minSlots, criterio }: { chartData: any[]; minSlo
 }
 
 
-// Componente para el gráfico de detalle — misma solución ResizeObserver
+// Componente para el gráfico de detalle — un solo ResponsiveContainer, sin overlay
 function DetailChart({ chartData, chartHeight, minSlots, programa, segments, segColorMap, dividers, crit, faseLabel }: any) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(0)
-
-  useEffect(() => {
-    if (!containerRef.current) return
-    const ro = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        setWidth(Math.floor(entry.contentRect.width))
-      }
-    })
-    ro.observe(containerRef.current)
-    setWidth(containerRef.current.offsetWidth)
-    return () => ro.disconnect()
-  }, [])
-
-  const margin = { top: 4, right: 16, bottom: 20, left: 4 }
+  const margin = { top: 24, right: 16, bottom: 20, left: 4 }
   const YAXIS_W = 40
 
   return (
-    <div ref={containerRef} style={{ width: '100%', overflow: 'hidden' }}>
-      {width > 0 && (
-        <div style={{ position: 'relative' }}>
-          {/* Base chart */}
-          <LineChart width={width} height={chartHeight} data={chartData} margin={margin}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-            <XAxis
-              dataKey="sesion"
-              type="number"
-              domain={[0, minSlots + 1]}
-              ticks={Array.from({ length: minSlots }, (_: any, i: number) => i + 1)}
-              tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-              interval={Math.max(0, Math.floor(minSlots / 10) - 1)}
-              label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 10, fill: 'var(--text-muted)' }}
-            />
-            <YAxis
-              domain={[0, 100]}
-              ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-              tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-              tickFormatter={(v: number) => `${v}%`}
-              width={YAXIS_W}
-            />
-            <Tooltip
-              formatter={(value: any) => [`${value}%`, 'Éxito']}
-              labelFormatter={(label: any) => {
-                const d = chartData[label - 1]
-                if (!d) return `Sesión ${label}`
-                const segIdx = segments.findIndex((s: any) => (label - 1) >= s.startIdx && (label - 1) <= s.endIdx)
-                const segName = segIdx >= 0 ? segments[segIdx].label : ''
-                return `Sesión ${label} · ${d.fecha}${segName ? ` · ${segName}` : ''}`
+    <ResponsiveContainer width="100%" height={chartHeight}>
+      <LineChart data={chartData} margin={margin}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+        <XAxis
+          dataKey="sesion"
+          type="number"
+          domain={[0, minSlots + 1]}
+          ticks={Array.from({ length: minSlots }, (_: any, i: number) => i + 1)}
+          tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+          interval={Math.max(0, Math.floor(minSlots / 10) - 1)}
+          label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 10, fill: 'var(--text-muted)' }}
+        />
+        <YAxis
+          domain={[0, 100]}
+          ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+          tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+          tickFormatter={(v: number) => `${v}%`}
+          width={YAXIS_W}
+        />
+        <Tooltip
+          formatter={(value: any) => [`${value}%`, 'Éxito']}
+          labelFormatter={(label: any) => {
+            const d = chartData.find((p: any) => p.sesion === label)
+            if (!d) return `Sesión ${label}`
+            const segIdx = segments.findIndex((s: any) => (label - 1) >= s.startIdx && (label - 1) <= s.endIdx)
+            const segName = segIdx >= 0 ? segments[segIdx].label : ''
+            return `Sesión ${label} · ${d.fecha}${segName ? ` · ${segName}` : ''}`
+          }}
+          contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
+        />
+        {/* Dividers verticales: x = número de sesión (1-based) */}
+        {dividers.map((x: any, i: number) => (
+          <ReferenceLine key={`div-${i}`} x={x} stroke="#94a3b8" strokeWidth={1.5}
+            label={{ value: segments[i + 1]?.label || '', position: 'insideTopRight', fontSize: 9, fill: segColorMap[i + 1] || '#6366f1' }}
+          />
+        ))}
+        <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2} />
+        {/* Una línea por segmento con su color */}
+        {segments.map((seg: any, si: number) => {
+          const color = segColorMap[si]
+          return (
+            <Line
+              key={`seg_${si}`}
+              type="linear"
+              dataKey={(d: any) => {
+                const idx = chartData.indexOf(d)
+                return (idx >= seg.startIdx && idx <= seg.endIdx) ? d.pct : null
               }}
-              contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
+              stroke={color}
+              strokeWidth={2.5}
+              dot={(props: any) => {
+                const { cx, cy, index } = props
+                if (index < seg.startIdx || index > seg.endIdx) return <g key={index} />
+                const dotColor = (chartData[index]?.pct ?? 0) >= crit ? '#059669' : color
+                return <circle key={index} cx={cx} cy={cy} r={4} fill={dotColor} stroke="white" strokeWidth={1.5} />
+              }}
+              connectNulls={false}
+              isAnimationActive={false}
+              legendType="none"
             />
-            {dividers.map((x: any, i: number) => (
-              <ReferenceLine key={`div-${i}`} x={x} stroke="#475569" strokeWidth={1.5} />
-            ))}
-            <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2} />
-            <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={0} dot={false} activeDot={{ r: 6, fill: '#6366f1' }} />
-          </LineChart>
-
-          {/* Overlay: colored lines per segment */}
-          <div style={{ marginTop: `-${chartHeight}px`, pointerEvents: 'none' }}>
-            <LineChart width={width} height={chartHeight} data={chartData} margin={margin}>
-              <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
-              <YAxis domain={[0, 100]} hide width={YAXIS_W} />
-              {segments.map((seg: any, si: number) => {
-                const color = segColorMap[si]
-                return (
-                  <Line
-                    key={`seg_${si}`}
-                    type="linear"
-                    dataKey={(d: any) => {
-                      const idx = chartData.indexOf(d)
-                      return idx >= seg.startIdx && idx <= seg.endIdx ? d.pct : null
-                    }}
-                    stroke={color}
-                    strokeWidth={2.5}
-                    dot={(props: any) => {
-                      const { cx, cy, index } = props
-                      if (index < seg.startIdx || index > seg.endIdx) return <g key={index} />
-                      const dotColor = (chartData[index]?.pct ?? 0) >= crit ? '#059669' : color
-                      return <circle key={index} cx={cx} cy={cy} r={4} fill={dotColor} stroke="white" strokeWidth={1.5} />
-                    }}
-                    connectNulls={false}
-                    isAnimationActive={false}
-                  />
-                )
-              })}
-            </LineChart>
-          </div>
-        </div>
-      )}
-    </div>
+          )
+        })}
+      </LineChart>
+    </ResponsiveContainer>
   )
 }
 
@@ -663,27 +639,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
                       return (
                         <div>
-                          {/* ── Phase header labels — proportional width per segment ── */}
-                          <div className="flex" style={{ paddingLeft: '44px', paddingRight: '16px' }}>
-                            {segments.map((seg, i) => {
-                              const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
-                              const color = segColorMap[i]
-                              return (
-                                <div key={i}
-                                  className="flex flex-col items-center justify-end pb-1 border-r last:border-r-0"
-                                  style={{ width: `${width}%`, minWidth: '28px', borderColor: '#cbd5e1' }}>
-                                  <span className="text-[10px] font-black truncate px-1 text-center w-full" style={{ color }}>
-                                    {seg.label}
-                                  </span>
-                                  <span className="text-[9px] font-semibold text-slate-400 truncate px-1 text-center w-full">
-                                    {seg.set ? (faseLabel[seg.fase] || seg.fase) : ''}
-                                  </span>
-                                </div>
-                              )
-                            })}
-                          </div>
-
-                          {/* ── Main + overlay chart — fixed width via ResizeObserver ── */}
+                          {/* ── Main chart — un solo LineChart con divisores y labels internos ── */}
                           <DetailChart
                             chartData={chartData}
                             chartHeight={chartHeight}
