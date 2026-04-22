@@ -8,12 +8,12 @@ import { useTheme } from '@/components/ThemeContext'
 import {
   ArrowLeft, Baby, BarChart3, Brain, Calendar, Check, ChevronRight,
   ClipboardList, Edit, Link, Link2Off, Loader2, Mail, Plus, Save,
-  Search, Sparkles, Stethoscope, User, UserCheck, Users, X,
+  Search, Stethoscope, User, UserCheck, Users, X,
   FolderOpen, FileText
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
-import { calcularEdad, calcularEdadNumerica } from '../utils/helpers'
+import { calcularEdadNumerica } from '../utils/helpers'
 import ProgramasABAView from './ProgramasABAView'
 import EvaluacionesUnificadas from './EvaluacionesUnificadas'
 import AIReportView from './AIReportView'
@@ -334,48 +334,17 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* ── Header compacto ── */}
-      <div className="flex items-center justify-between gap-4 mb-5 pb-4"
-        style={{ borderBottom: '1px solid var(--card-border)' }}>
-        <div className="flex items-center gap-3">
-          <Avatar name={nino.name} size="md"/>
-          <div>
-            <h2 className="font-black text-base leading-tight" style={{ color: 'var(--text-primary)' }}>{nino.name}</h2>
-            <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-              {nino.diagnosis && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded" style={getDxStyle(nino.diagnosis)}>
-                  {nino.diagnosis}
-                </span>
-              )}
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ageDisplay}</span>
-            </div>
-          </div>
-        </div>
-        {editing
-          ? <div className="flex gap-2 flex-shrink-0">
-              <button onClick={() => setEditing(false)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
-                Cancelar
-              </button>
-              <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
-                {saving ? <Loader2 size={12} className="animate-spin"/> : <Save size={12}/>}
-                {t('common.guardar')}
-              </button>
-            </div>
-          : <button onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0"
-              style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
-              <Edit size={12}/> Editar
-            </button>
-        }
-      </div>
-
       {/* ── Data fields ── */}
       {!editing ? (
         <div className="space-y-2">
+          {/* Edit button */}
+          <div className="flex justify-end mb-1">
+            <button onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
+              <Edit size={12}/> {t('common.editar')}
+            </button>
+          </div>
           {/* Row 1 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
@@ -393,7 +362,7 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
               <div className="flex items-center gap-1.5 mb-2">
                 <Baby size={12} style={{ color: 'var(--text-muted)' }}/>
                 <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                  {t('common.edad')}
+                  {t('ui.age')}
                 </p>
               </div>
               <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -433,6 +402,25 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
         </div>
       ) : (
         <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+          {/* Edit form header with save/cancel */}
+          <div className="flex items-center justify-between pb-2 mb-1" style={{ borderBottom: '1px solid var(--card-border)' }}>
+            <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+              {t('common.editar')}
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setEditing(false)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
+                {t('common.cancelar')}
+              </button>
+              <button onClick={handleSave} disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
+                {saving ? <Loader2 size={12} className="animate-spin"/> : <Save size={12}/>}
+                {t('common.guardar')}
+              </button>
+            </div>
+          </div>
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
               {t('pacientes.fechaNacimiento')}
@@ -454,7 +442,7 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
           </div>
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
-              {t('common.edad')} (años)
+              {t('ui.age')} (años)
             </label>
             <input type="number" min="0" max="99"
               value={form.age}
@@ -695,7 +683,7 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
             ? <div className="py-12 text-center">
                 <Users className="mx-auto mb-2" size={32} style={{ color:'var(--text-muted)', opacity:0.3 }}/>
                 <p className="text-xs font-bold" style={{ color:'var(--text-muted)' }}>
-                  {search ? t('ui.sinResultados') : t('pacientes.sinPacientes')}
+                  {search ? t('common.sinResultados') : t('pacientes.sinPacientes')}
                 </p>
               </div>
             : filtrados.map(p => (
@@ -708,7 +696,7 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold truncate" style={{ color:'var(--text-primary)' }}>{p.name}</p>
                     <p className="text-[11px] truncate" style={{ color:'var(--text-muted)' }}>
-                      {p.diagnosis || t('pacientes.sinDiagnostico')} · {p.age || '?'}{t('common.anos')}
+                      {p.diagnosis || t('pacientes.sinDiagnostico')} · {p.age || '?'} {t('common.anos')}
                     </p>
                   </div>
                   {selected?.id===p.id
@@ -757,27 +745,20 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
               </div>
             </div>
 
-            {/* Tabs — auto-ajuste por ancho disponible */}
-            <div className="flex border-b @container" style={{ borderColor: 'var(--card-border)' }}>
+            {/* Tabs — scroll horizontal en pantallas pequeñas */}
+            <div className="overflow-x-auto scrollbar-none border-b" style={{ borderColor: 'var(--card-border)' }}>
+              <div className="flex min-w-max md:min-w-0">
               {TABS.map(tb => (
                 <button key={tb.id} onClick={()=>setTab(tb.id)}
-                  className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 font-bold border-b-2 transition-all min-w-0
+                  className={`flex items-center gap-1.5 px-3 md:px-4 py-3 font-bold border-b-2 transition-all whitespace-nowrap text-xs md:text-[11px]
                     ${tab===tb.id ? 'border-blue-500 text-blue-600' : 'border-transparent'}`}
                   style={{ color: tab===tb.id ? undefined : 'var(--text-muted)' }}
                   title={tb.label}>
-                  <span className="flex-shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5 @[500px]:[&>svg]:w-4 @[500px]:[&>svg]:h-4">{tb.icon}</span>
-                  {/* label corto siempre visible, label largo solo si hay espacio */}
-                  <span className="text-[9px] @[500px]:hidden truncate w-full text-center px-0.5">{
-                    tb.id === 'info'         ? 'Info' :
-                    tb.id === 'programas'    ? 'ABA' :
-                    tb.id === 'evaluaciones' ? 'Eval.' :
-                    tb.id === 'historial'    ? 'Hist.' :
-                    tb.id === 'fichas'       ? 'Fichas' :
-                    'Docs'
-                  }</span>
-                  <span className="hidden @[500px]:block text-[11px] truncate w-full text-center px-1">{tb.label}</span>
+                  <span className="flex-shrink-0">{tb.icon}</span>
+                  <span>{tb.label}</span>
                 </button>
               ))}
+              </div>
             </div>
           </div>
 
@@ -786,8 +767,9 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
             {tab==='info' &&
               <PatientInfoTab nino={selected} onSaved={async()=>{
                 await cargar()
-                const upd = pacientes.find(p=>p.id===selected.id)
-                if (upd) setSelected(upd)
+                // Fetch fresh data directly from DB to avoid stale closure
+                const { data: fresh } = await supabase.from('children').select('*').eq('id', selected.id).single()
+                if (fresh) setSelected(fresh)
               }}/>}
             {tab==='programas' && <div style={{ padding: '20px 24px' }}><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
             {tab==='evaluaciones' && <div style={{ padding: '20px 24px' }}><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}

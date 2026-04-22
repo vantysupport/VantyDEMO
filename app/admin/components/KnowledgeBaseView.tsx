@@ -722,7 +722,7 @@ export default function KnowledgeBaseView() {
           ) : documentos.length === 0 ? (
             <div className={`rounded-2xl border border-dashed p-10 text-center ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
               <Brain size={32} className="text-slate-200 mx-auto mb-3" />
-              <p className="text-slate-400 font-semibold">{t('ui.bibliotecaVacia')}</p>
+              <p className="text-slate-400 font-semibold">{t('recursos.bibliotecaVacia')}</p>
               <p className="text-slate-400 text-sm mt-1">Usa "{t('whatsapp.aprenderInternet')}" para empezar</p>
             </div>
           ) : (

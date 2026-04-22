@@ -485,7 +485,7 @@ export default function AdminDashboard() {
           ${isDark ? 'bg-[#0d1117]' : 'bg-slate-50'}`}>
           {/* Views that scroll normally */}
           {currentView !== 'usuarios' && (
-            <div className={`flex-1 ${currentView === 'ninos' ? 'min-h-0 flex flex-col' : ''}`}>
+            <div className={`flex-1 ${currentView === 'ninos' ? 'min-h-0 h-full flex flex-col overflow-hidden' : ''}`}>
               {currentView === 'inicio'       && <DashboardHome navigateTo={navigateTo} />}
               {currentView === 'agenda'       && <CalendarView />}
               {currentView === 'ninos'        && <PatientsView onPatientSelect={(id: string, name: string) => setActiveChild({ id, name })} />}
