@@ -384,7 +384,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+    <div className="rounded-2xl overflow-hidden transition-all w-full min-w-0" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       {/* Header */}
       <div className="p-5 cursor-pointer" onClick={loadDetalle}>
         <div className="flex items-start gap-3">
@@ -440,7 +440,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
         {/* Mini gráfica */}
         {sesiones.length >= 2 && (
-          <div className="mt-3 h-16" style={{ overflow: 'hidden' }}>
+          <div className="mt-3 h-16 w-full min-w-0" style={{ overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 4, right: 12, bottom: 4, left: 12 }}>
                 <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
@@ -491,7 +491,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                     </div>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                  <div className="rounded-xl overflow-hidden w-full min-w-0" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
 
                     {/* ── ABA Phase Chart — segmentos con líneas verticales y labels ── */}
                     {tipoGrafico === 'lineas' && (() => {
@@ -563,7 +563,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
                           {/* ── Main line chart ── */}
                           <ResponsiveContainer width="100%" height={chartHeight}>
-                            <LineChart data={chartData} margin={{ top: 4, right: 36, bottom: 20, left: 8 }}>
+                            <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 20, left: 8 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis
                                 dataKey="sesion"
