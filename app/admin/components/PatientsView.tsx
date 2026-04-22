@@ -721,7 +721,7 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
       {selected ? (
         <>
           {/* Header paciente */}
-          <div className="flex-shrink-0 border-b" style={{ borderColor:'var(--card-border)', background:'var(--card)' }}>
+          <div className="flex-shrink-0" style={{ background:'var(--card)' }}>
             <div className="flex items-center gap-3 px-4 pt-4 pb-3">
               {/* Botón volver — solo móvil */}
               <button onClick={goBack}
@@ -747,15 +747,22 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
 
             {/* Tabs — scroll horizontal en pantallas pequeñas */}
             <div className="overflow-x-auto scrollbar-none border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <div className="flex min-w-max md:min-w-0">
+              <div className="flex min-w-max">
               {TABS.map(tb => (
                 <button key={tb.id} onClick={()=>setTab(tb.id)}
-                  className={`flex items-center gap-1.5 px-3 md:px-4 py-3 font-bold border-b-2 transition-all whitespace-nowrap text-xs md:text-[11px]
-                    ${tab===tb.id ? 'border-blue-500 text-blue-600' : 'border-transparent'}`}
-                  style={{ color: tab===tb.id ? undefined : 'var(--text-muted)' }}
+                  className={`flex flex-col items-center gap-1 px-4 md:px-5 pt-3 pb-2.5 font-semibold border-b-2 transition-all whitespace-nowrap
+                    ${tab===tb.id ? 'border-blue-500' : 'border-transparent'}`}
+                  style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)' }}
                   title={tb.label}>
-                  <span className="flex-shrink-0">{tb.icon}</span>
-                  <span>{tb.label}</span>
+                  <span className="flex-shrink-0" style={{ opacity: tab===tb.id ? 1 : 0.6 }}>
+                    {tb.id === 'info'         && <User size={16}/>}
+                    {tb.id === 'programas'    && <BarChart3 size={16}/>}
+                    {tb.id === 'evaluaciones' && <ClipboardList size={16}/>}
+                    {tb.id === 'historial'    && <Brain size={16}/>}
+                    {tb.id === 'fichas'       && <FileText size={16}/>}
+                    {tb.id === 'documentos'   && <FolderOpen size={16}/>}
+                  </span>
+                  <span className="text-[11px] font-bold">{tb.label}</span>
                 </button>
               ))}
               </div>
