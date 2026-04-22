@@ -102,12 +102,16 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
   const promedio = graficaABA.length > 0 ? Math.round(graficaABA.reduce((a: number, s: any) => a + s.logro, 0) / graficaABA.length) : 0
   const conColor = graficaABA.map((s: any) => ({ ...s, fill: colorLogro(s.logro) }))
 
-  // Fixed X domain: always at least 10 slots, padded to next multiple of 10
-  const xDomainMax = Math.max(10, Math.ceil(graficaABA.length / 10) * 10)
+  // X domain: show actual sessions with a small right-padding of 1 slot
+  // If few sessions, still show a minimum width of 5 so the chart doesn't squish
+  const totalSessions = graficaABA.length
+  const xDomainMax = Math.max(5, totalSessions + 1)
   // Number each session for a clean numeric X axis
   const graficaNum   = graficaABA.map((s: any, i: number) => ({ ...s, n: i + 1 }))
   const conColorNum  = conColor.map((s: any, i: number) => ({ ...s, n: i + 1 }))
-  const xTicks = [1, ...Array.from({ length: xDomainMax / 10 }, (_, i) => (i + 1) * 10)]
+  // Build sensible ticks: always show S1, then every 2 or 5 depending on count
+  const tickStep = totalSessions <= 10 ? 1 : totalSessions <= 30 ? 5 : 10
+  const xTicks = Array.from({ length: Math.ceil(xDomainMax / tickStep) + 1 }, (_, i) => i * tickStep).filter(v => v >= 1 && v <= xDomainMax)
 
   const histo = [
     { rango: '0-25%',   label: 'Emergente', count: graficaABA.filter((s: any) => s.logro < 26).length,                  color: '#DC2626' },
@@ -131,7 +135,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
 
   const tipoActual = TIPOS.find(t => t.id === tipo)
   const TICKS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-  const MARGINS = { top: 5, right: 12, left: 0, bottom: 20 }
+  const MARGINS = { top: 8, right: 48, left: 4, bottom: 24 }
   const TIPO_LABELS: Record<string, string> = {
     lineas:     t('reportes.lineas'),
     barras:     t('reportes.barras'),
@@ -246,7 +250,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                 <Tooltip content={<TooltipABA />} />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <ReferenceLine y={CRITERIO_PCT} stroke={C.criterio} strokeDasharray="6 3" strokeWidth={2}
-                  label={{ value: `${t('reportes.meta')} ${CRITERIO_PCT}%`, position: 'insideTopRight', fontSize: 9, fill: C.criterio, fontWeight: 700 }} />
+                  label={{ value: `${t('reportes.meta')} ${CRITERIO_PCT}%`, position: 'insideTopLeft', fontSize: 9, fill: C.criterio, fontWeight: 700 }} />
                 <Line type="linear" dataKey="logro" stroke={C.logro} strokeWidth={3} dot={{ r: 5, fill: C.logro, stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 7 }} name="Logro obj." />
                 {!modoParent && <>
                   <Line type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Atención" />
@@ -266,7 +270,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                 <YAxis domain={[0, 100]} tick={<TickY />} ticks={TICKS} />
                 <Tooltip content={<TooltipABA />} />
                 <ReferenceLine y={CRITERIO_PCT} stroke={C.criterio} strokeDasharray="6 3" strokeWidth={2}
-                  label={{ value: t('reportes.meta'), position: 'right', fontSize: 9, fill: C.criterio, fontWeight: 700 }} />
+                  label={{ value: t('reportes.meta'), position: 'insideTopLeft', fontSize: 9, fill: C.criterio, fontWeight: 700 }} />
                 <Bar dataKey="logro" name="Logro obj." radius={[6, 6, 0, 0]} maxBarSize={44}>
                   {conColor.map((e: any, i: number) => <Cell key={i} fill={e.fill} />)}
                   <LabelList dataKey="logro" position="top" formatter={(v: any) => `${v}%`} style={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} />
