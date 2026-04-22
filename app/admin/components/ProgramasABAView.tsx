@@ -505,7 +505,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
   // Detectar cambios de fase para líneas verticales
   const cambiosFase: number[] = []
   for (let i = 1; i < chartData.length; i++) {
-    if (chartData[i].fase !== chartData[i - 1].fase) cambiosFase.push(i + 0.5)
+    if (chartData[i].fase !== chartData[i - 1].fase) cambiosFase.push(i + 1)
   }
 
   const faseLabel: Record<string, string> = {
@@ -649,8 +649,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       // Map each segment to a color
                       const segColorMap = segments.map((_, i) => segColors[i % segColors.length])
 
-                      // Divider x-positions (between segments)
-                      const dividers = segments.slice(0, -1).map(seg => seg.endIdx + 1.5)
+                      // Divider x-positions — endIdx is 0-based, sesion is 1-based
+                      const dividers = segments.slice(0, -1).map(seg => seg.endIdx + 2)
 
                       // Build per-point color: dot color matches its segment
                       const dotColorByIdx = chartData.map((_: any, i: number) => {
@@ -734,7 +734,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       }
                       const total = realDataB.length
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
-                      const dividers = segs.slice(0, -1).map(s => s.endIdx + 1.5)
+                      const dividers = segs.slice(0, -1).map(s => s.endIdx + 2)
 
                       return (
                         <div>
