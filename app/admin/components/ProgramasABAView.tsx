@@ -352,13 +352,25 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
   }
 
   // Preparar datos para la gráfica
-  const chartData = sesiones.map((s: any, i: number) => ({
+  const chartDataRaw = sesiones.map((s: any, i: number) => ({
     sesion: i + 1,
     pct: s.porcentaje_exito,
     fase: s.fase,
     fecha: s.fecha,
     set: s.set || s.objetivo_set || null,
   }))
+  // Pad to minimum 10 slots so the X axis always shows at least S1–S10
+  const minSlots = Math.max(10, chartDataRaw.length)
+  const chartData = [
+    ...chartDataRaw,
+    ...Array.from({ length: minSlots - chartDataRaw.length }, (_, i) => ({
+      sesion: chartDataRaw.length + i + 1,
+      pct: null as any,
+      fase: null,
+      fecha: null,
+      set: null,
+    }))
+  ]
 
   // Detectar cambios de fase para líneas verticales
   const cambiosFase: number[] = []
@@ -485,14 +497,15 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       // Build segments: each unique (set+fase) combo is a segment
                       type Seg = { label: string; fase: string; set: string | null; startIdx: number; endIdx: number }
                       const segments: Seg[] = []
-                      if (chartData.length > 0) {
+                      const realData = chartData.filter((d: any) => d.pct !== null)
+                      if (realData.length > 0) {
                         let segStart = 0
-                        let curKey = `${chartData[0].fase}||${chartData[0].set}`
-                        chartData.forEach((d: any, i: number) => {
+                        let curKey = `${realData[0].fase}||${realData[0].set}`
+                        realData.forEach((d: any, i: number) => {
                           const key = `${d.fase}||${d.set}`
-                          if (key !== curKey || i === chartData.length - 1) {
-                            const endIdx = i === chartData.length - 1 ? i : i - 1
-                            const prev = chartData[segStart]
+                          if (key !== curKey || i === realData.length - 1) {
+                            const endIdx = i === realData.length - 1 ? i : i - 1
+                            const prev = realData[segStart]
                             const setLabel = prev.set || ''
                             const fLabel = faseLabel[prev.fase] || prev.fase
                             segments.push({
@@ -522,7 +535,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                         return segIdx >= 0 ? segColorMap[segIdx] : '#6366f1'
                       })
 
-                      const total = chartData.length
+                      const total = realData.length
                       const chartHeight = 260
 
                       return (
@@ -669,20 +682,21 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       // Build segments same as lineas
                       type Seg = { label: string; fase: string; set: string | null; startIdx: number; endIdx: number }
                       const segs: Seg[] = []
-                      if (chartData.length > 0) {
+                      const realDataB = chartData.filter((d: any) => d.pct !== null)
+                      if (realDataB.length > 0) {
                         let sStart = 0
-                        let curK = `${chartData[0].fase}||${chartData[0].set}`
-                        chartData.forEach((d: any, i: number) => {
+                        let curK = `${realDataB[0].fase}||${realDataB[0].set}`
+                        realDataB.forEach((d: any, i: number) => {
                           const k = `${d.fase}||${d.set}`
-                          if (k !== curK || i === chartData.length - 1) {
-                            const endIdx = i === chartData.length - 1 ? i : i - 1
-                            const prev = chartData[sStart]
+                          if (k !== curK || i === realDataB.length - 1) {
+                            const endIdx = i === realDataB.length - 1 ? i : i - 1
+                            const prev = realDataB[sStart]
                             segs.push({ label: prev.set || (faseLabel[prev.fase] || prev.fase), fase: prev.fase, set: prev.set, startIdx: sStart, endIdx })
                             curK = k; sStart = i
                           }
                         })
                       }
-                      const total = chartData.length
+                      const total = realDataB.length
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
                       const dividers = segs.slice(0, -1).map(s => s.endIdx + 1.5)
 
@@ -770,13 +784,14 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                     {/* ── Pie chart mejorado ── */}
                     {tipoGrafico === 'pie' && (() => {
                       const critPct = programa.criterio_dominio_pct
+                      const realPie = chartData.filter((d: any) => d.pct !== null)
                       const pieRaw = [
-                        { name: `≥${critPct}% · Criterio`, value: chartData.filter((d: any) => d.pct >= critPct).length, color: '#059669', bg: '#d1fae5' },
-                        { name: '70-89% · Cerca',          value: chartData.filter((d: any) => d.pct >= 70 && d.pct < critPct).length, color: '#6366f1', bg: '#ede9fe' },
-                        { name: '45-69% · En proceso',     value: chartData.filter((d: any) => d.pct >= 45 && d.pct < 70).length, color: '#D97706', bg: '#fef3c7' },
-                        { name: '<45% · Inicial',          value: chartData.filter((d: any) => d.pct < 45).length, color: '#DC2626', bg: '#fee2e2' },
+                        { name: `≥${critPct}% · Criterio`, value: realPie.filter((d: any) => d.pct >= critPct).length, color: '#059669', bg: '#d1fae5' },
+                        { name: '70-89% · Cerca',          value: realPie.filter((d: any) => d.pct >= 70 && d.pct < critPct).length, color: '#6366f1', bg: '#ede9fe' },
+                        { name: '45-69% · En proceso',     value: realPie.filter((d: any) => d.pct >= 45 && d.pct < 70).length, color: '#D97706', bg: '#fef3c7' },
+                        { name: '<45% · Inicial',          value: realPie.filter((d: any) => d.pct < 45).length, color: '#DC2626', bg: '#fee2e2' },
                       ].filter(p => p.value > 0)
-                      const total = chartData.length
+                      const total = realPie.length
                       const pct = (v: number) => total > 0 ? Math.round((v / total) * 100) : 0
 
                       const RADIAN = Math.PI / 180
