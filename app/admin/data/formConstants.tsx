@@ -17,7 +17,8 @@ export const FORM_TABLE_MAPPING = {
   'ados2': 'evaluacion_ados2',
   'vineland3': 'evaluacion_vineland3',
   'wiscv': 'evaluacion_wiscv',
-  'basc3': 'evaluacion_basc3'
+  'basc3': 'evaluacion_basc3',
+  'abllsr': 'evaluacion_abllsr'
 }
 
 export const EVALUATION_COLORS = {
@@ -753,6 +754,116 @@ export const BASC3_DATA = [
       { id: "fortalezas_conductuales", label: "Fortalezas Conductuales", type: "textarea", aiGenerated: true },
       { id: "plan_intervencion_conductual", label: "Plan de Intervención", type: "textarea", aiGenerated: true },
       { id: "informe_padres_basc", label: "Informe para Padres", type: "textarea", aiGenerated: true },
+    ]
+  }
+]
+
+export const ABLLS_R_DATA = [
+  {
+    title: "1. Datos de la Evaluación",
+    icon: <BookOpen size={20}/>,
+    questions: [
+      { id: "fecha_eval_ablls", label: "Fecha de evaluación", type: "date", required: true },
+      { id: "evaluador_ablls", label: "Evaluador", type: "text", required: true },
+      { id: "protocolo_usado", label: "Protocolo utilizado", type: "select", options: ["ABLLS-R Completo", "ABLLS-R Parcial (áreas seleccionadas)", "ABLLS-R Seguimiento"] },
+      { id: "contexto_eval", label: "Contexto de evaluación", type: "select", options: ["Sesión individual", "Observación en aula", "Entrevista a padres", "Combinado"] },
+      { id: "duracion_ablls", label: "Duración total (minutos)", type: "number", min: 30, max: 240 },
+    ]
+  },
+  {
+    title: "2. Cooperación y Reforzadores",
+    description: "Disposición del niño para participar y qué lo motiva",
+    icon: <Heart size={20}/>,
+    questions: [
+      { id: "coop_sigue_instrucciones", label: "Sigue instrucciones sencillas del adulto", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "coop_permanece_tarea", label: "Permanece en tarea sin escapar", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "coop_acepta_reforzador", label: "Acepta reforzadores variados (comida, juguetes, social)", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "coop_tolerancia_frustracion", label: "Tolera la frustración y el error", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "coop_transiciones", label: "Tolera cambios de actividad/transiciones", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "coop_notas", label: "Observaciones sobre cooperación y motivación", type: "textarea" },
+    ]
+  },
+  {
+    title: "3. Lenguaje Receptivo (Comprensión)",
+    description: "Habilidad para comprender el lenguaje verbal",
+    icon: <Eye size={20}/>,
+    questions: [
+      { id: "rec_responde_nombre", label: "Responde cuando lo llaman por su nombre", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "rec_sigue_1paso", label: "Sigue instrucciones de 1 paso sin gesto", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "rec_sigue_2pasos", label: "Sigue instrucciones de 2 pasos", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "rec_identifica_objetos", label: "Identifica objetos/imágenes por nombre", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "rec_identifica_acciones", label: "Identifica acciones en imágenes", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "rec_conceptos_basicos", label: "Comprende conceptos básicos (colores, tamaños, posiciones)", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "rec_notas", label: "Observaciones lenguaje receptivo", type: "textarea" },
+    ]
+  },
+  {
+    title: "4. Lenguaje Expresivo",
+    description: "Habilidades de comunicación verbal y no verbal",
+    icon: <MessageCircle size={20}/>,
+    questions: [
+      { id: "exp_solicita_objetos", label: "Solicita objetos deseados (mando/mand)", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "exp_etiqueta_objetos", label: "Nombra/etiqueta objetos (tact)", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "exp_responde_preguntas", label: "Responde preguntas simples (¿Qué es esto?)", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "exp_combina_palabras", label: "Combina 2 o más palabras espontáneamente", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "exp_inicia_conversacion", label: "Inicia conversación o interacción verbal", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "exp_ecolalia", label: "Nivel de ecolalia (0=sin ecolalia, 4=predominante)", type: "range", min: 0, max: 4, labels: ["Sin ecolalia", "Leve", "Moderada", "Marcada", "Predominante"] },
+      { id: "exp_notas", label: "Observaciones lenguaje expresivo", type: "textarea" },
+    ]
+  },
+  {
+    title: "5. Habilidades de Juego y Socialización",
+    description: "Interacción con pares, adultos y objetos",
+    icon: <Users size={20}/>,
+    questions: [
+      { id: "social_juego_solo", label: "Juego independiente apropiado con objetos", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "social_juego_paralelo", label: "Juego paralelo junto a otros niños", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "social_juego_cooperativo", label: "Juego cooperativo e interactivo con pares", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "social_imita_pares", label: "Imita conductas de pares espontáneamente", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "social_busca_interaccion", label: "Busca la interacción con adultos y niños", type: "range", min: 0, max: 4, labels: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"] },
+      { id: "social_notas", label: "Observaciones juego y socialización", type: "textarea" },
+    ]
+  },
+  {
+    title: "6. Habilidades Académicas Funcionales",
+    description: "Pre-academia, lectura, escritura y matemática básica",
+    icon: <Award size={20}/>,
+    questions: [
+      { id: "acad_discrimina_formas", label: "Discrimina y empareja formas, colores, tamaños", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "acad_secuencia_numeros", label: "Secuencia y reconoce números del 1 al 10", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "acad_reconoce_letras", label: "Reconoce letras del alfabeto", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "acad_escritura_nombre", label: "Escribe o copia su nombre", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "acad_lectura_funcional", label: "Lee palabras o frases funcionales", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "acad_notas", label: "Observaciones académicas", type: "textarea" },
+    ]
+  },
+  {
+    title: "7. Autocuidado y Habilidades de la Vida Diaria",
+    description: "Independencia en rutinas básicas",
+    icon: <Activity size={20}/>,
+    questions: [
+      { id: "avd_alimentacion", label: "Come de forma independiente con utensilios", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "avd_bano", label: "Control de esfínteres y uso del baño", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "avd_vestido", label: "Se viste y desviste con prendas simples", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "avd_higiene", label: "Higiene personal (lavado de manos, cepillado)", type: "range", min: 0, max: 4, labels: ["No logrado", "Con asistencia total", "Con asistencia parcial", "Independiente con errores", "Independiente"] },
+      { id: "avd_notas", label: "Observaciones autocuidado", type: "textarea" },
+    ]
+  },
+  {
+    title: "8. Análisis de Perfil ABLLS-R (IA)",
+    icon: <Sparkles size={20}/>,
+    hasIA: true,
+    questions: [
+      { id: "puntaje_cooperacion",   label: "Puntaje Cooperación (calculado)", type: "number", readonly: true },
+      { id: "puntaje_receptivo",     label: "Puntaje Lenguaje Receptivo (calculado)", type: "number", readonly: true },
+      { id: "puntaje_expresivo",     label: "Puntaje Lenguaje Expresivo (calculado)", type: "number", readonly: true },
+      { id: "puntaje_social",        label: "Puntaje Juego/Social (calculado)", type: "number", readonly: true },
+      { id: "puntaje_academico",     label: "Puntaje Académico (calculado)", type: "number", readonly: true },
+      { id: "puntaje_avd",           label: "Puntaje AVD (calculado)", type: "number", readonly: true },
+      { id: "nivel_habilidades",     label: "Nivel global de habilidades", type: "text", readonly: true },
+      { id: "analisis_ablls_ia",     label: "Análisis de Perfil ABLLS-R (IA)", type: "textarea", aiGenerated: true },
+      { id: "objetivos_prioritarios",label: "Objetivos Prioritarios para Intervención", type: "textarea", aiGenerated: true },
+      { id: "informe_padres_ablls",  label: "Informe para Familia", type: "textarea", aiGenerated: true },
     ]
   }
 ]

@@ -11,7 +11,7 @@ import { buildAIContext } from '@/lib/ai-context-builder';
 
 // Definimos interfaces para tipado básico
 interface EvaluationRequest {
-  evaluationType: 'brief2' | 'ados2' | 'vineland3' | 'wiscv' | 'basc3';
+  evaluationType: 'brief2' | 'ados2' | 'vineland3' | 'wiscv' | 'basc3' | 'abllsr';
   responses: any;
   childName: string;
   childAge: number;
@@ -59,6 +59,9 @@ export async function POST(req: Request) {
         break;
       case 'basc3':
         analysisResult = await analyzeBASC3(responses, nombreNino, edadNino, historialTexto);
+        break;
+      case 'abllsr':
+        analysisResult = await analyzeABLLSR(responses, nombreNino, edadNino, historialTexto);
         break;
       default:
         return NextResponse.json({ error: `Tipo de evaluación no soportado: ${evaluationType}` }, { status: 400 });
@@ -533,6 +536,93 @@ async function analyzeBASC3(responses: any, childName: string, childAge: number,
       externalizante, internalizante, adaptativo, indice_sintomas: indiceSintomas, perfil_riesgo: perfilRiesgo
     }
   };
+}
+
+
+// ============================================================================
+// 6. LÓGICA ABLLS-R (Assessment of Basic Language and Learning Skills - Revised)
+// ============================================================================
+async function analyzeABLLSR(responses: any, childName: string, childAge: number, historialTexto: string = "") {
+  const toScore = (k: string) => parseInt(responses[k]) || 0
+
+  // Dominio: Cooperación y Reforzadores (5 ítems × 4 = 20 máx)
+  const cooperacion = ['coop_sigue_instrucciones','coop_permanece_tarea','coop_acepta_reforzador','coop_tolerancia_frustracion','coop_transiciones'].reduce((s,k) => s + toScore(k), 0)
+  
+  // Dominio: Lenguaje Receptivo (6 ítems × 4 = 24 máx)
+  const receptivo = ['rec_responde_nombre','rec_sigue_1paso','rec_sigue_2pasos','rec_identifica_objetos','rec_identifica_acciones','rec_conceptos_basicos'].reduce((s,k) => s + toScore(k), 0)
+  
+  // Dominio: Lenguaje Expresivo (5 ítems × 4 = 20 máx, ecolalia inversa)
+  const expresivo = ['exp_solicita_objetos','exp_etiqueta_objetos','exp_responde_preguntas','exp_combina_palabras','exp_inicia_conversacion'].reduce((s,k) => s + toScore(k), 0)
+  const ecolalia = toScore('exp_ecolalia') // 0=sin ecolalia (mejor), 4=predominante (peor)
+
+  // Dominio: Socialización y Juego (5 ítems × 4 = 20 máx)
+  const social = ['social_juego_solo','social_juego_paralelo','social_juego_cooperativo','social_imita_pares','social_busca_interaccion'].reduce((s,k) => s + toScore(k), 0)
+
+  // Dominio: Académico (5 ítems × 4 = 20 máx)
+  const academico = ['acad_discrimina_formas','acad_secuencia_numeros','acad_reconoce_letras','acad_escritura_nombre','acad_lectura_funcional'].reduce((s,k) => s + toScore(k), 0)
+
+  // Dominio: AVD (4 ítems × 4 = 16 máx)
+  const avd = ['avd_alimentacion','avd_bano','avd_vestido','avd_higiene'].reduce((s,k) => s + toScore(k), 0)
+
+  const maxTotal = 20 + 24 + 20 + 20 + 20 + 16 // 120
+  const totalScore = cooperacion + receptivo + expresivo + social + academico + avd
+  const pctGlobal = Math.round((totalScore / maxTotal) * 100)
+
+  const pctCoop = Math.round((cooperacion / 20) * 100)
+  const pctRec  = Math.round((receptivo   / 24) * 100)
+  const pctExp  = Math.round((expresivo   / 20) * 100)
+  const pctSoc  = Math.round((social      / 20) * 100)
+  const pctAcad = Math.round((academico   / 20) * 100)
+  const pctAvd  = Math.round((avd         / 16) * 100)
+
+  let nivelGlobal = ''
+  if (pctGlobal >= 75) nivelGlobal = 'Habilidades Avanzadas'
+  else if (pctGlobal >= 50) nivelGlobal = 'Habilidades en Desarrollo'
+  else if (pctGlobal >= 25) nivelGlobal = 'Habilidades Emergentes'
+  else nivelGlobal = 'Habilidades Iniciales — Requiere Apoyo Intensivo'
+
+  const prompt = \`
+    ACTÚA COMO: Especialista certificado en ABA y evaluación ABLLS-R con experiencia en TEA y trastornos del neurodesarrollo.
+    TAREA: Generar un informe clínico completo basado en los resultados del ABLLS-R.
+
+    PACIENTE: \${childName}, \${childAge} años.
+    \${historialTexto}
+
+    PERFIL DE DOMINIOS ABLLS-R:
+    1. Cooperación y Reforzadores: \${cooperacion}/20 (\${pctCoop}%)
+    2. Lenguaje Receptivo:         \${receptivo}/24 (\${pctRec}%)
+    3. Lenguaje Expresivo:         \${expresivo}/20 (\${pctExp}%) — Ecolalia: \${ecolalia}/4
+    4. Juego y Socialización:      \${social}/20 (\${pctSoc}%)
+    5. Habilidades Académicas:     \${academico}/20 (\${pctAcad}%)
+    6. Vida Diaria (AVD):          \${avd}/16 (\${pctAvd}%)
+
+    PUNTAJE GLOBAL: \${totalScore}/\${maxTotal} (\${pctGlobal}%) → \${nivelGlobal}
+
+    INSTRUCCIONES CRÍTICAS:
+    1. Responde SOLO con un objeto JSON válido, sin texto adicional antes o después
+    2. NO uses bloques de código markdown
+    3. Las claves deben ser exactamente estas:
+
+    {
+      "analisis_ablls_ia": "Análisis clínico de 3-4 párrafos: (1) Perfil global de habilidades y nivel de funcionamiento. (2) Análisis del lenguaje receptivo vs expresivo y su impacto en la comunicación. (3) Habilidades sociales y de juego. (4) Fortalezas identificadas y áreas de mayor necesidad. Usa lenguaje clínico profesional.",
+      "objetivos_prioritarios": "Lista de 6-8 objetivos ABA específicos y medibles priorizados según los dominios más bajos, en formato: 'Dominio — Objetivo: descripción conductual observable'. Ordenados de mayor a menor urgencia clínica.",
+      "informe_padres_ablls": "Resumen de 180-220 palabras para los padres explicando qué evalúa el ABLLS-R, cómo está su hijo en cada área, y 3-4 estrategias concretas que pueden implementar en casa para apoyar el desarrollo del lenguaje y las habilidades de vida diaria. Tono empático y esperanzador."
+    }
+  \`
+
+  const result = await callGroqSimple('Eres un asistente clínico especializado en ABA, TEA, TDAH y neurodesarrollo.', prompt, { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 2500 })
+
+  if (!result) throw new Error("La IA no generó respuesta")
+  const parsed = parseGeminiJSON(result, "análisis ABLLS-R")
+
+  return {
+    ...parsed,
+    metricas: {
+      cooperacion, receptivo, expresivo, social, academico, avd,
+      total: totalScore, max_total: maxTotal, porcentaje: pctGlobal,
+      nivel: nivelGlobal, ecolalia
+    }
+  }
 }
 
 // ============================================================================

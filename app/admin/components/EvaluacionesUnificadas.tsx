@@ -28,7 +28,7 @@ import {
 } from '../data/neurodivergentForms'
 import {
   ANAMNESIS_DATA, ABA_DATA, ENTORNO_HOGAR_DATA, BRIEF2_DATA,
-  ADOS2_DATA, VINELAND3_DATA, WISCV_DATA, BASC3_DATA
+  ADOS2_DATA, VINELAND3_DATA, WISCV_DATA, BASC3_DATA, ABLLS_R_DATA
 } from '../data/formConstants'
 import { calcularEdadNumerica } from '../utils/helpers'
 
@@ -101,6 +101,13 @@ const CLINICAL_FORMS = [
     color: 'from-amber-500 to-orange-600', estimatedMinutes: 10, targetRole: 'admin',
     description: '⚠️ Corre en plataforma oficial BASC-3. Aquí solo registrá T-scores y escalas.',
     formKey: 'basc3', area: 'Resultados', externalPlatform: true
+  },
+  {
+    id: 'abllsr', title: 'ABLLS-R', subtitle: 'Evaluación de habilidades básicas del lenguaje y aprendizaje',
+    category: 'habilidades', icon: '📚', tags: ['ABA', 'Lenguaje', 'Habilidades', 'TEA'],
+    color: 'from-teal-500 to-cyan-600', estimatedMinutes: 45, targetRole: 'admin',
+    description: 'Assessment of Basic Language and Learning Skills - Revised. Evalúa habilidades de cooperación, lenguaje receptivo/expresivo, socialización, academia y AVD.',
+    formKey: 'abllsr', area: 'Resultados', externalPlatform: false
   },
 ]
 
@@ -749,7 +756,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
     const formDataMap: Record<string, any> = {
       anamnesis: ANAMNESIS_DATA, aba: ABA_DATA, entorno_hogar: ENTORNO_HOGAR_DATA,
       brief2: BRIEF2_DATA, ados2: ADOS2_DATA, vineland3: VINELAND3_DATA,
-      wiscv: WISCV_DATA, basc3: BASC3_DATA
+      wiscv: WISCV_DATA, basc3: BASC3_DATA, abllsr: ABLLS_R_DATA
     }
     return formDataMap[form.formKey] || []
   }
@@ -814,7 +821,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
             endpoint = '/api/generate-session-report'
             payload = { ...responses, childName, childAge, childId: selectedChild }
           }
-        } else if (['brief2', 'ados2', 'vineland3', 'wiscv', 'basc3'].includes(form.formKey)) {
+        } else if (['brief2', 'ados2', 'vineland3', 'wiscv', 'basc3', 'abllsr'].includes(form.formKey)) {
           endpoint = '/api/analyze-professional-evaluation'
           payload = { evaluationType: form.formKey.toLowerCase(), childName, childAge, childId: selectedChild, responses }
         }
@@ -862,7 +869,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         // También mezclar con las respuestas del formulario para que aparezcan en los campos
         setResponses((prev: any) => ({ ...prev, ...analysis }))
         setAiAnalysis(analysis)
-        setEditedMessage(analysis?.mensaje_padres || analysis?.informe_padres_vineland || analysis?.informe_padres_wisc || analysis?.informe_padres_basc || analysis?.informe_familia_ados || analysis?.informe_padres_entorno || analysis?.mensaje_padres_entorno || analysis?.informe_padres || '')
+        setEditedMessage(analysis?.mensaje_padres || analysis?.informe_padres_vineland || analysis?.informe_padres_wisc || analysis?.informe_padres_basc || analysis?.informe_familia_ados || analysis?.informe_padres_entorno || analysis?.mensaje_padres_entorno || analysis?.informe_padres_ablls || analysis?.informe_padres || '')
         setEditedActividades(analysis?.actividades_casa || analysis?.actividad_casa || '')
       }
       toast.success('✨ Análisis IA generado')
