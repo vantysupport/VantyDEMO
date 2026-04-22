@@ -17,7 +17,7 @@ function fmtDate(iso: string) {
 }
 
 function fmtCurrency(n: number) {
-  return `S/ ${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return `S/\u00a0${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 // ── Fetch center config ───────────────────────────────────────────────────────
@@ -89,29 +89,30 @@ function generateReceiptHTML(payment: any, center: any, child: any, parentProfil
     .doc{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12)}
 
     /* ── TOP HEADER: empresa ── */
-    .top{padding:32px 40px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
-    .company{display:flex;align-items:center;gap:14px}
-    .company-logo{width:54px;height:54px;border-radius:12px;background:#1e3a5f;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden}
+    .top{padding:24px 32px;border-bottom:1px solid #e5e7eb;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .company{display:flex;align-items:flex-start;gap:12px;flex:1;min-width:0}
+    .company-logo{width:44px;height:44px;min-width:44px;border-radius:10px;background:#1e3a5f;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
     .company-logo img{width:100%;height:100%;object-fit:contain}
-    .company-text h1{font-size:20px;font-weight:900;color:#0f172a;letter-spacing:-0.5px}
+    .company-text{min-width:0;flex:1}
+    .company-text h1{font-size:17px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .company-text p{font-size:11px;color:#6b7280;margin-top:1px}
-    .company-meta{margin-top:8px;display:flex;flex-direction:column;gap:3px}
+    .company-meta{margin-top:6px;display:flex;flex-direction:column;gap:2px}
     .company-meta span{font-size:11px;color:#374151}
-    .company-meta .ruc{font-weight:800;color:#1e3a5f;font-size:13px}
+    .company-meta .ruc{font-weight:800;color:#1e3a5f;font-size:12px}
 
     .recibo-info{text-align:right;flex-shrink:0}
     .recibo-info .tipo{font-size:10px;font-weight:700;letter-spacing:2px;color:#9ca3af;text-transform:uppercase}
-    .recibo-info .num{font-size:28px;font-weight:900;color:#1e3a5f;line-height:1.1;margin-top:2px}
-    .recibo-info .emitido{font-size:11px;color:#6b7280;margin-top:4px}
+    .recibo-info .num{font-size:26px;font-weight:900;color:#1e3a5f;line-height:1.1;margin-top:2px;white-space:nowrap}
+    .recibo-info .emitido{font-size:11px;color:#6b7280;margin-top:4px;white-space:nowrap}
 
     /* ── STATUS STRIPE ── */
-    .stripe{padding:10px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9}
+    .stripe{padding:10px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:6px}
     .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:0.5px}
     .badge::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
     .stripe-right{font-size:11px;color:#6b7280}
 
     /* ── BODY ── */
-    .body{padding:32px 40px}
+    .body{padding:24px 32px}
 
     /* Section title */
     .stitle{font-size:9px;font-weight:800;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:14px}
@@ -135,12 +136,12 @@ function generateReceiptHTML(payment: any, center: any, child: any, parentProfil
     .tbl tbody td.c{text-align:center}
     .tbl tbody td strong{color:#111827;display:block;font-weight:700;margin-bottom:2px}
     .tbl tbody td .sub{font-size:11px;color:#9ca3af}
-    .tbl tbody td .amount{font-size:15px;font-weight:800;color:#059669}
+    .tbl tbody td .amount{font-size:15px;font-weight:800;color:#059669;white-space:nowrap}
 
     /* ── TOTAL BOX ── */
     .total-box{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin:20px 0}
     .total-box .lbl{font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:1px}
-    .total-box .val{font-size:32px;font-weight:900;color:#059669}
+    .total-box .val{font-size:32px;font-weight:900;color:#059669;white-space:nowrap}
 
     /* ── PAYMENT INFO ── */
     .pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
@@ -153,7 +154,7 @@ function generateReceiptHTML(payment: any, center: any, child: any, parentProfil
     .confirm p{font-size:12px;color:#166534;font-weight:600}
 
     /* ── FOOTER ── */
-    .footer{background:#f8fafc;border-top:1px solid #e5e7eb;padding:20px 40px;display:flex;align-items:center;justify-content:space-between}
+    .footer{background:#f8fafc;border-top:1px solid #e5e7eb;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
     .footer-l{font-size:11px;color:#6b7280;line-height:1.8}
     .footer-l strong{color:#374151;display:block}
     .footer-r{font-size:10px;color:#9ca3af;text-align:right;line-height:1.8}
@@ -228,10 +229,10 @@ function generateReceiptHTML(payment: any, center: any, child: any, parentProfil
         <table class="tbl">
           <thead>
             <tr>
-              <th style="width:55%">Descripción</th>
-              <th class="c" style="width:12%">Cant.</th>
-              <th class="r" style="width:15%">P. Unit.</th>
-              <th class="r" style="width:18%">Total</th>
+              <th style="width:50%">Descripción</th>
+              <th class="c" style="width:10%">Cant.</th>
+              <th class="r" style="width:20%">P. Unit.</th>
+              <th class="r" style="width:20%">Total</th>
             </tr>
           </thead>
           <tbody>
