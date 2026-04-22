@@ -171,7 +171,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
               <svg className={`w-3 h-3 text-slate-400 transition-transform ${selector ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
             </button>
             {selector && (
-              <div className="absolute right-0 top-11 z-30 rounded-2xl shadow-2xl p-2 w-52" style={{ background: "var(--card)", border: "1px solid var(--card-border)" }}>
+              <div className="absolute right-0 top-11 z-30 rounded-2xl shadow-2xl p-2 w-52 max-w-[calc(100vw-2rem)]" style={{ background: "var(--card)", border: "1px solid var(--card-border)" }}>
                 <p className="text-[10px] font-black uppercase tracking-wider px-2 py-1.5" style={{ color: "var(--text-muted)" }}>{t('ui.tipoGrafico')}</p>
                 {TIPOS.map(t => (
                   <button key={t.id} onClick={() => { setTipo(t.id); setSelector(false) }}
@@ -189,11 +189,11 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
 
       {/* Criterio de dominio */}
       <div className='rounded-2xl p-4 border-2' style={{ background: cumplido ? 'rgba(6,78,59,0.15)' : consec > 0 ? 'rgba(92,57,0,0.15)' : 'var(--muted-bg)', borderColor: cumplido ? '#059669' : consec > 0 ? '#d97706' : 'var(--card-border)' }}>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${cumplido ? 'bg-emerald-100' : consec > 0 ? 'bg-amber-100' : 'bg-slate-100'}`}>
             {cumplido ? '🏆' : consec > 0 ? '🔥' : '🎯'}
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-[160px]">
             <p className={`font-black text-sm`} style={{ color: cumplido ? '#059669' : consec > 0 ? '#d97706' : 'var(--text-primary)' }}>
               {t('reportes.criterioDominio')}: {CRITERIO_PCT}% {t('common.en')} {CRITERIO_SESS} {t('reportes.sesionesConsecutivas')}
             </p>
@@ -204,7 +204,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
               <div className={`h-full rounded-full transition-all duration-700 ${cumplido ? 'bg-emerald-500' : consec > 0 ? 'bg-amber-500' : 'bg-violet-500'}`} style={{ width: `${Math.min(100, promedio)}%` }} />
             </div>
           </div>
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 hidden sm:block">
             <p className='font-black text-3xl tabular-nums' style={{ color: cumplido ? '#059669' : consec > 0 ? '#d97706' : 'var(--text-primary)' }}>{promedio}%</p>
             <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{t('reportes.promedio')}</p>
           </div>
@@ -339,8 +339,8 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
           {tipo === 'pie' && (
             pieData.length === 0
               ? <p className="text-center text-slate-400 py-8 text-sm">{t('ui.sinDatosMostrar')}</p>
-              : <div className="flex items-center gap-4">
-                  <ResponsiveContainer width="55%" height={260}>
+              : <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <ResponsiveContainer width="100%" height={200} className="sm:w-[55%] sm:flex-shrink-0">
                     <PieChart>
                       <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={35} paddingAngle={3} strokeWidth={2} stroke="#fff">
                         {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
@@ -383,7 +383,7 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                       <Tooltip formatter={(v: any) => [`${v}%`, '']} />
                     </RadarChart>
                   </ResponsiveContainer>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                     {radarData.map((d: any) => (
                       <div key={d.h} className="text-center p-2 bg-violet-50 rounded-xl">
                         <p className="font-black text-violet-700 text-lg tabular-nums">{d.v}%</p>

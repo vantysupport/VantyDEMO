@@ -185,9 +185,9 @@ export default function GraficoProgramaABA({
 
       {/* Etiquetas de sets sobre el gráfico */}
       {setBreaks.length > 0 && (
-        <div className="relative px-14 pt-2" style={{ height: 22 }}>
+        <div className="relative px-2 pt-2" style={{ height: 22, paddingLeft: 40 }}>
           <span className="absolute text-[9px] font-black uppercase tracking-wider"
-            style={{ left: 56, color: 'var(--text-muted)' }}>
+            style={{ left: 40, color: 'var(--text-muted)' }}>
             Set 1
           </span>
           {setBreaks.map((br, i) => {
@@ -196,7 +196,7 @@ export default function GraficoProgramaABA({
               <span key={i}
                 className="absolute text-[9px] font-black uppercase tracking-wider"
                 style={{
-                  left: `calc(3.5rem + ${leftPct}% * 0.82)`,
+                  left: `calc(2.5rem + ${leftPct}% * 0.82)`,
                   color: 'var(--text-muted)',
                   transform: 'translateX(-50%)',
                 }}>

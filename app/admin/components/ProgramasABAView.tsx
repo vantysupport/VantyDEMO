@@ -180,7 +180,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
       </div>
 
       {/* ── Stats ── */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {STAT_CFG.map(s => (
           <div key={s.label} className="rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
@@ -354,7 +354,8 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
     return () => ro.disconnect()
   }, [])
 
-  const margin = { top: 4, right: 8, bottom: 20, left: 8 }
+  const margin = { top: 4, right: 16, bottom: 20, left: 4 }
+  const YAXIS_W = 40
 
   return (
     <div ref={containerRef} style={{ width: '100%', overflow: 'hidden' }}>
@@ -377,6 +378,7 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
               ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
               tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
               tickFormatter={(v: number) => `${v}%`}
+              width={YAXIS_W}
             />
             <Tooltip
               formatter={(value: any) => [`${value}%`, 'Éxito']}
@@ -400,7 +402,7 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
           <div style={{ marginTop: `-${chartHeight}px`, pointerEvents: 'none' }}>
             <LineChart width={width} height={chartHeight} data={chartData} margin={margin}>
               <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
-              <YAxis domain={[0, 100]} hide />
+              <YAxis domain={[0, 100]} hide width={YAXIS_W} />
               {segments.map((seg: any, si: number) => {
                 const color = segColorMap[si]
                 return (
@@ -559,8 +561,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={e => { e.stopPropagation(); onRegistrarSesion() }}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all" style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
-              {t('programas.agregarSesion')}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap" style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
+              <span className="hidden sm:inline">{t('programas.agregarSesion')}</span>
+              <span className="sm:hidden">+ {t('programas.sesiones') || 'Sesión'}</span>
             </button>
             {expanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
           </div>
@@ -661,7 +664,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       return (
                         <div>
                           {/* ── Phase header labels — proportional width per segment ── */}
-                          <div className="flex" style={{ paddingLeft: '68px', paddingRight: '36px' }}>
+                          <div className="flex" style={{ paddingLeft: '44px', paddingRight: '16px' }}>
                             {segments.map((seg, i) => {
                               const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
                               const color = segColorMap[i]
@@ -736,7 +739,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       return (
                         <div>
                           {segs.length > 1 && (
-                            <div className="flex" style={{ paddingLeft: '68px', paddingRight: '36px' }}>
+                            <div className="flex" style={{ paddingLeft: '44px', paddingRight: '16px' }}>
                               {segs.map((seg, i) => {
                                 const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
                                 const color = segColors[i % segColors.length]
@@ -753,7 +756,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             </div>
                           )}
                           <ResponsiveContainer width="100%" height={260}>
-                            <BarChart data={chartData} margin={{ top: 4, right: 36, bottom: 24, left: 8 }}>
+                            <BarChart data={chartData} margin={{ top: 4, right: 16, bottom: 24, left: 4 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis dataKey="sesion"
                                 type="number"
@@ -762,7 +765,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                                 tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                                 interval={Math.max(0, Math.floor(minSlots / 10) - 1)}
                                 label={{ value: 'Sesión', position: 'insideBottom', offset: -10, fontSize: 10, fill: 'var(--text-muted)' }} />
-                              <YAxis domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: any) => `${v}%`} />
+                              <YAxis domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: any) => `${v}%`} width={40} />
                               <Tooltip
                                 formatter={(value: any) => [`${value}%`, 'Éxito']}
                                 labelFormatter={(label) => { const d = chartData[label - 1]; return d ? `Sesión ${label} · ${d.fecha}${d.set ? ` · ${d.set}` : ''}` : `Sesión ${label}` }}
@@ -841,10 +844,10 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
                       return (
                         <div className="p-4">
-                          <div className="flex items-center gap-6">
+                          <div className="flex flex-col sm:flex-row items-center gap-4">
                             {/* Donut */}
-                            <div className="shrink-0">
-                              <ResponsiveContainer width={220} height={220}>
+                            <div className="w-full sm:w-auto sm:shrink-0">
+                              <ResponsiveContainer width="100%" height={200}>
                                 <PieChart>
                                   <Pie data={pieRaw} dataKey="value" nameKey="name"
                                     cx="50%" cy="50%"
@@ -1081,7 +1084,8 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
           {weeks.map((week, wi) => (
             <div key={wi} className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <p className="text-[10px] font-bold mb-2.5" style={{ color: 'var(--text-muted)' }}>{week.label}</p>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="overflow-x-auto">
+              <div className="grid grid-cols-7 gap-1 min-w-[280px]">
                 {week.days.map((day, di) => {
                   const obj = day.objetivoId ? objetivos.find((o: any) => o.id === day.objetivoId) : null
                   return (
@@ -1105,6 +1109,7 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
                     </div>
                   )
                 })}
+              </div>
               </div>
             </div>
           ))}
