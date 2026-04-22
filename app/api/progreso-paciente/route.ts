@@ -32,9 +32,10 @@ function parsearLogro(valor: any): number | null {
 }
 
 // Convierte escala 1-5 a porcentaje 0-100
-function escala5(v: any, fallback: number): number {
+function escala5(v: any): number | null {
+  if (!v && v !== 0) return null
   const n = Number(v)
-  if (!v || isNaN(n) || n < 1 || n > 5) return fallback
+  if (isNaN(n) || n < 1 || n > 5) return null
   return Math.round(((n - 1) / 4) * 100)
 }
 
@@ -104,9 +105,9 @@ export async function GET(request: NextRequest) {
     if (logro === null) logro = parsearLogro(d.nivel_logro)
     if (logro === null) logro = 50 // si existe sesión, mostrar promedio
 
-    const atencion     = escala5(d.nivel_atencion, logro)
-    const tolerancia   = escala5(d.tolerancia_frustracion ?? d.nivel_tolerancia, logro)
-    const comunicacion = escala5(d.iniciativa_comunicativa ?? d.nivel_comunicacion, logro)
+    const atencion     = escala5(d.nivel_atencion)
+    const tolerancia   = escala5(d.tolerancia_frustracion ?? d.nivel_tolerancia)
+    const comunicacion = escala5(d.iniciativa_comunicativa ?? d.nivel_comunicacion)
 
     return {
       fecha:        (s.fecha_sesion || '').split('T')[0],
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
   const puntosPrograma = Object.entries(sesionesDePrograma).map(([fecha, logros]) => ({
     fecha,
     logro: logros.length ? Math.round(logros.reduce((a, b) => a + b, 0) / logros.length) : 50,
-    atencion: 50, tolerancia: 50, comunicacion: 50,
+    atencion: null, tolerancia: null, comunicacion: null,
     objetivo: 'Programa ABA', tecnicas: '', asistio: true, notas: ''
   }))
 

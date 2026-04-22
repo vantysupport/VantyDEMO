@@ -105,10 +105,14 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
   // X domain: show actual sessions with a small right-padding of 1 slot
   // Always minimum 10 slots so the chart doesn't look cramped
   const totalSessions = graficaABA.length
-  const xDomainMax = totalSessions + 1
+  const xDomainMax = Math.max(10, totalSessions + 1)
   // Number each session for a clean numeric X axis
   const graficaNum   = graficaABA.map((s: any, i: number) => ({ ...s, n: i + 1 }))
   const conColorNum  = conColor.map((s: any, i: number) => ({ ...s, n: i + 1 }))
+  // Only show secondary lines if at least one session has real data for that metric
+  const hasAtencion     = graficaABA.some((s: any) => s.atencion     != null)
+  const hasTolerance    = graficaABA.some((s: any) => s.tolerancia   != null)
+  const hasComunicacion = graficaABA.some((s: any) => s.comunicacion != null)
   // Build sensible ticks: every 1 if ≤10, every 5 if ≤30, every 10 beyond
   const tickStep = totalSessions <= 10 ? 1 : totalSessions <= 30 ? 5 : 10
   const xTicks = Array.from({ length: Math.ceil(xDomainMax / tickStep) + 1 }, (_, i) => i * tickStep).filter(v => v >= 1 && v <= xDomainMax)
@@ -253,9 +257,9 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                   label={{ value: `${t('reportes.meta')} ${CRITERIO_PCT}%`, position: 'insideTopLeft', fontSize: 9, fill: C.criterio, fontWeight: 700 }} />
                 <Line connectNulls={false} type="linear" dataKey="logro" stroke={C.logro} strokeWidth={3} dot={{ r: 5, fill: C.logro, stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 7 }} name="Logro obj." />
                 {!modoParent && <>
-                  <Line connectNulls={false} type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Atención" />
-                  <Line connectNulls={false} type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Tolerancia" />
-                  <Line connectNulls={false} type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Comunicación" />
+                  {hasAtencion     && <Line connectNulls={false} type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Atención" />}
+                  {hasTolerance    && <Line connectNulls={false} type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Tolerancia" />}
+                  {hasComunicacion && <Line connectNulls={false} type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Comunicación" />}
                 </>}
               </LineChart>
             </ResponsiveContainer>
@@ -297,9 +301,9 @@ export default function ProgresoGraficas({ childId, modoParent = false }: Progre
                 <ReferenceLine y={CRITERIO_PCT} stroke={C.criterio} strokeDasharray="6 3" strokeWidth={2} />
                 <Area type="linear" dataKey="logro" fill="url(#gLogro)" stroke={C.logro} strokeWidth={2.5} name="Logro obj." dot={{ r: 4, fill: C.logro, stroke: '#fff', strokeWidth: 2 }} />
                 {!modoParent && <>
-                  <Line connectNulls={false} type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} name="Atención"     dot={false} strokeDasharray="4 2" />
-                  <Line connectNulls={false} type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} name="Tolerancia"   dot={false} strokeDasharray="4 2" />
-                  <Line connectNulls={false} type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} name="Comunicación" dot={false} strokeDasharray="4 2" />
+                  {hasAtencion     && <Line connectNulls={false} type="linear" dataKey="atencion"     stroke={C.atencion}     strokeWidth={1.5} name="Atención"     dot={false} strokeDasharray="4 2" />}
+                  {hasTolerance    && <Line connectNulls={false} type="linear" dataKey="tolerancia"   stroke={C.tolerancia}   strokeWidth={1.5} name="Tolerancia"   dot={false} strokeDasharray="4 2" />}
+                  {hasComunicacion && <Line connectNulls={false} type="linear" dataKey="comunicacion" stroke={C.comunicacion} strokeWidth={1.5} name="Comunicación" dot={false} strokeDasharray="4 2" />}
                 </>}
               </ComposedChart>
             </ResponsiveContainer>

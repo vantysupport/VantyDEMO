@@ -746,11 +746,11 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
             </div>
 
             {/* Tabs — scroll horizontal en pantallas pequeñas */}
-            <div className="overflow-x-auto scrollbar-none border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <div className="flex min-w-max">
+            <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
+              <div className="flex w-full">
               {TABS.map(tb => (
                 <button key={tb.id} onClick={()=>setTab(tb.id)}
-                  className={`flex flex-col items-center gap-1 px-4 md:px-5 pt-3 pb-2.5 font-semibold border-b-2 transition-all whitespace-nowrap
+                  className={`flex flex-1 flex-col items-center gap-1 px-2 pt-3 pb-2.5 font-semibold border-b-2 transition-all whitespace-nowrap
                     ${tab===tb.id ? 'border-blue-500' : 'border-transparent'}`}
                   style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)' }}
                   title={tb.label}>

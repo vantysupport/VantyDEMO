@@ -392,8 +392,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
             {area.emoji}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{programa.titulo}</h3>
+            <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{programa.titulo}</h3>
+            <div className="flex items-center gap-1.5 flex-wrap mt-1">
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
                 {area.label}
               </span>
