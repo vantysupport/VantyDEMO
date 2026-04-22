@@ -443,8 +443,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
           <div className="mt-3 h-16" style={{ overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 4, right: 12, bottom: 4, left: 12 }}>
+                <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
                 <YAxis domain={[0, 100]} hide width={0} />
-                <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} />
+                <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} connectNulls={false} />
                 <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
               </LineChart>
             </ResponsiveContainer>
@@ -566,9 +567,11 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis
                                 dataKey="sesion"
+                                type="number"
+                                domain={[0, minSlots + 1]}
+                                ticks={Array.from({ length: minSlots }, (_, i) => i + 1)}
                                 tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-                                interval={Math.max(0, Math.floor(total / 8) - 1)}
-                                padding={{ left: 16, right: 16 }}
+                                interval={Math.max(0, Math.floor(minSlots / 10) - 1)}
                                 label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 10, fill: 'var(--text-muted)' }}
                               />
                               <YAxis
@@ -628,7 +631,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                           <div style={{ marginTop: `-${chartHeight}px`, pointerEvents: 'none' }}>
                             <ResponsiveContainer width="100%" height={chartHeight}>
                               <LineChart data={chartData} margin={{ top: 4, right: 36, bottom: 20, left: 8 }}>
-                                <XAxis dataKey="sesion" hide padding={{ left: 16, right: 16 }} />
+                                <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
                                 <YAxis domain={[0, 100]} hide />
                                 {segments.map((seg, si) => {
                                   const color = segColorMap[si]
@@ -722,9 +725,12 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                           <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={chartData} margin={{ top: 4, right: 36, bottom: 24, left: 8 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                              <XAxis dataKey="sesion" tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
-                                interval={Math.max(0, Math.floor(total / 8) - 1)}
-                                padding={{ left: 16, right: 16 }}
+                              <XAxis dataKey="sesion"
+                                type="number"
+                                domain={[0, minSlots + 1]}
+                                ticks={Array.from({ length: minSlots }, (_, i) => i + 1)}
+                                tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                                interval={Math.max(0, Math.floor(minSlots / 10) - 1)}
                                 label={{ value: 'Sesión', position: 'insideBottom', offset: -10, fontSize: 10, fill: 'var(--text-muted)' }} />
                               <YAxis domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: any) => `${v}%`} />
                               <Tooltip
