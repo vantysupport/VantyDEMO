@@ -1,7 +1,7 @@
 'use client'
 
 import { useI18n } from '@/lib/i18n-context'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import GraficoProgramaABA from '@/components/graficos/GraficoProgramaABA'
 import {
@@ -304,6 +304,38 @@ function AlertaCard({ alerta }: { alerta: any; key?: any }) {
 }
 
 // ── Tarjeta de programa con gráfica ─────────────────────────────────────────
+
+// Componente separado para la mini gráfica — resuelve el problema de ancho en móvil
+function MiniChart({ chartData, minSlots, criterio }: { chartData: any[]; minSlots: number; criterio: number }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(0)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setWidth(entry.contentRect.width)
+      }
+    })
+    ro.observe(containerRef.current)
+    setWidth(containerRef.current.offsetWidth)
+    return () => ro.disconnect()
+  }, [])
+
+  return (
+    <div ref={containerRef} className="mt-3 h-16 w-full" style={{ overflow: 'hidden' }}>
+      {width > 0 && (
+        <LineChart width={width} height={64} data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
+          <YAxis domain={[0, 100]} hide width={0} />
+          <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} connectNulls={false} />
+          <ReferenceLine y={criterio} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
+        </LineChart>
+      )}
+    </div>
+  )
+}
+
 function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'lineas', onChangeTipoGrafico }: any) {
   const { t } = useI18n()
   const [expanded, setExpanded] = useState(false)
@@ -384,7 +416,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden transition-all w-full min-w-0" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       {/* Header */}
       <div className="p-5 cursor-pointer" onClick={loadDetalle}>
         <div className="flex items-start gap-3">
@@ -392,8 +424,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
             {area.emoji}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{programa.titulo}</h3>
-            <div className="flex items-center gap-1.5 flex-wrap mt-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{programa.titulo}</h3>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
                 {area.label}
               </span>
@@ -440,16 +472,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
         {/* Mini gráfica */}
         {sesiones.length >= 2 && (
-          <div className="mt-3 h-16 w-full min-w-0" style={{ overflow: 'hidden' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 4, right: 12, bottom: 4, left: 12 }}>
-                <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
-                <YAxis domain={[0, 100]} hide width={0} />
-                <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} connectNulls={false} />
-                <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <MiniChart chartData={chartData} minSlots={minSlots} criterio={programa.criterio_dominio_pct} />
         )}
       </div>
 
@@ -491,7 +514,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                     </div>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden w-full min-w-0" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                  <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
 
                     {/* ── ABA Phase Chart — segmentos con líneas verticales y labels ── */}
                     {tipoGrafico === 'lineas' && (() => {
@@ -563,7 +586,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
                           {/* ── Main line chart ── */}
                           <ResponsiveContainer width="100%" height={chartHeight}>
-                            <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 20, left: 8 }}>
+                            <LineChart data={chartData} margin={{ top: 4, right: 36, bottom: 20, left: 8 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis
                                 dataKey="sesion"
