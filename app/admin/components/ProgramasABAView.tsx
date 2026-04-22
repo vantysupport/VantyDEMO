@@ -555,6 +555,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                                 dataKey="sesion"
                                 tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                                 interval={Math.max(0, Math.floor(total / 8) - 1)}
+                                padding={{ left: 16, right: 16 }}
                                 label={{ value: 'Sesión', position: 'insideBottom', offset: -8, fontSize: 10, fill: 'var(--text-muted)' }}
                               />
                               <YAxis
@@ -586,7 +587,6 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                                 stroke="#10b981"
                                 strokeDasharray="6 3"
                                 strokeWidth={2}
-                                label={{ value: `${programa.criterio_dominio_pct}%`, position: 'right', fontSize: 10, fill: '#10b981' }}
                               />
 
                               {/* The line — dots colored by segment */}
@@ -615,7 +615,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                           <div style={{ marginTop: `-${chartHeight}px`, pointerEvents: 'none' }}>
                             <ResponsiveContainer width="100%" height={chartHeight}>
                               <LineChart data={chartData} margin={{ top: 4, right: 36, bottom: 20, left: 8 }}>
-                                <XAxis dataKey="sesion" hide />
+                                <XAxis dataKey="sesion" hide padding={{ left: 16, right: 16 }} />
                                 <YAxis domain={[0, 100]} hide />
                                 {segments.map((seg, si) => {
                                   const color = segColorMap[si]
@@ -710,6 +710,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis dataKey="sesion" tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                                 interval={Math.max(0, Math.floor(total / 8) - 1)}
+                                padding={{ left: 16, right: 16 }}
                                 label={{ value: 'Sesión', position: 'insideBottom', offset: -10, fontSize: 10, fill: 'var(--text-muted)' }} />
                               <YAxis domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: any) => `${v}%`} />
                               <Tooltip
@@ -718,8 +719,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                                 contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
                               />
                               {dividers.map((x, i) => <ReferenceLine key={`bd-${i}`} x={x} stroke="#475569" strokeWidth={1.5} />)}
-                              <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2}
-                                label={{ value: `${programa.criterio_dominio_pct}%`, position: 'right', fontSize: 10, fill: '#10b981' }} />
+                              <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2} />
                               <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={40}>
                                 {chartData.map((entry: any, index: number) => (
                                   <Cell key={index} fill={
