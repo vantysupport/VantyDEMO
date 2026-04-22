@@ -581,22 +581,22 @@ async function analyzeABLLSR(responses: any, childName: string, childAge: number
   else if (pctGlobal >= 25) nivelGlobal = 'Habilidades Emergentes'
   else nivelGlobal = 'Habilidades Iniciales — Requiere Apoyo Intensivo'
 
-  const prompt = \`
+  const prompt = `
     ACTÚA COMO: Especialista certificado en ABA y evaluación ABLLS-R con experiencia en TEA y trastornos del neurodesarrollo.
     TAREA: Generar un informe clínico completo basado en los resultados del ABLLS-R.
 
-    PACIENTE: \${childName}, \${childAge} años.
-    \${historialTexto}
+    PACIENTE: ${childName}, ${childAge} años.
+    ${historialTexto}
 
     PERFIL DE DOMINIOS ABLLS-R:
-    1. Cooperación y Reforzadores: \${cooperacion}/20 (\${pctCoop}%)
-    2. Lenguaje Receptivo:         \${receptivo}/24 (\${pctRec}%)
-    3. Lenguaje Expresivo:         \${expresivo}/20 (\${pctExp}%) — Ecolalia: \${ecolalia}/4
-    4. Juego y Socialización:      \${social}/20 (\${pctSoc}%)
-    5. Habilidades Académicas:     \${academico}/20 (\${pctAcad}%)
-    6. Vida Diaria (AVD):          \${avd}/16 (\${pctAvd}%)
+    1. Cooperación y Reforzadores: ${cooperacion}/20 (${pctCoop}%)
+    2. Lenguaje Receptivo:         ${receptivo}/24 (${pctRec}%)
+    3. Lenguaje Expresivo:         ${expresivo}/20 (${pctExp}%) — Ecolalia: ${ecolalia}/4
+    4. Juego y Socialización:      ${social}/20 (${pctSoc}%)
+    5. Habilidades Académicas:     ${academico}/20 (${pctAcad}%)
+    6. Vida Diaria (AVD):          ${avd}/16 (${pctAvd}%)
 
-    PUNTAJE GLOBAL: \${totalScore}/\${maxTotal} (\${pctGlobal}%) → \${nivelGlobal}
+    PUNTAJE GLOBAL: ${totalScore}/${maxTotal} (${pctGlobal}%) → ${nivelGlobal}
 
     INSTRUCCIONES CRÍTICAS:
     1. Responde SOLO con un objeto JSON válido, sin texto adicional antes o después
@@ -608,7 +608,7 @@ async function analyzeABLLSR(responses: any, childName: string, childAge: number
       "objetivos_prioritarios": "Lista de 6-8 objetivos ABA específicos y medibles priorizados según los dominios más bajos, en formato: 'Dominio — Objetivo: descripción conductual observable'. Ordenados de mayor a menor urgencia clínica.",
       "informe_padres_ablls": "Resumen de 180-220 palabras para los padres explicando qué evalúa el ABLLS-R, cómo está su hijo en cada área, y 3-4 estrategias concretas que pueden implementar en casa para apoyar el desarrollo del lenguaje y las habilidades de vida diaria. Tono empático y esperanzador."
     }
-  \`
+  `
 
   const result = await callGroqSimple('Eres un asistente clínico especializado en ABA, TEA, TDAH y neurodesarrollo.', prompt, { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 2500 })
 
