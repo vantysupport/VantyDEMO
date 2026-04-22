@@ -428,9 +428,10 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
         {/* Mini gráfica */}
         {sesiones.length >= 2 && (
-          <div className="mt-3 h-16">
+          <div className="mt-3 h-16" style={{ overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 2, right: 4, bottom: 2, left: 0 }}>
+              <LineChart data={chartData} margin={{ top: 4, right: 12, bottom: 4, left: 12 }}>
+                <YAxis domain={[0, 100]} hide width={0} />
                 <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} />
                 <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
               </LineChart>
@@ -527,7 +528,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       return (
                         <div>
                           {/* ── Phase header labels — proportional width per segment ── */}
-                          <div className="flex" style={{ paddingLeft: '30px', paddingRight: '10px' }}>
+                          <div className="flex" style={{ paddingLeft: '68px', paddingRight: '36px' }}>
                             {segments.map((seg, i) => {
                               const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
                               const color = segColorMap[i]
@@ -548,7 +549,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
 
                           {/* ── Main line chart ── */}
                           <ResponsiveContainer width="100%" height={chartHeight}>
-                            <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 20, left: -15 }}>
+                            <LineChart data={chartData} margin={{ top: 4, right: 36, bottom: 20, left: 8 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis
                                 dataKey="sesion"
@@ -613,7 +614,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                           {/* We use a separate recharts chart overlaid for per-segment colors */}
                           <div style={{ marginTop: `-${chartHeight}px`, pointerEvents: 'none' }}>
                             <ResponsiveContainer width="100%" height={chartHeight}>
-                              <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 20, left: -15 }}>
+                              <LineChart data={chartData} margin={{ top: 4, right: 36, bottom: 20, left: 8 }}>
                                 <XAxis dataKey="sesion" hide />
                                 <YAxis domain={[0, 100]} hide />
                                 {segments.map((seg, si) => {
@@ -688,7 +689,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       return (
                         <div>
                           {segs.length > 1 && (
-                            <div className="flex" style={{ paddingLeft: '30px', paddingRight: '10px' }}>
+                            <div className="flex" style={{ paddingLeft: '68px', paddingRight: '36px' }}>
                               {segs.map((seg, i) => {
                                 const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
                                 const color = segColors[i % segColors.length]
@@ -705,7 +706,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             </div>
                           )}
                           <ResponsiveContainer width="100%" height={260}>
-                            <BarChart data={chartData} margin={{ top: 4, right: 16, bottom: 24, left: -15 }}>
+                            <BarChart data={chartData} margin={{ top: 4, right: 36, bottom: 24, left: 8 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis dataKey="sesion" tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                                 interval={Math.max(0, Math.floor(total / 8) - 1)}
@@ -748,7 +749,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       return (
                         <div className="p-4">
                           <ResponsiveContainer width="100%" height={240}>
-                            <BarChart data={histData} margin={{ top: 8, right: 16, bottom: 8, left: -10 }}>
+                            <BarChart data={histData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                               <XAxis dataKey="rango" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
                               <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
