@@ -112,8 +112,6 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
   const [search, setSearch]     = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
-  const [openStatusId, setOpenStatusId] = useState<string | null>(null)
-  const statusDropdownRef = useRef<HTMLDivElement>(null)
 
   // Forms
   const [showNew, setShowNew]     = useState(false)
@@ -161,18 +159,6 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
   }, [periodo, buildStats])
 
   useEffect(() => { cargar() }, [cargar])
-
-  // Cerrar dropdown de status al hacer click afuera
-  useEffect(() => {
-    if (!openStatusId) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
-        setOpenStatusId(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [openStatusId])
 
   // Real-time
   useEffect(() => {
@@ -761,8 +747,8 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
               <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Usa los botones de arriba para registrar un pago</p>
             </div>
           ) : (
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-              <div className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto] gap-4 px-5 py-3 text-[10px] font-black uppercase tracking-widest"
+            <div className="rounded-2xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', overflow: 'visible' }}>
+              <div className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto] gap-4 px-5 py-3 text-[10px] font-black uppercase tracking-widest rounded-t-2xl"
                 style={{ borderBottom: '1px solid var(--card-border)', color: 'var(--text-muted)', background: 'var(--muted-bg)' }}>
                 <span>Paciente</span><span>Concepto</span><span>Monto</span><span>Método</span><span>Estado</span><span></span>
               </div>
@@ -779,34 +765,29 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                     <p className="text-sm font-black whitespace-nowrap" style={{ color: '#10b981' }}>S/ {Number(p.amount).toFixed(2)}</p>
                     <p className="text-xs capitalize whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>{p.payment_method}</p>
                     {/* Status — clickable to change */}
-                    <div className="relative" ref={openStatusId === p.id ? statusDropdownRef : null}>
-                      <button
-                        onClick={() => setOpenStatusId(prev => prev === p.id ? null : p.id)}
-                        className="text-[10px] font-bold px-2.5 py-1 rounded-lg whitespace-nowrap hover:opacity-80 transition-opacity"
+                    <div className="relative group">
+                      <button className="text-[10px] font-bold px-2.5 py-1 rounded-lg whitespace-nowrap hover:opacity-80 transition-opacity"
                         style={{ background: st.bg, color: st.color }}>
                         {st.label} ▾
                       </button>
-                      {openStatusId === p.id && (
-                        <div className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden shadow-xl z-50"
-                          style={{ background: 'var(--card)', border: '1px solid var(--card-border)', minWidth: 130 }}>
-                          {Object.entries(STATUS_CFG).map(([k, v]) => (
-                            <button key={k} onClick={async () => {
-                              setOpenStatusId(null)
-                              const { error } = await supabase.from('payments').update({
-                                status: k,
-                                paid_at: k === 'paid' ? new Date().toISOString() : null,
-                              }).eq('id', p.id)
-                              if (!error) toast.success(`Actualizado a ${v.label}`)
-                              else toast.error('Error al actualizar')
-                            }}
-                              className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 hover:opacity-80 transition-opacity"
-                              style={{ color: v.color, background: p.status === k ? v.bg : 'transparent', borderBottom: '1px solid var(--card-border)' }}>
-                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: v.color }} />
-                              {v.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      <div className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden shadow-xl z-20 hidden group-hover:block"
+                        style={{ background: 'var(--card)', border: '1px solid var(--card-border)', minWidth: 130 }}>
+                        {Object.entries(STATUS_CFG).map(([k, v]) => (
+                          <button key={k} onClick={async () => {
+                            const { error } = await supabase.from('payments').update({
+                              status: k,
+                              paid_at: k === 'paid' ? new Date().toISOString() : null,
+                            }).eq('id', p.id)
+                            if (!error) toast.success(`Actualizado a ${v.label}`)
+                            else toast.error('Error al actualizar')
+                          }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 hover:opacity-80 transition-opacity"
+                            style={{ color: v.color, background: p.status === k ? v.bg : 'transparent', borderBottom: '1px solid var(--card-border)' }}>
+                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: v.color }} />
+                            {v.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <button
                       onClick={() => window.open(`/api/pagos/recibo-pdf?id=${p.id}`, '_blank')}
