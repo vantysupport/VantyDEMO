@@ -774,12 +774,17 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                         style={{ background: 'var(--card)', border: '1px solid var(--card-border)', minWidth: 130 }}>
                         {Object.entries(STATUS_CFG).map(([k, v]) => (
                           <button key={k} onClick={async () => {
+                            // Optimistic update — UI changes instantly
+                            const prevPayments = payments
+                            const updated = payments.map(x => x.id === p.id ? { ...x, status: k, paid_at: k === 'paid' ? new Date().toISOString() : null } : x)
+                            setPayments(updated)
+                            buildStats(updated)
                             const { error } = await supabase.from('payments').update({
                               status: k,
                               paid_at: k === 'paid' ? new Date().toISOString() : null,
                             }).eq('id', p.id)
                             if (!error) toast.success(`Actualizado a ${v.label}`)
-                            else toast.error('Error al actualizar')
+                            else { setPayments(prevPayments); buildStats(prevPayments); toast.error('Error al actualizar') }
                           }}
                             className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 hover:opacity-80 transition-opacity"
                             style={{ color: v.color, background: p.status === k ? v.bg : 'transparent', borderBottom: '1px solid var(--card-border)' }}>
