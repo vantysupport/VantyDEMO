@@ -621,6 +621,7 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
         name: newForm.name.trim(),
         birth_date: newForm.birth_date || null,
         diagnosis: newForm.diagnosis.trim() || null,
+        age: newForm.birth_date ? calcularEdadNumerica(newForm.birth_date) : null,
       }).select().single()
       if (error) throw error
       toast.success(t('pacientes.creado'))
@@ -696,7 +697,7 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold truncate" style={{ color:'var(--text-primary)' }}>{p.name}</p>
                     <p className="text-[11px] truncate" style={{ color:'var(--text-muted)' }}>
-                      {p.diagnosis || t('pacientes.sinDiagnostico')} · {p.age || '?'} {t('common.anos')}
+                      {p.diagnosis || t('pacientes.sinDiagnostico')} · {p.birth_date ? calcularEdadNumerica(p.birth_date) : (p.age || '?')} {t('common.anos')}
                     </p>
                   </div>
                   {selected?.id===p.id
@@ -737,9 +738,9 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md" style={getDxStyle(selected.diagnosis)}>
                     {selected.diagnosis || t('pacientes.sinDiagnostico')}
                   </span>
-                  {selected.age &&
+                  {(selected.birth_date || selected.age) &&
                     <span className="text-xs" style={{ color:'var(--text-muted)' }}>
-                      {selected.age} {t('common.anos')}
+                      {selected.birth_date ? calcularEdadNumerica(selected.birth_date) : selected.age} {t('common.anos')}
                     </span>}
                 </div>
               </div>

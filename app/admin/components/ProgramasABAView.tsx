@@ -11,7 +11,7 @@ import {
 import {
   Plus, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
   Target, BarChart3, BarChart2, Edit3, CheckCircle2, AlertTriangle, Clock,
-  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight
+  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight, Trash2
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 
@@ -541,6 +541,24 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
               <span className="hidden sm:inline">{t('programas.agregarSesion')}</span>
               <span className="sm:hidden">+ {t('programas.sesiones') || 'Sesión'}</span>
             </button>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation()
+                if (!confirm(`¿Eliminar el programa "${programa.titulo}" y todas sus sesiones? Esta acción no se puede deshacer.`)) return
+                const res = await fetch('/api/programas-aba', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'eliminar_programa', programa_id: programa.id }),
+                })
+                const json = await res.json()
+                if (json.error) { alert(json.error); return }
+                window.location.reload()
+              }}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all"
+              title="Eliminar programa"
+            >
+              <Trash2 size={14} />
+            </button>
             {expanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
           </div>
         </div>
@@ -857,7 +875,45 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                         <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0">
                           {obj.numero_set}
                         </span>
-                        <span className="flex-1 font-medium text-slate-700">{obj.descripcion}</span>
+                        {obj._editando ? (
+                          <input
+                            autoFocus
+                            defaultValue={obj.descripcion}
+                            onBlur={async (e) => {
+                              const nueva = e.target.value.trim()
+                              if (!nueva || nueva === obj.descripcion) {
+                                setDetalle((prev: any) => prev ? {
+                                  ...prev,
+                                  objetivos_cp: prev.objetivos_cp.map((o: any) => o.id === obj.id ? { ...o, _editando: false } : o)
+                                } : prev)
+                                return
+                              }
+                              const res = await fetch('/api/programas-aba', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'actualizar_objetivo', objetivo_id: obj.id, descripcion: nueva }),
+                              })
+                              const json = await res.json()
+                              if (json.error) { toast.error(json.error); return }
+                              toast.success('✏️ Set actualizado')
+                              loadDetalle()
+                            }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                            className="flex-1 text-sm font-medium bg-white border border-indigo-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 text-slate-700"
+                          />
+                        ) : (
+                          <span className="flex-1 font-medium text-slate-700">{obj.descripcion}</span>
+                        )}
+                        <button
+                          onClick={() => setDetalle((prev: any) => prev ? {
+                            ...prev,
+                            objetivos_cp: prev.objetivos_cp.map((o: any) => o.id === obj.id ? { ...o, _editando: !o._editando } : o)
+                          } : prev)}
+                          className="p-1 text-slate-300 hover:text-indigo-400 transition-all shrink-0"
+                          title="Editar descripción"
+                        >
+                          <Edit3 size={12} />
+                        </button>
                         <select
                           value={obj.estado || 'pendiente'}
                           onChange={async (e) => {
@@ -870,13 +926,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             const json = await res.json()
                             if (json.error) { toast.error(json.error); return }
                             toast.success(`Set ${obj.numero_set} → ${nuevoEstado === 'dominado' ? '✅ Dominado' : nuevoEstado === 'en_progreso' ? '🔄 En progreso' : '⏳ Pendiente'}`)
-                            // Actualizar detalle local sin recargar todo
-                            setDetalle((prev: any) => prev ? {
-                              ...prev,
-                              objetivos_cp: prev.objetivos_cp.map((o: any) =>
-                                o.id === obj.id ? { ...o, estado: nuevoEstado } : o
-                              )
-                            } : prev)
+                            // Recargar detalle completo para que el gráfico refleje el nuevo estado
+                            loadDetalle()
                           }}
                           className={`text-[10px] font-black px-2 py-1 rounded-full border-0 cursor-pointer outline-none ${
                             obj.estado === 'dominado' ? 'bg-emerald-100 text-emerald-700' :
@@ -891,6 +942,25 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       </div>
                     ))}
                   </div>
+                  {/* Agregar set adicional */}
+                  <button
+                    onClick={async () => {
+                      const desc = prompt('Descripción del nuevo set:')
+                      if (!desc?.trim()) return
+                      const res = await fetch('/api/programas-aba', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'agregar_set', programa_id: programa.id, descripcion: desc.trim() }),
+                      })
+                      const json = await res.json()
+                      if (json.error) { toast.error(json.error); return }
+                      toast.success('✅ Set agregado')
+                      loadDetalle()
+                    }}
+                    className="mt-2 w-full py-2 border-2 border-dashed border-[var(--card-border)] rounded-xl text-xs font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500 transition-all"
+                  >
+                    + Agregar set
+                  </button>
                 </div>
               )}
 
@@ -914,6 +984,24 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                           <span className="text-slate-400">{s.respuestas_correctas}/{s.oportunidades_totales}</span>
                         )}
                         {s.notas && <span className="text-slate-400 italic flex-1 truncate">{s.notas}</span>}
+                        <button
+                          onClick={async () => {
+                            if (!confirm('¿Eliminar esta sesión?')) return
+                            const res = await fetch('/api/programas-aba', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ action: 'eliminar_sesion', sesion_id: s.id }),
+                            })
+                            const json = await res.json()
+                            if (json.error) { toast.error(json.error); return }
+                            toast.success('🗑 Sesión eliminada')
+                            loadDetalle()
+                          }}
+                          className="ml-auto p-1 text-slate-300 hover:text-red-400 shrink-0"
+                          title="Eliminar sesión"
+                        >
+                          <X size={13} />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -1098,7 +1186,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
   const toast = useToast()
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
-    fase: programa.fase_actual || 'intervencion',
+    fase: programa.fase_actual === 'linea_base' ? 'linea_base' : (programa.fase_actual || 'intervencion'),
     oportunidades_totales: '',
     respuestas_correctas: '',
     set_activo: '',
@@ -1297,6 +1385,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
     unidad_positiva: '', unidad_negativa: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.',
     total_unidades: '10u.', notas_programa: '', drive_url: '',
     tipo_medicion: 'porcentaje', criterio_dominio_pct: 90, criterio_sesiones_consecutivas: 2,
+    fase_actual: 'intervencion',
   })
   const [objetivos, setObjetivos] = useState([{ descripcion: '' }])
 
@@ -1385,6 +1474,15 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
                 <textarea value={form.objetivo_lp} onChange={e => set('objetivo_lp', e.target.value)}
                   rows={3} placeholder={t('ui.mastery_criterion_placeholder')}
                   className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">Fase inicial</label>
+                <select value={form.fase_actual} onChange={e => set('fase_actual', e.target.value)}
+                  className="w-full rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }}>
+                  <option value="intervencion">Intervención</option>
+                  <option value="linea_base">Baseline</option>
+                  <option value="mantenimiento">Mantenimiento</option>
+                </select>
               </div>
             </div>
           )}

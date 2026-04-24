@@ -53,9 +53,11 @@ export async function POST(req: NextRequest) {
 
     if (action === 'crear_programa') {
       const { programa, objetivos } = body
+      // Default fase_actual to 'intervencion' — never let the DB silently put 'linea_base'
+      const programaConFase = { fase_actual: 'intervencion', ...programa }
       const { data: prog, error } = await supabaseAdmin
         .from('programas_aba')
-        .insert(programa)
+        .insert(programaConFase)
         .select()
         .single()
       if (error) throw error
@@ -93,19 +95,113 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'actualizar_objetivo') {
-      const { objetivo_id, estado } = body
-      const ESTADOS_VALIDOS = ['pendiente', 'en_progreso', 'dominado']
-      if (!objetivo_id || !ESTADOS_VALIDOS.includes(estado)) {
-        return NextResponse.json({ error: 'objetivo_id y estado válido requeridos' }, { status: 400 })
+      const { objetivo_id, estado, descripcion } = body
+      const updates: any = {}
+      if (estado !== undefined) {
+        const ESTADOS_VALIDOS = ['pendiente', 'en_progreso', 'dominado']
+        if (!ESTADOS_VALIDOS.includes(estado)) {
+          return NextResponse.json({ error: 'estado inválido' }, { status: 400 })
+        }
+        updates.estado = estado
+        if (estado === 'dominado') updates.fecha_dominio = new Date().toISOString().split('T')[0]
+      }
+      if (descripcion !== undefined) updates.descripcion = descripcion
+      if (!objetivo_id || Object.keys(updates).length === 0) {
+        return NextResponse.json({ error: 'objetivo_id y al menos un campo requeridos' }, { status: 400 })
       }
       const { data, error } = await supabaseAdmin
         .from('objetivos_cp')
-        .update({ estado, ...(estado === 'dominado' ? { fecha_dominio: new Date().toISOString().split('T')[0] } : {}) })
+        .update(updates)
         .eq('id', objetivo_id)
         .select()
         .single()
       if (error) throw error
       return NextResponse.json({ data })
+    }
+
+    if (action === 'agregar_set') {
+      const { programa_id, descripcion } = body
+      if (!programa_id || !descripcion?.trim()) {
+        return NextResponse.json({ error: 'programa_id y descripcion requeridos' }, { status: 400 })
+      }
+      // Get max numero_set for this program
+      const { data: existing } = await supabaseAdmin
+        .from('objetivos_cp')
+        .select('numero_set')
+        .eq('programa_id', programa_id)
+        .order('numero_set', { ascending: false })
+        .limit(1)
+      const nextNum = (existing && existing.length > 0 ? (existing[0] as any).numero_set : 0) + 1
+      const { data, error } = await supabaseAdmin
+        .from('objetivos_cp')
+        .insert({ programa_id, descripcion: descripcion.trim(), numero_set: nextNum, estado: 'pendiente' })
+        .select()
+        .single()
+      if (error) throw error
+      return NextResponse.json({ data })
+    }
+
+    if (action === 'editar_sesion') {
+      const { sesion_id, updates } = body
+      if (!sesion_id) return NextResponse.json({ error: 'sesion_id requerido' }, { status: 400 })
+      const safeUpdates: any = {}
+      if (updates.fecha !== undefined) safeUpdates.fecha = updates.fecha
+      if (updates.fase !== undefined) safeUpdates.fase = updates.fase
+      if (updates.oportunidades_totales !== undefined) safeUpdates.oportunidades_totales = Number(updates.oportunidades_totales)
+      if (updates.respuestas_correctas !== undefined) safeUpdates.respuestas_correctas = Number(updates.respuestas_correctas)
+      if (updates.notas !== undefined) safeUpdates.notas = updates.notas
+      if (updates.set !== undefined) safeUpdates.set = updates.set
+      // Recalculate percentage
+      const ot = safeUpdates.oportunidades_totales
+      const rc = safeUpdates.respuestas_correctas
+      if (ot != null && rc != null && ot > 0) {
+        safeUpdates.porcentaje_exito = Math.round((rc / ot) * 100)
+        safeUpdates.respuestas_incorrectas = Math.max(0, ot - rc)
+      }
+      const { data, error } = await supabaseAdmin
+        .from('sesiones_datos_aba')
+        .update(safeUpdates)
+        .eq('id', sesion_id)
+        .select()
+        .single()
+      if (error) throw error
+      return NextResponse.json({ data })
+    }
+
+    if (action === 'eliminar_sesion') {
+      const { sesion_id } = body
+      if (!sesion_id) return NextResponse.json({ error: 'sesion_id requerido' }, { status: 400 })
+      const { error } = await supabaseAdmin
+        .from('sesiones_datos_aba')
+        .delete()
+        .eq('id', sesion_id)
+      if (error) throw error
+      return NextResponse.json({ ok: true })
+    }
+
+    if (action === 'editar_programa') {
+      const { programa_id, updates } = body
+      if (!programa_id) return NextResponse.json({ error: 'programa_id requerido' }, { status: 400 })
+      const { data, error } = await supabaseAdmin
+        .from('programas_aba')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', programa_id)
+        .select()
+        .single()
+      if (error) throw error
+      return NextResponse.json({ data })
+    }
+
+    if (action === 'eliminar_programa') {
+      const { programa_id } = body
+      if (!programa_id) return NextResponse.json({ error: 'programa_id requerido' }, { status: 400 })
+      // Delete dependent records first
+      await supabaseAdmin.from('sesiones_datos_aba').delete().eq('programa_id', programa_id)
+      await supabaseAdmin.from('objetivos_cp').delete().eq('programa_id', programa_id)
+      await supabaseAdmin.from('cambios_fase_aba').delete().eq('programa_id', programa_id)
+      const { error } = await supabaseAdmin.from('programas_aba').delete().eq('id', programa_id)
+      if (error) throw error
+      return NextResponse.json({ ok: true })
     }
 
     if (action === 'cambiar_fase') {
@@ -164,7 +260,7 @@ async function verificarCriterioDominio(programaId: string) {
       .select('criterio_dominio_pct, criterio_sesiones_consecutivas, fase_actual, titulo, child_id')
       .eq('id', programaId)
       .single()
-    if (!prog || (prog as any).fase_actual !== 'intervencion') return
+    if (!prog || (prog as any).fase_actual === 'dominado') return
 
     const { data: sesionesRaw } = await supabaseAdmin
       .from('sesiones_datos_aba')
