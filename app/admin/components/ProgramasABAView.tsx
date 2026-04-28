@@ -104,7 +104,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const loadProgramas = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/programas-aba?child_id=${childId}`)
+      const res = await fetch(`/api/programas-aba?child_id=${childId}&t=${Date.now()}`, { cache: 'no-store' })
       const json = await res.json()
       setProgramas(json.data || [])
     } catch { toast.error('Error cargando programas') }
@@ -448,7 +448,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
   const fetchDetalle = async () => {
     setLoadingDetalle(true)
     try {
-      const res = await fetch(`/api/programas-aba?id=${programa.id}`)
+      const res = await fetch(`/api/programas-aba?id=${programa.id}&t=${Date.now()}`, { cache: 'no-store' })
       const json = await res.json()
       setDetalle(json.data || programa)
     } catch {
