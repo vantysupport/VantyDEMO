@@ -418,7 +418,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
   const toast = useToast()
 
   const area = AREA_CONFIG[programa.area] || AREA_CONFIG.comunicacion
-  const sesiones = programa.sesiones_datos_aba || []
+  // Use detalle (fresh from API) when available, fallback to prop — this ensures the
+  // chart reflects deletions/additions without needing a full page reload
+  const sesiones = (detalle ?? programa).sesiones_datos_aba || []
 
   // Calcular tendencia local
   const recientes = sesiones.slice(-5).map((s: any) => s.porcentaje_exito).filter(Boolean)
@@ -999,7 +1001,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             const json = await res.json()
                             if (json.error) { toast.error(json.error); return }
                             toast.success('🗑 Sesión eliminada')
-                            fetchDetalle()
+                            await fetchDetalle()
+                            onReload?.()
                           }}
                           className="ml-auto p-1 text-slate-300 hover:text-red-400 shrink-0"
                           title="Eliminar sesión"
