@@ -443,9 +443,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
     return last.length === critSesiones - 1 && last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   })()
 
-  const loadDetalle = async () => {
-    if (detalle) { setExpanded(!expanded); return }
-    setExpanded(true)
+  const fetchDetalle = async () => {
     setLoadingDetalle(true)
     try {
       const res = await fetch(`/api/programas-aba?id=${programa.id}`)
@@ -455,6 +453,12 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
       setDetalle(programa)
     }
     finally { setLoadingDetalle(false) }
+  }
+
+  const loadDetalle = async () => {
+    if (detalle) { setExpanded(!expanded); return }
+    setExpanded(true)
+    await fetchDetalle()
   }
 
   // Preparar datos para la gráfica
@@ -896,7 +900,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                               const json = await res.json()
                               if (json.error) { toast.error(json.error); return }
                               toast.success('✏️ Set actualizado')
-                              loadDetalle()
+                              fetchDetalle()
                             }}
                             onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
                             className="flex-1 text-sm font-medium bg-white border border-indigo-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 text-slate-700"
@@ -927,7 +931,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             if (json.error) { toast.error(json.error); return }
                             toast.success(`Set ${obj.numero_set} → ${nuevoEstado === 'dominado' ? '✅ Dominado' : nuevoEstado === 'en_progreso' ? '🔄 En progreso' : '⏳ Pendiente'}`)
                             // Recargar detalle completo para que el gráfico refleje el nuevo estado
-                            loadDetalle()
+                            fetchDetalle()
                           }}
                           className={`text-[10px] font-black px-2 py-1 rounded-full border-0 cursor-pointer outline-none ${
                             obj.estado === 'dominado' ? 'bg-emerald-100 text-emerald-700' :
@@ -955,7 +959,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                       const json = await res.json()
                       if (json.error) { toast.error(json.error); return }
                       toast.success('✅ Set agregado')
-                      loadDetalle()
+                      fetchDetalle()
                     }}
                     className="mt-2 w-full py-2 border-2 border-dashed border-[var(--card-border)] rounded-xl text-xs font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500 transition-all"
                   >
@@ -995,7 +999,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             const json = await res.json()
                             if (json.error) { toast.error(json.error); return }
                             toast.success('🗑 Sesión eliminada')
-                            loadDetalle()
+                            fetchDetalle()
                           }}
                           className="ml-auto p-1 text-slate-300 hover:text-red-400 shrink-0"
                           title="Eliminar sesión"
