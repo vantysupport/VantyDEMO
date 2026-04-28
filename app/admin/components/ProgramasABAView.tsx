@@ -1001,12 +1001,13 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             const json = await res.json()
                             if (json.error) { toast.error(json.error); return }
                             toast.success('🗑 Sesión eliminada')
-                            // Remove from detalle immediately (optimistic)
+                            // Remove from detalle immediately (optimistic update)
+                            // If detalle is null, build it from programa first
                             setDetalle((prev: any) => {
-                              if (!prev) return prev
+                              const base = prev ?? programa
                               return {
-                                ...prev,
-                                sesiones_datos_aba: (prev.sesiones_datos_aba || []).filter((x: any) => x.id !== s.id)
+                                ...base,
+                                sesiones_datos_aba: (base.sesiones_datos_aba || []).filter((x: any) => x.id !== s.id)
                               }
                             })
                           }}

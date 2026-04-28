@@ -19,8 +19,6 @@ export async function GET(req: NextRequest) {
           cambios_fase_aba(*)
         `)
         .eq('id', programaId)
-        .order('objetivos_cp.numero_set', { ascending: true })
-        .order('sesiones_datos_aba.fecha', { ascending: true })
         .single()
       if (error) throw error
       return NextResponse.json({ data })
