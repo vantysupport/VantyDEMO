@@ -475,7 +475,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     pct: s.porcentaje_exito,
     fase: s.fase,
     fecha: s.fecha,
-    set: s.set || s.objetivo_set || null,
+    set: null, // always single line — segments caused visual noise
   }))
   // Pad to minimum 10 slots so the X axis always shows at least S1–S10
   const minSlots = Math.max(10, chartDataRaw.length)
