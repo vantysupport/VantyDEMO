@@ -254,6 +254,12 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
               programa={prog}
               onRegistrarSesion={() => { setProgramaActivo(prog); setShowRegistrarSesion(true) }}
               onReload={loadProgramas}
+              onDeleteSesion={(sesionId: string) => {
+                setProgramas(prev => prev.map(p => p.id !== prog.id ? p : {
+                  ...p,
+                  sesiones_datos_aba: (p.sesiones_datos_aba || []).filter((s: any) => s.id !== sesionId)
+                }))
+              }}
               tipoGrafico={tiposGrafico[prog.id] || 'lineas'}
               onChangeTipoGrafico={(tipo: TipoGrafico) => setTipoGrafico(prog.id, tipo)}
             />
@@ -410,7 +416,7 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
   )
 }
 
-function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'lineas', onChangeTipoGrafico }: any) {
+function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, tipoGrafico = 'lineas', onChangeTipoGrafico }: any) {
   const { t } = useI18n()
   const [expanded, setExpanded] = useState(false)
   const [loadingDetalle, setLoadingDetalle] = useState(false)
@@ -1001,8 +1007,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             const json = await res.json()
                             if (json.error) { toast.error(json.error); return }
                             toast.success('🗑 Sesión eliminada')
-                            // Remove from detalle immediately (optimistic update)
-                            // If detalle is null, build it from programa first
+                            // Update both parent state and local detalle
+                            onDeleteSesion?.(s.id)
                             setDetalle((prev: any) => {
                               const base = prev ?? programa
                               return {
