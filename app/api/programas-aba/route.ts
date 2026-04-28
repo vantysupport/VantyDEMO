@@ -36,7 +36,6 @@ export async function GET(req: NextRequest) {
         `)
         .eq('child_id', childId)
         .order('created_at', { ascending: false })
-        .order('sesiones_datos_aba.fecha', { ascending: true })
       if (error) throw error
       const res = NextResponse.json({ data })
       res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
