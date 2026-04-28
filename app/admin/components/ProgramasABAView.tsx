@@ -1001,7 +1001,13 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, tipoGrafico = 'li
                             const json = await res.json()
                             if (json.error) { toast.error(json.error); return }
                             toast.success('🗑 Sesión eliminada')
-                            await fetchDetalle()
+                            // Optimistic update: remove session from local state immediately
+                            setDetalle((prev: any) => prev ? {
+                              ...prev,
+                              sesiones_datos_aba: (prev.sesiones_datos_aba || []).filter((x: any) => x.id !== s.id)
+                            } : null)
+                            // Then sync with server in background
+                            fetchDetalle()
                             onReload?.()
                           }}
                           className="ml-auto p-1 text-slate-300 hover:text-red-400 shrink-0"
