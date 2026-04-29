@@ -426,7 +426,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const area = AREA_CONFIG[programa.area] || AREA_CONFIG.comunicacion
   // Use detalle (fresh from API) when available, fallback to prop — this ensures the
   // chart reflects deletions/additions without needing a full page reload
-  const sesiones = (detalle ?? programa).sesiones_datos_aba || []
+  const sesiones = [...((detalle ?? programa).sesiones_datos_aba || [])].sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
 
   // Calcular tendencia local
   const recientes = sesiones.slice(-5).map((s: any) => s.porcentaje_exito).filter(Boolean)
@@ -981,48 +981,50 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <div>
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📋 {t('programas.ultimasSesiones')}</p>
                   <div className="space-y-1.5">
-                    {detalle.sesiones_datos_aba.slice(-6).reverse().map((s: any) => (
-                      <div key={s.id} className="flex items-center gap-3 rounded-xl p-3 border border-[var(--card-border)] bg-[var(--card)] text-xs">
-                        <span className="text-slate-400 w-20 shrink-0">{s.fecha}</span>
-                        <FaseTag fase={s.fase} small />
-                        {s.set && <span className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md">{s.set}</span>}
-                        {s.porcentaje_exito !== null && (
-                          <span className={`font-black ${
-                            s.porcentaje_exito >= programa.criterio_dominio_pct ? 'text-emerald-600' :
-                            s.porcentaje_exito >= 70 ? 'text-amber-600' : 'text-red-500'
-                          }`}>{s.porcentaje_exito}%</span>
-                        )}
-                        {s.oportunidades_totales > 0 && (
-                          <span className="text-slate-400">{s.respuestas_correctas}/{s.oportunidades_totales}</span>
-                        )}
-                        {s.notas && <span className="text-slate-400 italic flex-1 truncate">{s.notas}</span>}
-                        <button
-                          onClick={async () => {
-                            if (!confirm('¿Eliminar esta sesión?')) return
-                            const res = await fetch('/api/programas-aba', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ action: 'eliminar_sesion', sesion_id: s.id }),
-                            })
-                            const json = await res.json()
-                            if (json.error) { toast.error(json.error); return }
-                            toast.success('🗑 Sesión eliminada')
-                            // Update both parent state and local detalle
-                            onDeleteSesion?.(s.id)
-                            setDetalle((prev: any) => {
-                              const base = prev ?? programa
-                              return {
-                                ...base,
-                                sesiones_datos_aba: (base.sesiones_datos_aba || []).filter((x: any) => x.id !== s.id)
-                              }
-                            })
-                          }}
-                          className="ml-auto p-1 text-slate-300 hover:text-red-400 shrink-0"
-                          title="Eliminar sesión"
-                        >
-                          <X size={13} />
-                        </button>
-                      </div>
+                    {[...detalle.sesiones_datos_aba].sort((a: any, b: any) => (b.fecha || "").localeCompare(a.fecha || "")).slice(0, 6).map((s: any) => (
+                      <SesionRow
+                        key={s.id}
+                        s={s}
+                        programa={programa}
+                        onDelete={async () => {
+                          if (!confirm('¿Eliminar esta sesión?')) return
+                          const res = await fetch('/api/programas-aba', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'eliminar_sesion', sesion_id: s.id }),
+                          })
+                          const json = await res.json()
+                          if (json.error) { toast.error(json.error); return }
+                          toast.success('🗑 Sesión eliminada')
+                          onDeleteSesion?.(s.id)
+                          setDetalle((prev: any) => {
+                            const base = prev ?? programa
+                            return {
+                              ...base,
+                              sesiones_datos_aba: (base.sesiones_datos_aba || []).filter((x: any) => x.id !== s.id)
+                            }
+                          })
+                        }}
+                        onDateChange={async (nuevaFecha: string) => {
+                          const res = await fetch('/api/programas-aba', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'actualizar_sesion_fecha', sesion_id: s.id, fecha: nuevaFecha }),
+                          })
+                          const json = await res.json()
+                          if (json.error) { toast.error(json.error); return }
+                          toast.success('📅 Fecha actualizada')
+                          setDetalle((prev: any) => {
+                            const base = prev ?? programa
+                            return {
+                              ...base,
+                              sesiones_datos_aba: (base.sesiones_datos_aba || []).map((x: any) =>
+                                x.id === s.id ? { ...x, fecha: nuevaFecha } : x
+                              )
+                            }
+                          })
+                        }}
+                      />
                     ))}
                   </div>
                 </div>
@@ -1183,6 +1185,65 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
   )
 }
 
+// ── Fila de sesión con edición de fecha inline ────────────────────────────────
+function SesionRow({ s, programa, onDelete, onDateChange }: {
+  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void
+}) {
+  const [editingDate, setEditingDate] = useState(false)
+  const [tempDate, setTempDate] = useState(s.fecha)
+
+  return (
+    <div className="flex items-center gap-2 rounded-xl p-3 border border-[var(--card-border)] bg-[var(--card)] text-xs flex-wrap">
+      {/* Fecha: click para editar */}
+      {editingDate ? (
+        <input
+          type="date"
+          autoFocus
+          value={tempDate}
+          onChange={e => setTempDate(e.target.value)}
+          onBlur={() => {
+            setEditingDate(false)
+            if (tempDate && tempDate !== s.fecha) onDateChange(tempDate)
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            if (e.key === 'Escape') { setTempDate(s.fecha); setEditingDate(false) }
+          }}
+          className="w-32 rounded-lg px-2 py-0.5 text-xs font-bold outline-none border-2 border-indigo-400"
+          style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}
+        />
+      ) : (
+        <button
+          onClick={() => { setTempDate(s.fecha); setEditingDate(true) }}
+          className="w-20 shrink-0 text-left text-slate-400 hover:text-indigo-500 hover:underline transition-colors"
+          title="Haz clic para editar la fecha"
+        >
+          {s.fecha}
+        </button>
+      )}
+      <FaseTag fase={s.fase} small />
+      {s.set && <span className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md">{s.set}</span>}
+      {s.porcentaje_exito !== null && (
+        <span className={`font-black ${
+          s.porcentaje_exito >= programa.criterio_dominio_pct ? 'text-emerald-600' :
+          s.porcentaje_exito >= 70 ? 'text-amber-600' : 'text-red-500'
+        }`}>{s.porcentaje_exito}%</span>
+      )}
+      {s.oportunidades_totales > 0 && (
+        <span className="text-slate-400">{s.respuestas_correctas}/{s.oportunidades_totales}</span>
+      )}
+      {s.notas && <span className="text-slate-400 italic flex-1 truncate">{s.notas}</span>}
+      <button
+        onClick={onDelete}
+        className="ml-auto p-1 text-slate-300 hover:text-red-400 shrink-0"
+        title="Eliminar sesión"
+      >
+        <X size={13} />
+      </button>
+    </div>
+  )
+}
+
 function FaseTag({ fase, small }: { fase: string; small?: boolean }) {
   const { t } = useI18n()
   const labels: Record<string, { label: string; border: string; color: string }> = {
@@ -1221,8 +1282,8 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
   const crit = programa.criterio_dominio_pct || 90
   const critSesiones = programa.criterio_sesiones_consecutivas || 2
 
-  // Check recent sessions for criterion progress
-  const sesiones = programa.sesiones_datos_aba || []
+  // Check recent sessions for criterion progress (sorted by date)
+  const sesiones = [...(programa.sesiones_datos_aba || [])].sort((a: any, b: any) => (a.fecha || "").localeCompare(b.fecha || ""))
   const recentAtCrit = sesiones.slice(-critSesiones + 1).filter((s: any) => (s.porcentaje_exito ?? 0) >= crit).length
   const currentPctNum = pct ? Number(pct) : null
   const meetsThisSession = currentPctNum !== null && currentPctNum >= crit

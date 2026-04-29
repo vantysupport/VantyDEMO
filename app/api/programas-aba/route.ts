@@ -178,6 +178,17 @@ export async function POST(req: NextRequest) {
       if (error) throw error
       return NextResponse.json({ ok: true })
     }
+    if (action === 'actualizar_sesion_fecha') {
+      const { sesion_id, fecha } = body
+      if (!sesion_id || !fecha) return NextResponse.json({ error: 'sesion_id y fecha requeridos' }, { status: 400 })
+      const { error } = await supabaseAdmin
+        .from('sesiones_datos_aba')
+        .update({ fecha })
+        .eq('id', sesion_id)
+      if (error) throw error
+      return NextResponse.json({ ok: true })
+    }
+
 
     if (action === 'editar_programa') {
       const { programa_id, updates } = body
