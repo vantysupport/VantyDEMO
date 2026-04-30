@@ -84,7 +84,8 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
   const [otroLabel, setOtroLabel] = useState('')
   const [newDesc, setNewDesc]     = useState('')
   const [visibleParent, setVisibleParent] = useState(true)
-  const [selectedFile, setSelectedFile]   = useState<File | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [isDragging, setIsDragging]       = useState(false)
 
   const canUpload = ['jefe','admin','especialista','terapeuta','padre'].includes(currentRole)
   const canDelete = ['jefe','admin','especialista'].includes(currentRole)
@@ -122,42 +123,57 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
 
   useEffect(() => { loadDocs() }, [loadDocs])
 
+  const addFiles = (incoming: FileList | File[]) => {
+    const arr = Array.from(incoming)
+    setSelectedFiles(prev => {
+      const existing = new Set(prev.map(f => f.name + f.size))
+      return [...prev, ...arr.filter(f => !existing.has(f.name + f.size))]
+    })
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleUpload = async () => {
-    if (!selectedFile) { toast.error('Selecciona un archivo'); return }
+    if (selectedFiles.length === 0) { toast.error('Selecciona al menos un archivo'); return }
     setUploading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
       const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user.id).single()
 
-      const ext  = selectedFile.name.split('.').pop()
-      const path = `${childId}/${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+      let uploaded = 0
+      for (const file of selectedFiles) {
+        const path = `${childId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
 
-      const { error: upErr } = await supabase.storage
-        .from('patient-documents')
-        .upload(path, selectedFile, { upsert: false })
-      if (upErr) throw upErr
+        const { error: upErr } = await supabase.storage
+          .from('patient-documents')
+          .upload(path, file, { upsert: false })
+        if (upErr) throw upErr
 
-      const { data: { publicUrl } } = supabase.storage.from('patient-documents').getPublicUrl(path)
+        const { data: { publicUrl } } = supabase.storage.from('patient-documents').getPublicUrl(path)
 
-      const { error: dbErr } = await supabase.from('patient_documents').insert({
-        child_id:         childId,
-        uploaded_by:      user.id,
-        uploader_role:    profile?.role || currentRole,
-        uploader_name:    profile?.full_name || 'Usuario',
-        file_name:        selectedFile.name,
-        file_url:         publicUrl,
-        file_type:        fileTypeFromName(selectedFile.name),
-        file_size:        selectedFile.size,
-        category:         newCat === 'otro' && otroLabel.trim() ? otroLabel.trim() : newCat,
-        description:      newDesc.trim() || null,
-        visible_to_parent: visibleParent,
-      })
-      if (dbErr) throw dbErr
+        const { error: dbErr } = await supabase.from('patient_documents').insert({
+          child_id:         childId,
+          uploaded_by:      user.id,
+          uploader_role:    profile?.role || currentRole,
+          uploader_name:    profile?.full_name || 'Usuario',
+          file_name:        file.name,
+          file_url:         publicUrl,
+          file_type:        fileTypeFromName(file.name),
+          file_size:        file.size,
+          category:         newCat === 'otro' && otroLabel.trim() ? otroLabel.trim() : newCat,
+          description:      newDesc.trim() || null,
+          visible_to_parent: visibleParent,
+        })
+        if (dbErr) throw dbErr
+        uploaded++
+      }
 
-      toast.success('✅ Documento subido correctamente')
+      toast.success(`✅ ${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} correctamente`)
       setShowUpload(false)
-      setSelectedFile(null)
+      setSelectedFiles([])
       setNewDesc('')
       setNewCat('general')
       setOtroLabel('')
@@ -225,34 +241,49 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
         <div className={`${card} border rounded-2xl p-5 space-y-4`}>
           <div className="flex items-center justify-between">
             <p className={`text-sm font-black ${txt1}`}>Subir nuevo documento</p>
-            <button onClick={() => { setShowUpload(false); setSelectedFile(null) }}
+            <button onClick={() => { setShowUpload(false); setSelectedFiles([]) }}
               className={`p-1.5 rounded-lg ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-100'}`}>
               <X size={14} className={txt3} />
             </button>
           </div>
 
-          {/* File picker */}
+          {/* Drop zone */}
           <div
+            onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={e => { e.preventDefault(); setIsDragging(false); addFiles(e.dataTransfer.files) }}
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
-              ${isDark ? 'border-[#30363d] hover:border-blue-700 hover:bg-blue-900/10' : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'}`}>
-            {selectedFile ? (
-              <div className="space-y-1">
-                <p className="text-2xl">{FILE_ICONS[fileTypeFromName(selectedFile.name)]}</p>
-                <p className={`text-sm font-bold ${txt1}`}>{selectedFile.name}</p>
-                <p className={`text-xs ${txt3}`}>{formatSize(selectedFile.size)}</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Upload size={28} className={`mx-auto ${txt3}`} />
-                <p className={`text-sm font-bold ${txt1}`}>Click para seleccionar archivo</p>
-                <p className={`text-xs ${txt3}`}>PDF, imágenes, Word, Excel — máx. 20MB</p>
-              </div>
-            )}
+              ${isDragging
+                ? isDark ? 'border-blue-500 bg-blue-900/20' : 'border-blue-400 bg-blue-50'
+                : isDark ? 'border-[#30363d] hover:border-blue-700 hover:bg-blue-900/10' : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+              }`}>
+            <Upload size={28} className={`mx-auto mb-2 ${isDragging ? 'text-blue-500' : txt3}`} />
+            <p className={`text-sm font-bold ${txt1}`}>
+              {isDragging ? 'Suelta los archivos aquí' : 'Arrastra archivos o haz clic para seleccionar'}
+            </p>
+            <p className={`text-xs mt-1 ${txt3}`}>PDF, imágenes, Word, Excel — varios a la vez — máx. 20MB c/u</p>
           </div>
-          <input ref={fileRef} type="file" className="hidden"
+          <input ref={fileRef} type="file" className="hidden" multiple
             accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mp3"
-            onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+            onChange={e => { if (e.target.files) { addFiles(e.target.files); e.target.value = '' } }} />
+
+          {/* Selected files list */}
+          {selectedFiles.length > 0 && (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {selectedFiles.map((f, i) => (
+                <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs
+                  ${isDark ? 'bg-[#0d1117] border-[#30363d]' : 'bg-slate-50 border-slate-200'}`}>
+                  <span className="text-base">{FILE_ICONS[fileTypeFromName(f.name)]}</span>
+                  <span className={`flex-1 truncate font-medium ${txt1}`}>{f.name}</span>
+                  <span className={txt3}>{formatSize(f.size)}</span>
+                  <button onClick={() => removeFile(i)} className={`ml-1 p-0.5 rounded hover:text-red-400 ${txt3}`}>
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Categoría */}
           <div>
@@ -300,10 +331,14 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </label>
           )}
 
-          <button onClick={handleUpload} disabled={uploading || !selectedFile}
+          <button onClick={handleUpload} disabled={uploading || selectedFiles.length === 0}
             className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
             {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            {uploading ? 'Subiendo...' : 'Subir documento'}
+            {uploading
+              ? 'Subiendo...'
+              : selectedFiles.length > 0
+                ? `Subir ${selectedFiles.length} archivo${selectedFiles.length > 1 ? 's' : ''}`
+                : 'Subir documento'}
           </button>
         </div>
       )}
