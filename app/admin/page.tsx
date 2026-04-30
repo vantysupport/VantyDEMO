@@ -163,6 +163,7 @@ export default function AdminDashboard() {
   const [ariaOpen, setAriaOpen] = useState(false)
   const [ariaExpanded, setAriaExpanded] = useState(false)
   const [ariaMinimized, setAriaMinimized] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
   const [activeChild, setActiveChild] = useState<{id: string, name: string} | null>(null)
   // Clear patient context when leaving patients view
   useEffect(() => { if (currentView !== 'ninos') setActiveChild(null) }, [currentView])
@@ -280,6 +281,7 @@ export default function AdminDashboard() {
         border-r transition-transform duration-300
         ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-100'} shadow-sm
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${focusMode ? 'md:-translate-x-full md:w-0 md:overflow-hidden md:border-0' : ''}
       `}>
         {/* Logo */}
         <div className={`flex items-center gap-3 px-4 h-[60px] border-b flex-shrink-0
@@ -367,9 +369,22 @@ export default function AdminDashboard() {
 
       {/* MAIN */}
       <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Focus Mode toggle button — visible solo en PC cuando focusMode está activo */}
+        {focusMode && (
+          <button
+            onClick={() => setFocusMode(false)}
+            title="Salir del modo enfoque"
+            className={`hidden md:flex fixed top-3 right-4 z-50 items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg border transition-all hover:scale-105
+              ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-300 hover:bg-[#30363d]' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            Salir de pantalla completa
+          </button>
+        )}
         {/* Topbar */}
-        <header className={`h-14 md:h-16 flex items-center justify-between px-3 md:px-6 flex-shrink-0 border-b
-          ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}`}>
+        <header className={`h-14 md:h-16 flex items-center justify-between px-3 md:px-6 flex-shrink-0 border-b transition-all duration-300
+          ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}
+          ${focusMode ? 'hidden' : ''}`}>
           <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -399,6 +414,21 @@ export default function AdminDashboard() {
               </button>
             )}
 
+            {/* Focus Mode button — solo en PC */}
+            <button
+              onClick={() => setFocusMode(f => !f)}
+              title="Pantalla completa (ocultar paneles)"
+              className={`hidden md:flex p-2 rounded-lg transition-colors
+                ${focusMode
+                  ? (isDark ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-600')
+                  : (isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500')
+                }`}
+            >
+              {focusMode
+                ? <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                : <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              }
+            </button>
             {/* Language selector */}
             <LocaleSelector compact={true} />
 

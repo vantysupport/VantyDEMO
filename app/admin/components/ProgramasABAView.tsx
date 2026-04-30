@@ -93,41 +93,6 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [showRegistrarSesion, setShowRegistrarSesion] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState<any>(null)
   const [loadingAI, setLoadingAI] = useState(false)
-
-  // Persist dismissed alerts per child so they survive navigation / re-mounts
-  const STORAGE_KEY_ALERTAS = `aria_dismissed_${childId}`
-  const STORAGE_KEY_RESUMEN = `aria_resumen_dismissed_${childId}`
-
-  const [alertasDismissed, setAlertasDismissed] = useState<Set<number>>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_ALERTAS)
-      return saved ? new Set<number>(JSON.parse(saved)) : new Set<number>()
-    } catch { return new Set<number>() }
-  })
-  const [resumenDismissed, setResumenDismissed] = useState<boolean>(() => {
-    try { return localStorage.getItem(STORAGE_KEY_RESUMEN) === '1' } catch { return false }
-  })
-
-  // Sync to localStorage whenever they change
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_ALERTAS, JSON.stringify([...alertasDismissed])) } catch {}
-  }, [alertasDismissed, STORAGE_KEY_ALERTAS])
-
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY_RESUMEN, resumenDismissed ? '1' : '0') } catch {}
-  }, [resumenDismissed, STORAGE_KEY_RESUMEN])
-
-  // When childId changes, reload dismissed state from localStorage for the new child
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_ALERTAS)
-      setAlertasDismissed(saved ? new Set<number>(JSON.parse(saved)) : new Set<number>())
-      setResumenDismissed(localStorage.getItem(STORAGE_KEY_RESUMEN) === '1')
-    } catch {
-      setAlertasDismissed(new Set<number>())
-      setResumenDismissed(false)
-    }
-  }, [childId])
   const [filtroArea, setFiltroArea] = useState<string>('todos')
   // Tipo de gráfico por programa: { [programaId]: TipoGrafico }
   const [tiposGrafico, setTiposGrafico] = useState<Record<string, TipoGrafico>>({})
@@ -154,22 +119,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
     setLoadingAI(true)
     fetch(`/api/agente/chat?action=analisis_proactivo&child_id=${childId}`)
       .then(r => r.json())
-      .then(data => {
-        setAiAnalysis(data)
-        // Si cambió el contenido de las alertas (análisis nuevo), limpiar dismissed
-        // para que el terapeuta no se pierda alertas nuevas con índices viejos
-        try {
-          const newSig = JSON.stringify((data?.alertas || []).map((a: any) => a.titulo))
-          const prevSig = localStorage.getItem(`aria_sig_${childId}`)
-          if (prevSig && prevSig !== newSig) {
-            localStorage.removeItem(`aria_dismissed_${childId}`)
-            localStorage.removeItem(`aria_resumen_dismissed_${childId}`)
-            setAlertasDismissed(new Set())
-            setResumenDismissed(false)
-          }
-          localStorage.setItem(`aria_sig_${childId}`, newSig)
-        } catch {}
-      })
+      .then(data => setAiAnalysis(data))
       .catch(() => {})
       .finally(() => setLoadingAI(false))
   }, [childId])
@@ -256,43 +206,20 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
           <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{t('dashboard.ariAnalizando')}</p>
         </div>
       )}
-      {aiAnalysis && aiAnalysis.alertas?.filter((_: any, i: number) => !alertasDismissed.has(i)).length > 0 && (
+      {aiAnalysis && aiAnalysis.alertas?.length > 0 && (
         <div className="space-y-2 mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
-              style={{ color: 'var(--text-muted)' }}>
-              <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
-            </p>
-            <button
-              onClick={() => setAlertasDismissed(new Set(aiAnalysis.alertas.map((_: any, i: number) => i)))}
-              className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all"
-              style={{ color: 'var(--text-muted)', background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
-              Descartar todas
-            </button>
-          </div>
-          {aiAnalysis.resumen && !resumenDismissed && (
-            <div className="rounded-xl p-4 flex items-start gap-3" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
-              <p className="text-sm leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
-              <button
-                onClick={() => setResumenDismissed(true)}
-                title="Cerrar"
-                className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
-                style={{ background: 'var(--card)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+          <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2"
+            style={{ color: 'var(--text-muted)' }}>
+            <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
+          </p>
+          {aiAnalysis.resumen && (
+            <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
             </div>
           )}
-          {aiAnalysis.alertas.map((alerta: any, i: number) =>
-            alertasDismissed.has(i) ? null : (
-              <AlertaCard
-                key={i}
-                alerta={alerta}
-                onDismiss={() => setAlertasDismissed(prev => new Set([...prev, i]))}
-              />
-            )
-          )}
+          {aiAnalysis.alertas.map((alerta: any, i: number) => (
+            <AlertaCard key={i} alerta={alerta} />
+          ))}
         </div>
       )}
 
@@ -365,105 +292,23 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 }
 
 // ── Tarjeta de alerta IA ─────────────────────────────────────────────────────
-function AlertaCard({ alerta, onDismiss }: { alerta: any; key?: any; onDismiss?: () => void }) {
-  // 'idle' → 'resolved' (check) → 'leaving' (animación) → onDismiss()
-  // 'idle' → 'leaving' (X directo) → onDismiss()
-  const [estado, setEstado] = useState<'idle' | 'resolved' | 'leaving'>('idle')
-
-  const cfg: Record<string, { border: string; icon: string }> = {
-    alta:  { border: '#c0524a', icon: '⚠' },
-    media: { border: '#b07830', icon: '!'  },
-    baja:  { border: '#4a7aaa', icon: 'i'  },
+function AlertaCard({ alerta }: { alerta: any; key?: any }) {
+  const cfg: Record<string, { border: string; icon: string; label: string }> = {
+    alta:  { border: '#c0524a', icon: '⚠', label: '#c0524a' },
+    media: { border: '#b07830', icon: '!', label: '#b07830' },
+    baja:  { border: '#4a7aaa', icon: 'i', label: '#4a7aaa' },
   }
   const c = cfg[alerta.prioridad] || cfg.media
-
-  const triggerLeave = () => {
-    setEstado('leaving')
-    setTimeout(() => onDismiss?.(), 280)
-  }
-
-  const handleCheck = () => {
-    if (estado === 'resolved') { triggerLeave(); return }
-    setEstado('resolved')
-  }
-
-  const isLeaving  = estado === 'leaving'
-  const isResolved = estado === 'resolved'
-
   return (
-    <div
-      style={{
-        borderRadius: '12px',
-        padding: isResolved ? '10px 14px' : '14px',
-        background: isResolved ? 'var(--card)' : 'var(--muted-bg)',
-        border: `1px solid ${isResolved ? '#10b98140' : 'var(--card-border)'}`,
-        borderLeft: `3px solid ${isResolved ? '#10b981' : c.border}`,
-        opacity: isLeaving ? 0 : 1,
-        transform: isLeaving ? 'translateX(12px) scaleY(0.85)' : 'translateX(0) scaleY(1)',
-        transition: 'all 0.28s ease',
-        overflow: 'hidden',
-        maxHeight: isLeaving ? '0px' : '200px',
-      }}
-    >
-      <div className="flex items-center gap-2">
-        {/* Icono estado */}
-        {isResolved ? (
-          <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: '#10b98120', color: '#10b981' }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </span>
-        ) : (
-          <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
-            style={{ background: `${c.border}18`, color: c.border }}>
-            {c.icon}
-          </span>
-        )}
-
-        {/* Texto */}
-        <div className="flex-1 min-w-0">
-          {isResolved ? (
-            <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>
-              {alerta.titulo}
-            </p>
-          ) : (
-            <>
-              <p className="font-bold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
-              <p className="text-xs leading-relaxed mt-0.5" style={{ color: 'var(--text-secondary)' }}>{alerta.mensaje}</p>
-            </>
-          )}
-        </div>
-
-        {/* Botones */}
-        <div className="flex items-center gap-1 shrink-0 ml-1">
-          {/* ✓ Check */}
-          <button
-            onClick={handleCheck}
-            title={isResolved ? 'Confirmar y quitar' : 'Marcar como revisado'}
-            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-            style={{
-              background: isResolved ? '#10b98125' : '#10b98114',
-              color: '#10b981',
-              border: `1px solid ${isResolved ? '#10b98150' : '#10b98128'}`,
-              transform: isResolved ? 'scale(1.08)' : 'scale(1)',
-            }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </button>
-          {/* ✕ Eliminar */}
-          <button
-            onClick={triggerLeave}
-            title="Eliminar alerta"
-            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-            style={{ background: `${c.border}12`, color: c.border, border: `1px solid ${c.border}28` }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
+    <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `3px solid ${c.border}` }}>
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+          style={{ background: `${c.border}18`, color: c.border }}>
+          {c.icon}
+        </span>
+        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
       </div>
+      <p className="text-xs leading-relaxed pl-6" style={{ color: 'var(--text-secondary)' }}>{alerta.mensaje}</p>
     </div>
   )
 }
@@ -503,9 +348,19 @@ function MiniChart({ chartData, minSlots, criterio }: { chartData: any[]; minSlo
 
 
 // Componente para el gráfico de detalle — un solo ResponsiveContainer, sin overlay
-function DetailChart({ chartData, chartHeight, minSlots, programa, segments, segColorMap, dividers, crit, faseLabel }: any) {
+function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mergedSegments, segColorMap, dividers, crit, faseLabel }: any) {
   const margin = { top: 24, right: 16, bottom: 20, left: 4 }
   const YAXIS_W = 40
+
+  // Use mergedSegments if available (fixes non-contiguous Set 1 showing as separate line)
+  const lineSegments: any[] = mergedSegments ?? segments.map((seg: any, si: number) => ({
+    key: `${seg.fase}||${seg.set}`,
+    label: seg.label,
+    fase: seg.fase,
+    set: seg.set,
+    indices: new Set(Array.from({ length: seg.endIdx - seg.startIdx + 1 }, (_: any, k: number) => seg.startIdx + k)),
+    color: segColorMap[si],
+  }))
 
   // Calcular divisores de SET (no de fase) — posición absoluta en número de sesión
   // Un divisor de set ocurre cuando el campo "set" cambia entre dos puntos consecutivos con datos
@@ -517,11 +372,11 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
     if (prevSet !== currSet) {
       // La línea va entre la sesión i-1 y la sesión i (ambas en 1-based)
       const xPos = (realPoints[i - 1].sesion + realPoints[i].sesion) / 2
-      const segIdx = segments.findIndex((s: any) => s.set === currSet || (!s.set && currSet === '__none__'))
+      const mseg = lineSegments.find((s: any) => s.set === currSet || (!s.set && currSet === '__none__'))
       setDividers.push({
         x: xPos,
         label: realPoints[i].set || '',
-        nextColor: segIdx >= 0 ? segColorMap[segIdx] : '#6366f1',
+        nextColor: mseg ? mseg.color : '#6366f1',
       })
     }
   }
@@ -592,22 +447,22 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
         ))}
         {/* Línea horizontal de criterio de dominio */}
         <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2} />
-        {/* Una línea por segmento con su color */}
-        {segments.map((seg: any, si: number) => {
-          const color = segColorMap[si]
+        {/* Una línea por set (merged) con su color — Set 1 agrupa todos sus puntos aunque no sean contiguos */}
+        {lineSegments.map((seg: any, si: number) => {
+          const color = seg.color
           return (
             <Line
               key={`seg_${si}`}
               type="linear"
               dataKey={(d: any) => {
                 const idx = chartData.indexOf(d)
-                return (idx >= seg.startIdx && idx <= seg.endIdx) ? d.pct : null
+                return seg.indices.has(idx) ? d.pct : null
               }}
               stroke={color}
               strokeWidth={2.5}
               dot={(props: any) => {
                 const { cx, cy, index } = props
-                if (index < seg.startIdx || index > seg.endIdx) return <g key={index} />
+                if (!seg.indices.has(index)) return <g key={index} />
                 const dotColor = (chartData[index]?.pct ?? 0) >= crit ? '#059669' : color
                 return <circle key={index} cx={cx} cy={cy} r={4} fill={dotColor} stroke="white" strokeWidth={1.5} />
               }}
@@ -867,11 +722,30 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         }
                       }
 
-                      // Color palette — each segment gets its own color by position
-                      // This prevents two non-contiguous segments of the same set/fase from
-                      // sharing a color and appearing as a single connected line
+                      // Color palette — stable by unique fase||set key so Set 1 always = same color
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
-                      const segColorMap = segments.map((_: any, si: number) => segColors[si % segColors.length])
+                      const uniqueSegKeys: string[] = []
+                      segments.forEach(seg => {
+                        const k = `${seg.fase}||${seg.set}`
+                        if (!uniqueSegKeys.includes(k)) uniqueSegKeys.push(k)
+                      })
+                      const segColorMap = segments.map(seg =>
+                        segColors[uniqueSegKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length]
+                      )
+
+                      // Merge segments that share the same fase||set key into a single logical group
+                      // so that returning to Set 1 after Set 2 draws on the SAME line, not a new one.
+                      type MergedSeg = { key: string; label: string; fase: string; set: string | null; indices: Set<number>; color: string }
+                      const mergedMap = new Map<string, MergedSeg>()
+                      segments.forEach((seg, si) => {
+                        const k = `${seg.fase}||${seg.set}`
+                        if (!mergedMap.has(k)) {
+                          mergedMap.set(k, { key: k, label: seg.label, fase: seg.fase, set: seg.set, indices: new Set(), color: segColorMap[si] })
+                        }
+                        const ms = mergedMap.get(k)!
+                        for (let idx = seg.startIdx; idx <= seg.endIdx; idx++) ms.indices.add(idx)
+                      })
+                      const mergedSegments = Array.from(mergedMap.values())
 
                       // Divider x-positions — endIdx is 0-based, sesion is 1-based
                       const dividers = segments.slice(0, -1).map(seg => seg.endIdx + 2)
@@ -893,6 +767,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             minSlots={minSlots}
                             programa={programa}
                             segments={segments}
+                            mergedSegments={mergedSegments}
                             segColorMap={segColorMap}
                             dividers={dividers}
                             crit={crit}
@@ -901,10 +776,10 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
 
                           {/* ── Legend — deduplicated by fase||set key ── */}
                           <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
-                            {segments.map((seg, si) => {
-                              const color = segColorMap[si]
+                            {mergedSegments.map((seg) => {
+                              const color = seg.color
                               return (
-                              <span key={`seg_legend_${si}`} className="flex items-center gap-1 text-[10px] font-bold" style={{ color }}>
+                              <span key={seg.key} className="flex items-center gap-1 text-[10px] font-bold" style={{ color }}>
                                 <span className="w-4 border-t-2 inline-block" style={{ borderColor: color }} />
                                 {seg.label}{seg.set && seg.fase ? ` (${faseLabel[seg.fase] || seg.fase})` : ''}
                               </span>
