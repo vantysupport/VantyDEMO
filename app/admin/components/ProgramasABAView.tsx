@@ -712,16 +712,11 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         }
                       }
 
-                      // Color palette — stable by unique fase||set key so Set 1 always = same color
+                      // Color palette — each segment gets its own color by position
+                      // This prevents two non-contiguous segments of the same set/fase from
+                      // sharing a color and appearing as a single connected line
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
-                      const uniqueSegKeys: string[] = []
-                      segments.forEach(seg => {
-                        const k = `${seg.fase}||${seg.set}`
-                        if (!uniqueSegKeys.includes(k)) uniqueSegKeys.push(k)
-                      })
-                      const segColorMap = segments.map(seg =>
-                        segColors[uniqueSegKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length]
-                      )
+                      const segColorMap = segments.map((_: any, si: number) => segColors[si % segColors.length])
 
                       // Divider x-positions — endIdx is 0-based, sesion is 1-based
                       const dividers = segments.slice(0, -1).map(seg => seg.endIdx + 2)
@@ -751,13 +746,10 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
 
                           {/* ── Legend — deduplicated by fase||set key ── */}
                           <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
-                            {segments.filter((seg, i) => {
-                              const k = `${seg.fase}||${seg.set}`
-                              return segments.findIndex(s => `${s.fase}||${s.set}` === k) === i
-                            }).map((seg, _, arr) => {
-                              const color = segColorMap[segments.indexOf(seg)]
+                            {segments.map((seg, si) => {
+                              const color = segColorMap[si]
                               return (
-                              <span key={`${seg.fase}||${seg.set}`} className="flex items-center gap-1 text-[10px] font-bold" style={{ color }}>
+                              <span key={`seg_legend_${si}`} className="flex items-center gap-1 text-[10px] font-bold" style={{ color }}>
                                 <span className="w-4 border-t-2 inline-block" style={{ borderColor: color }} />
                                 {seg.label}{seg.set && seg.fase ? ` (${faseLabel[seg.fase] || seg.fase})` : ''}
                               </span>
