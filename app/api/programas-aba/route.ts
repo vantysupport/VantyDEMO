@@ -275,15 +275,24 @@ async function verificarCriterioDominio(programaId: string) {
 
     const { data: sesionesRaw } = await supabaseAdmin
       .from('sesiones_datos_aba')
-      .select('porcentaje_exito, oportunidades_totales, respuestas_correctas')
+      .select('porcentaje_exito, oportunidades_totales, respuestas_correctas, set, fecha')
       .eq('programa_id', programaId)
-      .order('fecha', { ascending: false })
-      .limit((prog as any).criterio_sesiones_consecutivas)
+      .order('fecha', { ascending: true })
 
-    if (!sesionesRaw || sesionesRaw.length < (prog as any).criterio_sesiones_consecutivas) return
+    if (!sesionesRaw || sesionesRaw.length === 0) return
+
+    // Filtrar por el set más reciente activo
+    const setsConSesiones = Array.from(new Set((sesionesRaw as any[]).map(s => s.set ?? '__none__')))
+    const setActivo = setsConSesiones[setsConSesiones.length - 1]
+    const sesionesSetActivo = (sesionesRaw as any[]).filter(s => (s.set ?? '__none__') === setActivo)
+
+    if (sesionesSetActivo.length < (prog as any).criterio_sesiones_consecutivas) return
+
+    // Tomar las últimas N sesiones del set activo
+    const ultimas = sesionesSetActivo.slice(-(prog as any).criterio_sesiones_consecutivas)
 
     // Normalizar porcentaje_exito
-    const sesiones = (sesionesRaw as any[]).map(s => ({
+    const sesiones = ultimas.map(s => ({
       porcentaje_exito: s.porcentaje_exito != null
         ? s.porcentaje_exito
         : (s.oportunidades_totales > 0
@@ -302,7 +311,7 @@ async function verificarCriterioDominio(programaId: string) {
         programa_id: programaId,
         tipo: 'criterio_alcanzado',
         titulo: `✅ Criterio dominado: "${(prog as any).titulo}"`,
-        mensaje: `Se alcanzó el criterio de ${(prog as any).criterio_dominio_pct}% en ${(prog as any).criterio_sesiones_consecutivas} sesiones consecutivas. Considera pasar a mantenimiento.`,
+        mensaje: `Se alcanzó el criterio de ${(prog as any).criterio_dominio_pct}% en ${(prog as any).criterio_sesiones_consecutivas} sesiones consecutivas${setActivo !== '__none__' ? ` (${setActivo})` : ''}. Considera pasar a mantenimiento.`,
         prioridad: 'alta',
       })
     }

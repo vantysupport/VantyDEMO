@@ -131,11 +131,15 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 
   // Helper: misma lógica que el badge "Criterio alcanzado" en ProgramaCard
   const programaCriterioAlcanzado = (p: any) => {
-    const sesiones = p.sesiones_datos_aba || []
+    const todasSesiones = (p.sesiones_datos_aba || []).sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
     const crit = p.criterio_dominio_pct || 90
     const critSesiones = p.criterio_sesiones_consecutivas || 2
-    if (sesiones.length < critSesiones) return false
-    const last = sesiones.slice(-critSesiones)
+    // Filtrar por el set más reciente activo
+    const setsConSes = Array.from(new Set(todasSesiones.map((s: any) => s.set ?? '__none__')))
+    const setAct = setsConSes[setsConSes.length - 1] ?? '__none__'
+    const sesActivo = todasSesiones.filter((s: any) => (s.set ?? '__none__') === setAct)
+    if (sesActivo.length < critSesiones) return false
+    const last = sesActivo.slice(-critSesiones)
     return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   }
 
@@ -428,26 +432,32 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   // chart reflects deletions/additions without needing a full page reload
   const sesiones = [...((detalle ?? programa).sesiones_datos_aba || [])].sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
 
-  // Calcular tendencia local
-  const recientes = sesiones.slice(-5).map((s: any) => s.porcentaje_exito).filter(Boolean)
+  // ── Agrupar por set: calcular stats SOLO del set más reciente activo ──
+  // El set activo es el último set que tiene al menos una sesión registrada
+  const setsConSesiones = Array.from(new Set(sesiones.map((s: any) => s.set ?? '__none__')))
+  const setActivo = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
+  const sesionesSetActivo = sesiones.filter((s: any) => (s.set ?? '__none__') === setActivo)
+
+  // Calcular tendencia local — solo sobre el set activo
+  const recientes = sesionesSetActivo.slice(-5).map((s: any) => s.porcentaje_exito).filter(Boolean)
   const promedio = recientes.length > 0 ? recientes.reduce((a: number, b: number) => a + b, 0) / recientes.length : 0
-  const ultimoPct = sesiones[sesiones.length - 1]?.porcentaje_exito ?? null
-  const anterior = sesiones[sesiones.length - 2]?.porcentaje_exito ?? null
+  const ultimoPct = sesionesSetActivo[sesionesSetActivo.length - 1]?.porcentaje_exito ?? null
+  const anterior = sesionesSetActivo[sesionesSetActivo.length - 2]?.porcentaje_exito ?? null
   const tendencia = ultimoPct !== null && anterior !== null
     ? ultimoPct > anterior + 3 ? 'up' : ultimoPct < anterior - 3 ? 'down' : 'stable'
     : 'stable'
 
-  // ── Check for criterion streak (2 consecutive sessions at or above criterio) ──
+  // ── Check for criterion streak — solo sobre el set activo ──
   const crit = programa.criterio_dominio_pct || 90
   const critSesiones = programa.criterio_sesiones_consecutivas || 2
   const criterioAlcanzado = (() => {
-    if (sesiones.length < critSesiones) return false
-    const last = sesiones.slice(-critSesiones)
+    if (sesionesSetActivo.length < critSesiones) return false
+    const last = sesionesSetActivo.slice(-critSesiones)
     return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   })()
   // Check if 1 away (one session at criterion, one needed)
-  const unaFalta = !criterioAlcanzado && critSesiones >= 2 && sesiones.length >= 1 && (() => {
-    const last = sesiones.slice(-(critSesiones - 1))
+  const unaFalta = !criterioAlcanzado && critSesiones >= 2 && sesionesSetActivo.length >= 1 && (() => {
+    const last = sesionesSetActivo.slice(-(critSesiones - 1))
     return last.length === critSesiones - 1 && last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   })()
 
@@ -1024,6 +1034,31 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             }
                           })
                         }}
+                        onPctChange={async (pct: number, correctas: number, totales: number) => {
+                          const res = await fetch('/api/programas-aba', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              action: 'editar_sesion',
+                              sesion_id: s.id,
+                              updates: { respuestas_correctas: correctas, oportunidades_totales: totales },
+                            }),
+                          })
+                          const json = await res.json()
+                          if (json.error) { toast.error(json.error); return }
+                          toast.success('✏️ Porcentaje actualizado')
+                          setDetalle((prev: any) => {
+                            const base = prev ?? programa
+                            return {
+                              ...base,
+                              sesiones_datos_aba: (base.sesiones_datos_aba || []).map((x: any) =>
+                                x.id === s.id
+                                  ? { ...x, porcentaje_exito: pct, respuestas_correctas: correctas, oportunidades_totales: totales, respuestas_incorrectas: Math.max(0, totales - correctas) }
+                                  : x
+                              )
+                            }
+                          })
+                        }}
                       />
                     ))}
                   </div>
@@ -1186,11 +1221,23 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
 }
 
 // ── Fila de sesión con edición de fecha inline ────────────────────────────────
-function SesionRow({ s, programa, onDelete, onDateChange }: {
-  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void
+function SesionRow({ s, programa, onDelete, onDateChange, onPctChange }: {
+  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void; onPctChange: (pct: number, correctas: number, totales: number) => void
 }) {
   const [editingDate, setEditingDate] = useState(false)
   const [tempDate, setTempDate] = useState(s.fecha)
+  const [editingPct, setEditingPct] = useState(false)
+  const [tempCorrectas, setTempCorrectas] = useState(String(s.respuestas_correctas ?? ''))
+  const [tempTotales, setTempTotales] = useState(String(s.oportunidades_totales ?? ''))
+
+  const commitPct = () => {
+    setEditingPct(false)
+    const c = parseInt(tempCorrectas)
+    const t = parseInt(tempTotales)
+    if (!isNaN(c) && !isNaN(t) && t > 0) {
+      onPctChange(Math.round((c / t) * 100), c, t)
+    }
+  }
 
   return (
     <div className="flex items-center gap-2 rounded-xl p-3 border border-[var(--card-border)] bg-[var(--card)] text-xs flex-wrap">
@@ -1224,10 +1271,40 @@ function SesionRow({ s, programa, onDelete, onDateChange }: {
       <FaseTag fase={s.fase} small />
       {s.set && <span className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md">{s.set}</span>}
       {s.porcentaje_exito !== null && (
-        <span className={`font-black ${
-          s.porcentaje_exito >= programa.criterio_dominio_pct ? 'text-emerald-600' :
-          s.porcentaje_exito >= 70 ? 'text-amber-600' : 'text-red-500'
-        }`}>{s.porcentaje_exito}%</span>
+        editingPct ? (
+          <span className="flex items-center gap-1">
+            <input
+              type="number" min={0} max={s.oportunidades_totales || 999} autoFocus
+              value={tempCorrectas}
+              onChange={e => setTempCorrectas(e.target.value)}
+              onBlur={commitPct}
+              onKeyDown={e => { if (e.key === 'Enter') commitPct(); if (e.key === 'Escape') setEditingPct(false) }}
+              className="w-10 rounded-md px-1 py-0.5 text-xs font-bold outline-none border-2 border-indigo-400 text-center"
+              style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}
+              title="Respuestas correctas"
+            />
+            <span className="text-slate-400">/</span>
+            <input
+              type="number" min={1}
+              value={tempTotales}
+              onChange={e => setTempTotales(e.target.value)}
+              onBlur={commitPct}
+              onKeyDown={e => { if (e.key === 'Enter') commitPct(); if (e.key === 'Escape') setEditingPct(false) }}
+              className="w-10 rounded-md px-1 py-0.5 text-xs font-bold outline-none border-2 border-indigo-400 text-center"
+              style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}
+              title="Oportunidades totales"
+            />
+          </span>
+        ) : (
+          <button
+            onClick={() => { setTempCorrectas(String(s.respuestas_correctas ?? '')); setTempTotales(String(s.oportunidades_totales ?? '')); setEditingPct(true) }}
+            title="Clic para editar"
+            className={`font-black hover:underline transition-colors ${
+              s.porcentaje_exito >= programa.criterio_dominio_pct ? 'text-emerald-600' :
+              s.porcentaje_exito >= 70 ? 'text-amber-600' : 'text-red-500'
+            }`}
+          >{s.porcentaje_exito}%</button>
+        )
       )}
       {s.oportunidades_totales > 0 && (
         <span className="text-slate-400">{s.respuestas_correctas}/{s.oportunidades_totales}</span>
