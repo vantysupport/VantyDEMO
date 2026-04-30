@@ -352,6 +352,37 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
   const margin = { top: 24, right: 16, bottom: 20, left: 4 }
   const YAXIS_W = 40
 
+  // Calcular divisores de SET (no de fase) — posición absoluta en número de sesión
+  // Un divisor de set ocurre cuando el campo "set" cambia entre dos puntos consecutivos con datos
+  const setDividers: { x: number; label: string; nextColor: string }[] = []
+  const realPoints = chartData.filter((d: any) => d.pct !== null)
+  for (let i = 1; i < realPoints.length; i++) {
+    const prevSet = realPoints[i - 1].set ?? '__none__'
+    const currSet = realPoints[i].set ?? '__none__'
+    if (prevSet !== currSet) {
+      // La línea va entre la sesión i-1 y la sesión i (ambas en 1-based)
+      const xPos = (realPoints[i - 1].sesion + realPoints[i].sesion) / 2
+      const segIdx = segments.findIndex((s: any) => s.set === currSet || (!s.set && currSet === '__none__'))
+      setDividers.push({
+        x: xPos,
+        label: realPoints[i].set || '',
+        nextColor: segIdx >= 0 ? segColorMap[segIdx] : '#6366f1',
+      })
+    }
+  }
+
+  // Divisores de fase (cuando cambia la fase pero NO el set — línea más suave)
+  const faseDividers: number[] = []
+  for (let i = 1; i < realPoints.length; i++) {
+    const prevSet = realPoints[i - 1].set ?? '__none__'
+    const currSet = realPoints[i].set ?? '__none__'
+    const prevFase = realPoints[i - 1].fase
+    const currFase = realPoints[i].fase
+    if (prevSet === currSet && prevFase !== currFase) {
+      faseDividers.push((realPoints[i - 1].sesion + realPoints[i].sesion) / 2)
+    }
+  }
+
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
       <LineChart data={chartData} margin={margin}>
@@ -383,12 +414,28 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, seg
           }}
           contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
         />
-        {/* Dividers verticales: x = número de sesión (1-based) */}
-        {dividers.map((x: any, i: number) => (
-          <ReferenceLine key={`div-${i}`} x={x} stroke="#94a3b8" strokeWidth={1.5}
-            label={{ value: segments[i + 1]?.label || '', position: 'insideTopRight', fontSize: 9, fill: segColorMap[i + 1] || '#6366f1' }}
+        {/* Líneas verticales de cambio de SET — punteadas gruesas estilo ABA */}
+        {setDividers.map((div: any, i: number) => (
+          <ReferenceLine
+            key={`setdiv-${i}`}
+            x={div.x}
+            stroke="#94a3b8"
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            label={{
+              value: div.label,
+              position: 'insideTopRight',
+              fontSize: 9,
+              fill: div.nextColor,
+              fontWeight: 700,
+            }}
           />
         ))}
+        {/* Líneas verticales de cambio de FASE (dentro del mismo set) — más suaves */}
+        {faseDividers.map((x: number, i: number) => (
+          <ReferenceLine key={`fasediv-${i}`} x={x} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="3 3" />
+        ))}
+        {/* Línea horizontal de criterio de dominio */}
         <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2} />
         {/* Una línea por segmento con su color */}
         {segments.map((seg: any, si: number) => {
@@ -485,7 +532,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     pct: s.porcentaje_exito,
     fase: s.fase,
     fecha: s.fecha,
-    set: null, // always single line — segments caused visual noise
+    set: s.set ?? null,
   }))
   // Pad to minimum 10 slots so the X axis always shows at least S1–S10
   const minSlots = Math.max(10, chartDataRaw.length)
@@ -633,31 +680,36 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
 
                     {/* ── ABA Phase Chart — segmentos con líneas verticales y labels ── */}
                     {tipoGrafico === 'lineas' && (() => {
-                      // Build segments: each unique (set+fase) combo is a segment
+                      // Build segments usando índices ABSOLUTOS de chartData (no de realData)
                       type Seg = { label: string; fase: string; set: string | null; startIdx: number; endIdx: number }
                       const segments: Seg[] = []
-                      const realData = chartData.filter((d: any) => d.pct !== null)
-                      if (realData.length > 0) {
-                        let segStart = 0
-                        let curKey = `${realData[0].fase}||${realData[0].set}`
-                        realData.forEach((d: any, i: number) => {
-                          const key = `${d.fase}||${d.set}`
-                          if (key !== curKey || i === realData.length - 1) {
-                            const endIdx = i === realData.length - 1 ? i : i - 1
-                            const prev = realData[segStart]
-                            const setLabel = prev.set || ''
-                            const fLabel = faseLabel[prev.fase] || prev.fase
-                            segments.push({
-                              label: setLabel ? `${setLabel}` : fLabel,
-                              fase: prev.fase,
-                              set: prev.set,
-                              startIdx: segStart,
-                              endIdx,
-                            })
-                            curKey = key
-                            segStart = i
+                      if (chartData.length > 0) {
+                        let segStart = -1
+                        let curKey = ''
+                        for (let i = 0; i < chartData.length; i++) {
+                          const d = chartData[i]
+                          if (d.pct === null) {
+                            // fin de datos reales — cerrar segmento abierto
+                            if (segStart >= 0) {
+                              const prev = chartData[i - 1]
+                              segments.push({ label: prev.set || faseLabel[prev.fase] || prev.fase, fase: prev.fase, set: prev.set, startIdx: segStart, endIdx: i - 1 })
+                              segStart = -1; curKey = ''
+                            }
+                            continue
                           }
-                        })
+                          const key = `${d.fase}||${d.set}`
+                          if (key !== curKey) {
+                            if (segStart >= 0) {
+                              const prev = chartData[i - 1]
+                              segments.push({ label: prev.set || faseLabel[prev.fase] || prev.fase, fase: prev.fase, set: prev.set, startIdx: segStart, endIdx: i - 1 })
+                            }
+                            segStart = i; curKey = key
+                          }
+                          // último punto
+                          if (i === chartData.length - 1 && segStart >= 0) {
+                            segments.push({ label: d.set || faseLabel[d.fase] || d.fase, fase: d.fase, set: d.set, startIdx: segStart, endIdx: i })
+                          }
+                        }
                       }
 
                       // Color palette per segment index
@@ -718,15 +770,14 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       if (realDataB.length > 0) {
                         let sStart = 0
                         let curK = `${realDataB[0].fase}||${realDataB[0].set}`
-                        realDataB.forEach((d: any, i: number) => {
-                          const k = `${d.fase}||${d.set}`
-                          if (k !== curK || i === realDataB.length - 1) {
-                            const endIdx = i === realDataB.length - 1 ? i : i - 1
+                        for (let i = 1; i <= realDataB.length; i++) {
+                          const k = i < realDataB.length ? `${realDataB[i].fase}||${realDataB[i].set}` : null
+                          if (k !== curK) {
                             const prev = realDataB[sStart]
-                            segs.push({ label: prev.set || (faseLabel[prev.fase] || prev.fase), fase: prev.fase, set: prev.set, startIdx: sStart, endIdx })
-                            curK = k; sStart = i
+                            segs.push({ label: prev.set || (faseLabel[prev.fase] || prev.fase), fase: prev.fase, set: prev.set, startIdx: sStart, endIdx: i - 1 })
+                            if (i < realDataB.length) { curK = k!; sStart = i }
                           }
-                        })
+                        }
                       }
                       const total = realDataB.length
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
@@ -767,7 +818,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 labelFormatter={(label) => { const d = chartData[label - 1]; return d ? `Sesión ${label} · ${d.fecha}${d.set ? ` · ${d.set}` : ''}` : `Sesión ${label}` }}
                                 contentStyle={{ borderRadius: '10px', fontSize: '11px', border: '1px solid var(--card-border)', background: 'var(--card)' }}
                               />
-                              {dividers.map((x, i) => <ReferenceLine key={`bd-${i}`} x={x} stroke="#475569" strokeWidth={1.5} />)}
+                              {dividers.map((x, i) => <ReferenceLine key={`bd-${i}`} x={x} stroke="#64748b" strokeWidth={2} strokeDasharray="6 4" />)}
                               <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="6 3" strokeWidth={2} />
                               <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={40}>
                                 {chartData.map((entry: any, index: number) => (
