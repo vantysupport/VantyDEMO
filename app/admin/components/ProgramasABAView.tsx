@@ -93,6 +93,8 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [showRegistrarSesion, setShowRegistrarSesion] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState<any>(null)
   const [loadingAI, setLoadingAI] = useState(false)
+  const [alertasDismissed, setAlertasDismissed] = useState<Set<number>>(new Set())
+  const [resumenDismissed, setResumenDismissed] = useState(false)
   const [filtroArea, setFiltroArea] = useState<string>('todos')
   // Tipo de gráfico por programa: { [programaId]: TipoGrafico }
   const [tiposGrafico, setTiposGrafico] = useState<Record<string, TipoGrafico>>({})
@@ -206,20 +208,43 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
           <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{t('dashboard.ariAnalizando')}</p>
         </div>
       )}
-      {aiAnalysis && aiAnalysis.alertas?.length > 0 && (
+      {aiAnalysis && aiAnalysis.alertas?.filter((_: any, i: number) => !alertasDismissed.has(i)).length > 0 && (
         <div className="space-y-2 mb-5">
-          <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2"
-            style={{ color: 'var(--text-muted)' }}>
-            <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
-          </p>
-          {aiAnalysis.resumen && (
-            <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+              style={{ color: 'var(--text-muted)' }}>
+              <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
+            </p>
+            <button
+              onClick={() => setAlertasDismissed(new Set(aiAnalysis.alertas.map((_: any, i: number) => i)))}
+              className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all"
+              style={{ color: 'var(--text-muted)', background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+              Descartar todas
+            </button>
+          </div>
+          {aiAnalysis.resumen && !resumenDismissed && (
+            <div className="rounded-xl p-4 flex items-start gap-3" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
+              <p className="text-sm leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
+              <button
+                onClick={() => setResumenDismissed(true)}
+                title="Cerrar"
+                className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
+                style={{ background: 'var(--card)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
           )}
-          {aiAnalysis.alertas.map((alerta: any, i: number) => (
-            <AlertaCard key={i} alerta={alerta} />
-          ))}
+          {aiAnalysis.alertas.map((alerta: any, i: number) =>
+            alertasDismissed.has(i) ? null : (
+              <AlertaCard
+                key={i}
+                alerta={alerta}
+                onDismiss={() => setAlertasDismissed(prev => new Set([...prev, i]))}
+              />
+            )
+          )}
         </div>
       )}
 
@@ -292,23 +317,105 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 }
 
 // ── Tarjeta de alerta IA ─────────────────────────────────────────────────────
-function AlertaCard({ alerta }: { alerta: any; key?: any }) {
-  const cfg: Record<string, { border: string; icon: string; label: string }> = {
-    alta:  { border: '#c0524a', icon: '⚠', label: '#c0524a' },
-    media: { border: '#b07830', icon: '!', label: '#b07830' },
-    baja:  { border: '#4a7aaa', icon: 'i', label: '#4a7aaa' },
+function AlertaCard({ alerta, onDismiss }: { alerta: any; key?: any; onDismiss?: () => void }) {
+  // 'idle' → 'resolved' (check) → 'leaving' (animación) → onDismiss()
+  // 'idle' → 'leaving' (X directo) → onDismiss()
+  const [estado, setEstado] = useState<'idle' | 'resolved' | 'leaving'>('idle')
+
+  const cfg: Record<string, { border: string; icon: string }> = {
+    alta:  { border: '#c0524a', icon: '⚠' },
+    media: { border: '#b07830', icon: '!'  },
+    baja:  { border: '#4a7aaa', icon: 'i'  },
   }
   const c = cfg[alerta.prioridad] || cfg.media
+
+  const triggerLeave = () => {
+    setEstado('leaving')
+    setTimeout(() => onDismiss?.(), 280)
+  }
+
+  const handleCheck = () => {
+    if (estado === 'resolved') { triggerLeave(); return }
+    setEstado('resolved')
+  }
+
+  const isLeaving  = estado === 'leaving'
+  const isResolved = estado === 'resolved'
+
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `3px solid ${c.border}` }}>
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
-          style={{ background: `${c.border}18`, color: c.border }}>
-          {c.icon}
-        </span>
-        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
+    <div
+      style={{
+        borderRadius: '12px',
+        padding: isResolved ? '10px 14px' : '14px',
+        background: isResolved ? 'var(--card)' : 'var(--muted-bg)',
+        border: `1px solid ${isResolved ? '#10b98140' : 'var(--card-border)'}`,
+        borderLeft: `3px solid ${isResolved ? '#10b981' : c.border}`,
+        opacity: isLeaving ? 0 : 1,
+        transform: isLeaving ? 'translateX(12px) scaleY(0.85)' : 'translateX(0) scaleY(1)',
+        transition: 'all 0.28s ease',
+        overflow: 'hidden',
+        maxHeight: isLeaving ? '0px' : '200px',
+      }}
+    >
+      <div className="flex items-center gap-2">
+        {/* Icono estado */}
+        {isResolved ? (
+          <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: '#10b98120', color: '#10b981' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </span>
+        ) : (
+          <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+            style={{ background: `${c.border}18`, color: c.border }}>
+            {c.icon}
+          </span>
+        )}
+
+        {/* Texto */}
+        <div className="flex-1 min-w-0">
+          {isResolved ? (
+            <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>
+              {alerta.titulo}
+            </p>
+          ) : (
+            <>
+              <p className="font-bold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
+              <p className="text-xs leading-relaxed mt-0.5" style={{ color: 'var(--text-secondary)' }}>{alerta.mensaje}</p>
+            </>
+          )}
+        </div>
+
+        {/* Botones */}
+        <div className="flex items-center gap-1 shrink-0 ml-1">
+          {/* ✓ Check */}
+          <button
+            onClick={handleCheck}
+            title={isResolved ? 'Confirmar y quitar' : 'Marcar como revisado'}
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+            style={{
+              background: isResolved ? '#10b98125' : '#10b98114',
+              color: '#10b981',
+              border: `1px solid ${isResolved ? '#10b98150' : '#10b98128'}`,
+              transform: isResolved ? 'scale(1.08)' : 'scale(1)',
+            }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </button>
+          {/* ✕ Eliminar */}
+          <button
+            onClick={triggerLeave}
+            title="Eliminar alerta"
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+            style={{ background: `${c.border}12`, color: c.border, border: `1px solid ${c.border}28` }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <p className="text-xs leading-relaxed pl-6" style={{ color: 'var(--text-secondary)' }}>{alerta.mensaje}</p>
     </div>
   )
 }
