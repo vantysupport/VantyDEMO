@@ -93,8 +93,41 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [showRegistrarSesion, setShowRegistrarSesion] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState<any>(null)
   const [loadingAI, setLoadingAI] = useState(false)
-  const [alertasDismissed, setAlertasDismissed] = useState<Set<number>>(new Set())
-  const [resumenDismissed, setResumenDismissed] = useState(false)
+
+  // Persist dismissed alerts per child so they survive navigation / re-mounts
+  const STORAGE_KEY_ALERTAS = `aria_dismissed_${childId}`
+  const STORAGE_KEY_RESUMEN = `aria_resumen_dismissed_${childId}`
+
+  const [alertasDismissed, setAlertasDismissed] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_ALERTAS)
+      return saved ? new Set<number>(JSON.parse(saved)) : new Set<number>()
+    } catch { return new Set<number>() }
+  })
+  const [resumenDismissed, setResumenDismissed] = useState<boolean>(() => {
+    try { return localStorage.getItem(STORAGE_KEY_RESUMEN) === '1' } catch { return false }
+  })
+
+  // Sync to localStorage whenever they change
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY_ALERTAS, JSON.stringify([...alertasDismissed])) } catch {}
+  }, [alertasDismissed, STORAGE_KEY_ALERTAS])
+
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY_RESUMEN, resumenDismissed ? '1' : '0') } catch {}
+  }, [resumenDismissed, STORAGE_KEY_RESUMEN])
+
+  // When childId changes, reload dismissed state from localStorage for the new child
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_ALERTAS)
+      setAlertasDismissed(saved ? new Set<number>(JSON.parse(saved)) : new Set<number>())
+      setResumenDismissed(localStorage.getItem(STORAGE_KEY_RESUMEN) === '1')
+    } catch {
+      setAlertasDismissed(new Set<number>())
+      setResumenDismissed(false)
+    }
+  }, [childId])
   const [filtroArea, setFiltroArea] = useState<string>('todos')
   // Tipo de gráfico por programa: { [programaId]: TipoGrafico }
   const [tiposGrafico, setTiposGrafico] = useState<Record<string, TipoGrafico>>({})
@@ -121,7 +154,22 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
     setLoadingAI(true)
     fetch(`/api/agente/chat?action=analisis_proactivo&child_id=${childId}`)
       .then(r => r.json())
-      .then(data => setAiAnalysis(data))
+      .then(data => {
+        setAiAnalysis(data)
+        // Si cambió el contenido de las alertas (análisis nuevo), limpiar dismissed
+        // para que el terapeuta no se pierda alertas nuevas con índices viejos
+        try {
+          const newSig = JSON.stringify((data?.alertas || []).map((a: any) => a.titulo))
+          const prevSig = localStorage.getItem(`aria_sig_${childId}`)
+          if (prevSig && prevSig !== newSig) {
+            localStorage.removeItem(`aria_dismissed_${childId}`)
+            localStorage.removeItem(`aria_resumen_dismissed_${childId}`)
+            setAlertasDismissed(new Set())
+            setResumenDismissed(false)
+          }
+          localStorage.setItem(`aria_sig_${childId}`, newSig)
+        } catch {}
+      })
       .catch(() => {})
       .finally(() => setLoadingAI(false))
   }, [childId])
