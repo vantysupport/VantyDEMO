@@ -712,10 +712,16 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         }
                       }
 
-                      // Color palette per segment index
+                      // Color palette — stable by unique fase||set key so Set 1 always = same color
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
-                      // Map each segment to a color
-                      const segColorMap = segments.map((_, i) => segColors[i % segColors.length])
+                      const uniqueSegKeys: string[] = []
+                      segments.forEach(seg => {
+                        const k = `${seg.fase}||${seg.set}`
+                        if (!uniqueSegKeys.includes(k)) uniqueSegKeys.push(k)
+                      })
+                      const segColorMap = segments.map(seg =>
+                        segColors[uniqueSegKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length]
+                      )
 
                       // Divider x-positions — endIdx is 0-based, sesion is 1-based
                       const dividers = segments.slice(0, -1).map(seg => seg.endIdx + 2)
@@ -743,14 +749,20 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             faseLabel={faseLabel}
                           />
 
-                          {/* ── Legend ── */}
+                          {/* ── Legend — deduplicated by fase||set key ── */}
                           <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
-                            {segments.map((seg, i) => (
-                              <span key={i} className="flex items-center gap-1 text-[10px] font-bold" style={{ color: segColorMap[i] }}>
-                                <span className="w-4 border-t-2 inline-block" style={{ borderColor: segColorMap[i] }} />
+                            {segments.filter((seg, i) => {
+                              const k = `${seg.fase}||${seg.set}`
+                              return segments.findIndex(s => `${s.fase}||${s.set}` === k) === i
+                            }).map((seg, _, arr) => {
+                              const color = segColorMap[segments.indexOf(seg)]
+                              return (
+                              <span key={`${seg.fase}||${seg.set}`} className="flex items-center gap-1 text-[10px] font-bold" style={{ color }}>
+                                <span className="w-4 border-t-2 inline-block" style={{ borderColor: color }} />
                                 {seg.label}{seg.set && seg.fase ? ` (${faseLabel[seg.fase] || seg.fase})` : ''}
                               </span>
-                            ))}
+                              )
+                            })}
                             <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
                               <span className="w-4 border-t-2 border-dashed border-emerald-500 inline-block" />
                               Criterio {programa.criterio_dominio_pct}%
@@ -780,6 +792,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       }
                       const total = realDataB.length
                       const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
+                      const uniqueBarKeys: string[] = []
+                      segs.forEach(seg => { const k = `${seg.fase}||${seg.set}`; if (!uniqueBarKeys.includes(k)) uniqueBarKeys.push(k) })
+                      const barColorMap = segs.map(seg => segColors[uniqueBarKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length])
                       const dividers = segs.slice(0, -1).map(s => s.endIdx + 2)
 
                       return (
@@ -788,7 +803,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             <div className="flex" style={{ paddingLeft: '44px', paddingRight: '16px' }}>
                               {segs.map((seg, i) => {
                                 const width = ((seg.endIdx - seg.startIdx + 1) / total) * 100
-                                const color = segColors[i % segColors.length]
+                                const color = barColorMap[i]
                                 return (
                                   <div key={i} className="flex flex-col items-center justify-end pb-1 border-r last:border-r-0"
                                     style={{ width: `${width}%`, minWidth: '28px', borderColor: '#cbd5e1' }}>
