@@ -423,6 +423,16 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
           </div>
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
+              {t('common.nombre')}
+            </label>
+            <input type="text" value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="Ej: María García"
+              className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none font-semibold"
+              style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }} />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
               {t('pacientes.fechaNacimiento')}
             </label>
             <input type="date" value={form.birth_date}
@@ -576,6 +586,34 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
   const [showNew, setShowNew] = useState(false)
   const [newForm, setNewForm] = useState({ name:'', birth_date:'', diagnosis:'' })
   const [saving, setSaving] = useState(false)
+
+  // ── Edición inline del nombre en el header ────────────────────────────────
+  const [editingHeaderName, setEditingHeaderName] = useState(false)
+  const [headerNameInput, setHeaderNameInput] = useState('')
+  const [savingHeaderName, setSavingHeaderName] = useState(false)
+
+  const startEditHeaderName = () => {
+    setHeaderNameInput(selected?.name || '')
+    setEditingHeaderName(true)
+  }
+  const cancelEditHeaderName = () => { setEditingHeaderName(false); setHeaderNameInput('') }
+  const saveHeaderName = async () => {
+    const trimmed = headerNameInput.trim()
+    if (!trimmed || trimmed === selected?.name) { cancelEditHeaderName(); return }
+    setSavingHeaderName(true)
+    try {
+      const { error } = await supabase.from('children').update({ name: trimmed }).eq('id', selected.id)
+      if (error) throw error
+      const updated = { ...selected, name: trimmed }
+      setSelected(updated)
+      setPacientes(prev => prev.map(p => p.id === selected.id ? { ...p, name: trimmed } : p))
+      setFiltrados(prev => prev.map(p => p.id === selected.id ? { ...p, name: trimmed } : p))
+      if (onPatientSelect) onPatientSelect(selected.id, trimmed)
+      toast.success(t('common.exitoGuardado'))
+      setEditingHeaderName(false)
+    } catch (e: any) { toast.error(e.message) }
+    finally { setSavingHeaderName(false) }
+  }
 
   // ── Cargar ────────────────────────────────────────────────────────────────
   const cargar = useCallback(async () => {
@@ -731,9 +769,40 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
               </button>
               <Avatar name={selected.name} size="md"/>
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-black truncate leading-tight" style={{ color:'var(--text-primary)' }}>
-                  {selected.name}
-                </h1>
+                {editingHeaderName ? (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      autoFocus
+                      value={headerNameInput}
+                      onChange={e => setHeaderNameInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') saveHeaderName(); if (e.key === 'Escape') cancelEditHeaderName() }}
+                      className="flex-1 min-w-0 text-base font-black rounded-lg px-2 py-0.5 leading-tight outline-none"
+                      style={{ background: 'var(--muted-bg)', color: 'var(--text-primary)', border: '1.5px solid var(--accent, #3b82f6)' }}
+                    />
+                    <button onClick={saveHeaderName} disabled={savingHeaderName}
+                      className="p-1 rounded-lg flex-shrink-0 transition-all"
+                      style={{ background: 'var(--accent, #3b82f6)', color: '#fff' }}>
+                      {savingHeaderName ? <Loader2 size={13} className="animate-spin"/> : <Check size={13}/>}
+                    </button>
+                    <button onClick={cancelEditHeaderName}
+                      className="p-1 rounded-lg flex-shrink-0 transition-all"
+                      style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
+                      <X size={13}/>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 group">
+                    <h1 className="text-lg font-black truncate leading-tight" style={{ color:'var(--text-primary)' }}>
+                      {selected.name}
+                    </h1>
+                    <button onClick={startEditHeaderName}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded-lg flex-shrink-0 transition-all"
+                      title={t('common.editar')}
+                      style={{ color: 'var(--text-muted)' }}>
+                      <Edit size={13}/>
+                    </button>
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md" style={getDxStyle(selected.diagnosis)}>
                     {selected.diagnosis || t('pacientes.sinDiagnostico')}

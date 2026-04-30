@@ -1109,6 +1109,29 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             }
                           })
                         }}
+                        onSetChange={async (nuevoSet: string) => {
+                          const res = await fetch('/api/programas-aba', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              action: 'editar_sesion',
+                              sesion_id: s.id,
+                              updates: { set: nuevoSet },
+                            }),
+                          })
+                          const json = await res.json()
+                          if (json.error) { toast.error(json.error); return }
+                          toast.success(`🎯 Set cambiado a ${nuevoSet}`)
+                          setDetalle((prev: any) => {
+                            const base = prev ?? programa
+                            return {
+                              ...base,
+                              sesiones_datos_aba: (base.sesiones_datos_aba || []).map((x: any) =>
+                                x.id === s.id ? { ...x, set: nuevoSet } : x
+                              )
+                            }
+                          })
+                        }}
                       />
                     ))}
                   </div>
@@ -1271,14 +1294,18 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
 }
 
 // ── Fila de sesión con edición de fecha inline ────────────────────────────────
-function SesionRow({ s, programa, onDelete, onDateChange, onPctChange }: {
-  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void; onPctChange: (pct: number, correctas: number, totales: number) => void
+function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChange }: {
+  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void; onPctChange: (pct: number, correctas: number, totales: number) => void; onSetChange: (nuevoSet: string) => void
 }) {
   const [editingDate, setEditingDate] = useState(false)
   const [tempDate, setTempDate] = useState(s.fecha)
   const [editingPct, setEditingPct] = useState(false)
   const [tempCorrectas, setTempCorrectas] = useState(String(s.respuestas_correctas ?? ''))
   const [tempTotales, setTempTotales] = useState(String(s.oportunidades_totales ?? ''))
+  const [editingSet, setEditingSet] = useState(false)
+  const availableSets: string[] = (programa.objetivos_cp || []).map((o: any) =>
+    o.numero_set ? `Set ${o.numero_set}` : o.descripcion
+  )
 
   const commitPct = () => {
     setEditingPct(false)
@@ -1319,7 +1346,31 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange }: {
         </button>
       )}
       <FaseTag fase={s.fase} small />
-      {s.set && <span className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md">{s.set}</span>}
+      {/* Set badge — click to change */}
+      {editingSet ? (
+        <div className="flex items-center gap-1 flex-wrap">
+          {availableSets.map(setLabel => (
+            <button
+              key={setLabel}
+              onClick={() => { setEditingSet(false); if (setLabel !== s.set) onSetChange(setLabel) }}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
+                setLabel === s.set
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'bg-white text-indigo-500 border-indigo-300 hover:bg-indigo-50'
+              }`}
+            >{setLabel}</button>
+          ))}
+          <button onClick={() => setEditingSet(false)} className="text-slate-400 hover:text-slate-600 text-[10px] px-1">✕</button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setEditingSet(true)}
+          title="Clic para cambiar de set"
+          className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md hover:bg-indigo-100 transition-colors"
+        >
+          {s.set || <span className="text-slate-400">set?</span>}
+        </button>
+      )}
       {s.porcentaje_exito !== null && (
         editingPct ? (
           <span className="flex items-center gap-1">
