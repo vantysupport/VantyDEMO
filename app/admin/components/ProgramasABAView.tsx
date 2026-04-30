@@ -726,7 +726,6 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         return segIdx >= 0 ? segColorMap[segIdx] : '#6366f1'
                       })
 
-                      const total = realData.length
                       const chartHeight = 260
 
                       return (
