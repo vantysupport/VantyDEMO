@@ -483,6 +483,24 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [loadingDetalle, setLoadingDetalle] = useState(false)
   const [detalle, setDetalle] = useState<any>(null)
   const toast = useToast()
+  const [editingTitulo, setEditingTitulo] = useState(false)
+  const [tempTitulo, setTempTitulo] = useState(programa.titulo)
+  const [localTitulo, setLocalTitulo] = useState(programa.titulo)
+
+  const saveTitulo = async (nuevo: string) => {
+    setEditingTitulo(false)
+    const trimmed = nuevo.trim()
+    if (!trimmed || trimmed === localTitulo) { setTempTitulo(localTitulo); return }
+    setLocalTitulo(trimmed)
+    const res = await fetch('/api/programas-aba', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'actualizar_programa', programa_id: programa.id, updates: { titulo: trimmed } }),
+    })
+    const json = await res.json()
+    if (json.error) { toast.error(json.error); setLocalTitulo(programa.titulo); setTempTitulo(programa.titulo); return }
+    toast.success('✏️ Título actualizado')
+  }
 
   const area = AREA_CONFIG[programa.area] || AREA_CONFIG.comunicacion
   // Use detalle (fresh from API) when available, fallback to prop — this ensures the
@@ -578,7 +596,31 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{programa.titulo}</h3>
+              {editingTitulo ? (
+                <input
+                  autoFocus
+                  value={tempTitulo}
+                  onChange={e => setTempTitulo(e.target.value)}
+                  onBlur={() => saveTitulo(tempTitulo)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                    if (e.key === 'Escape') { setTempTitulo(localTitulo); setEditingTitulo(false) }
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className="font-bold text-sm rounded-lg px-2 py-0.5 outline-none border-2 border-indigo-400"
+                  style={{ color: 'var(--text-primary)', background: 'var(--input-bg)', minWidth: '160px', maxWidth: '260px' }}
+                />
+              ) : (
+                <h3
+                  className="font-bold text-sm leading-snug cursor-text group flex items-center gap-1"
+                  style={{ color: 'var(--text-primary)' }}
+                  title="Doble clic para editar el título"
+                  onDoubleClick={e => { e.stopPropagation(); setTempTitulo(localTitulo); setEditingTitulo(true) }}
+                >
+                  {localTitulo}
+                  <Edit3 size={11} className="opacity-0 group-hover:opacity-40 transition-opacity shrink-0" />
+                </h3>
+              )}
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
                 {area.label}
               </span>
@@ -975,7 +1017,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <div>
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
                   <div className="space-y-2">
-                    {detalle.objetivos_cp.map((obj: any) => (
+                    {[...detalle.objetivos_cp].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((obj: any) => (
                       <div key={obj.id} className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${
                         obj.estado === 'dominado' ? 'bg-emerald-50 border-emerald-200' :
                         obj.estado === 'en_progreso' ? 'bg-indigo-50 border-indigo-200' :
@@ -1340,7 +1382,7 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
   const [tempCorrectas, setTempCorrectas] = useState(String(s.respuestas_correctas ?? ''))
   const [tempTotales, setTempTotales] = useState(String(s.oportunidades_totales ?? ''))
   const [editingSet, setEditingSet] = useState(false)
-  const availableSets: string[] = (programa.objetivos_cp || []).map((o: any) =>
+  const availableSets: string[] = [...(programa.objetivos_cp || [])].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((o: any) =>
     o.numero_set ? `Set ${o.numero_set}` : o.descripcion
   )
 
@@ -1549,7 +1591,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
   }
 
   // Fetch sets for this program
-  const sets = programa.objetivos_cp || []
+  const sets = [...(programa.objetivos_cp || [])].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0))
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
@@ -1676,7 +1718,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
   const [saving, setSaving] = useState(false)
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({
-    titulo: '', area: 'comunicacion', area_tags: [] as string[], objetivo_lp: '',
+    titulo: '', area: '', area_tags: [] as string[], objetivo_lp: '',
     sd_estimulo: '', correccion_error: '', reforzadores: '', materiales: '',
     unidad_positiva: '', unidad_negativa: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.',
     total_unidades: '10u.', notas_programa: '', drive_url: '',
@@ -1694,7 +1736,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
   }
 
   const handleSave = async () => {
-    if (!form.titulo || !form.objetivo_lp) { toast.error('Título y objetivo son requeridos'); return }
+    if (!form.titulo || !form.objetivo_lp || !form.area) { toast.error('Título, área y objetivo son requeridos'); return }
     setSaving(true)
     try {
       const res = await fetch('/api/programas-aba', {
@@ -1743,32 +1785,24 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
                   placeholder={t('programas.placeholderNombre')}
                   className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
-              {/* Área — texto libre + tags opcionales */}
+              {/* Área — texto libre */}
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.area')} *</label>
-                <input value={form.area === 'comunicacion' && form.area_tags.length === 0 ? '' : form.area}
-                  onChange={e => set('area', e.target.value || 'comunicacion')}
+                <input value={form.area}
+                  onChange={e => set('area', e.target.value)}
                   placeholder="Ej: Comunicación, Conducta..."
-                  className="w-full rounded-xl text-sm font-bold outline-none transition-all mb-2" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
-                <p className="text-[10px] text-slate-400 mb-1.5">Tags rápidos (opcional):</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {AREA_TAG_OPTIONS.map(({ key, label, emoji }) => (
-                    <button key={key}
-                      onClick={() => { set('area', key); }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
-                        form.area === key
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-indigo-200'
-                      }`}>
-                      {emoji} {label}
-                    </button>
-                  ))}
-                </div>
+                  className="w-full rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.objetivoLargoPlazo')} *</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a corto plazo 1 *</label>
                 <textarea value={form.objetivo_lp} onChange={e => set('objetivo_lp', e.target.value)}
-                  rows={3} placeholder={t('ui.mastery_criterion_placeholder')}
+                  rows={2} placeholder="Con un criterio de éxito de 90% en 2 sesiones consecutivas, el estudiante..."
+                  className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a corto plazo 2</label>
+                <textarea value={(form as any).objetivo_cp2 ?? ''} onChange={e => set('objetivo_cp2', e.target.value)}
+                  rows={2} placeholder="Con un criterio de éxito de 90% en 2 sesiones consecutivas, el estudiante..."
                   className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
               <div>
@@ -1863,7 +1897,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
               </button>
             )}
             {step < 3 ? (
-              <button onClick={() => setStep(s => s + 1)} disabled={!form.titulo || !form.objetivo_lp}
+              <button onClick={() => setStep(s => s + 1)} disabled={!form.titulo || !form.objetivo_lp || !form.area}
                 className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
                 {t('programas.siguiente')} <ArrowRight size={16} />
               </button>
