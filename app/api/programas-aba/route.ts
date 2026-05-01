@@ -94,6 +94,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ data })
     }
 
+    if (action === 'actualizar_programa') {
+      const { programa_id, updates } = body
+      const ALLOWED = ['titulo', 'objetivo_lp', 'fase_actual', 'criterio_dominio_pct', 'criterio_sesiones_consecutivas']
+      const safeUpdates: any = {}
+      for (const key of ALLOWED) {
+        if (updates[key] !== undefined) safeUpdates[key] = updates[key]
+      }
+      if (!programa_id || Object.keys(safeUpdates).length === 0) {
+        return NextResponse.json({ error: 'programa_id y al menos un campo requeridos' }, { status: 400 })
+      }
+      const { data, error } = await supabaseAdmin
+        .from('programas_aba')
+        .update(safeUpdates)
+        .eq('id', programa_id)
+        .select()
+        .single()
+      if (error) throw error
+      return NextResponse.json({ data })
+    }
+
     if (action === 'actualizar_objetivo') {
       const { objetivo_id, estado, descripcion } = body
       const updates: any = {}
