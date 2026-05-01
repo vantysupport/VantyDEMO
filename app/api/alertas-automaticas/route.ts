@@ -108,35 +108,65 @@ async function analizarPaciente(childId: string): Promise<any[]> {
     }
   }
 
-  // ── REGLA 2: Estancamiento en objetivos ABA ───────────────
-  const { data: ultimasSesionesABA } = await supabaseAdmin
-    .from('registro_aba')
-    .select('fecha_sesion, datos')
+  // ── REGLA 2: Estancamiento/regresión por programa ABA individual ───
+  const { data: programasABA } = await supabaseAdmin
+    .from('programas_aba')
+    .select('id, titulo, criterio_dominio_pct, sesiones_datos_aba(fecha, porcentaje_exito)')
     .eq('child_id', childId)
-    .order('fecha_sesion', { ascending: false })
-    .limit(5)
 
-  if (ultimasSesionesABA && ultimasSesionesABA.length >= 3) {
-    const logros = ultimasSesionesABA.map(s => {
-      const logro = s.datos?.nivel_logro_objetivos || ''
-      return logro.includes('76') || logro.includes('Completamente') ? 'alto'
-        : logro.includes('51') || logro.includes('Mayormente') ? 'medio'
-        : 'bajo'
-    })
+  // Analizar cada programa individualmente
+  const todasSesiones: { fecha: string; porcentaje_exito: number }[] = []
+  for (const prog of (programasABA || [])) {
+    const sesionesProg = ((prog as any).sesiones_datos_aba || [])
+      .filter((s: any) => s.porcentaje_exito != null)
+      .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha))
 
-    const ultimasTres = logros.slice(0, 3)
-    if (ultimasTres.every(l => l === 'bajo')) {
-      await crearAlertaSiNoExiste({
-        child_id: childId,
-        tipo: 'estancamiento_objetivos',
-        titulo: 'Posible estancamiento en objetivos',
-        descripcion: 'El paciente ha mostrado logros bajos en las ultimas 3 sesiones consecutivas. Revisar y ajustar el programa ABA.',
-        prioridad: 1,
-        resuelta: false
-      })
-      alertasNuevas.push({ tipo: 'estancamiento_objetivos' })
+    for (const s of sesionesProg) todasSesiones.push(s)
+
+    if (sesionesProg.length < 2) continue
+
+    const valores = sesionesProg.map((s: any) => s.porcentaje_exito as number)
+    const criterio = (prog as any).criterio_dominio_pct || 90
+    const nombre = (prog as any).titulo || 'Programa ABA'
+
+    // Estancamiento: 3 sesiones sin avance y por debajo del criterio
+    if (valores.length >= 3) {
+      const ultimas3 = valores.slice(-3)
+      const rango = Math.max(...ultimas3) - Math.min(...ultimas3)
+      const prom = ultimas3.reduce((a: number, b: number) => a + b, 0) / 3
+      if (rango < 10 && prom < criterio) {
+        await crearAlertaSiNoExiste({
+          child_id: childId,
+          tipo: `estancamiento_${(prog as any).id}`,
+          titulo: `Estancamiento en "${nombre}"`,
+          descripcion: `"${nombre}" lleva 3 sesiones sin avance significativo (${Math.round(Math.min(...ultimas3))}-${Math.round(Math.max(...ultimas3))}%). Criterio: ${criterio}%. Revisar estrategia.`,
+          prioridad: 1,
+          resuelta: false
+        })
+        alertasNuevas.push({ tipo: `estancamiento_${(prog as any).id}` })
+      }
+    }
+
+    // Regresión: bajó más de 15 puntos vs sesiones anteriores
+    if (valores.length >= 4) {
+      const recientes = valores.slice(-2)
+      const anteriores = valores.slice(-4, -2)
+      const promReciente = recientes.reduce((a: number, b: number) => a + b, 0) / recientes.length
+      const promAnterior = anteriores.reduce((a: number, b: number) => a + b, 0) / anteriores.length
+      if (promAnterior - promReciente > 15) {
+        await crearAlertaSiNoExiste({
+          child_id: childId,
+          tipo: `regresion_${(prog as any).id}`,
+          titulo: `Regresión en "${nombre}"`,
+          descripcion: `"${nombre}" bajó ${Math.round(promAnterior - promReciente)} puntos (${Math.round(promAnterior)}% → ${Math.round(promReciente)}%). Revisar antecedentes y reforzadores.`,
+          prioridad: 1,
+          resuelta: false
+        })
+        alertasNuevas.push({ tipo: `regresion_${(prog as any).id}` })
+      }
     }
   }
+  const ultimasSesionesABA = [...todasSesiones].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 5)
 
   // ── REGLA 3: Evaluación neuropsicológica vencida (>6 meses) ─
   const EVALUACIONES = ['evaluacion_brief2', 'evaluacion_ados2', 'evaluacion_vineland3', 'evaluacion_wiscv', 'evaluacion_basc3']
@@ -203,9 +233,10 @@ async function analizarPaciente(childId: string): Promise<any[]> {
   }
 
   // ── REGLA 5: Análisis IA de tendencia (si hay suficientes datos) ─
-  if (ultimasSesionesABA && ultimasSesionesABA.length >= 5) {
+  if (ultimasSesionesABA.length >= 5) {
     try {
-      const alertaIA = await analizarTendenciaConIA(childId, ultimasSesionesABA)
+      const sesionesParaIA = ultimasSesionesABA.map(s => ({ fecha_sesion: s.fecha, datos: { nivel_logro_objetivos: s.porcentaje_exito, objetivo_principal: 'Programa ABA' } }))
+      const alertaIA = await analizarTendenciaConIA(childId, sesionesParaIA)
       if (alertaIA) {
         await crearAlertaSiNoExiste({
           child_id: childId,

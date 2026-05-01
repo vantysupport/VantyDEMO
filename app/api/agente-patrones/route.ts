@@ -176,24 +176,135 @@ export async function POST(req: NextRequest) {
 
     const fechaInicio = new Date()
     fechaInicio.setDate(fechaInicio.getDate() - semanas * 7)
+    const fechaInicioStr = fechaInicio.toISOString().split('T')[0]
 
-    const { data: sesiones } = await supabaseAdmin
-      .from('registro_aba')
-      .select('fecha_sesion, datos')
+    // Leer sesiones reales de programas ABA
+    const { data: programas } = await supabaseAdmin
+      .from('programas_aba')
+      .select('id, titulo, area, criterio_dominio_pct, sesiones_datos_aba(fecha, porcentaje_exito, fase, set)')
       .eq('child_id', childId)
-      .gte('fecha_sesion', fechaInicio.toISOString().split('T')[0])
-      .order('fecha_sesion', { ascending: true })
 
-    if (!sesiones || sesiones.length < 3) {
+    // Analizar CADA programa individualmente para detectar patrones reales
+    const sesiones: any[] = []
+    const todosPatrones: PatronDetectado[] = []
+
+    for (const prog of (programas || [])) {
+      const sesionesProg = ((prog as any).sesiones_datos_aba || [])
+        .filter((s: any) => s.fecha >= fechaInicioStr && s.porcentaje_exito != null)
+        .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha))
+
+      for (const s of sesionesProg) {
+        sesiones.push({
+          fecha_sesion: s.fecha,
+          programa: (prog as any).titulo,
+          area: (prog as any).area,
+          datos: {
+            nivel_logro_objetivos: s.porcentaje_exito,
+            nivel_atencion: null,
+            tolerancia_frustracion: null,
+            iniciativa_comunicativa: null,
+            objetivo_principal: (prog as any).titulo,
+            notas_sesion: ''
+          }
+        })
+      }
+
+      // Detectar patrones por programa individual (mínimo 2 sesiones)
+      if (sesionesProg.length >= 2) {
+        const valores = sesionesProg.map((s: any) => s.porcentaje_exito as number)
+        const criterio = (prog as any).criterio_dominio_pct || 90
+        const nombreProg = (prog as any).titulo || 'Programa'
+        const recientes = valores.slice(-3)
+        const anteriores = valores.slice(-6, -3)
+        const promReciente = recientes.reduce((a: number, b: number) => a + b, 0) / recientes.length
+        const promAnterior = anteriores.length > 0
+          ? anteriores.reduce((a: number, b: number) => a + b, 0) / anteriores.length
+          : valores[0]
+        const delta = promReciente - promAnterior
+        const ultimo = valores[valores.length - 1]
+        const semanas_ = Math.ceil(valores.length / 2)
+
+        // DOMINIO: últimas sesiones >= criterio
+        if (valores.length >= 2 && valores.slice(-2).every((v: number) => v >= criterio)) {
+          todosPatrones.push({
+            tipo: 'dominio', area: nombreProg,
+            descripcion: `"${nombreProg}" alcanzó criterio de dominio (≥${criterio}%) en las últimas ${Math.min(valores.length, 2)} sesiones`,
+            confianza: 92, sesiones_involucradas: Math.min(valores.length, 2),
+            valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
+            semanas_detectado: semanas_,
+            accion_sugerida: `Avanzar al siguiente objetivo o fase de generalización en "${nombreProg}"`
+          })
+        }
+        // REGRESIÓN: bajó más de 15 puntos
+        else if (delta < -15 && valores.length >= 2) {
+          todosPatrones.push({
+            tipo: 'regresion', area: nombreProg,
+            descripcion: `"${nombreProg}" bajó ${Math.abs(Math.round(delta))} puntos (${Math.round(promAnterior)}% → ${Math.round(promReciente)}%)`,
+            confianza: Math.min(95, 60 + Math.abs(delta)),
+            sesiones_involucradas: recientes.length,
+            valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
+            semanas_detectado: semanas_,
+            accion_sugerida: `Revisar reforzadores y antecedentes en "${nombreProg}". Posible necesidad de ajustar el SD o simplificar la tarea`
+          })
+        }
+        // ACELERACIÓN: subió más de 20 puntos
+        else if (delta > 20 && valores.length >= 2) {
+          todosPatrones.push({
+            tipo: 'aceleracion', area: nombreProg,
+            descripcion: `"${nombreProg}" aceleró +${Math.round(delta)} puntos en las últimas sesiones`,
+            confianza: Math.min(95, 55 + delta),
+            sesiones_involucradas: recientes.length,
+            valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
+            semanas_detectado: semanas_,
+            accion_sugerida: `Identificar qué está funcionando en "${nombreProg}" y replicar la estrategia`
+          })
+        }
+        // ESTANCAMIENTO: sin avance en 3+ sesiones con promedio bajo
+        else if (valores.length >= 3) {
+          const ultimas3 = valores.slice(-3)
+          const rango = Math.max(...ultimas3) - Math.min(...ultimas3)
+          if (rango < 10 && promReciente < criterio) {
+            todosPatrones.push({
+              tipo: 'estancamiento', area: nombreProg,
+              descripcion: `"${nombreProg}" lleva ${ultimas3.length} sesiones sin avance (${Math.round(Math.min(...ultimas3))}-${Math.round(Math.max(...ultimas3))}%, criterio: ${criterio}%)`,
+              confianza: 80, sesiones_involucradas: ultimas3.length,
+              valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
+              semanas_detectado: semanas_,
+              accion_sugerida: `Revisar estrategia de enseñanza en "${nombreProg}". Considerar cambio de método o ajuste de la dificultad`
+            })
+          }
+        }
+
+        // INCONSISTENCIA: alta varianza
+        if (valores.length >= 3) {
+          const mean = valores.reduce((a: number, b: number) => a + b, 0) / valores.length
+          const std = Math.sqrt(valores.reduce((a: number, v: number) => a + (v - mean) ** 2, 0) / valores.length)
+          if (std > 20) {
+            todosPatrones.push({
+              tipo: 'inconsistencia', area: nombreProg,
+              descripcion: `"${nombreProg}" muestra alta variabilidad (desv. estándar: ${Math.round(std)} pts, rango: ${Math.round(Math.min(...valores))}-${Math.round(Math.max(...valores))}%)`,
+              confianza: 75, sesiones_involucradas: valores.length,
+              valor_actual: Math.round(ultimo), valor_anterior: Math.round(promAnterior),
+              semanas_detectado: semanas_,
+              accion_sugerida: `Revisar consistencia ambiental y de terapeuta en "${nombreProg}". Verificar factores contextuales (sueño, rutina)`
+            })
+          }
+        }
+      }
+    }
+
+    sesiones.sort((a, b) => a.fecha_sesion.localeCompare(b.fecha_sesion))
+
+    const patrones = todosPatrones.sort((a, b) => b.confianza - a.confianza)
+
+    if (sesiones.length < 2) {
       return NextResponse.json({
         patrones: [],
-        resumen: 'Insuficientes sesiones para detectar patrones (mínimo 3).',
-        sesiones_analizadas: sesiones?.length || 0,
+        resumen: 'Insuficientes sesiones para detectar patrones (mínimo 2 por programa).',
+        sesiones_analizadas: sesiones.length,
         analisis_ia: null
       })
     }
-
-    const patrones = detectarPatrones(sesiones)
 
     // Análisis IA de los patrones detectados
     
