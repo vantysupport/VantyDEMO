@@ -576,6 +576,30 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [editingTitulo, setEditingTitulo] = useState(false)
   const [tempTitulo, setTempTitulo] = useState(programa.titulo)
   const [localTitulo, setLocalTitulo] = useState(programa.titulo)
+  const [editingArea, setEditingArea] = useState(false)
+  const [localArea, setLocalArea] = useState(programa.area || 'comunicacion')
+  const [editingFase, setEditingFase] = useState(false)
+  const [localFase, setLocalFase] = useState(programa.fase_actual || 'intervencion')
+
+  const saveField = async (field: string, value: string, onSuccess?: () => void) => {
+    const res = await fetch('/api/programas-aba', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'actualizar_programa', programa_id: programa.id, updates: { [field]: value } }),
+    })
+    const json = await res.json()
+    if (json.error) { toast.error(json.error); return }
+    onSuccess?.()
+    toast.success('✅ Actualizado')
+  }
+
+  // Close dropdowns when clicking outside
+  React.useEffect(() => {
+    if (!editingArea && !editingFase) return
+    const close = () => { setEditingArea(false); setEditingFase(false) }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [editingArea, editingFase])
 
   const saveTitulo = async (nuevo: string) => {
     setEditingTitulo(false)
@@ -716,10 +740,68 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   </button>
                 </h3>
               )}
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
-                {area.label}
-              </span>
-              <FaseTag fase={programa.fase_actual} />
+              {/* Area tag — editable */}
+              <div className="relative">
+                <button
+                  onClick={e => { e.stopPropagation(); setEditingArea(v => !v); setEditingFase(false) }}
+                  title="Cambiar área"
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-black border transition-all hover:opacity-80 ${AREA_CONFIG[localArea]?.bg || ''} ${AREA_CONFIG[localArea]?.color || ''}`}>
+                  {AREA_CONFIG[localArea]?.emoji} {AREA_CONFIG[localArea]?.label || localArea}
+                </button>
+                {editingArea && (
+                  <div className="absolute top-6 left-0 z-50 rounded-xl shadow-xl py-1 min-w-[160px]"
+                    style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}
+                    onClick={e => e.stopPropagation()}>
+                    {Object.entries(AREA_CONFIG).map(([key, cfg]) => (
+                      <button key={key}
+                        onClick={() => {
+                          setLocalArea(key)
+                          setEditingArea(false)
+                          saveField('area', key)
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-left hover:bg-[var(--muted-bg)] transition-colors ${key === localArea ? 'font-black' : ''}`}
+                        style={{ color: key === localArea ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                        {cfg.emoji} {cfg.label}
+                        {key === localArea && <span className="ml-auto text-indigo-500">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Fase tag — editable */}
+              <div className="relative">
+                <button
+                  onClick={e => { e.stopPropagation(); setEditingFase(v => !v); setEditingArea(false) }}
+                  title="Cambiar fase"
+                  className="hover:opacity-80 transition-all">
+                  <FaseTag fase={localFase} />
+                </button>
+                {editingFase && (
+                  <div className="absolute top-6 left-0 z-50 rounded-xl shadow-xl py-1 min-w-[160px]"
+                    style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}
+                    onClick={e => e.stopPropagation()}>
+                    {[
+                      { key: 'linea_base', label: 'Baseline' },
+                      { key: 'intervencion', label: 'Intervención' },
+                      { key: 'mantenimiento', label: 'Mantenimiento' },
+                      { key: 'dominado', label: 'Dominado' },
+                    ].map(({ key, label }) => (
+                      <button key={key}
+                        onClick={() => {
+                          setLocalFase(key)
+                          setEditingFase(false)
+                          saveField('fase_actual', key)
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-left hover:bg-[var(--muted-bg)] transition-colors`}
+                        style={{ color: key === localFase ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: key === localFase ? 800 : 600 }}>
+                        {label}
+                        {key === localFase && <span className="ml-auto text-indigo-500">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {criterioAlcanzado && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 border border-emerald-200">
                   🏆 Criterio alcanzado
