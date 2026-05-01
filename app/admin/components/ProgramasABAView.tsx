@@ -1756,17 +1756,30 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
               <div>
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">🎯 Set activo</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {sets.map((s: any) => (
-                    <button key={s.id}
-                      onClick={() => setForm(f => ({ ...f, set_activo: s.numero_set ? `Set ${s.numero_set}` : s.descripcion }))}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
-                        form.set_activo === (s.numero_set ? `Set ${s.numero_set}` : s.descripcion)
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-indigo-300'
-                      }`}>
-                      {s.numero_set ? `Set ${s.numero_set}` : s.descripcion}
-                    </button>
-                  ))}
+                  {sets.map((s: any) => {
+                    const setKey = s.numero_set ? `Set ${s.numero_set}` : s.descripcion
+                    const isActive = form.set_activo === setKey
+                    const shortDesc = s.descripcion ? s.descripcion.slice(0, 48) + (s.descripcion.length > 48 ? '…' : '') : null
+                    return (
+                      <button key={s.id}
+                        onClick={() => setForm(f => ({ ...f, set_activo: setKey }))}
+                        title={s.descripcion || undefined}
+                        className={`flex flex-col items-start px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-left ${
+                          isActive
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                        }`}>
+                        <span className={`font-black text-[11px] uppercase tracking-wide ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>
+                          {s.numero_set ? `Set ${s.numero_set}` : 'Set'}
+                        </span>
+                        {shortDesc && (
+                          <span className={`mt-0.5 leading-tight ${isActive ? 'text-white' : 'text-slate-600'}`}>
+                            {shortDesc}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
                 <input
                   value={form.set_activo}
