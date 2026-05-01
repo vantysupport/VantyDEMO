@@ -1779,12 +1779,6 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
           {step === 1 && (
             <div className="space-y-4">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('programas.paso1Info')}</p>
-              <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.nombrePrograma')} *</label>
-                <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
-                  placeholder={t('programas.placeholderNombre')}
-                  className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
-              </div>
               {/* Área — texto libre */}
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.area')} *</label>
@@ -1792,6 +1786,12 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
                   onChange={e => set('area', e.target.value)}
                   placeholder="Ej: Comunicación, Conducta..."
                   className="w-full rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.nombrePrograma')} *</label>
+                <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
+                  placeholder={t('programas.placeholderNombre')}
+                  className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a corto plazo 1 *</label>
