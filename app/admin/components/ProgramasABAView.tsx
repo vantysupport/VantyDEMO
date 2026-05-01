@@ -702,13 +702,18 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 />
               ) : (
                 <h3
-                  className="font-bold text-sm leading-snug cursor-text group flex items-center gap-1"
+                  className="font-bold text-sm leading-snug flex items-center gap-1.5"
                   style={{ color: 'var(--text-primary)' }}
-                  title="Doble clic para editar el título"
-                  onDoubleClick={e => { e.stopPropagation(); setTempTitulo(localTitulo); setEditingTitulo(true) }}
                 >
                   {localTitulo}
-                  <Edit3 size={11} className="opacity-0 group-hover:opacity-40 transition-opacity shrink-0" />
+                  <button
+                    title="Editar título"
+                    onClick={e => { e.stopPropagation(); setTempTitulo(localTitulo); setEditingTitulo(true) }}
+                    className="flex items-center justify-center w-5 h-5 rounded-md opacity-40 hover:opacity-100 hover:bg-indigo-100 transition-all shrink-0"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    <Edit3 size={11} />
+                  </button>
                 </h3>
               )}
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
