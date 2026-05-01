@@ -594,7 +594,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   }
 
   // Close dropdowns when clicking outside
-  React.useEffect(() => {
+  useEffect(() => {
     if (!editingArea && !editingFase) return
     const close = () => { setEditingArea(false); setEditingFase(false) }
     document.addEventListener('click', close)
