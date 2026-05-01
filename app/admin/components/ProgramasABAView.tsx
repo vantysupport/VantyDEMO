@@ -94,11 +94,44 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [aiAnalysis, setAiAnalysis] = useState<any>(null)
   const [loadingAI, setLoadingAI] = useState(false)
   const [filtroArea, setFiltroArea] = useState<string>('todos')
+  const [customAreaLabels, setCustomAreaLabels] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem('aba_custom_area_labels') || '{}') } catch { return {} }
+  })
+  const [editingArea, setEditingArea] = useState<string | null>(null)
+  const [editingValue, setEditingValue] = useState<string>('')
   // Tipo de gráfico por programa: { [programaId]: TipoGrafico }
   const [tiposGrafico, setTiposGrafico] = useState<Record<string, TipoGrafico>>({})
 
   function setTipoGrafico(programaId: string, tipo: TipoGrafico) {
     setTiposGrafico(prev => ({ ...prev, [programaId]: tipo }))
+  }
+
+  function getAreaLabel(area: string) {
+    return customAreaLabels[area] || AREA_LABELS[area] || AREA_CONFIG[area]?.label || area
+  }
+
+  function startEditArea(area: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    setEditingArea(area)
+    setEditingValue(getAreaLabel(area))
+  }
+
+  function saveAreaLabel(area: string) {
+    const trimmed = editingValue.trim()
+    if (trimmed) {
+      const updated = { ...customAreaLabels, [area]: trimmed }
+      setCustomAreaLabels(updated)
+      localStorage.setItem('aba_custom_area_labels', JSON.stringify(updated))
+    }
+    setEditingArea(null)
+  }
+
+  function resetAreaLabel(area: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    const updated = { ...customAreaLabels }
+    delete updated[area]
+    setCustomAreaLabels(updated)
+    localStorage.setItem('aba_custom_area_labels', JSON.stringify(updated))
   }
 
   const loadProgramas = useCallback(async () => {
@@ -225,15 +258,72 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 
       {/* ── Filtros por área ── */}
       <div className="flex flex-wrap gap-2 mb-5">
-        {areas.map(area => (
-          <button key={area} onClick={() => setFiltroArea(area)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={filtroArea === area
-              ? { background: 'var(--text-primary)', color: 'var(--card)', border: '1px solid transparent' }
-              : { background: 'var(--card)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
-            {area === 'todos' ? `${t('programas.todos')}` : `${AREA_CONFIG[area]?.emoji} ${AREA_LABELS[area] || AREA_CONFIG[area]?.label}`}
-          </button>
-        ))}
+        {areas.map(area => {
+          const isActive = filtroArea === area
+          const isEditing = editingArea === area
+          const activeStyle = { background: 'var(--text-primary)', color: 'var(--card)', border: '1px solid transparent' }
+          const inactiveStyle = { background: 'var(--card)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }
+
+          if (area === 'todos') {
+            return (
+              <button key={area} onClick={() => setFiltroArea(area)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={isActive ? activeStyle : inactiveStyle}>
+                {t('programas.todos')}
+              </button>
+            )
+          }
+
+          if (isEditing) {
+            return (
+              <span key={area} className="flex items-center gap-1 rounded-lg overflow-hidden"
+                style={{ border: '1.5px solid var(--text-primary)', background: 'var(--card)' }}>
+                <input
+                  autoFocus
+                  value={editingValue}
+                  onChange={e => setEditingValue(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') saveAreaLabel(area)
+                    if (e.key === 'Escape') setEditingArea(null)
+                  }}
+                  onBlur={() => saveAreaLabel(area)}
+                  className="px-2 py-1 text-xs font-semibold outline-none w-24"
+                  style={{ background: 'transparent', color: 'var(--text-primary)' }}
+                />
+                <button
+                  onMouseDown={e => { e.preventDefault(); saveAreaLabel(area) }}
+                  className="pr-2 text-xs font-bold"
+                  style={{ color: 'var(--text-primary)' }}>✓</button>
+              </span>
+            )
+          }
+
+          return (
+            <span key={area} className="group relative flex items-center gap-1 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+              style={isActive ? activeStyle : inactiveStyle}
+              onClick={() => setFiltroArea(area)}>
+              <span className="pl-3 py-1.5">
+                {AREA_CONFIG[area]?.emoji} {getAreaLabel(area)}
+              </span>
+              <button
+                title="Renombrar etiqueta"
+                onMouseDown={e => { e.stopPropagation(); startEditArea(area, e) }}
+                className="pr-2 py-1.5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-[10px]"
+                style={{ color: isActive ? 'var(--card)' : 'var(--text-muted)' }}>
+                ✏️
+              </button>
+              {customAreaLabels[area] && (
+                <button
+                  title="Restablecer nombre original"
+                  onMouseDown={e => resetAreaLabel(area, e)}
+                  className="pr-1.5 py-1.5 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity text-[10px]"
+                  style={{ color: isActive ? 'var(--card)' : 'var(--text-muted)' }}>
+                  ↺
+                </button>
+              )}
+            </span>
+          )
+        })}
       </div>
 
       {/* Lista de programas */}
