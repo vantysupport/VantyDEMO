@@ -104,6 +104,28 @@ export async function GET(req: NextRequest) {
     })
     const progresoPromedio = countLogro > 0 ? Math.round(sumaLogro / countLogro) : 0
 
+    // ── PACIENTES SIN SESIÓN (30d) ────────────────────────────
+    // FIX: calculado aquí con supabaseAdmin para bypasear RLS y ver todos los pacientes
+    const hace30str = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+    const { data: allChildren } = await supabaseAdmin
+      .from('children')
+      .select('id, name')
+      .order('name')
+
+    const [{ data: conSesAgenda }, { data: conSesABA }, { data: conSesV2 }, { data: conSesPrograma }] = await Promise.all([
+      supabaseAdmin.from('agenda_sesiones').select('child_id').in('estado', ['realizada', 'completada']).gte('fecha', hace30str),
+      supabaseAdmin.from('registro_aba').select('child_id').gte('fecha_sesion', hace30str),
+      supabaseAdmin.from('aba_sessions_v2').select('child_id').gte('session_date', hace30str),
+      supabaseAdmin.from('sesiones_datos_aba').select('child_id').gte('fecha', hace30str),
+    ])
+    const conSesionSet = new Set([
+      ...(conSesAgenda || []).map(s => s.child_id),
+      ...(conSesABA || []).map(s => s.child_id),
+      ...(conSesV2 || []).map(s => s.child_id),
+      ...(conSesPrograma || []).map(s => s.child_id),
+    ])
+    const pacientesSinSesion30d = (allChildren || []).filter(n => !conSesionSet.has(n.id))
+
     // ── PRÓXIMAS SESIONES ─────────────────────────────────────
     const { data: proximasSesiones } = await supabaseAdmin
       .from('agenda_sesiones')
@@ -186,7 +208,9 @@ export async function GET(req: NextRequest) {
         cargaTerapeutas: Object.entries(cargaTerapeutas).map(([id, data]) => ({ terapeutaId: id, ...data }))
       },
       // Próximas citas
-      proximasSesiones: proximasSesiones || []
+      proximasSesiones: proximasSesiones || [],
+      // Pacientes sin sesión (calculado server-side con supabaseAdmin para bypasear RLS)
+      pacientesSinSesion: pacientesSinSesion30d
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })

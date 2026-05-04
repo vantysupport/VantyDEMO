@@ -233,13 +233,14 @@ export default function DashboardHome({ navigateTo }: { navigateTo: (view: strin
         setSesSemanales(Object.values(map))
       }
 
-      // 3. Children map (needed for multiple lookups)
-      const { data: todosNinos } = await supabase.from('children').select('id, name')
+      // 3. Children map — usa /api/admin/children (supabaseAdmin, bypassa RLS)
+      // FIX: No usar supabase browser client aquí porque la RLS de children filtra
+      // solo los pacientes del usuario autenticado, ocultando pacientes de otros especialistas.
+      const childrenResp = await fetch('/api/admin/children')
+      const childrenData = childrenResp.ok ? await childrenResp.json() : { data: [] }
+      const todosNinos: any[] = childrenData.data || []
       const ninosMap: Record<string, string> = {}
-      ;(todosNinos || []).forEach((n: any) => { ninosMap[n.id] = n.name })
-
-      const hace30 = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
-      const hace7 = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+      todosNinos.forEach((n: any) => { ninosMap[n.id] = n.name })
 
       // Programas ABA activos con último porcentaje
       const { data: progData } = await supabase
@@ -296,24 +297,10 @@ export default function DashboardHome({ navigateTo }: { navigateTo: (view: strin
       }
       setActividadReciente(actividadFinal)
 
-      // 4. Pacientes sin sesión — agenda_sesiones + aba_sessions_v2 + registro_aba
-      const { data: conSesAgenda } = await supabase
-        .from('agenda_sesiones').select('child_id')
-        .in('estado', ['realizada', 'completada']).gte('fecha', hace30)
-      const { data: conSesABA } = await supabase
-        .from('registro_aba').select('child_id').gte('fecha_sesion', hace30)
-      const { data: conSesV2 } = await supabase
-        .from('aba_sessions_v2').select('child_id').gte('session_date', hace30)
-      const { data: conSesPrograma } = await supabase
-        .from('sesiones_datos_aba').select('child_id').gte('fecha', hace30)
-
-      const conSesion = new Set([
-        ...(conSesAgenda || []).map((s: any) => s.child_id),
-        ...(conSesABA || []).map((s: any) => s.child_id),
-        ...(conSesV2 || []).map((s: any) => s.child_id),
-        ...(conSesPrograma || []).map((s: any) => s.child_id),
-      ])
-      const pacientesSinSesion = (todosNinos || []).filter((n: any) => !conSesion.has(n.id))
+      // 4. Pacientes sin sesión — viene del API de métricas (supabaseAdmin, bypassa RLS)
+      // FIX: antes se consultaban agenda_sesiones, registro_aba, etc. con el cliente browser
+      // (sujeto a RLS), mostrando solo pacientes del usuario. Ahora viene del servidor.
+      const pacientesSinSesion: any[] = dataM?.pacientesSinSesion || []
       setSinSesion(pacientesSinSesion)
 
       // Alertas: API + sin sesión (sin duplicados)
