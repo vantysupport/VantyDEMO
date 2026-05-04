@@ -283,20 +283,35 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
   const toast = useToast()
   const [editing, setEditing] = useState(false)
   const [saving, setSaving]   = useState(false)
+  const [specialists, setSpecialists] = useState<any[]>([])
   const [form, setForm] = useState({
-    name: nino.name || '',
-    birth_date: nino.birth_date || '',
-    diagnosis: nino.diagnosis || '',
-    // FIX: extract only numeric part from age to avoid "22 años" syntax error
-    age: String(nino.age || '').replace(/[^0-9]/g, ''),
+    name:          nino.name || '',
+    birth_date:    nino.birth_date || '',
+    diagnosis:     nino.diagnosis || '',
+    age:           String(nino.age || '').replace(/[^0-9]/g, ''),
+    apodo:         nino.apodo || '',
+    notas:         nino.notas || '',
+    specialist_id: nino.specialist_id || '',
   })
+
+  // Cargar especialistas disponibles
+  useEffect(() => {
+    supabase.from('profiles')
+      .select('id, full_name, email, role')
+      .in('role', ['especialista', 'terapeuta', 'jefe', 'admin'])
+      .order('full_name')
+      .then(({ data }) => setSpecialists(data || []))
+  }, [])
 
   useEffect(() => {
     setForm({
-      name: nino.name || '',
-      birth_date: nino.birth_date || '',
-      diagnosis: nino.diagnosis || '',
-      age: String(nino.age || '').replace(/[^0-9]/g, ''),
+      name:          nino.name || '',
+      birth_date:    nino.birth_date || '',
+      diagnosis:     nino.diagnosis || '',
+      age:           String(nino.age || '').replace(/[^0-9]/g, ''),
+      apodo:         nino.apodo || '',
+      notas:         nino.notas || '',
+      specialist_id: nino.specialist_id || '',
     })
     setEditing(false)
   }, [nino.id])
@@ -304,16 +319,18 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      // Use calcularEdadNumerica (returns integer) not calcularEdad (returns string like "22 años")
       const edadNum: number | null = form.birth_date
         ? calcularEdadNumerica(form.birth_date)
         : (form.age.trim() ? parseInt(form.age.replace(/[^0-9]/g, ''), 10) || null : null)
 
       const { error } = await supabase.from('children').update({
-        name: form.name.trim(),
-        birth_date: form.birth_date || null,
-        diagnosis: form.diagnosis.trim() || null,
-        age: edadNum,
+        name:          form.name.trim(),
+        birth_date:    form.birth_date || null,
+        diagnosis:     form.diagnosis.trim() || null,
+        age:           edadNum,
+        apodo:         form.apodo.trim() || null,
+        notas:         form.notas.trim() || null,
+        specialist_id: form.specialist_id || null,
       }).eq('id', nino.id)
       if (error) throw error
       toast.success(t('common.exitoGuardado'))
@@ -331,13 +348,17 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
     ? `${String(nino.age).replace(/[^0-9]/g, '')} ${t('common.anos')}`
     : birthFormatted ? `${calcularEdadNumerica(nino.birth_date)} ${t('common.anos')}` : '—'
 
+  const specialistName = specialists.find(s => s.id === (nino.specialist_id || form.specialist_id))?.full_name || null
+
+  const fieldCls = "w-full px-3 py-2.5 rounded-lg text-sm border outline-none transition-colors"
+  const fieldStyle = { borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }
+  const labelCls = "block text-[10px] font-black uppercase tracking-widest mb-1.5"
 
   return (
     <div className="p-4 md:p-6">
-      {/* ── Data fields ── */}
       {!editing ? (
+        /* ───────────── VISTA ───────────── */
         <div className="space-y-2">
-          {/* Edit button */}
           <div className="flex justify-end mb-1">
             <button onClick={() => setEditing(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
@@ -345,7 +366,8 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
               <Edit size={12}/> {t('common.editar')}
             </button>
           </div>
-          {/* Row 1 */}
+
+          {/* Fila 1: Fecha nacimiento + Edad */}
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-1.5 mb-2">
@@ -365,13 +387,11 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
                   {t('ui.age')}
                 </p>
               </div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {ageDisplay}
-              </p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{ageDisplay}</p>
             </div>
           </div>
 
-          {/* Row 2 */}
+          {/* Fila 2: Diagnóstico + Apodo */}
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-1.5 mb-2">
@@ -388,21 +408,59 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
               <div className="flex items-center gap-1.5 mb-2">
                 <User size={12} style={{ color: 'var(--text-muted)' }}/>
                 <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                  ID
+                  Apodo
                 </p>
               </div>
-              <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-                {nino.id?.slice(0,12)}…
+              {nino.apodo
+                ? <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{nino.apodo}</p>
+                : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin apodo</p>
+              }
+            </div>
+          </div>
+
+          {/* Fila 3: Especialista asignado */}
+          <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+            <div className="flex items-center gap-1.5 mb-2">
+              <Stethoscope size={12} style={{ color: '#7b5ea7' }}/>
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                Especialista asignado
               </p>
             </div>
+            {specialistName
+              ? <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-violet-500 flex items-center justify-center flex-shrink-0">
+                    <User size={11} className="text-white"/>
+                  </div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{specialistName}</p>
+                </div>
+              : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin especialista asignado</p>
+            }
+          </div>
+
+          {/* Fila 4: Notas */}
+          <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+            <div className="flex items-center gap-1.5 mb-2">
+              <ClipboardList size={12} style={{ color: '#3a68a0' }}/>
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                Notas del paciente
+              </p>
+            </div>
+            {nino.notas
+              ? <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+                  {nino.notas}
+                </p>
+              : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin notas adicionales</p>
+            }
           </div>
 
           {/* ── Cuenta vinculada ── */}
           <LinkedAccountSection nino={nino} onLinked={onSaved} />
         </div>
+
       ) : (
+        /* ───────────── EDICIÓN ───────────── */
         <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-          {/* Edit form header with save/cancel */}
+          {/* Header edición */}
           <div className="flex items-center justify-between pb-2 mb-1" style={{ borderBottom: '1px solid var(--card-border)' }}>
             <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
               {t('common.editar')}
@@ -421,48 +479,75 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
               </button>
             </div>
           </div>
+
+          {/* Nombre */}
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
-              {t('common.nombre')}
-            </label>
-            <input type="text" value={form.name}
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>{t('common.nombre')}</label>
+            <input type="text" value={form.name} placeholder="Ej: María García"
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="Ej: María García"
-              className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none font-semibold"
-              style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }} />
+              className={fieldCls} style={fieldStyle} />
           </div>
+
+          {/* Apodo */}
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
-              {t('pacientes.fechaNacimiento')}
-            </label>
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>Apodo / Nombre corto</label>
+            <input type="text" value={form.apodo} placeholder="Ej: Mía, Titi, Fer..."
+              onChange={e => setForm(f => ({ ...f, apodo: e.target.value }))}
+              className={fieldCls} style={fieldStyle} />
+            <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
+              Nombre informal o como prefiere que lo llamen
+            </p>
+          </div>
+
+          {/* Fecha nacimiento */}
+          <div>
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>{t('pacientes.fechaNacimiento')}</label>
             <input type="date" value={form.birth_date}
               onChange={e => setForm(f => ({ ...f, birth_date: e.target.value }))}
-              className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-              style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }} />
+              className={fieldCls} style={fieldStyle} />
           </div>
+
+          {/* Diagnóstico */}
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
-              {t('pacientes.diagnostico')}
-            </label>
-            <input type="text" value={form.diagnosis}
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>{t('pacientes.diagnostico')}</label>
+            <input type="text" value={form.diagnosis} placeholder="Ej: TEA Nivel 2, TDAH..."
               onChange={e => setForm(f => ({ ...f, diagnosis: e.target.value }))}
-              placeholder="Ej: TEA Nivel 2, TDAH..."
-              className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-              style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }} />
+              className={fieldCls} style={fieldStyle} />
           </div>
+
+          {/* Edad manual */}
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
-              {t('ui.age')} (años)
-            </label>
-            <input type="number" min="0" max="99"
-              value={form.age}
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>{t('ui.age')} (años)</label>
+            <input type="number" min="0" max="99" value={form.age} placeholder="Ej: 8"
               onChange={e => setForm(f => ({ ...f, age: e.target.value.replace(/[^0-9]/g, '') }))}
-              placeholder="Ej: 8"
-              className="w-full px-3 py-2.5 rounded-lg text-sm border outline-none"
-              style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }} />
+              className={fieldCls} style={fieldStyle} />
             <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
               Se calcula automáticamente si hay fecha de nacimiento
             </p>
+          </div>
+
+          {/* Especialista asignado */}
+          <div>
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>Especialista asignado</label>
+            <select value={form.specialist_id}
+              onChange={e => setForm(f => ({ ...f, specialist_id: e.target.value }))}
+              className={fieldCls} style={fieldStyle}>
+              <option value="">— Sin asignar —</option>
+              {specialists.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.full_name || s.email} ({s.role})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Notas */}
+          <div>
+            <label className={labelCls} style={{ color: 'var(--text-muted)' }}>Notas del paciente</label>
+            <textarea value={form.notas} rows={4}
+              placeholder="Observaciones generales, datos de interés, rutinas, preferencias, alergias, contacto de emergencia..."
+              onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
+              className={`${fieldCls} resize-none`} style={fieldStyle} />
           </div>
         </div>
       )}
