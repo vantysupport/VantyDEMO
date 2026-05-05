@@ -31,7 +31,11 @@ const getDxStyle = (dx: string) => {
   return { background: `${color}10`, color, border: `1px solid ${color}30` }
 }
 
-// ── Avatar coloreado por inicial ───────────────────────────────────────────
+// ── Nombre a mostrar según rol (apodo para admin/secretaria) ──────────────
+const getDisplayName = (p: any, role: string) => {
+  const useApodo = ['admin', 'secretaria', 'jefe'].includes(role)
+  return (useApodo && p.apodo) ? p.apodo : p.name
+}
 const PALETTES = [
   'from-violet-500 to-purple-600', 'from-blue-500 to-indigo-600',
   'from-emerald-500 to-teal-600',  'from-rose-500 to-pink-600',
@@ -722,7 +726,7 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
   useEffect(() => {
     if (!search.trim()) { setFiltrados(pacientes); return }
     const q = search.toLowerCase()
-    setFiltrados(pacientes.filter(p => p.name?.toLowerCase().includes(q) || p.diagnosis?.toLowerCase().includes(q)))
+    setFiltrados(pacientes.filter(p => p.name?.toLowerCase().includes(q) || p.diagnosis?.toLowerCase().includes(q) || p.apodo?.toLowerCase().includes(q)))
   }, [search, pacientes])
 
   // ── Seleccionar paciente ──────────────────────────────────────────────────
@@ -818,7 +822,9 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
                       : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                   <Avatar name={p.name} size="sm"/>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold truncate" style={{ color:'var(--text-primary)' }}>{p.name}</p>
+                    <p className="text-sm font-bold truncate" style={{ color:'var(--text-primary)' }}>
+                      {getDisplayName(p, currentRole)}
+                    </p>
                     <p className="text-[11px] truncate" style={{ color:'var(--text-muted)' }}>
                       {p.diagnosis || t('pacientes.sinDiagnostico')} · {p.birth_date ? calcularEdadNumerica(p.birth_date) : (p.age || '?')} {t('common.anos')}
                     </p>
