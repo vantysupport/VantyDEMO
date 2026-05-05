@@ -656,7 +656,7 @@ function RellenarFichaConWord({ childId, childName, isDark }: {
   return <RellenarFicha childId={childId} childName={childName} isDark={isDark} onSaved={handleSaved} />
 }
 
-export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (id: string, name: string) => void } = {}) {
+export default function PatientsView({ onPatientSelect, initialChildId }: { onPatientSelect?: (id: string, name: string) => void; initialChildId?: string | null } = {}) {
   const { t } = useI18n()
   const toast  = useToast()
 
@@ -713,6 +713,13 @@ export default function PatientsView({ onPatientSelect }: { onPatientSelect?: (i
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
+
+  // Auto-seleccionar paciente si viene desde una alerta del dashboard
+  useEffect(() => {
+    if (!initialChildId || pacientes.length === 0) return
+    const target = pacientes.find(p => p.id === initialChildId)
+    if (target) selectPatient(target)
+  }, [initialChildId, pacientes])
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {

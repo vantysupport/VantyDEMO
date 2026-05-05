@@ -118,7 +118,7 @@ function CitaRow({ cita }: any) {
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-export default function DashboardHome({ navigateTo }: { navigateTo: (view: string) => void }) {
+export default function DashboardHome({ navigateTo, navigateToPatient }: { navigateTo: (view: string) => void; navigateToPatient?: (childId: string) => void }) {
   const { t, locale } = useI18n()
 
   // State
@@ -186,6 +186,7 @@ export default function DashboardHome({ navigateTo }: { navigateTo: (view: strin
       if (dataM?.alertas?.recientes?.length > 0) {
         setAlertasClinicas(dataM.alertas.recientes.map((a: any) => ({
           tipo: a.tipo,
+          child_id: a.child_id,
           paciente: a.children?.name || 'Paciente',
           mensaje: a.descripcion || a.mensaje || '',
           prioridad: a.prioridad || 2,
@@ -305,7 +306,7 @@ export default function DashboardHome({ navigateTo }: { navigateTo: (view: strin
 
       // Alertas: API + sin sesión (sin duplicados)
       const alertasSinSesion = pacientesSinSesion.map((n: any) => ({
-        tipo: 'sin_sesion', paciente: n.name,
+        tipo: 'sin_sesion', child_id: n.id, paciente: n.name,
         mensaje: 'Sin sesión en los últimos 30 días.', prioridad: 2,
       }))
       setAlertasClinicas(prev => {
@@ -463,7 +464,10 @@ export default function DashboardHome({ navigateTo }: { navigateTo: (view: strin
           <div className="p-3 space-y-2 overflow-y-auto" style={{ maxHeight: '320px' }}>
             {alertasClinicas.length > 0
               ? alertasClinicas.map((a, i) => (
-                  <AlertaRow key={i} {...a} onClick={() => navigateTo('ninos')} />
+                  <AlertaRow key={i} {...a} onClick={() => {
+                    if (a.child_id && navigateToPatient) navigateToPatient(a.child_id)
+                    else navigateTo('ninos')
+                  }} />
                 ))
               : (
                 <div className="flex flex-col items-center py-10">
