@@ -1468,7 +1468,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               )}
 
               {/* Detalles del procedimiento */}
-              {(detalle.sd_estimulo || detalle.reforzadores || detalle.materiales) && (
+              {(detalle.sd_estimulo || detalle.unidad_positiva || detalle.unidad_negativa || detalle.reforzadores || detalle.materiales || detalle.correction_errores) && (
                 <div>
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
                   <div className="rounded-xl p-4 border border-[var(--card-border)] bg-[var(--card)] space-y-2 text-xs text-slate-600 dark:text-slate-300">
