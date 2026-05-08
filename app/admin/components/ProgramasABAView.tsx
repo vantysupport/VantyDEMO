@@ -598,6 +598,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [showAgregarSet, setShowAgregarSet] = useState(false)
   const [nuevoSet, setNuevoSet] = useState({ descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correction_errores: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' })
   const [savingSet, setSavingSet] = useState(false)
+  const [setExpandidoId, setSetExpandidoId] = useState<string | null>(null)
 
   const saveField = async (field: string, value: string, onSuccess?: () => void) => {
     const res = await fetch('/api/programas-aba', {
@@ -1215,11 +1216,12 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 {detalle.objetivos_cp?.length > 0 && (
                   <div className="space-y-2">
                     {[...detalle.objetivos_cp].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((obj: any) => (
-                      <div key={obj.id} className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${
+                      <div key={obj.id} className="space-y-0">
+                      <div className={`flex items-center gap-3 p-3 rounded-xl border text-sm cursor-pointer select-none ${
                         obj.estado === 'dominado' ? 'bg-emerald-50 border-emerald-200' :
                         obj.estado === 'en_progreso' ? 'bg-indigo-50 border-indigo-200' :
                         'bg-white border-slate-100'
-                      }`}>
+                      }`} onClick={() => setSetExpandidoId(prev => prev === obj.id ? null : obj.id)}>
                         <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0">
                           {obj.numero_set}
                         </span>
@@ -1287,6 +1289,22 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           <option value="en_progreso">🔄 {t('programas.enProgreso')}</option>
                           <option value="dominado">✅ {t('programas.dominado')}</option>
                         </select>
+                      </div>
+                      {setExpandidoId === obj.id && (
+                        <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-indigo-100 bg-indigo-50 space-y-1 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
+                          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">📌 Procedimiento del Set</p>
+                          {!obj.materiales && !obj.sd_estimulo && !obj.unidad_positiva && !obj.unidad_negativa && !obj.reforzadores && !obj.ayudas && !obj.correction_errores && !obj.generalizacion && (
+                            <p className="text-slate-400 italic">Sin procedimiento registrado.</p>
+                          )}
+                          {obj.materiales && <p><span className="font-bold">📚 Materiales:</span> {obj.materiales}</p>}
+                          {obj.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {obj.sd_estimulo}</p>}
+                          {obj.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {obj.unidad_positiva}</p>}
+                          {obj.unidad_negativa && <p><span className="font-bold">❎ Unidad -:</span> {obj.unidad_negativa}</p>}
+                          {(obj.reforzadores || obj.ayudas) && <p><span className="font-bold">🤝🏼 Ayudas:</span> {obj.reforzadores || obj.ayudas}</p>}
+                          {obj.correction_errores && <p><span className="font-bold">📍 Corrección:</span> {obj.correction_errores}</p>}
+                          {obj.generalizacion && <p><span className="font-bold">➡️ Generalización:</span> {obj.generalizacion}</p>}
+                        </div>
+                      )}
                       </div>
                     ))}
                   </div>
