@@ -91,6 +91,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [showCrear, setShowCrear] = useState(false)
   const [programaActivo, setProgramaActivo] = useState<any>(null)
   const [showRegistrarSesion, setShowRegistrarSesion] = useState(false)
+  const [loadingModal, setLoadingModal] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState<any>(null)
   const [loadingAI, setLoadingAI] = useState(false)
   const [filtroArea, setFiltroArea] = useState<string>('todos')
@@ -346,7 +347,21 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             <ProgramaCard
               key={prog.id}
               programa={prog}
-              onRegistrarSesion={() => { setProgramaActivo(prog); setShowRegistrarSesion(true) }}
+              loadingModal={loadingModal}
+              onRegistrarSesion={async () => {
+                setLoadingModal(true)
+                try {
+                  const res = await fetch(`/api/programas-aba?child_id=${childId}&t=${Date.now()}`, { cache: 'no-store' })
+                  const json = await res.json()
+                  const fresh = (json.data || []).find((p: any) => p.id === prog.id) || prog
+                  setProgramaActivo(fresh)
+                } catch {
+                  setProgramaActivo(prog)
+                } finally {
+                  setLoadingModal(false)
+                  setShowRegistrarSesion(true)
+                }
+              }}
               onReload={loadProgramas}
               onDeleteSesion={(sesionId: string) => {
                 setProgramas(prev => prev.map(p => p.id !== prog.id ? p : {
@@ -567,7 +582,7 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
   )
 }
 
-function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, tipoGrafico = 'lineas', onChangeTipoGrafico }: any) {
+function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, tipoGrafico = 'lineas', onChangeTipoGrafico, loadingModal }: any) {
   const { t } = useI18n()
   const [expanded, setExpanded] = useState(false)
   const [loadingDetalle, setLoadingDetalle] = useState(false)
@@ -838,7 +853,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={e => { e.stopPropagation(); onRegistrarSesion() }}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap" style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
+              disabled={loadingModal}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 disabled:opacity-60" style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
+              {loadingModal ? <Loader2 size={12} className="animate-spin" /> : null}
               <span className="hidden sm:inline">{t('programas.agregarSesion')}</span>
               <span className="sm:hidden">+ {t('programas.sesiones') || 'Sesión'}</span>
             </button>
