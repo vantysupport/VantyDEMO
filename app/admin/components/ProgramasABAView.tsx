@@ -2011,7 +2011,9 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
           programa: { ...form, child_id: childId,
             ayudas: form.reforzadores, // backward compat
           },
-          objetivos: objetivos.filter(o => o.descripcion.trim()),
+          objetivos: objetivos
+            .map((o, i) => ({ ...o, descripcion: o.descripcion.trim() || `Set ${i + 1}` }))
+            .filter(o => o.descripcion),
         }),
       })
       const json = await res.json()
