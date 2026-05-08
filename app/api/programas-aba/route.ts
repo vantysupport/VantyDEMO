@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'agregar_set') {
-      const { programa_id, descripcion, materiales, sd_estimulo, unidad_positiva, unidad_negativa, reforzadores, correccion_error, generalizacion } = body
+      const { programa_id, descripcion, materiales, sd_estimulo, unidad_positiva, unidad_negativa, reforzadores, correccion_errores, generalizacion } = body
       if (!programa_id || !descripcion?.trim()) {
         return NextResponse.json({ error: 'programa_id y descripcion requeridos' }, { status: 400 })
       }
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
       if (unidad_positiva) setData.unidad_positiva = unidad_positiva
       if (unidad_negativa) setData.unidad_negativa = unidad_negativa
       if (reforzadores) setData.reforzadores = reforzadores
-      if (correccion_error) setData.correccion_error = correccion_error
+      if (correccion_errores) setData.correccion_errores = correccion_errores
       if (generalizacion) setData.generalizacion = generalizacion
       const { data, error } = await supabaseAdmin
         .from('objetivos_cp')
