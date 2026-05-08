@@ -580,6 +580,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [localArea, setLocalArea] = useState(programa.area || 'comunicacion')
   const [editingFase, setEditingFase] = useState(false)
   const [localFase, setLocalFase] = useState(programa.fase_actual || 'intervencion')
+  const [showAgregarSet, setShowAgregarSet] = useState(false)
+  const [nuevoSet, setNuevoSet] = useState({ descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correccion_error: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' })
+  const [savingSet, setSavingSet] = useState(false)
 
   const saveField = async (field: string, value: string, onSuccess?: () => void) => {
     const res = await fetch('/api/programas-aba', {
@@ -1272,23 +1275,76 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   </div>
                   {/* Agregar set adicional */}
                   <button
-                    onClick={async () => {
-                      const desc = prompt('Descripción del nuevo set:')
-                      if (!desc?.trim()) return
-                      const res = await fetch('/api/programas-aba', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'agregar_set', programa_id: programa.id, descripcion: desc.trim() }),
-                      })
-                      const json = await res.json()
-                      if (json.error) { toast.error(json.error); return }
-                      toast.success('✅ Set agregado')
-                      fetchDetalle()
-                    }}
+                    onClick={() => setShowAgregarSet(true)}
                     className="mt-2 w-full py-2 border-2 border-dashed border-[var(--card-border)] rounded-xl text-xs font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500 transition-all"
                   >
                     + Agregar set
                   </button>
+
+                  {/* Modal Agregar Set */}
+                  {showAgregarSet && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
+                      <div className="rounded-3xl bg-[var(--card)] w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
+                        <div className="p-6">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-black text-lg" style={{color:'var(--text-primary)'}}>➕ Nuevo Set</h3>
+                            <button onClick={() => setShowAgregarSet(false)} className="p-2 rounded-full hover:bg-[var(--muted-bg)]"><X size={18} /></button>
+                          </div>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-xs font-bold text-slate-500 block mb-1">📝 Descripción del set *</label>
+                              <input value={nuevoSet.descripcion} onChange={e => setNuevoSet(s => ({...s, descripcion: e.target.value}))}
+                                placeholder="Ej: Set 1 - VANCE, Set 2 - EOS..."
+                                className="w-full rounded-xl text-sm font-bold outline-none" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+                            </div>
+                            {[
+                              { key: 'materiales',       label: '📚 Materiales',                   placeholder: 'Materiales necesarios para este set' },
+                              { key: 'sd_estimulo',      label: '📍 Sd / Estímulo discriminativo', placeholder: 'Instrucción verbal o gesto que inicia la conducta' },
+                              { key: 'unidad_positiva',  label: '✅ Unidad positiva',              placeholder: 'Respuesta correcta esperada' },
+                              { key: 'unidad_negativa',  label: '❎ Unidad negativa',             placeholder: 'Respuesta incorrecta / error' },
+                              { key: 'reforzadores',     label: '🤝🏼 Ayudas',                      placeholder: 'Las indicadas en el set. Ej: Gesto + verbal' },
+                              { key: 'correccion_error', label: '📍 Corrección del error',         placeholder: 'Cómo se corrige si la respuesta es incorrecta' },
+                              { key: 'generalizacion',   label: '➡️ Generalización',              placeholder: 'Promover con la familia que realicen este ejercicio en casa.' },
+                            ].map(({ key, label, placeholder }) => (
+                              <div key={key}>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">{label}</label>
+                                <textarea value={(nuevoSet as any)[key]} onChange={e => setNuevoSet(s => ({...s, [key]: e.target.value}))}
+                                  rows={key === 'generalizacion' ? 2 : 1} placeholder={placeholder}
+                                  className="w-full rounded-xl text-sm resize-none outline-none" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex gap-3 mt-5">
+                            <button onClick={() => setShowAgregarSet(false)}
+                              className="flex-1 py-3 text-slate-500 font-bold border-2 border-slate-100 rounded-xl hover:bg-[var(--muted-bg)]">
+                              Cancelar
+                            </button>
+                            <button disabled={!nuevoSet.descripcion.trim() || savingSet}
+                              onClick={async () => {
+                                setSavingSet(true)
+                                try {
+                                  const res = await fetch('/api/programas-aba', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ action: 'agregar_set', programa_id: programa.id, descripcion: nuevoSet.descripcion.trim(), materiales: nuevoSet.materiales, sd_estimulo: nuevoSet.sd_estimulo, unidad_positiva: nuevoSet.unidad_positiva, unidad_negativa: nuevoSet.unidad_negativa, reforzadores: nuevoSet.reforzadores, correccion_error: nuevoSet.correccion_error, generalizacion: nuevoSet.generalizacion }),
+                                  })
+                                  const json = await res.json()
+                                  if (json.error) { toast.error(json.error); return }
+                                  toast.success('✅ Set agregado')
+                                  setShowAgregarSet(false)
+                                  setNuevoSet({ descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correccion_error: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' })
+                                  fetchDetalle()
+                                } finally { setSavingSet(false) }
+                              }}
+                              className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                              {savingSet ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                              {savingSet ? 'Guardando...' : 'Crear Set'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1984,14 +2040,8 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
                   className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a corto plazo 1 *</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a largo plazo *</label>
                 <textarea value={form.objetivo_lp} onChange={e => set('objetivo_lp', e.target.value)}
-                  rows={2} placeholder="Con un criterio de éxito de 90% en 2 sesiones consecutivas, el estudiante..."
-                  className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a corto plazo 2</label>
-                <textarea value={(form as any).objetivo_cp2 ?? ''} onChange={e => set('objetivo_cp2', e.target.value)}
                   rows={2} placeholder="Con un criterio de éxito de 90% en 2 sesiones consecutivas, el estudiante..."
                   className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
@@ -2053,19 +2103,13 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
             <div className="space-y-3">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Paso 3 · Procedimiento</p>
               {[
-                { key: 'materiales',       label: '📚 Materiales',                    placeholder: 'Materiales necesarios para la sesión' },
-                { key: 'sd_estimulo',      label: '📍 Sd / Estímulo discriminativo',  placeholder: 'Instrucción verbal o gesto que inicia la conducta' },
-                { key: 'unidad_positiva',  label: '✅ Unidad positiva',               placeholder: 'Respuesta correcta esperada' },
-                { key: 'unidad_negativa',  label: '❎ Unidad negativa',              placeholder: 'Respuesta incorrecta / error' },
-                { key: 'reforzadores',     label: '🤝🏼 Ayudas',                       placeholder: 'Las indicadas en el set. Ej: Gesto + verbal' },
-                { key: 'correccion_error', label: '📍 Corrección del error',          placeholder: 'Cómo se corrige si la respuesta es incorrecta' },
                 { key: 'generalizacion',   label: '➡️ Generalización',               placeholder: 'Promover con la familia que realicen este ejercicio en casa.' },
                 { key: 'notas_programa',   label: '🙈 Notas',                         placeholder: 'Observaciones generales del programa...' },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
                   <label className="text-xs font-bold text-slate-500 block mb-1">{label}</label>
                   <textarea value={(form as any)[key] ?? ''} onChange={e => set(key, e.target.value)}
-                    rows={key === 'generalizacion' || key === 'notas_programa' ? 2 : 1} placeholder={placeholder}
+                    rows={2} placeholder={placeholder}
                     className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
                 </div>
               ))}
