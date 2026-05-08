@@ -1288,6 +1288,21 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           <option value="dominado">✅ {t('programas.dominado')}</option>
                         </select>
                       </div>
+                      {/* Detalles del procedimiento POR CADA SET */}
+                      {(obj.sd_estimulo || obj.unidad_positiva || obj.unidad_negativa || obj.reforzadores || obj.materiales || obj.correction_errores) && (
+                        <div className="mt-3 pt-3 border-t border-slate-200">
+                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
+                          <div className="rounded-xl p-3 border border-[var(--card-border)] bg-[var(--card)] space-y-1 text-xs text-slate-600 dark:text-slate-300">
+                            {obj.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {obj.sd_estimulo}</p>}
+                            {obj.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {obj.unidad_positiva}</p>}
+                            {obj.unidad_negativa && <p><span className="font-bold">❎ Unidad -:</span> {obj.unidad_negativa}</p>}
+                            {(obj.reforzadores) && <p><span className="font-bold">🤝🏼 Ayudas:</span> {obj.reforzadores}</p>}
+                            {obj.correction_errores && <p><span className="font-bold">📍 Corrección del error:</span> {obj.correction_errores}</p>}
+                            {obj.materiales && <p><span className="font-bold">📚 Materiales:</span> {obj.materiales}</p>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     ))}
                   </div>
                 )}
@@ -1467,21 +1482,6 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 </div>
               )}
 
-              {/* Detalles del procedimiento */}
-              {(detalle.sd_estimulo || detalle.unidad_positiva || detalle.unidad_negativa || detalle.reforzadores || detalle.materiales || detalle.correction_errores) && (
-                <div>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
-                  <div className="rounded-xl p-4 border border-[var(--card-border)] bg-[var(--card)] space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                    {detalle.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {detalle.sd_estimulo}</p>}
-                    {detalle.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {detalle.unidad_positiva}</p>}
-                    {detalle.unidad_negativa && <p><span className="font-bold">❎ Unidad -:</span> {detalle.unidad_negativa}</p>}
-                    {(detalle.reforzadores || detalle.ayudas) && <p><span className="font-bold">🤝🏼 Ayudas:</span> {detalle.reforzadores || detalle.ayudas}</p>}
-                    {detalle.correction_errores && <p><span className="font-bold">{t('programas.correccion')}</span> {detalle.correction_errores}</p>}
-                    {detalle.reforzadores && <p><span className="font-bold">Reforzadores:</span> {detalle.reforzadores}</p>}
-                    {detalle.materiales && <p><span className="font-bold">Materiales:</span> {detalle.materiales}</p>}
-                  </div>
-                </div>
-              )}
               {/* Práctica en casa del padre */}
               <PracticaCasaPanel programaId={programa.id} programaNombre={programa.titulo} objetivos={detalle?.objetivos_cp || []} />
 
