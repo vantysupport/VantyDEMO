@@ -1971,7 +1971,8 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
     tipo_medicion: 'porcentaje', criterio_dominio_pct: 90, criterio_sesiones_consecutivas: 2,
     fase_actual: 'intervencion',
   })
-  const [objetivos, setObjetivos] = useState([{ descripcion: '' }])
+  const [objetivos, setObjetivos] = useState([{ descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correccion_error: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' }])
+  const [setExpandido, setSetExpandido] = useState<number | null>(0)
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
   const toggleAreaTag = (tag: string) => {
@@ -2062,23 +2063,54 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Paso 2 · Sets / Objetivos CP</p>
               <p className="text-xs" style={{color:"var(--text-muted)"}}>{t('programas.definePasos')}</p>
               {objetivos.map((obj, i) => (
-                <div key={i} className="flex gap-2">
-                  <span className="w-7 h-7 bg-indigo-600 text-white rounded-full text-xs font-black flex items-center justify-center shrink-0 mt-2.5">{i + 1}</span>
-                  <input value={obj.descripcion}
-                    onChange={e => {
-                      const updated = [...objetivos]
-                      updated[i] = { descripcion: e.target.value }
-                      setObjetivos(updated)
-                    }}
-                    placeholder={`Set ${i + 1}: ej: Permanece sentado ${(i + 1) * 3} minutos`}
-                    className="flex-1 p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
-                  {objetivos.length > 1 && (
-                    <button onClick={() => setObjetivos(objetivos.filter((_, j) => j !== i))}
-                      className="p-2.5 text-slate-300 hover:text-red-400 mt-1"><X size={14} /></button>
+                <div key={i} className="rounded-2xl border border-[var(--card-border)] overflow-hidden">
+                  {/* Header del set */}
+                  <div className="flex items-center gap-2 p-3 cursor-pointer hover:bg-[var(--muted-bg)]"
+                    onClick={() => setSetExpandido(setExpandido === i ? null : i)}>
+                    <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0">{i + 1}</span>
+                    <input value={obj.descripcion}
+                      onClick={e => e.stopPropagation()}
+                      onChange={e => {
+                        const updated = [...objetivos]
+                        updated[i] = { ...updated[i], descripcion: e.target.value }
+                        setObjetivos(updated)
+                      }}
+                      placeholder={`Set ${i + 1}: ej: VANCE, EOS...`}
+                      className="flex-1 text-sm font-bold outline-none bg-transparent" style={{ color: 'var(--text-primary)' }} />
+                    <span className="text-slate-400 text-xs">{setExpandido === i ? '▲' : '▼'}</span>
+                    {objetivos.length > 1 && (
+                      <button onClick={e => { e.stopPropagation(); setObjetivos(objetivos.filter((_, j) => j !== i)) }}
+                        className="p-1 text-slate-300 hover:text-red-400"><X size={13} /></button>
+                    )}
+                  </div>
+                  {/* Campos expandibles */}
+                  {setExpandido === i && (
+                    <div className="px-3 pb-3 space-y-2 border-t border-[var(--card-border)]">
+                      {([
+                        { key: 'materiales',       label: '📚 Materiales',                   placeholder: 'Materiales para este set' },
+                        { key: 'sd_estimulo',      label: '📍 Sd / Estímulo discriminativo', placeholder: 'Instrucción verbal o gesto' },
+                        { key: 'unidad_positiva',  label: '✅ Unidad positiva',              placeholder: 'Respuesta correcta esperada' },
+                        { key: 'unidad_negativa',  label: '❎ Unidad negativa',             placeholder: 'Respuesta incorrecta / error' },
+                        { key: 'reforzadores',     label: '🤝🏼 Ayudas',                      placeholder: 'Ej: Gesto + verbal' },
+                        { key: 'correccion_error', label: '📍 Corrección del error',         placeholder: 'Cómo se corrige si la respuesta es incorrecta' },
+                        { key: 'generalizacion',   label: '➡️ Generalización',              placeholder: 'Promover con la familia...' },
+                      ] as {key: string, label: string, placeholder: string}[]).map(({ key, label, placeholder }) => (
+                        <div key={key} className="pt-2">
+                          <label className="text-[10px] font-bold text-slate-500 block mb-1">{label}</label>
+                          <textarea value={(obj as any)[key] ?? ''} onChange={e => {
+                            const updated = [...objetivos]
+                            updated[i] = { ...updated[i], [key]: e.target.value }
+                            setObjetivos(updated)
+                          }}
+                            rows={1} placeholder={placeholder}
+                            className="w-full rounded-xl text-xs resize-none outline-none" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '8px 12px' }} />
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
-              <button onClick={() => setObjetivos([...objetivos, { descripcion: '' }])}
+              <button onClick={() => { setObjetivos([...objetivos, { descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correccion_error: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' }]); setSetExpandido(objetivos.length) }}
                 className="w-full py-2.5 border-2 border-dashed border-[var(--card-border)] rounded-xl text-sm font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500">
                 + Agregar set
               </button>
