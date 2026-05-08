@@ -1210,9 +1210,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               )}
 
               {/* Sets / Objetivos CP */}
-              {detalle.objetivos_cp?.length > 0 && (
-                <div>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
+              <div>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
+                {detalle.objetivos_cp?.length > 0 && (
                   <div className="space-y-2">
                     {[...detalle.objetivos_cp].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((obj: any) => (
                       <div key={obj.id} className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${
@@ -1290,6 +1290,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       </div>
                     ))}
                   </div>
+                )}
                   {/* Agregar set adicional */}
                   <button
                     onClick={() => setShowAgregarSet(true)}
@@ -1362,8 +1363,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       </div>
                     </div>
                   )}
-                </div>
-              )}
+              </div>
 
               {/* Últimas sesiones */}
               {detalle.sesiones_datos_aba?.length > 0 && (
@@ -2008,9 +2008,9 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
         headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({
           action: 'crear_programa',
-          programa: { ...form, child_id: childId,
-            ayudas: form.reforzadores, // backward compat
-          },
+          programa: (({ correccion_errores, sd_estimulo, unidad_positiva, unidad_negativa, reforzadores, materiales, generalizacion, ...rest }) => ({
+            ...rest, child_id: childId, ayudas: reforzadores, // backward compat
+          }))(form),
           objetivos: objetivos
             .map((o, i) => ({ ...o, descripcion: o.descripcion.trim() || `Set ${i + 1}` }))
             .filter(o => o.descripcion),
