@@ -1791,11 +1791,14 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
   const { t } = useI18n()
   const toast = useToast()
   const [saving, setSaving] = useState(false)
+  const lastSet = [...(programa.sesiones_datos_aba || [])]
+    .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    .at(-1)?.set ?? ''
   const [form, setForm] = useState({
     fase: programa.fase_actual === 'linea_base' ? 'linea_base' : (programa.fase_actual || 'intervencion'),
     oportunidades_totales: '',
     respuestas_correctas: '',
-    set_activo: '',
+    set_activo: lastSet,
     notas: '',
     fecha: new Date().toISOString().split('T')[0],
   })
@@ -1844,7 +1847,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
             oportunidades_totales: Number(form.oportunidades_totales) || 0,
             respuestas_correctas: Number(form.respuestas_correctas) || 0,
             respuestas_incorrectas: Math.max(0, Number(form.oportunidades_totales) - Number(form.respuestas_correctas)),
-            set: form.set_activo || null,
+            set: form.set_activo.trim() || null,
             notas: form.notas,
           },
         }),
@@ -1961,7 +1964,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
                 </div>
                 <input
                   value={form.set_activo}
-                  onChange={e => setForm(f => ({ ...f, set_activo: e.target.value }))}
+                  onChange={e => setForm(f => ({ ...f, set_activo: e.target.value.trim() }))}
                   placeholder="Ej: Set 2, Nivel 3 (opcional)"
                   className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
