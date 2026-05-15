@@ -441,7 +441,7 @@ export default function NeuroFormsView() {
   const handleSendForm = async (form: FormDefinition, { childId, message, deadline }: any) => {
     try {
       // Get parent_id from child record
-      const { data: child } = await supabase.from('children').select('parent_id').eq('id', childId).single()
+      const { data: child } = await supabase.from('children').select('parent_id').eq('id', childId).maybeSingle()
       const parentId = (child as any)?.parent_id || null
 
       // Validar que el niño tenga un padre vinculado antes de enviar
