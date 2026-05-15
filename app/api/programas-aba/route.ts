@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
           cambios_fase_aba(*)
         `)
         .eq('id', programaId)
-        .single()
+        .maybeSingle()
       if (error) throw error
       return NextResponse.json({ data })
     }
@@ -298,7 +298,7 @@ async function verificarCriterioDominio(programaId: string) {
       .from('programas_aba')
       .select('criterio_dominio_pct, criterio_sesiones_consecutivas, fase_actual, titulo, child_id')
       .eq('id', programaId)
-      .single()
+      .maybeSingle()
     if (!prog || (prog as any).fase_actual === 'dominado') return
 
     const { data: sesionesRaw } = await supabaseAdmin
