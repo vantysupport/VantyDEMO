@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'actualizar_objetivo') {
-      const { objetivo_id, estado, descripcion } = body
+      const { objetivo_id, estado, descripcion, materiales, sd_estimulo, unidad_positiva, unidad_negativa, reforzadores, correction_errores, generalizacion } = body
       const updates: any = {}
       if (estado !== undefined) {
         const ESTADOS_VALIDOS = ['pendiente', 'en_progreso', 'dominado']
@@ -126,6 +126,13 @@ export async function POST(req: NextRequest) {
         if (estado === 'dominado') updates.fecha_dominio = new Date().toISOString().split('T')[0]
       }
       if (descripcion !== undefined) updates.descripcion = descripcion
+      if (materiales !== undefined) updates.materiales = materiales
+      if (sd_estimulo !== undefined) updates.sd_estimulo = sd_estimulo
+      if (unidad_positiva !== undefined) updates.unidad_positiva = unidad_positiva
+      if (unidad_negativa !== undefined) updates.unidad_negativa = unidad_negativa
+      if (reforzadores !== undefined) updates.reforzadores = reforzadores
+      if (correction_errores !== undefined) updates.correction_errores = correction_errores
+      if (generalizacion !== undefined) updates.generalizacion = generalizacion
       if (!objetivo_id || Object.keys(updates).length === 0) {
         return NextResponse.json({ error: 'objetivo_id y al menos un campo requeridos' }, { status: 400 })
       }
