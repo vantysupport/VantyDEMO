@@ -407,10 +407,10 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
       ) : (
         <div className="space-y-6">
 
-          {/* ── Programas en curso ── */}
+          {/* Programas en curso */}
           {programasEnCurso.length > 0 && (
             <div className="space-y-4">
-              {programasEnCurso.map(prog => (
+              {programasEnCurso.map((prog: any) => (
             <ProgramaCard
               key={prog.id}
               programa={prog}
@@ -443,7 +443,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             </div>
           )}
 
-          {/* ── Criterio alcanzado automáticamente (set activo cumple el criterio) ── */}
+          {/* Criterio alcanzado automaticamente */}
           {programasCriterioAuto.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -458,7 +458,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
                 El set activo cumple el criterio. El terapeuta decide si marcar el programa como logrado.
               </p>
               <div className="space-y-4 opacity-75">
-                {programasCriterioAuto.map(prog => (
+                {programasCriterioAuto.map((prog: any) => (
             <ProgramaCard
               key={prog.id}
               programa={prog}
@@ -492,14 +492,12 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             </div>
           )}
 
-          {/* ── Programas logrados (dominados por el terapeuta) ── */}
+          {/* Programas logrados */}
           {programasLogrados.length > 0 && (
             <div className="space-y-3">
-              <button
-                onClick={() => setVerLogrados(v => !v)}
-                className="w-full flex items-center gap-2">
+              <button onClick={() => setVerLogrados(v => !v)} className="w-full flex items-center gap-2">
                 <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
-                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5 transition-all"
+                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5"
                   style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
                   🏆 Programas logrados · {programasLogrados.length}
                   <span className="text-[10px]">{verLogrados ? '▲' : '▼'}</span>
@@ -508,7 +506,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
               </button>
               {verLogrados && (
                 <div className="space-y-4 opacity-50">
-                  {programasLogrados.map(prog => (
+                  {programasLogrados.map((prog: any) => (
             <ProgramaCard
               key={prog.id}
               programa={prog}
