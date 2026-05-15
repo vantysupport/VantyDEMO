@@ -803,7 +803,7 @@ function FichasTabEspecialista({ childId, childName }: { childId: string; childN
       if (!res.ok) return
       const blob = await res.blob()
       const { data: { user } } = await supabase.auth.getUser()
-      const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user!.id).single()
+      const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user!.id).maybeSingle()
       const fileName = `Ficha_${childName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.docx`
       const path = `${childId}/${Date.now()}_${fileName}`
       const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
@@ -920,7 +920,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
       const { data } = await supabase.from('profiles')
         .select('id, full_name, email, role')
         .ilike('email', emailBusqueda.trim())
-        .single()
+        .maybeSingle()
       if (data) setParentEncontrado(data)
       else toast.error('No se encontró ningún usuario con ese email')
     } catch { toast.error('No se encontró ningún usuario con ese email') }
