@@ -193,7 +193,7 @@ export default function AdminDashboard() {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
         if (profile) setUserProfile(profile)
 
         // Load initial unread count — solo mensajes recientes no leídos
