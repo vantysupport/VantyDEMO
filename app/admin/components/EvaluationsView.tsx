@@ -72,7 +72,7 @@ function DynamicEvaluationsView() {
      setIsGenerating(true);
      try {
         // Determinamos el endpoint según el tipo de formulario
-        const { data: childData } = await supabase.from('children').select('name, age, diagnosis').eq('id', selectedChild).single();
+        const { data: childData } = await supabase.from('children').select('name, age, diagnosis').eq('id', selectedChild).maybeSingle();
         const childName = childData?.name || 'Paciente';
         const childAge  = childData?.age || 0;
         const diagnosis = childData?.diagnosis || '';
@@ -186,7 +186,7 @@ function DynamicEvaluationsView() {
         .from('children')
         .select('name, parent_id')
         .eq('id', childId)
-        .single();
+        .maybeSingle();
 
       if (!child?.parent_id) {
         console.log('⚠️ Este niño no tiene padre asociado, no se envía notificación');
@@ -198,7 +198,7 @@ function DynamicEvaluationsView() {
         .from('profiles')
         .select('user_id')
         .eq('id', child.parent_id)
-        .single();
+        .maybeSingle();
 
       if (!parentProfile?.user_id) {
         console.log('⚠️ No se encontró user_id del padre en profiles');
