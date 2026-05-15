@@ -510,8 +510,21 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
 
   // Calcular divisores de SET (no de fase) — posición absoluta en número de sesión
   // Un divisor de set ocurre cuando el campo "set" cambia entre dos puntos consecutivos con datos
-  const setDividers: { x: number; label: string; nextColor: string }[] = []
+  const setDividers: { x: number; label: string; nextColor: string; isFirst?: boolean }[] = []
   const realPoints = chartData.filter((d: any) => d.pct !== null)
+
+  // Etiqueta del primer set al inicio de la gráfica
+  if (realPoints.length > 0 && realPoints[0].set) {
+    const firstSet = realPoints[0].set
+    const firstSeg = lineSegments.find((s: any) => s.set === firstSet)
+    setDividers.push({
+      x: realPoints[0].sesion,
+      label: firstSet,
+      nextColor: firstSeg ? firstSeg.color : '#6366f1',
+      isFirst: true,
+    })
+  }
+
   for (let i = 1; i < realPoints.length; i++) {
     const prevSet = realPoints[i - 1].set ?? '__none__'
     const currSet = realPoints[i].set ?? '__none__'
@@ -575,12 +588,12 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
           <ReferenceLine
             key={`setdiv-${i}`}
             x={div.x}
-            stroke="#94a3b8"
+            stroke={div.isFirst ? 'transparent' : '#94a3b8'}
             strokeWidth={2}
             strokeDasharray="6 4"
             label={{
               value: div.label,
-              position: 'insideTopRight',
+              position: div.isFirst ? 'insideTopLeft' : 'insideTopRight',
               fontSize: 9,
               fill: div.nextColor,
               fontWeight: 700,
