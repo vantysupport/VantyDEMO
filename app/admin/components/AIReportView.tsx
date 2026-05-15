@@ -738,6 +738,7 @@ function ReporteHistorialCard({ reporte }: { reporte: any; key?: any }) {
         .eq('id', reporte.id)
         .maybeSingle()
       if (error) throw error
+      if (!data) throw new Error('Reporte no encontrado')
       const byteChars = atob(data.file_data)
       const bytes = new Uint8Array(byteChars.length)
       for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i)
