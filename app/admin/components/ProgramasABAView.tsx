@@ -94,6 +94,26 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [loadingModal, setLoadingModal] = useState(false)
   const [aiAnalysis, setAiAnalysis] = useState<any>(null)
   const [loadingAI, setLoadingAI] = useState(false)
+  const [alertasDescartadas, setAlertasDescartadas] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem(`aba_alertas_desc_${childId}`) || '[]')) }
+    catch { return new Set() }
+  })
+
+  const descartarAlerta = (key: string) => {
+    setAlertasDescartadas(prev => {
+      const next = new Set(prev); next.add(key)
+      localStorage.setItem(`aba_alertas_desc_${childId}`, JSON.stringify([...next]))
+      return next
+    })
+  }
+  const descartarTodas = () => {
+    const keys = (aiAnalysis?.alertas || []).map((_: any, i: number) => `alerta_${i}`)
+    setAlertasDescartadas(prev => {
+      const next = new Set([...prev, ...keys])
+      localStorage.setItem(`aba_alertas_desc_${childId}`, JSON.stringify([...next]))
+      return next
+    })
+  }
   const [filtroArea, setFiltroArea] = useState<string>('todos')
   const [customAreaLabels, setCustomAreaLabels] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('aba_custom_area_labels') || '{}') } catch { return {} }
@@ -240,22 +260,35 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
           <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{t('dashboard.ariAnalizando')}</p>
         </div>
       )}
-      {aiAnalysis && aiAnalysis.alertas?.length > 0 && (
-        <div className="space-y-2 mb-5">
-          <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2"
-            style={{ color: 'var(--text-muted)' }}>
-            <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
-          </p>
-          {aiAnalysis.resumen && (
-            <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
+      {aiAnalysis && aiAnalysis.alertas?.length > 0 && (() => {
+        const alertasVisibles = aiAnalysis.alertas.filter((_: any, i: number) => !alertasDescartadas.has(`alerta_${i}`))
+        if (alertasVisibles.length === 0) return null
+        return (
+          <div className="space-y-2 mb-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+                style={{ color: 'var(--text-muted)' }}>
+                <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
+              </p>
+              <button onClick={descartarTodas}
+                className="text-[10px] font-semibold px-2 py-1 rounded-lg hover:opacity-80 transition-opacity"
+                style={{ color: 'var(--text-muted)', background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+                Descartar todas
+              </button>
             </div>
-          )}
-          {aiAnalysis.alertas.map((alerta: any, i: number) => (
-            <AlertaCard key={i} alerta={alerta} />
-          ))}
-        </div>
-      )}
+            {aiAnalysis.resumen && (
+              <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
+              </div>
+            )}
+            {aiAnalysis.alertas.map((alerta: any, i: number) => {
+              const key = `alerta_${i}`
+              if (alertasDescartadas.has(key)) return null
+              return <AlertaCard key={i} alerta={alerta} onDescartar={() => descartarAlerta(key)} />
+            })}
+          </div>
+        )
+      })()}
 
       {/* ── Filtros por área ── */}
       <div className="flex flex-wrap gap-2 mb-5">
@@ -397,7 +430,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 }
 
 // ── Tarjeta de alerta IA ─────────────────────────────────────────────────────
-function AlertaCard({ alerta }: { alerta: any; key?: any }) {
+function AlertaCard({ alerta, onDescartar }: { alerta: any; key?: any; onDescartar?: () => void }) {
   const cfg: Record<string, { border: string; icon: string; label: string }> = {
     alta:  { border: '#c0524a', icon: '⚠', label: '#c0524a' },
     media: { border: '#b07830', icon: '!', label: '#b07830' },
@@ -406,12 +439,20 @@ function AlertaCard({ alerta }: { alerta: any; key?: any }) {
   const c = cfg[alerta.prioridad] || cfg.media
   return (
     <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `3px solid ${c.border}` }}>
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+      <div className="flex items-start gap-2 mb-1">
+        <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
           style={{ background: `${c.border}18`, color: c.border }}>
           {c.icon}
         </span>
-        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
+        <p className="font-bold text-sm flex-1" style={{ color: 'var(--text-primary)' }}>{alerta.titulo}</p>
+        {onDescartar && (
+          <button onClick={onDescartar}
+            className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center hover:opacity-70 transition-opacity"
+            style={{ color: 'var(--text-muted)', background: 'transparent' }}
+            title="Descartar alerta">
+            <X size={12} />
+          </button>
+        )}
       </div>
       <p className="text-xs leading-relaxed pl-6" style={{ color: 'var(--text-secondary)' }}>{alerta.mensaje}</p>
     </div>
