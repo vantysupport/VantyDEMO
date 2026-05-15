@@ -546,7 +546,7 @@ function HistorialFormCard({ sf, onReportGenerated }: { sf: any; onReportGenerat
         .from(sourceTable)
         .select(selectFields)
         .eq('id', sf.id)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
 
@@ -1327,7 +1327,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
   const handleSendForm = async (form: any, { childId, message, deadline }: any) => {
     try {
       // Derive parent_id from child record
-      const { data: child } = await supabase.from('children').select('parent_id').eq('id', childId).single()
+      const { data: child } = await supabase.from('children').select('parent_id').eq('id', childId).maybeSingle()
       const parentId = (child as any)?.parent_id || null
 
       const res = await fetch('/api/admin/forms', {
