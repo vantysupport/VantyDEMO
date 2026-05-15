@@ -687,8 +687,19 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     await fetchDetalle()
   }
 
-  // Preparar datos para la gráfica
-  const chartDataRaw = sesiones.map((s: any, i: number) => ({
+  // Preparar datos para la gráfica — agrupar por set para que sesiones del mismo set queden contiguas
+  const setOrder: string[] = []
+  sesiones.forEach((s: any) => {
+    const k = s.set ?? '__none__'
+    if (!setOrder.includes(k)) setOrder.push(k)
+  })
+  const sesionesOrdenadas = [...sesiones].sort((a: any, b: any) => {
+    const ai = setOrder.indexOf(a.set ?? '__none__')
+    const bi = setOrder.indexOf(b.set ?? '__none__')
+    if (ai !== bi) return ai - bi
+    return (a.fecha || '').localeCompare(b.fecha || '')
+  })
+  const chartDataRaw = sesionesOrdenadas.map((s: any, i: number) => ({
     sesion: i + 1,
     pct: s.porcentaje_exito,
     fase: s.fase,
