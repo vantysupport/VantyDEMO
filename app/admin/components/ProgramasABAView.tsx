@@ -11,7 +11,7 @@ import {
 import {
   Plus, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
   Target, BarChart3, BarChart2, Edit3, CheckCircle2, AlertTriangle, Clock,
-  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight, Trash2
+  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight, Trash2, Search
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 
@@ -115,6 +115,8 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
     })
   }
   const [filtroArea, setFiltroArea] = useState<string>('todos')
+  const [busqueda, setBusqueda] = useState<string>('')
+  const [verLogrados, setVerLogrados] = useState<boolean>(false)
   const [customAreaLabels, setCustomAreaLabels] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('aba_custom_area_labels') || '{}') } catch { return {} }
   })
@@ -179,9 +181,20 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   }, [childId])
 
   const areas = ['todos', ...Object.keys(AREA_CONFIG)]
-  const programasFiltrados = filtroArea === 'todos'
-    ? programas
-    : programas.filter(p => p.area === filtroArea)
+  const programasFiltrados = (() => {
+    let lista = filtroArea === 'todos' ? programas : programas.filter((p: any) => p.area === filtroArea)
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase()
+      lista = lista.filter((p: any) => (p.nombre || '').toLowerCase().includes(q) || (p.descripcion || '').toLowerCase().includes(q))
+    }
+    return lista
+  })()
+
+  const programasActivos = programasFiltrados.filter((p: any) => p.estado !== 'dominado')
+  const programasLogrados = programasFiltrados.filter((p: any) => p.estado === 'dominado')
+  // Criterio alcanzado automaticamente (set activo cumple criterio) pero NO marcado como dominado
+  const programasCriterioAuto = programasActivos.filter((p: any) => programaCriterioAlcanzado(p))
+  const programasEnCurso = programasActivos.filter((p: any) => !programaCriterioAlcanzado(p))
 
   // Helper: misma lógica que el badge "Criterio alcanzado" en ProgramaCard
   const programaCriterioAlcanzado = (p: any) => {
@@ -360,6 +373,23 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
         })}
       </div>
 
+      {/* Buscador */}
+      <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl border" style={{ background: 'var(--input-bg)', borderColor: 'var(--input-border)' }}>
+        <Search size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+        <input
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          placeholder="Buscar programa por nombre..."
+          className="flex-1 text-sm bg-transparent outline-none"
+          style={{ color: 'var(--text-primary)' }}
+        />
+        {busqueda && (
+          <button onClick={() => setBusqueda('')} style={{ color: 'var(--text-muted)' }}>
+            <X size={13} />
+          </button>
+        )}
+      </div>
+
       {/* Lista de programas */}
       {loading ? (
         <div className="flex flex-col items-center py-16 gap-3">
@@ -371,12 +401,16 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
           <div className="w-14 h-14 dark:bg-indigo-900/30 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
             <BarChart3 size={26} className="text-indigo-300" />
           </div>
-          <p className="font-bold text-slate-500 mb-1">{t('programas.sinProgramas')}{filtroArea !== 'todos' ? ` ${t('programas.enArea').replace('{area}', AREA_CONFIG[filtroArea]?.label || '')}` : ''}</p>
-          <p className="text-xs" style={{color:"var(--text-muted)",opacity:0.6}}>{t('programas.creaElPrimero').replace('{nombre}', childName)}</p>
+          <p className="font-bold text-slate-500 mb-1">{busqueda ? `Sin resultados para "${busqueda}"` : (t('programas.sinProgramas') + (filtroArea !== 'todos' ? ` ${t('programas.enArea').replace('{area}', AREA_CONFIG[filtroArea]?.label || '')}` : ''))}</p>
+          <p className="text-xs" style={{color:"var(--text-muted)",opacity:0.6}}>{!busqueda && t('programas.creaElPrimero').replace('{nombre}', childName)}</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {programasFiltrados.map(prog => (
+        <div className="space-y-6">
+
+          {/* ── Programas en curso ── */}
+          {programasEnCurso.length > 0 && (
+            <div className="space-y-4">
+              {programasEnCurso.map(prog => (
             <ProgramaCard
               key={prog.id}
               programa={prog}
@@ -406,6 +440,109 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
               onChangeTipoGrafico={(tipo: TipoGrafico) => setTipoGrafico(prog.id, tipo)}
             />
           ))}
+            </div>
+          )}
+
+          {/* ── Criterio alcanzado automáticamente (set activo cumple el criterio) ── */}
+          {programasCriterioAuto.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
+                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full"
+                  style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                  ✓ Criterio alcanzado — {programasCriterioAuto.length} programa{programasCriterioAuto.length !== 1 ? 's' : ''}
+                </span>
+                <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
+              </div>
+              <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+                El set activo cumple el criterio. El terapeuta decide si marcar el programa como logrado.
+              </p>
+              <div className="space-y-4 opacity-75">
+                {programasCriterioAuto.map(prog => (
+            <ProgramaCard
+              key={prog.id}
+              programa={prog}
+              loadingModal={loadingModal}
+              onRegistrarSesion={async () => {
+                setLoadingModal(true)
+                try {
+                  const res = await fetch(`/api/programas-aba?child_id=${childId}&t=${Date.now()}`, { cache: 'no-store' })
+                  const json = await res.json()
+                  const fresh = (json.data || []).find((p: any) => p.id === prog.id) || prog
+                  setProgramaActivo(fresh)
+                } catch {
+                  setProgramaActivo(prog)
+                } finally {
+                  setLoadingModal(false)
+                  setShowRegistrarSesion(true)
+                }
+              }}
+              onReload={loadProgramas}
+              onDeleteSesion={(sesionId: string) => {
+                setProgramas(prev => prev.map(p => p.id !== prog.id ? p : {
+                  ...p,
+                  sesiones_datos_aba: (p.sesiones_datos_aba || []).filter((s: any) => s.id !== sesionId)
+                }))
+              }}
+              tipoGrafico={tiposGrafico[prog.id] || 'lineas'}
+              onChangeTipoGrafico={(tipo: TipoGrafico) => setTipoGrafico(prog.id, tipo)}
+            />
+          ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Programas logrados (dominados por el terapeuta) ── */}
+          {programasLogrados.length > 0 && (
+            <div className="space-y-3">
+              <button
+                onClick={() => setVerLogrados(v => !v)}
+                className="w-full flex items-center gap-2">
+                <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
+                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5 transition-all"
+                  style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
+                  🏆 Programas logrados · {programasLogrados.length}
+                  <span className="text-[10px]">{verLogrados ? '▲' : '▼'}</span>
+                </span>
+                <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
+              </button>
+              {verLogrados && (
+                <div className="space-y-4 opacity-50">
+                  {programasLogrados.map(prog => (
+            <ProgramaCard
+              key={prog.id}
+              programa={prog}
+              loadingModal={loadingModal}
+              onRegistrarSesion={async () => {
+                setLoadingModal(true)
+                try {
+                  const res = await fetch(`/api/programas-aba?child_id=${childId}&t=${Date.now()}`, { cache: 'no-store' })
+                  const json = await res.json()
+                  const fresh = (json.data || []).find((p: any) => p.id === prog.id) || prog
+                  setProgramaActivo(fresh)
+                } catch {
+                  setProgramaActivo(prog)
+                } finally {
+                  setLoadingModal(false)
+                  setShowRegistrarSesion(true)
+                }
+              }}
+              onReload={loadProgramas}
+              onDeleteSesion={(sesionId: string) => {
+                setProgramas(prev => prev.map(p => p.id !== prog.id ? p : {
+                  ...p,
+                  sesiones_datos_aba: (p.sesiones_datos_aba || []).filter((s: any) => s.id !== sesionId)
+                }))
+              }}
+              tipoGrafico={tiposGrafico[prog.id] || 'lineas'}
+              onChangeTipoGrafico={(tipo: TipoGrafico) => setTipoGrafico(prog.id, tipo)}
+            />
+          ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       )}
 
