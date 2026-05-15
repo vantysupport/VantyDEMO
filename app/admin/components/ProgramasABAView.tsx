@@ -513,12 +513,12 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
   const setDividers: { x: number; label: string; nextColor: string; isFirst?: boolean }[] = []
   const realPoints = chartData.filter((d: any) => d.pct !== null)
 
-  // Etiqueta del primer set al inicio de la gráfica
+  // Etiqueta del primer set al inicio de la gráfica (anclada al borde izquierdo)
   if (realPoints.length > 0 && realPoints[0].set) {
     const firstSet = realPoints[0].set
     const firstSeg = lineSegments.find((s: any) => s.set === firstSet)
     setDividers.push({
-      x: realPoints[0].sesion,
+      x: 0,
       label: firstSet,
       nextColor: firstSeg ? firstSeg.color : '#6366f1',
       isFirst: true,
