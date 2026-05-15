@@ -191,7 +191,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
       .eq('child_id', childId)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
     // Si no hay, buscar en parent_forms (llenada por el padre)
     let anamnesisFromParent: any = null
@@ -204,7 +204,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
         .in('form_type', ['anamnesis', 'historia_familiar', 'Historia Familiar y del Desarrollo'])
         .order('completed_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
       if (pf) {
         // Adaptar estructura para que sea compatible con el resto del código
         anamnesisFromParent = { datos: pf.responses, form_title: pf.form_title, created_at: pf.completed_at }
@@ -238,7 +238,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     .eq('child_id', childId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   
   const { data: ados2 } = await supabase
     .from('evaluacion_ados2')
@@ -246,7 +246,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     .eq('child_id', childId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   
   const { data: vineland3 } = await supabase
     .from('evaluacion_vineland3')
@@ -254,7 +254,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     .eq('child_id', childId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   
   const { data: wiscv } = await supabase
     .from('evaluacion_wiscv')
@@ -262,7 +262,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     .eq('child_id', childId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
   
   const { data: basc3 } = await supabase
     .from('evaluacion_basc3')
@@ -270,7 +270,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     .eq('child_id', childId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   // Load all completed NeuroForms and form_responses
   const { data: formResponses } = await supabase
@@ -736,7 +736,7 @@ function ReporteHistorialCard({ reporte }: { reporte: any; key?: any }) {
         .from('reportes_generados')
         .select('file_data, nombre_archivo')
         .eq('id', reporte.id)
-        .single()
+        .maybeSingle()
       if (error) throw error
       const byteChars = atob(data.file_data)
       const bytes = new Uint8Array(byteChars.length)
