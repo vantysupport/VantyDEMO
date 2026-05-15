@@ -190,18 +190,11 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
     return lista
   })()
 
-  const programasActivos = programasFiltrados.filter((p: any) => p.estado !== 'dominado')
-  const programasLogrados = programasFiltrados.filter((p: any) => p.estado === 'dominado')
-  // Criterio alcanzado automaticamente (set activo cumple criterio) pero NO marcado como dominado
-  const programasCriterioAuto = programasActivos.filter((p: any) => programaCriterioAlcanzado(p))
-  const programasEnCurso = programasActivos.filter((p: any) => !programaCriterioAlcanzado(p))
-
   // Helper: misma lógica que el badge "Criterio alcanzado" en ProgramaCard
   const programaCriterioAlcanzado = (p: any) => {
     const todasSesiones = (p.sesiones_datos_aba || []).sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
     const crit = p.criterio_dominio_pct || 90
     const critSesiones = p.criterio_sesiones_consecutivas || 2
-    // Filtrar por el set más reciente activo
     const setsConSes = Array.from(new Set(todasSesiones.map((s: any) => s.set ?? '__none__')))
     const setAct = setsConSes[setsConSes.length - 1] ?? '__none__'
     const sesActivo = todasSesiones.filter((s: any) => (s.set ?? '__none__') === setAct)
@@ -209,6 +202,11 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
     const last = sesActivo.slice(-critSesiones)
     return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   }
+
+  const programasActivos = programasFiltrados.filter((p: any) => p.estado !== 'dominado')
+  const programasLogrados = programasFiltrados.filter((p: any) => p.estado === 'dominado')
+  const programasCriterioAuto = programasActivos.filter((p: any) => programaCriterioAlcanzado(p))
+  const programasEnCurso = programasActivos.filter((p: any) => !programaCriterioAlcanzado(p))
 
   const stats = {
     activos: programas.filter(p => p.estado === 'activo').length,
