@@ -786,6 +786,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [nuevoSet, setNuevoSet] = useState({ descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correction_errores: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' })
   const [savingSet, setSavingSet] = useState(false)
   const [setExpandidoId, setSetExpandidoId] = useState<string | null>(null)
+  const [editandoSetId, setEditandoSetId] = useState<string | null>(null)
+  const [editSetForm, setEditSetForm] = useState<any>({})
+  const [savingEditSet, setSavingEditSet] = useState(false)
 
   const saveField = async (field: string, value: string, onSuccess?: () => void) => {
     const res = await fetch('/api/programas-aba', {
@@ -1489,18 +1492,86 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         </select>
                       </div>
                       {setExpandidoId === obj.id && (
-                        <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-indigo-100 bg-indigo-50 space-y-1 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
-                          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">📌 Procedimiento del Set</p>
-                          {!obj.materiales && !obj.sd_estimulo && !obj.unidad_positiva && !obj.unidad_negativa && !obj.reforzadores && !obj.ayudas && !obj.correction_errores && !obj.generalizacion && (
-                            <p className="text-slate-400 italic">Sin procedimiento registrado.</p>
+                        <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-indigo-100 bg-indigo-50 space-y-2 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">📌 Procedimiento del Set</p>
+                            {editandoSetId !== obj.id && (
+                              <button
+                                onClick={() => { setEditandoSetId(obj.id); setEditSetForm({ descripcion: obj.descripcion || '', materiales: obj.materiales || '', sd_estimulo: obj.sd_estimulo || '', unidad_positiva: obj.unidad_positiva || '', unidad_negativa: obj.unidad_negativa || '', reforzadores: obj.reforzadores || obj.ayudas || '', correction_errores: obj.correction_errores || '', generalizacion: obj.generalizacion || '' }) }}
+                                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-indigo-500 hover:bg-indigo-100 transition-colors">
+                                <Edit3 size={10} /> Editar
+                              </button>
+                            )}
+                          </div>
+
+                          {editandoSetId === obj.id ? (
+                            <div className="space-y-2">
+                              {[
+                                { key: 'materiales',        label: '📚 Materiales',         placeholder: 'Materiales necesarios' },
+                                { key: 'sd_estimulo',       label: '📍 Sd',                 placeholder: 'Instrucción verbal o gesto' },
+                                { key: 'unidad_positiva',   label: '✅ Unidad +',           placeholder: 'Respuesta correcta esperada' },
+                                { key: 'unidad_negativa',   label: '❎ Unidad -',           placeholder: 'Respuesta incorrecta / error' },
+                                { key: 'reforzadores',      label: '🤝🏼 Ayudas',            placeholder: 'Ej: Gesto + verbal' },
+                                { key: 'correction_errores',label: '📍 Corrección',         placeholder: 'Cómo se corrige el error' },
+                                { key: 'generalizacion',    label: '➡️ Generalización',    placeholder: 'Promover con la familia...' },
+                              ].map(({ key, label, placeholder }) => (
+                                <div key={key}>
+                                  <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">{label}</label>
+                                  <textarea
+                                    value={editSetForm[key] || ''}
+                                    onChange={e => setEditSetForm((f: any) => ({ ...f, [key]: e.target.value }))}
+                                    rows={key === 'generalizacion' ? 2 : 1}
+                                    placeholder={placeholder}
+                                    className="w-full rounded-lg text-xs resize-none outline-none p-2"
+                                    style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)' }}
+                                  />
+                                </div>
+                              ))}
+                              <div className="flex gap-2 pt-1">
+                                <button onClick={() => setEditandoSetId(null)}
+                                  className="flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-slate-200 hover:bg-slate-100">
+                                  Cancelar
+                                </button>
+                                <button
+                                  disabled={savingEditSet}
+                                  onClick={async () => {
+                                    setSavingEditSet(true)
+                                    try {
+                                      const res = await fetch('/api/programas-aba', {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ action: 'actualizar_objetivo', objetivo_id: obj.id, ...editSetForm }),
+                                      })
+                                      const json = await res.json()
+                                      if (json.error) throw new Error(json.error)
+                                      onReload()
+                                      setEditandoSetId(null)
+                                    } catch (e: any) {
+                                      alert('Error al guardar: ' + e.message)
+                                    } finally {
+                                      setSavingEditSet(false)
+                                    }
+                                  }}
+                                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 flex items-center justify-center gap-1">
+                                  {savingEditSet ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
+                                  {savingEditSet ? 'Guardando...' : 'Guardar'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {!obj.materiales && !obj.sd_estimulo && !obj.unidad_positiva && !obj.unidad_negativa && !obj.reforzadores && !obj.ayudas && !obj.correction_errores && !obj.generalizacion && (
+                                <p className="text-slate-400 italic">Sin procedimiento registrado. Haz clic en Editar para agregar.</p>
+                              )}
+                              {obj.materiales && <p><span className="font-bold">📚 Materiales:</span> {obj.materiales}</p>}
+                              {obj.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {obj.sd_estimulo}</p>}
+                              {obj.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {obj.unidad_positiva}</p>}
+                              {obj.unidad_negativa && <p><span className="font-bold">❎ Unidad -:</span> {obj.unidad_negativa}</p>}
+                              {(obj.reforzadores || obj.ayudas) && <p><span className="font-bold">🤝🏼 Ayudas:</span> {obj.reforzadores || obj.ayudas}</p>}
+                              {obj.correction_errores && <p><span className="font-bold">📍 Corrección:</span> {obj.correction_errores}</p>}
+                              {obj.generalizacion && <p><span className="font-bold">➡️ Generalización:</span> {obj.generalizacion}</p>}
+                            </>
                           )}
-                          {obj.materiales && <p><span className="font-bold">📚 Materiales:</span> {obj.materiales}</p>}
-                          {obj.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {obj.sd_estimulo}</p>}
-                          {obj.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {obj.unidad_positiva}</p>}
-                          {obj.unidad_negativa && <p><span className="font-bold">❎ Unidad -:</span> {obj.unidad_negativa}</p>}
-                          {(obj.reforzadores || obj.ayudas) && <p><span className="font-bold">🤝🏼 Ayudas:</span> {obj.reforzadores || obj.ayudas}</p>}
-                          {obj.correction_errores && <p><span className="font-bold">📍 Corrección:</span> {obj.correction_errores}</p>}
-                          {obj.generalizacion && <p><span className="font-bold">➡️ Generalización:</span> {obj.generalizacion}</p>}
                         </div>
                       )}
                       </div>
