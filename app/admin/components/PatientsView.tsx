@@ -81,7 +81,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
     const fetchLinked = async () => {
       if (!nino.parent_id) { setLinkedUser(null); return }
       setLoadingUser(true)
-      const { data } = await supabase.from('profiles').select('id, full_name, email, role').eq('id', nino.parent_id).single()
+      const { data } = await supabase.from('profiles').select('id, full_name, email, role').eq('id', nino.parent_id).maybeSingle()
       setLinkedUser(data || null)
       setLoadingUser(false)
     }
@@ -621,7 +621,7 @@ function RellenarFichaConWord({ childId, childName, isDark }: {
 
       const blob  = await res.blob()
       const { data: { user } } = await supabase.auth.getUser()
-      const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user!.id).single()
+      const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user!.id).maybeSingle()
 
       // Subir al bucket
       const fileName = `Ficha_${childName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.docx`
@@ -724,7 +724,7 @@ export default function PatientsView({ onPatientSelect, initialChildId }: { onPa
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
-      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
       setCurrentRole(data?.role || '')
     })
   }, [])
@@ -944,7 +944,7 @@ export default function PatientsView({ onPatientSelect, initialChildId }: { onPa
               <PatientInfoTab nino={selected} onSaved={async()=>{
                 await cargar()
                 // Fetch fresh data directly from DB to avoid stale closure
-                const { data: fresh } = await supabase.from('children').select('*').eq('id', selected.id).single()
+                const { data: fresh } = await supabase.from('children').select('*').eq('id', selected.id).maybeSingle()
                 if (fresh) setSelected(fresh)
               }}/>}
             {tab==='programas' && <div style={{ padding: '20px 24px' }}><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
