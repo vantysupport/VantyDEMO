@@ -1538,7 +1538,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                     setSavingEditSet(true)
                                     try {
                                       const res = await fetch('/api/programas-aba', {
-                                        method: 'PUT',
+                                        method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ action: 'actualizar_objetivo', objetivo_id: obj.id, ...editSetForm }),
                                       })
