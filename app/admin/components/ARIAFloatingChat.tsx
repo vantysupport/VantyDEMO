@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Brain, X, Send, Loader2, User, BookOpen, Minus, Maximize2, Minimize2, HelpCircle, Stethoscope, Map, Trash2 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 import { toBCP47 } from '@/lib/i18n'
@@ -164,13 +164,14 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [expanded, setExpanded]   = useState(false)
   const [mode, setMode]           = useState<'clinico' | 'soporte'>('clinico')
 
-  const STORAGE_KEY = `aria_messages_${userId}${childId ? '_' + childId : ''}`
-  const CONV_KEY    = `aria_conv_${userId}${childId ? '_' + childId : ''}`
+  const STORAGE_KEY = useMemo(() => `aria_messages_${userId}${childId ? '_' + childId : ''}`, [userId, childId])
+  const CONV_KEY    = useMemo(() => `aria_conv_${userId}${childId ? '_' + childId : ''}`, [userId, childId])
 
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window === 'undefined') return []
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
+      const key = `aria_messages_${userId}${childId ? '_' + childId : ''}`
+      const saved = localStorage.getItem(key)
       return saved ? JSON.parse(saved) : []
     } catch { return [] }
   })
@@ -179,7 +180,10 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [unread, setUnread]     = useState(0)
   const [conversacionId, setConversacionId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
-    try { return localStorage.getItem(CONV_KEY) } catch { return null }
+    try {
+      const key = `aria_conv_${userId}${childId ? '_' + childId : ''}`
+      return localStorage.getItem(key)
+    } catch { return null }
   })
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLTextAreaElement>(null)
@@ -220,21 +224,29 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
     }])
   }
 
-  // Borrar historial completo
-  const clearHistory = useCallback(() => {
+  // Borrar historial completo (localStorage + Supabase)
+  const clearHistory = useCallback(async () => {
+    // 1. Borrar localStorage
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(STORAGE_KEY)
         localStorage.removeItem(CONV_KEY)
       } catch {}
     }
+    // 2. Borrar en Supabase
+    try {
+      const params = new URLSearchParams({ user_id: userId })
+      if (conversacionId) params.set('conversacion_id', conversacionId)
+      await fetch(`/api/agente/chat?${params.toString()}`, { method: 'DELETE' })
+    } catch {}
+    // 3. Resetear estado local
     setConversacionId(null)
     setMessages([{
       role: 'assistant',
       content: getWelcomeMessage(mode),
       timestamp: new Date().toISOString(),
     }])
-  }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY])
+  }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY, userId, conversacionId])
   // Solo pone mensaje de bienvenida si no hay historial guardado. Nunca borra mensajes existentes.
   const didInitRef = useRef(false)
   useEffect(() => {
