@@ -166,6 +166,7 @@ export default function AdminDashboard() {
   const [focusMode, setFocusMode] = useState(false)
   const [activeChild, setActiveChild] = useState<{id: string, name: string} | null>(null)
   const [pendingChildId, setPendingChildId] = useState<string | null>(null)
+  const [pendingChildTab, setPendingChildTab] = useState<string | null>(null)
   // Clear patient context when leaving patients view
   useEffect(() => { if (currentView !== 'ninos') setActiveChild(null) }, [currentView])
 
@@ -261,7 +262,7 @@ export default function AdminDashboard() {
   }
 
   const navigateTo = (view: string) => { setCurrentView(view); setSidebarOpen(false) }
-  const navigateToPatient = (childId: string) => { setPendingChildId(childId); setCurrentView('ninos'); setSidebarOpen(false) }
+  const navigateToPatient = (childId: string, tab?: string) => { setPendingChildId(childId); setPendingChildTab(tab || null); setCurrentView('ninos'); setSidebarOpen(false) }
 
   // PAGE_TITLES ya definido arriba con t()
 
@@ -520,7 +521,7 @@ export default function AdminDashboard() {
             <div className={`flex-1 ${currentView === 'ninos' ? 'min-h-0 h-full flex flex-col overflow-hidden' : ''}`}>
               {currentView === 'inicio'       && <DashboardHome navigateTo={navigateTo} navigateToPatient={navigateToPatient} />}
               {currentView === 'agenda'       && <CalendarView />}
-              {currentView === 'ninos'        && <PatientsView initialChildId={pendingChildId} onPatientSelect={(id: string, name: string) => { setActiveChild({ id, name }); setPendingChildId(null) }} />}
+              {currentView === 'ninos'        && <PatientsView initialChildId={pendingChildId} initialTab={pendingChildTab} onPatientSelect={(id: string, name: string) => { setActiveChild({ id, name }); setPendingChildId(null); setPendingChildTab(null) }} />}
               {/* evaluaciones integradas en PatientsView → tab Evaluaciones */}
               {currentView === 'reportes'     && <AIReportView onChildSelect={setSelectedChildReport} />}
               {currentView === 'recursos'     && <ResourcesManagementView />}
