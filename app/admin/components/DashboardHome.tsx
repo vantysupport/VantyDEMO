@@ -194,6 +194,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       // Alertas del API
       if (dataM?.alertas?.recientes?.length > 0) {
         setAlertasClinicas(dataM.alertas.recientes.map((a: any) => ({
+          id: a.id,
           tipo: a.tipo,
           child_id: a.child_id,
           paciente: a.children?.name || 'Paciente',
@@ -313,11 +314,14 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       const pacientesSinSesion: any[] = dataM?.pacientesSinSesion || []
       setSinSesion(pacientesSinSesion)
 
-      // Alertas: API + sin sesión (sin duplicados)
-      const alertasSinSesion = pacientesSinSesion.map((n: any) => ({
-        tipo: 'sin_sesion', child_id: n.id, paciente: n.name,
-        mensaje: 'Sin sesión en los últimos 30 días.', prioridad: 2,
-      }))
+      // Alertas: API + sin sesión (sin duplicados), filtrar descartadas localmente
+      const dismissed: string[] = JSON.parse(localStorage.getItem('alertas_descartadas') || '[]')
+      const alertasSinSesion = pacientesSinSesion
+        .map((n: any) => ({
+          tipo: 'sin_sesion', child_id: n.id, paciente: n.name,
+          mensaje: 'Sin sesión en los últimos 30 días.', prioridad: 2,
+        }))
+        .filter((a: any) => !dismissed.includes(a.tipo + ':' + a.child_id))
       setAlertasClinicas(prev => {
         const existentes = prev.filter((a: any) => a.tipo !== 'sin_sesion')
         return [...existentes, ...alertasSinSesion]
@@ -338,9 +342,22 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
   const totalPacientes = metricas?.pacientes?.total ?? 0
   const alertasUrgentes = metricas?.alertas?.urgentes ?? 0
 
-  const dismissAlerta = useCallback((index: number) => {
+  const dismissAlerta = useCallback(async (index: number) => {
+    const alerta = alertasClinicas[index]
     setAlertasClinicas(prev => prev.filter((_, i) => i !== index))
-  }, [])
+    if (alerta?.id) {
+      // Alerta de agente_alertas: marcar como resuelta en BD (persiste)
+      await supabase.from('agente_alertas').update({ resuelta: true }).eq('id', alerta.id)
+    } else if (alerta?.tipo && alerta?.child_id) {
+      // Alerta sin ID (sin_sesion, etc.): guardar clave en localStorage
+      const key = alerta.tipo + ':' + alerta.child_id
+      const dismissed = JSON.parse(localStorage.getItem('alertas_descartadas') || '[]')
+      if (!dismissed.includes(key)) {
+        dismissed.push(key)
+        localStorage.setItem('alertas_descartadas', JSON.stringify(dismissed))
+      }
+    }
+  }, [alertasClinicas])
   const mensajesPendientes = metricas?.tareas?.formPendientes ?? 0
   const tasaAsistencia = metricas?.hoy?.tasaAsistencia ?? 0
   const totalSes7d = sesSemanales.reduce((a, b) => a + b, 0)
