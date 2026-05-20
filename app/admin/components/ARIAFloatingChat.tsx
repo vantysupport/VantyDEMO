@@ -196,8 +196,9 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
       return localStorage.getItem(key)
     } catch { return null }
   })
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const inputRef  = useRef<HTMLTextAreaElement>(null)
+  const bottomRef    = useRef<HTMLDivElement>(null)
+  const inputRef     = useRef<HTMLTextAreaElement>(null)
+  const hasLoadedRef = useRef(false) // prevents Supabase reload on every open
 
   // Persistir mensajes en localStorage
   useEffect(() => {
@@ -235,6 +236,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
     setMode(newMode)
     // Resetear estado para que el useEffect de carga se dispare al cambiar de modo
     didInitRef.current = false
+    hasLoadedRef.current = false
     setConversacionId(null)
     setMessages([])
     // La carga real ocurre en el useEffect que escucha [open] — se fuerza cerrando y reabriendo no,
@@ -293,6 +295,8 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
       await fetch(`/api/agente/chat?${params.toString()}`, { method: 'DELETE' })
     } catch {}
     // 3. Resetear estado local
+    hasLoadedRef.current = false
+    didInitRef.current = false
     setConversacionId(null)
     setMessages([{
       role: 'assistant',
@@ -300,13 +304,15 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
       timestamp: new Date().toISOString(),
     }])
   }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY, userId, conversacionId])
-  // Carga historial desde Supabase cuando se abre el chat (fuente de verdad)
+  // Carga historial desde Supabase solo la primera vez que se abre en esta sesión
   const didInitRef = useRef(false)
   useEffect(() => {
-    if (!open) return           // solo cuando se abre
-    if (loadingHistory) return  // evitar llamadas duplicadas
+    if (!open) return              // solo cuando se abre
+    if (loadingHistory) return     // evitar llamadas duplicadas
+    if (hasLoadedRef.current) return // ya cargado esta sesión — no recargar
 
     const loadFromSupabase = async () => {
+      hasLoadedRef.current = true  // marcar antes del await para evitar race conditions
       setLoadingHistory(true)
       try {
         const res = await fetch(`/api/agente/chat?action=conversaciones&user_id=${userId}`)
