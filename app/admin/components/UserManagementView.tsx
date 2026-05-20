@@ -419,7 +419,7 @@ export default function UserManagementView() {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
-        body: JSON.stringify({ action: 'create_user', ...createForm , locale: localStorage.getItem('vanty_locale') || 'es' }),
+        body: JSON.stringify({ action: 'create_user', ...createForm, newPassword: createForm.password, locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
