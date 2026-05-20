@@ -162,15 +162,24 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [open, setOpen]           = useState(false)
   const [minimized, setMinimized] = useState(false)
   const [expanded, setExpanded]   = useState(false)
-  const [mode, setMode]           = useState<'clinico' | 'soporte'>('clinico')
+  const [mode, setMode]           = useState<'clinico' | 'soporte'>(() => {
+    if (typeof window === 'undefined') return 'clinico'
+    try {
+      const key = `aria_mode_${userId}${childId ? '_' + childId : ''}`
+      const saved = localStorage.getItem(key)
+      return (saved === 'soporte' || saved === 'clinico') ? saved as 'clinico' | 'soporte' : 'clinico'
+    } catch { return 'clinico' }
+  })
 
-  const STORAGE_KEY = useMemo(() => `aria_messages_${userId}${childId ? '_' + childId : ''}`, [userId, childId])
-  const CONV_KEY    = useMemo(() => `aria_conv_${userId}${childId ? '_' + childId : ''}`, [userId, childId])
+  const MODE_KEY    = useMemo(() => `aria_mode_${userId}${childId ? '_' + childId : ''}`, [userId, childId])
+  const STORAGE_KEY = useMemo(() => `aria_messages_${userId}${childId ? '_' + childId : ''}_${mode}`, [userId, childId, mode])
+  const CONV_KEY    = useMemo(() => `aria_conv_${userId}${childId ? '_' + childId : ''}_${mode}`, [userId, childId, mode])
 
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window === 'undefined') return []
     try {
-      const key = `aria_messages_${userId}${childId ? '_' + childId : ''}`
+      const savedMode = localStorage.getItem(`aria_mode_${userId}${childId ? '_' + childId : ''}`) || 'clinico'
+      const key = `aria_messages_${userId}${childId ? '_' + childId : ''}_${savedMode}`
       const saved = localStorage.getItem(key)
       return saved ? JSON.parse(saved) : []
     } catch { return [] }
@@ -181,7 +190,8 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [conversacionId, setConversacionId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
     try {
-      const key = `aria_conv_${userId}${childId ? '_' + childId : ''}`
+      const savedMode = localStorage.getItem(`aria_mode_${userId}${childId ? '_' + childId : ''}`) || 'clinico'
+      const key = `aria_conv_${userId}${childId ? '_' + childId : ''}_${savedMode}`
       return localStorage.getItem(key)
     } catch { return null }
   })
@@ -203,6 +213,12 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
     } catch {}
   }, [conversacionId, CONV_KEY])
 
+  // Persistir modo activo
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try { localStorage.setItem(MODE_KEY, mode) } catch {}
+  }, [mode, MODE_KEY])
+
   // Mensaje de bienvenida según modo
   const getWelcomeMessage = useCallback((currentMode: 'clinico' | 'soporte') => {
     if (currentMode === 'soporte') {
@@ -216,21 +232,50 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   // Reset al cambiar de modo
   const handleModeChange = (newMode: 'clinico' | 'soporte') => {
     setMode(newMode)
-    setConversacionId(null)
-    setMessages([{
-      role: 'assistant',
-      content: getWelcomeMessage(newMode),
-      timestamp: new Date().toISOString(),
-    }])
+    // Restaurar mensajes del nuevo modo desde localStorage (cada modo tiene su propia key)
+    if (typeof window !== 'undefined') {
+      try {
+        const modeStorageKey = `aria_messages_${userId}${childId ? '_' + childId : ''}_${newMode}`
+        const modeConvKey = `aria_conv_${userId}${childId ? '_' + childId : ''}_${newMode}`
+        const saved = localStorage.getItem(modeStorageKey)
+        const parsed = saved ? JSON.parse(saved) : []
+        const savedConv = localStorage.getItem(modeConvKey)
+        setConversacionId(savedConv || null)
+        if (parsed && parsed.length > 0) {
+          setMessages(parsed)
+        } else {
+          setMessages([{
+            role: 'assistant',
+            content: getWelcomeMessage(newMode),
+            timestamp: new Date().toISOString(),
+          }])
+        }
+      } catch {
+        setConversacionId(null)
+        setMessages([{
+          role: 'assistant',
+          content: getWelcomeMessage(newMode),
+          timestamp: new Date().toISOString(),
+        }])
+      }
+    }
   }
 
   // Borrar historial completo (localStorage + Supabase)
   const clearHistory = useCallback(async () => {
-    // 1. Borrar localStorage
+    // 1. Borrar localStorage (todas las variantes de modo)
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(STORAGE_KEY)
         localStorage.removeItem(CONV_KEY)
+        // Por si acaso quedan keys del formato antiguo sin sufijo de modo
+        const baseKey = `aria_messages_${userId}${childId ? '_' + childId : ''}`
+        localStorage.removeItem(baseKey)
+        localStorage.removeItem(baseKey.replace('messages', 'conv'))
+        localStorage.removeItem(baseKey.replace('messages', 'messages') + '_clinico')
+        localStorage.removeItem(baseKey.replace('messages', 'messages') + '_soporte')
+        localStorage.removeItem(baseKey.replace('messages', 'conv') + '_clinico')
+        localStorage.removeItem(baseKey.replace('messages', 'conv') + '_soporte')
       } catch {}
     }
     // 2. Borrar en Supabase
