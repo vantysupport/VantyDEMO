@@ -304,76 +304,73 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
       timestamp: new Date().toISOString(),
     }])
   }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY, userId, conversacionId])
-  // Carga historial desde Supabase solo la primera vez que se abre en esta sesión
+  // Carga historial — prioridad: estado en memoria → localStorage → Supabase (solo si vacío)
   const didInitRef = useRef(false)
   useEffect(() => {
-    if (!open) return              // solo cuando se abre
-    if (loadingHistory) return     // evitar llamadas duplicadas
-    if (hasLoadedRef.current) return // ya cargado esta sesión — no recargar
+    if (!open) return
+    if (loadingHistory) return
+    if (hasLoadedRef.current) return  // ya inicializado esta sesión, no recargar
 
+    hasLoadedRef.current = true
+
+    // 1. Si ya hay mensajes en el estado (componente montado con datos), no hacer nada
+    if (messages.length > 0) {
+      didInitRef.current = true
+      return
+    }
+
+    // 2. Intentar restaurar desde localStorage
+    try {
+      const localSaved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+      if (localSaved) {
+        const localParsed: Message[] = JSON.parse(localSaved)
+        if (localParsed && localParsed.length > 0) {
+          setMessages(localParsed)
+          didInitRef.current = true
+          return  // localStorage tiene datos → no consultar Supabase
+        }
+      }
+    } catch {}
+
+    // 3. Sin datos locales → consultar Supabase una sola vez
     const loadFromSupabase = async () => {
-      hasLoadedRef.current = true  // marcar antes del await para evitar race conditions
       setLoadingHistory(true)
       try {
         const res = await fetch(`/api/agente/chat?action=conversaciones&user_id=${userId}`)
         const data = await res.json()
         const convs: any[] = data?.data || []
 
-        // Filtrar conversaciones del modo actual y el childId actual
         const match = convs.find(c => {
-          const contextoMatch = mode === 'soporte'
+          return mode === 'soporte'
             ? c.contexto === 'soporte_web'
             : (childId ? c.child_id === childId : c.contexto === 'general' || c.contexto === 'paciente')
-          return contextoMatch
         })
 
         if (match && match.mensajes && match.mensajes.length > 0) {
-          // Restaurar desde Supabase
           setConversacionId(match.id)
           setMessages(match.mensajes)
-          // Sincronizar localStorage también
           if (typeof window !== 'undefined') {
             try {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(match.mensajes))
               localStorage.setItem(CONV_KEY, match.id)
             } catch {}
           }
-        } else if (!didInitRef.current) {
-          // Primera vez sin historial: mostrar bienvenida
-          didInitRef.current = true
-          const localSaved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
-          const localParsed = localSaved ? JSON.parse(localSaved) : []
-          if (!localParsed || localParsed.length === 0) {
-            setMessages([{
-              role: 'assistant',
-              content: getWelcomeMessage(mode),
-              timestamp: new Date().toISOString(),
-            }])
-          }
+        } else {
+          setMessages([{
+            role: 'assistant',
+            content: getWelcomeMessage(mode),
+            timestamp: new Date().toISOString(),
+          }])
         }
       } catch {
-        // Fallback a localStorage si Supabase falla
-        if (!didInitRef.current) {
-          didInitRef.current = true
-          try {
-            const localSaved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
-            const localParsed = localSaved ? JSON.parse(localSaved) : []
-            if (!localParsed || localParsed.length === 0) {
-              setMessages([{
-                role: 'assistant',
-                content: getWelcomeMessage(mode),
-                timestamp: new Date().toISOString(),
-              }])
-            }
-          } catch {
-            setMessages([{
-              role: 'assistant',
-              content: getWelcomeMessage(mode),
-              timestamp: new Date().toISOString(),
-            }])
-          }
-        }
+        // Supabase falló → mostrar bienvenida
+        setMessages([{
+          role: 'assistant',
+          content: getWelcomeMessage(mode),
+          timestamp: new Date().toISOString(),
+        }])
       } finally {
+        didInitRef.current = true
         setLoadingHistory(false)
       }
     }
@@ -508,35 +505,28 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                 {mode === 'soporte' ? 'Guía de Plataforma · VANTY' : 'Asistente Clínico IA'}
               </p>
             </div>
-            {/* Botones de control — flex-shrink-0 para que nunca se corten */}
-            <div className="flex items-center gap-0.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
-              <button
-                onClick={() => { if (window.confirm('¿Borrar historial de ARIA?')) clearHistory() }}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
-                title="Borrar historial"
-              >
-                <Trash2 size={12} />
-              </button>
+            {/* Botones de control */}
+            <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
               <button
                 onClick={() => setMinimized(m => !m)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white"
                 title="Minimizar"
               >
-                <Minus size={12} />
+                <Minus size={14} />
               </button>
               <button
                 onClick={() => { setExpanded(x => !x); setMinimized(false) }}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white"
                 title={expanded ? 'Reducir' : 'Ampliar'}
               >
-                {expanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+                {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
               </button>
               <button
                 onClick={() => { setOpen(false); setExpanded(false) }}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white"
                 title="Cerrar"
               >
-                <X size={12} />
+                <X size={14} />
               </button>
             </div>
           </div>
@@ -645,7 +635,20 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
               )}
 
               {/* Input */}
-              <div className="p-3 flex-shrink-0" style={{ background: 'var(--card)', borderTop: '1px solid var(--card-border)' }}>
+              <div className="px-3 pt-2 pb-0 flex-shrink-0 flex items-center justify-between" style={{ background: 'var(--card)', borderTop: '1px solid var(--card-border)' }}>
+                <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
+                  {messages.length > 1 ? `${messages.length - 1} mensaje${messages.length > 2 ? 's' : ''}` : 'Nueva conversación'}
+                </span>
+                <button
+                  onClick={() => { if (window.confirm('¿Borrar todo el historial de ARIA?')) clearHistory() }}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  title="Borrar historial"
+                >
+                  <Trash2 size={11} />
+                  Borrar chat
+                </button>
+              </div>
+              <div className="p-3 pt-2 flex-shrink-0" style={{ background: 'var(--card)' }}>
                 <div className="flex gap-2 items-end">
                   <textarea
                     ref={inputRef}
