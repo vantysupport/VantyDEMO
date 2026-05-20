@@ -69,16 +69,16 @@ function KPI({ label, value, sub, icon: Icon, bar, urgent, onClick }: any) {
 // ─── Alerta row ───────────────────────────────────────────────────────────────
 function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick }: any) {
   const bar = prioridad === 1 ? '#c0524a' : prioridad === 2 ? '#b07830' : '#3a68a0'
-  const tag = prioridad === 1 ? 'URGENTE' : prioridad === 2 ? 'MEDIA' : 'BAJA'
   return (
     <button onClick={onClick}
       className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:opacity-80"
       style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: `3px solid ${bar}` }}>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-[9px] font-black uppercase tracking-wide" style={{ color: bar }}>{tag}</span>
-          {tipo && <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{tipo.replace(/_/g, ' ')}</span>}
-        </div>
+        {tipo && (
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{tipo.replace(/_/g, ' ')}</span>
+          </div>
+        )}
         <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{paciente || mensaje}</p>
         {paciente && mensaje && <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{mensaje}</p>}
       </div>
