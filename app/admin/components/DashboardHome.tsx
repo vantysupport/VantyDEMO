@@ -457,7 +457,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
                     style={{ transition: 'background 0.15s' }}
                     onClick={() => {
                       if (p.child_id && navigateToPatient) {
-                        navigateToPatient(p.child_id, 'aba')
+                        navigateToPatient(p.child_id, 'programas')
                       } else {
                         navigateTo('ninos')
                       }
