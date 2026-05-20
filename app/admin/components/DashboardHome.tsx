@@ -249,7 +249,6 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         .select('id, titulo, child_id, estado, criterio_dominio_pct, fase_actual, sesiones_datos_aba(porcentaje_exito, fecha)')
         .eq('estado', 'activo')
         .order('updated_at', { ascending: false })
-        .limit(5)
 
       // Contar total de programas ABA activos
       const { count: countProgramas } = await supabase
@@ -263,7 +262,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
           const seses = (p.sesiones_datos_aba || []).sort((a: any, b: any) => b.fecha?.localeCompare(a.fecha || '') || 0)
           const ultimoPct = seses[0]?.porcentaje_exito ?? null
           const nombre = ninosMap[p.child_id] || 'Paciente'
-          return { titulo: p.titulo, nombre, ultimoPct, criterio: p.criterio_dominio_pct || 90, fase: p.fase_actual }
+          return { id: p.id, child_id: p.child_id, titulo: p.titulo, nombre, ultimoPct, criterio: p.criterio_dominio_pct || 90, fase: p.fase_actual }
         })
         setProgramasActivos(enriquecidos)
       }
@@ -447,12 +446,24 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
             <button onClick={() => navigateTo('ninos')} className="text-[10px] font-semibold" style={{ color: '#3a68a0' }}>Ver todos →</button>
           </div>
           {programasActivos.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-y-auto pr-1" style={{ maxHeight: '260px', scrollbarWidth: 'thin' }}>
               {programasActivos.map((p, i) => {
                 const pct = p.ultimoPct ?? 0
                 const color = pct >= p.criterio ? '#2e7a56' : pct >= 60 ? '#b07830' : '#3a68a0'
                 return (
-                  <div key={i}>
+                  <div
+                    key={i}
+                    className="cursor-pointer rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-black/5"
+                    style={{ transition: 'background 0.15s' }}
+                    onClick={() => {
+                      if (p.child_id && navigateToPatient) {
+                        navigateToPatient(p.child_id, 'aba')
+                      } else {
+                        navigateTo('ninos')
+                      }
+                    }}
+                    title={`Ver programa de ${p.nombre}`}
+                  >
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex-1 min-w-0 mr-3">
                         <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{p.titulo}</p>
