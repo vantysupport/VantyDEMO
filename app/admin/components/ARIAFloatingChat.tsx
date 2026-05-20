@@ -18,24 +18,63 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [open, setOpen]         = useState(false)
   const [minimized, setMinimized] = useState(false)
   const [expanded, setExpanded] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const STORAGE_KEY = `aria_messages_${userId}${childId ? '_' + childId : ''}`
+  const CONV_KEY = `aria_conv_${userId}${childId ? '_' + childId : ''}`
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY)
+      return saved ? JSON.parse(saved) : []
+    } catch { return [] }
+  })
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [unread, setUnread]     = useState(0)
-  const [conversacionId, setConversacionId] = useState<string | null>(null)
+  const [conversacionId, setConversacionId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    try { return sessionStorage.getItem(CONV_KEY) } catch { return null }
+  })
   const bottomRef  = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLTextAreaElement>(null)
 
-  // Mensaje de bienvenida — actualizar cuando cambia el paciente activo
+  // Persistir mensajes en sessionStorage cada vez que cambian
   useEffect(() => {
-    setMessages([{
-      role: 'assistant',
-      content: childId && childName
-        ? `¡Hola! 👋 Soy **ARIA**. Estoy revisando el expediente de **${childName}** y tengo acceso a todo su historial, programas ABA y evaluaciones.\n\n¿En qué te puedo ayudar?`
-        : '¡Hola! 👋 Soy **ARIA**, tu asistente clínica. ¿En qué te puedo ayudar hoy? 🧠',
-      timestamp: new Date().toISOString(),
-    }])
-    setConversacionId(null)
+    if (typeof window === 'undefined') return
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages)) } catch {}
+  }, [messages, STORAGE_KEY])
+
+  // Persistir conversacionId
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (conversacionId) sessionStorage.setItem(CONV_KEY, conversacionId)
+      else sessionStorage.removeItem(CONV_KEY)
+    } catch {}
+  }, [conversacionId, CONV_KEY])
+
+  // Mensaje de bienvenida — solo si no hay mensajes guardados
+  useEffect(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null
+      const hasSaved = saved && JSON.parse(saved).length > 0
+      if (!hasSaved) {
+        setMessages([{
+          role: 'assistant',
+          content: childId && childName
+            ? `¡Hola! 👋 Soy **ARIA**. Estoy revisando el expediente de **${childName}** y tengo acceso a todo su historial, programas ABA y evaluaciones.\n\n¿En qué te puedo ayudar?`
+            : '¡Hola! 👋 Soy **ARIA**, tu asistente clínica. \n\nEstoy entrenada en ABA, neuropsicología y educación especial.\n\n¿En qué puedo ayudarte hoy? 🧠',
+          timestamp: new Date().toISOString(),
+        }])
+        setConversacionId(null)
+      }
+    } catch {
+      setMessages([{
+        role: 'assistant',
+        content: '¡Hola! 👋 Soy **ARIA**, tu asistente clínica. ¿En qué puedo ayudarte hoy? 🧠',
+        timestamp: new Date().toISOString(),
+      }])
+    }
   }, [childId, childName])
 
   useEffect(() => {
