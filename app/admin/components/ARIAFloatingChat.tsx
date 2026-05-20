@@ -365,44 +365,53 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
         >
           {/* Header */}
           <div
-            className={`px-4 py-3 flex items-center gap-3 flex-shrink-0 cursor-pointer transition-all duration-300
+            className={`px-3 py-2.5 flex items-center gap-2 flex-shrink-0 cursor-pointer transition-all duration-300
               ${mode === 'soporte'
                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600'
                 : 'bg-gradient-to-r from-violet-600 to-indigo-600'}`}
             onClick={() => setMinimized(m => !m)}
           >
-            <div className="w-8 h-8 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
               {mode === 'soporte'
-                ? <Map size={16} className="text-white" />
-                : <Brain size={16} className="text-white" />}
+                ? <Map size={14} className="text-white" />
+                : <Brain size={14} className="text-white" />}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-black text-white text-sm leading-tight">ARIA</p>
-              <p className="text-white/70 text-[10px]">
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <p className="font-black text-white text-sm leading-tight truncate">ARIA</p>
+              <p className="text-white/70 text-[10px] truncate">
                 {mode === 'soporte' ? 'Guía de Plataforma · VANTY' : 'Asistente Clínico IA'}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+            {/* Botones de control — flex-shrink-0 para que nunca se corten */}
+            <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse mr-1" />
               <button
-                onClick={e => { e.stopPropagation(); if (window.confirm('¿Borrar todo el historial de ARIA?')) clearHistory() }}
-                className="p-1 hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                onClick={() => { if (window.confirm('¿Borrar todo el historial de ARIA?')) clearHistory() }}
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
                 title="Borrar historial"
               >
-                <Trash2 size={14} />
+                <Trash2 size={13} />
               </button>
-              <button onClick={e => { e.stopPropagation(); setMinimized(m => !m) }}
-                className="p-1 hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white">
-                <Minus size={14} />
+              <button
+                onClick={() => setMinimized(m => !m)}
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                title="Minimizar"
+              >
+                <Minus size={13} />
               </button>
-              <button onClick={e => { e.stopPropagation(); setExpanded(x => !x); setMinimized(false) }}
-                className="p-1 hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
-                title={expanded ? 'Reducir' : 'Ampliar'}>
-                {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              <button
+                onClick={() => { setExpanded(x => !x); setMinimized(false) }}
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                title={expanded ? 'Reducir' : 'Ampliar'}
+              >
+                {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
-              <button onClick={e => { e.stopPropagation(); setOpen(false); setExpanded(false) }}
-                className="p-1 hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white">
-                <X size={14} />
+              <button
+                onClick={() => { setOpen(false); setExpanded(false) }}
+                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                title="Cerrar"
+              >
+                <X size={13} />
               </button>
             </div>
           </div>
