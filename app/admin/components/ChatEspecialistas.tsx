@@ -429,21 +429,45 @@ export default function ChatEspecialistas({
     setEnviando(true)
     setTexto('')
     setReplyTo(null)
+
+    const contentFinal = replyTo
+      ? `↩ ${replyTo.sender_name}: "${replyTo.content.slice(0, 60)}"\n\n${contenido}`
+      : contenido
+
+    // Optimistic update — mostrar el mensaje de inmediato sin esperar Realtime
+    const tempId = 'temp_' + Date.now()
+    const mensajeOptimista: Mensaje = {
+      id: tempId,
+      content: contentFinal,
+      sender_id: userId || '',
+      sender_role: 'jefe',
+      sender_name: userName || '',
+      created_at: new Date().toISOString(),
+      read_at: null,
+      message_type: 'text',
+    }
+    setMensajes(prev => [...prev, mensajeOptimista])
+    scrollAbajo()
+
     try {
-      const { error } = await supabase.from('chat_especialista_admin').insert({
-        content: replyTo
-          ? `↩ ${replyTo.sender_name}: "${replyTo.content.slice(0, 60)}"\n\n${contenido}`
-          : contenido,
+      const { data, error } = await supabase.from('chat_especialista_admin').insert({
+        content: contentFinal,
         sender_id: userId,
         sender_role: 'jefe',
         sender_name: userName,
         recipient_id: seleccionado.id,
         message_type: 'text',
         read_at: null,
-      })
+      }).select().single()
       if (error) throw error
+      // Reemplazar el mensaje temporal con el real (con id definitivo de BD)
+      if (data) {
+        setMensajes(prev => prev.map(m => m.id === tempId ? data : m))
+      }
     } catch {
       toast.error('Error al enviar')
+      // Revertir el optimista si falló
+      setMensajes(prev => prev.filter(m => m.id !== tempId))
       setTexto(contenido)
     } finally {
       setEnviando(false)
