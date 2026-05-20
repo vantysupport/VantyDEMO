@@ -187,6 +187,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [unread, setUnread]     = useState(0)
+  const [loadingHistory, setLoadingHistory] = useState(false)
   const [conversacionId, setConversacionId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
     try {
@@ -232,7 +233,12 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   // Reset al cambiar de modo
   const handleModeChange = (newMode: 'clinico' | 'soporte') => {
     setMode(newMode)
-    // Restaurar mensajes del nuevo modo desde localStorage (cada modo tiene su propia key)
+    // Resetear estado para que el useEffect de carga se dispare al cambiar de modo
+    didInitRef.current = false
+    setConversacionId(null)
+    setMessages([])
+    // La carga real ocurre en el useEffect que escucha [open] — se fuerza cerrando y reabriendo no,
+    // sino directamente cargando desde localStorage del nuevo modo como fallback rápido
     if (typeof window !== 'undefined') {
       try {
         const modeStorageKey = `aria_messages_${userId}${childId ? '_' + childId : ''}_${newMode}`
@@ -249,6 +255,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
             content: getWelcomeMessage(newMode),
             timestamp: new Date().toISOString(),
           }])
+          didInitRef.current = true
         }
       } catch {
         setConversacionId(null)
@@ -257,6 +264,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
           content: getWelcomeMessage(newMode),
           timestamp: new Date().toISOString(),
         }])
+        didInitRef.current = true
       }
     }
   }
@@ -292,33 +300,81 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
       timestamp: new Date().toISOString(),
     }])
   }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY, userId, conversacionId])
-  // Solo pone mensaje de bienvenida si no hay historial guardado. Nunca borra mensajes existentes.
+  // Carga historial desde Supabase cuando se abre el chat (fuente de verdad)
   const didInitRef = useRef(false)
   useEffect(() => {
-    if (didInitRef.current) return
-    didInitRef.current = true
-    try {
-      const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
-      const parsed = saved ? JSON.parse(saved) : []
-      if (!parsed || parsed.length === 0) {
-        setMessages([{
-          role: 'assistant',
-          content: getWelcomeMessage(mode),
-          timestamp: new Date().toISOString(),
-        }])
-        setConversacionId(null)
+    if (!open) return           // solo cuando se abre
+    if (loadingHistory) return  // evitar llamadas duplicadas
+
+    const loadFromSupabase = async () => {
+      setLoadingHistory(true)
+      try {
+        const res = await fetch(`/api/agente/chat?action=conversaciones&user_id=${userId}`)
+        const data = await res.json()
+        const convs: any[] = data?.data || []
+
+        // Filtrar conversaciones del modo actual y el childId actual
+        const match = convs.find(c => {
+          const contextoMatch = mode === 'soporte'
+            ? c.contexto === 'soporte_web'
+            : (childId ? c.child_id === childId : c.contexto === 'general' || c.contexto === 'paciente')
+          return contextoMatch
+        })
+
+        if (match && match.mensajes && match.mensajes.length > 0) {
+          // Restaurar desde Supabase
+          setConversacionId(match.id)
+          setMessages(match.mensajes)
+          // Sincronizar localStorage también
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(match.mensajes))
+              localStorage.setItem(CONV_KEY, match.id)
+            } catch {}
+          }
+        } else if (!didInitRef.current) {
+          // Primera vez sin historial: mostrar bienvenida
+          didInitRef.current = true
+          const localSaved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+          const localParsed = localSaved ? JSON.parse(localSaved) : []
+          if (!localParsed || localParsed.length === 0) {
+            setMessages([{
+              role: 'assistant',
+              content: getWelcomeMessage(mode),
+              timestamp: new Date().toISOString(),
+            }])
+          }
+        }
+      } catch {
+        // Fallback a localStorage si Supabase falla
+        if (!didInitRef.current) {
+          didInitRef.current = true
+          try {
+            const localSaved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+            const localParsed = localSaved ? JSON.parse(localSaved) : []
+            if (!localParsed || localParsed.length === 0) {
+              setMessages([{
+                role: 'assistant',
+                content: getWelcomeMessage(mode),
+                timestamp: new Date().toISOString(),
+              }])
+            }
+          } catch {
+            setMessages([{
+              role: 'assistant',
+              content: getWelcomeMessage(mode),
+              timestamp: new Date().toISOString(),
+            }])
+          }
+        }
+      } finally {
+        setLoadingHistory(false)
       }
-      // Si ya hay mensajes, no hace nada — los mantiene
-    } catch {
-      // Solo si el JSON está corrupto
-      setMessages([{
-        role: 'assistant',
-        content: getWelcomeMessage(mode),
-        timestamp: new Date().toISOString(),
-      }])
     }
+
+    loadFromSupabase()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -512,6 +568,12 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ background: 'var(--background)' }}>
+                {loadingHistory && (
+                  <div className="flex items-center justify-center gap-2 py-4" style={{ color: 'var(--muted-foreground)', fontSize: '0.75rem' }}>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Cargando historial...</span>
+                  </div>
+                )}
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
