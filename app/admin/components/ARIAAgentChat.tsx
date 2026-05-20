@@ -3,9 +3,9 @@ import React from 'react'
 
 import { useI18n } from '@/lib/i18n-context'
 import { toBCP47 } from '@/lib/i18n'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
-  Send, Loader2, User, Brain, BookOpen
+  Send, Loader2, User, Brain, BookOpen, Trash2
 } from 'lucide-react'
 
 interface Message {
@@ -27,10 +27,45 @@ export default function ARIAAgentChat({
   userId, childId, childName, contexto = 'general', compact = false
 }: ARIAAgentChatProps) {
   const { t, locale } = useI18n()
-  const [messages, setMessages] = useState<Message[]>([])
+
+  // Keys por usuario + paciente — persisten entre cierres/aperturas
+  const STORAGE_KEY = useMemo(
+    () => `aria_agent_msgs_${userId}${childId ? '_' + childId : ''}`,
+    [userId, childId]
+  )
+  const CONV_KEY = useMemo(
+    () => `aria_agent_conv_${userId}${childId ? '_' + childId : ''}`,
+    [userId, childId]
+  )
+
+  const welcomeMsg = useCallback((): Message => ({
+    role: 'assistant',
+    content: childId
+      ? `¡Hola! 👋 Soy **ARIA**. Estoy revisando el expediente de **${childName || 'tu paciente'}** y tengo acceso a todo su historial, programas ABA, objetivos terapéuticos y evaluaciones previas.\n\n¿En qué te puedo ayudar hoy?`
+      : `¡Hola! 👋 Soy **ARIA**, tu asistente clínica.\n\nEstoy entrenada en ABA, neuropsicología y educación especial.\n\n¿En qué puedo ayudarte hoy? 🧠`,
+    timestamp: new Date().toISOString(),
+  }), [childId, childName])
+
+  // Estado inicial — restaura desde localStorage si existe
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const saved = localStorage.getItem(`aria_agent_msgs_${userId}${childId ? '_' + childId : ''}`)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {}
+    return []
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [conversacionId, setConversacionId] = useState<string | null>(null)
+  const [conversacionId, setConversacionId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      return localStorage.getItem(`aria_agent_conv_${userId}${childId ? '_' + childId : ''}`)
+    } catch { return null }
+  })
   const [sugerencias] = useState([
     childId ? `¿Cómo va el progreso general de ${childName || 'este paciente'}?` : '¿Cuáles son los mejores reforzadores para TEA no verbal?',
     '¿Cómo aplicar extinción de escape en sesión?',
@@ -38,22 +73,74 @@ export default function ARIAAgentChat({
   ])
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const prevKeyRef = useRef<string>(STORAGE_KEY)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Persistir mensajes en localStorage
   useEffect(() => {
-    // Reset conversacion when patient changes so ARIA loads fresh context
+    if (typeof window === 'undefined') return
+    try {
+      if (messages.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+    } catch {}
+  }, [messages, STORAGE_KEY])
+
+  // Persistir conversacionId
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (conversacionId) localStorage.setItem(CONV_KEY, conversacionId)
+      else localStorage.removeItem(CONV_KEY)
+    } catch {}
+  }, [conversacionId, CONV_KEY])
+
+  // Cambio de paciente → cargar el historial de ESE paciente desde localStorage
+  // Solo se ejecuta cuando STORAGE_KEY cambia (no en el primer render)
+  useEffect(() => {
+    if (prevKeyRef.current === STORAGE_KEY) return
+    prevKeyRef.current = STORAGE_KEY
+    if (typeof window === 'undefined') return
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      const savedConv = localStorage.getItem(CONV_KEY)
+      const parsed = saved ? JSON.parse(saved) : []
+      setConversacionId(savedConv || null)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setMessages(parsed)
+      } else {
+        setMessages([welcomeMsg()])
+      }
+    } catch {
+      setMessages([welcomeMsg()])
+    }
+  }, [STORAGE_KEY, CONV_KEY, welcomeMsg])
+
+  // Mostrar bienvenida si el chat está completamente vacío al montar
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([welcomeMsg()])
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Borrar historial — localStorage + Supabase + reset estado
+  const clearHistory = useCallback(async () => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(CONV_KEY)
+      } catch {}
+    }
+    try {
+      const params = new URLSearchParams({ user_id: userId })
+      if (conversacionId) params.set('conversacion_id', conversacionId)
+      await fetch(`/api/agente/chat?${params.toString()}`, { method: 'DELETE' })
+    } catch {}
     setConversacionId(null)
-    setMessages([{
-      role: 'assistant',
-      content: childId
-        ? `¡Hola! 👋 Soy **ARIA**. Estoy revisando el expediente de **${childName || 'tu paciente'}** y tengo acceso a todo su historial, programas ABA, objetivos terapéuticos y evaluaciones previas.\n\n¿En qué te puedo ayudar hoy?`
-        : `¡Hola! 👋 Soy **ARIA**, tu asistente clínica.\n\nEstoy entrenada en ABA, neuropsicología y educación especial.\n\n¿En qué puedo ayudarte hoy? 🧠`,
-      timestamp: new Date().toISOString(),
-    }])
-  }, [childId, childName])
+    setMessages([welcomeMsg()])
+  }, [STORAGE_KEY, CONV_KEY, userId, conversacionId, welcomeMsg])
 
   const sendMessage = useCallback(async (text?: string) => {
     const msg = (text || input).trim()
@@ -192,12 +279,32 @@ export default function ARIAAgentChat({
         </div>
       )}
 
-      {/* Input */}
+      {/* Barra de acciones — borrar chat */}
       <div
-        className="px-5 py-4 flex-shrink-0"
+        className="px-5 pt-2 pb-1 flex items-center justify-between flex-shrink-0"
         style={{
           background: 'var(--card)',
           borderTop: '1px solid var(--card-border)',
+        }}
+      >
+        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+          {messages.length > 1 ? `${messages.length - 1} mensaje${messages.length > 2 ? 's' : ''} guardado${messages.length > 2 ? 's' : ''}` : 'Conversación nueva'}
+        </span>
+        <button
+          onClick={() => { if (window.confirm('¿Borrar todo el historial de ARIA? Esta acción no se puede deshacer.')) clearHistory() }}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all text-red-500 hover:text-white hover:bg-red-500 border border-red-500/30 hover:border-red-500"
+          title="Borrar historial del chat"
+        >
+          <Trash2 size={12} />
+          Borrar chat
+        </button>
+      </div>
+
+      {/* Input */}
+      <div
+        className="px-5 pt-2 pb-4 flex-shrink-0"
+        style={{
+          background: 'var(--card)',
         }}
       >
         <div className="flex gap-2 items-end">
