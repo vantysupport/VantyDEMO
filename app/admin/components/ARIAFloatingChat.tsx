@@ -235,11 +235,15 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
       timestamp: new Date().toISOString(),
     }])
   }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY])
+  // Solo pone mensaje de bienvenida si no hay historial guardado. Nunca borra mensajes existentes.
+  const didInitRef = useRef(false)
   useEffect(() => {
+    if (didInitRef.current) return
+    didInitRef.current = true
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
-      const hasSaved = saved && JSON.parse(saved).length > 0
-      if (!hasSaved) {
+      const parsed = saved ? JSON.parse(saved) : []
+      if (!parsed || parsed.length === 0) {
         setMessages([{
           role: 'assistant',
           content: getWelcomeMessage(mode),
@@ -247,14 +251,17 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
         }])
         setConversacionId(null)
       }
+      // Si ya hay mensajes, no hace nada — los mantiene
     } catch {
+      // Solo si el JSON está corrupto
       setMessages([{
         role: 'assistant',
         content: getWelcomeMessage(mode),
         timestamp: new Date().toISOString(),
       }])
     }
-  }, [childId, childName])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -383,35 +390,34 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
               </p>
             </div>
             {/* Botones de control — flex-shrink-0 para que nunca se corten */}
-            <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse mr-1" />
+            <div className="flex items-center gap-0.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
               <button
-                onClick={() => { if (window.confirm('¿Borrar todo el historial de ARIA?')) clearHistory() }}
-                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                onClick={() => { if (window.confirm('¿Borrar historial de ARIA?')) clearHistory() }}
+                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
                 title="Borrar historial"
               >
-                <Trash2 size={13} />
+                <Trash2 size={12} />
               </button>
               <button
                 onClick={() => setMinimized(m => !m)}
-                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
                 title="Minimizar"
               >
-                <Minus size={13} />
+                <Minus size={12} />
               </button>
               <button
                 onClick={() => { setExpanded(x => !x); setMinimized(false) }}
-                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
                 title={expanded ? 'Reducir' : 'Ampliar'}
               >
-                {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                {expanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
               </button>
               <button
                 onClick={() => { setOpen(false); setExpanded(false) }}
-                className="w-7 h-7 flex items-center justify-center hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-md transition-all text-white/60 hover:text-white"
                 title="Cerrar"
               >
-                <X size={13} />
+                <X size={12} />
               </button>
             </div>
           </div>
