@@ -83,11 +83,27 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, status } = await request.json()
-    if (!id || !status) throw new Error('id y status son requeridos')
+    const body = await request.json()
+    const { id, status, appointment_date, appointment_time, notes } = body
+    if (!id) throw new Error('id es requerido')
+
+    const updates: Record<string, any> = {}
+    if (status !== undefined) updates.status = status
+    if (appointment_date !== undefined) updates.appointment_date = appointment_date
+    if (appointment_time !== undefined) {
+      // Normaliza a HH:MM:SS
+      const t = String(appointment_time)
+      updates.appointment_time = t.length === 5 ? `${t}:00` : t
+    }
+    if (notes !== undefined) updates.notes = notes
+
+    if (Object.keys(updates).length === 0) {
+      throw new Error('No hay campos para actualizar')
+    }
+
     const { data, error } = await supabaseAdmin
       .from('appointments')
-      .update({ status })
+      .update(updates)
       .eq('id', id)
       .select()
       .single()
