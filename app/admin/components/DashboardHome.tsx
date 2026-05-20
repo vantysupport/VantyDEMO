@@ -118,7 +118,7 @@ function CitaRow({ cita }: any) {
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-export default function DashboardHome({ navigateTo, navigateToPatient }: { navigateTo: (view: string) => void; navigateToPatient?: (childId: string) => void }) {
+export default function DashboardHome({ navigateTo, navigateToPatient }: { navigateTo: (view: string) => void; navigateToPatient?: (childId: string, tab?: string) => void }) {
   const { t, locale } = useI18n()
 
   // State
@@ -465,8 +465,10 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
             {alertasClinicas.length > 0
               ? alertasClinicas.map((a, i) => (
                   <AlertaRow key={i} {...a} onClick={() => {
-                    if (a.child_id && navigateToPatient) navigateToPatient(a.child_id)
-                    else navigateTo('ninos')
+                    if (a.child_id && navigateToPatient) {
+                      const tab = a.tipo === 'regresion' ? 'programas' : undefined
+                      navigateToPatient(a.child_id, tab)
+                    } else navigateTo('ninos')
                   }} />
                 ))
               : (
