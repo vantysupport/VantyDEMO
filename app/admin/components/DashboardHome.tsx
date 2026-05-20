@@ -191,17 +191,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         .neq('status', 'cancelled')
       setSesHoyCount(aptsHoy?.length ?? dataM?.hoy?.sesiones?.total ?? 0)
 
-      // Alertas del API
-      if (dataM?.alertas?.recientes?.length > 0) {
-        setAlertasClinicas(dataM.alertas.recientes.map((a: any) => ({
-          id: a.id,
-          tipo: a.tipo,
-          child_id: a.child_id,
-          paciente: a.children?.name || 'Paciente',
-          mensaje: a.descripcion || a.mensaje || '',
-          prioridad: a.prioridad || 2,
-        })))
-      }
+      // (alertas se construyen al final junto con sin_sesion)
 
       // 2. Sesiones por día — usa appointments (misma fuente que el calendario)
       const labels: string[] = []
@@ -314,18 +304,35 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       const pacientesSinSesion: any[] = dataM?.pacientesSinSesion || []
       setSinSesion(pacientesSinSesion)
 
-      // Alertas: API + sin sesión (sin duplicados), filtrar descartadas localmente
+      // ── Alertas: consolidar en UNA sola asignación ──────────────────────────────
       const dismissed: string[] = JSON.parse(localStorage.getItem('alertas_descartadas') || '[]')
+
+      // Alertas de agente_alertas (regresiones, etc.) — filtrar ids descartadas en BD (ya vienen con resuelta=false)
+      const alertasApi = (dataM?.alertas?.recientes || [])
+        .filter((a: any) => !dismissed.includes((a.tipo || '') + ':' + a.child_id))
+        .map((a: any) => ({
+          id: a.id,
+          tipo: a.tipo,
+          child_id: a.child_id,
+          paciente: a.children?.name || 'Paciente',
+          mensaje: a.descripcion || a.mensaje || '',
+          prioridad: a.prioridad || 2,
+        }))
+
+      // Alertas sin_sesion — evitar duplicar pacientes ya en alertasApi
+      const idsEnApi = new Set(alertasApi.map((a: any) => a.child_id))
       const alertasSinSesion = pacientesSinSesion
+        .filter((n: any) => {
+          const key = 'sin_sesion:' + n.id
+          return !dismissed.includes(key) && !idsEnApi.has(n.id)
+        })
         .map((n: any) => ({
           tipo: 'sin_sesion', child_id: n.id, paciente: n.name,
           mensaje: 'Sin sesión en los últimos 30 días.', prioridad: 2,
         }))
-        .filter((a: any) => !dismissed.includes(a.tipo + ':' + a.child_id))
-      setAlertasClinicas(prev => {
-        const existentes = prev.filter((a: any) => a.tipo !== 'sin_sesion')
-        return [...existentes, ...alertasSinSesion]
-      })
+
+      // Una sola escritura de estado — sin parpadeo
+      setAlertasClinicas([...alertasApi, ...alertasSinSesion])
 
     } catch (e) {
       console.error('Dashboard error:', e)
