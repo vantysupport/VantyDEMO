@@ -466,7 +466,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
               ? alertasClinicas.map((a, i) => (
                   <AlertaRow key={i} {...a} onClick={() => {
                     if (a.child_id && navigateToPatient) {
-                      const tab = a.tipo === 'regresion' ? 'programas' : undefined
+                      const tab = (a.tipo === 'regresion' || a.tipo?.startsWith('regresion')) ? 'programas' : undefined
                       navigateToPatient(a.child_id, tab)
                     } else navigateTo('ninos')
                   }} />
