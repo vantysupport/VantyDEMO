@@ -150,7 +150,15 @@ export async function POST(request: NextRequest) {
           is_active: true,
           specialty: specialty || null,
         })
-      if (profileErr) throw profileErr
+      if (profileErr) {
+        // Rollback: si falla el perfil, eliminar el usuario de auth para evitar usuarios huérfanos
+        await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
+        // Si el error es duplicate key, el usuario auth ya existía previamente como huérfano
+        if (profileErr.message?.includes('duplicate key') || profileErr.message?.includes('unique constraint')) {
+          return NextResponse.json({ error: `El email ${email} ya estaba registrado parcialmente. Se limpió automáticamente. Intentá crearlo de nuevo ahora.` }, { status: 400 })
+        }
+        throw profileErr
+      }
       return NextResponse.json({ success: true, message: 'Usuario creado exitosamente' })
     }
 
