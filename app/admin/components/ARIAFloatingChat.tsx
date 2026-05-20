@@ -2,7 +2,7 @@
 import React from 'react'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Brain, X, Send, Loader2, User, BookOpen, Minus, Maximize2, Minimize2, HelpCircle, Stethoscope, Map } from 'lucide-react'
+import { Brain, X, Send, Loader2, User, BookOpen, Minus, Maximize2, Minimize2, HelpCircle, Stethoscope, Map, Trash2 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 import { toBCP47 } from '@/lib/i18n'
 
@@ -170,7 +170,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window === 'undefined') return []
     try {
-      const saved = sessionStorage.getItem(STORAGE_KEY)
+      const saved = localStorage.getItem(STORAGE_KEY)
       return saved ? JSON.parse(saved) : []
     } catch { return [] }
   })
@@ -179,23 +179,23 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
   const [unread, setUnread]     = useState(0)
   const [conversacionId, setConversacionId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
-    try { return sessionStorage.getItem(CONV_KEY) } catch { return null }
+    try { return localStorage.getItem(CONV_KEY) } catch { return null }
   })
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLTextAreaElement>(null)
 
-  // Persistir mensajes en sessionStorage
+  // Persistir mensajes en localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return
-    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages)) } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)) } catch {}
   }, [messages, STORAGE_KEY])
 
   // Persistir conversacionId
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
-      if (conversacionId) sessionStorage.setItem(CONV_KEY, conversacionId)
-      else sessionStorage.removeItem(CONV_KEY)
+      if (conversacionId) localStorage.setItem(CONV_KEY, conversacionId)
+      else localStorage.removeItem(CONV_KEY)
     } catch {}
   }, [conversacionId, CONV_KEY])
 
@@ -220,10 +220,24 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
     }])
   }
 
-  // Mensaje inicial
+  // Borrar historial completo
+  const clearHistory = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(CONV_KEY)
+      } catch {}
+    }
+    setConversacionId(null)
+    setMessages([{
+      role: 'assistant',
+      content: getWelcomeMessage(mode),
+      timestamp: new Date().toISOString(),
+    }])
+  }, [mode, getWelcomeMessage, STORAGE_KEY, CONV_KEY])
   useEffect(() => {
     try {
-      const saved = typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null
+      const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
       const hasSaved = saved && JSON.parse(saved).length > 0
       if (!hasSaved) {
         setMessages([{
@@ -370,6 +384,13 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+              <button
+                onClick={e => { e.stopPropagation(); if (window.confirm('¿Borrar todo el historial de ARIA?')) clearHistory() }}
+                className="p-1 hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white"
+                title="Borrar historial"
+              >
+                <Trash2 size={14} />
+              </button>
               <button onClick={e => { e.stopPropagation(); setMinimized(m => !m) }}
                 className="p-1 hover:bg-white/20 rounded-lg transition-all text-white/70 hover:text-white">
                 <Minus size={14} />
