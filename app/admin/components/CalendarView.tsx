@@ -7,7 +7,7 @@ import { toBCP47 } from '@/lib/i18n'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Calendar, ChevronLeft, ChevronRight, Clock, User, Plus, X, Loader2,
-  CheckCircle2, Trash2, Users, RefreshCw, Video, MapPin, Timer
+  CheckCircle2, Trash2, Users, RefreshCw, Video, MapPin, Timer, Pencil, Check
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import VideoCallModal from '@/components/VideoCallModal'
@@ -206,6 +206,55 @@ function MonthlyCalendarView() {
     const interval = setInterval(() => { cargarCitas() }, 60 * 1000)
     return () => clearInterval(interval)
   }, [cargarCitas])
+
+  // ── Edición inline de fecha/hora ──
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editDate, setEditDate] = useState('')
+  const [editTime, setEditTime] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  const iniciarEdicion = (a: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingId(a.id)
+    setEditDate(a.appointment_date || '')
+    setEditTime((a.appointment_time || '').slice(0, 5))
+  }
+
+  const cancelarEdicion = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    setEditingId(null)
+    setEditDate('')
+    setEditTime('')
+  }
+
+  const guardarEdicion = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!editDate || !editTime) {
+      toast.error('Fecha y hora son requeridas')
+      return
+    }
+    setSavingEdit(true)
+    try {
+      const res = await fetch('/api/admin/appointments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-locale': localStorage.getItem('vanty_locale') || 'es' },
+        body: JSON.stringify({ id, appointment_date: editDate, appointment_time: editTime }),
+      })
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      // Update optimista local
+      setApts(prev => prev.map(a => a.id === id
+        ? { ...a, appointment_date: editDate, appointment_time: `${editTime}:00` }
+        : a
+      ))
+      toast.success('Horario actualizado')
+      cancelarEdicion()
+    } catch (err: any) {
+      toast.error(err?.message || 'No se pudo actualizar')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
 
   const eliminarCita = async (id:string, e:React.MouseEvent) => {
     e.stopPropagation()
@@ -600,10 +649,37 @@ function MonthlyCalendarView() {
                           </div>
                           <p className="font-bold text-sm truncate" style={{ color: "var(--text-primary)" }}>{a.children?.name||'Paciente'}</p>
                           <p className="text-xs font-medium mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{a.service_type}</p>
-                          <div className="flex items-center gap-3 mt-1.5 text-xs font-bold" style={{ color: "var(--text-muted)" }}>
-                            <span className="flex items-center gap-1"><Calendar size={11}/>{a.appointment_date}</span>
-                            <span className="flex items-center gap-1"><Clock size={11}/>{a.appointment_time?.slice(0,5)}</span>
-                          </div>
+                          {editingId === a.id ? (
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <div className="flex items-center gap-1">
+                                <Calendar size={11} style={{ color: 'var(--text-muted)' }} />
+                                <input
+                                  type="date"
+                                  value={editDate}
+                                  onChange={e => setEditDate(e.target.value)}
+                                  onClick={e => e.stopPropagation()}
+                                  className="px-2 py-1 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-400"
+                                  style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)' }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock size={11} style={{ color: 'var(--text-muted)' }} />
+                                <input
+                                  type="time"
+                                  value={editTime}
+                                  onChange={e => setEditTime(e.target.value)}
+                                  onClick={e => e.stopPropagation()}
+                                  className="px-2 py-1 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-400"
+                                  style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)' }}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-3 mt-1.5 text-xs font-bold" style={{ color: "var(--text-muted)" }}>
+                              <span className="flex items-center gap-1"><Calendar size={11}/>{a.appointment_date}</span>
+                              <span className="flex items-center gap-1"><Clock size={11}/>{a.appointment_time?.slice(0,5)}</span>
+                            </div>
+                          )}
                           {a.notes && <p className="text-[10px] text-slate-400 mt-1 italic truncate">{a.notes}</p>}
 
                           {/* Cronómetro 45 min */}
@@ -626,7 +702,45 @@ function MonthlyCalendarView() {
                             </button>
                           )}
                         </div>
-                        <button onClick={e=>eliminarCita(a.id,e)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={14}/></button>
+                        <div className="flex items-center gap-1">
+                          {editingId === a.id ? (
+                            <>
+                              <button
+                                onClick={e => guardarEdicion(a.id, e)}
+                                disabled={savingEdit}
+                                className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all disabled:opacity-50"
+                                title="Guardar"
+                              >
+                                {savingEdit ? <Loader2 size={14} className="animate-spin"/> : <Check size={14}/>}
+                              </button>
+                              <button
+                                onClick={cancelarEdicion}
+                                disabled={savingEdit}
+                                className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200 transition-all"
+                                title="Cancelar"
+                              >
+                                <X size={14}/>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={e => iniciarEdicion(a, e)}
+                                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 bg-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                                title="Editar horario"
+                              >
+                                <Pencil size={14}/>
+                              </button>
+                              <button
+                                onClick={e=>eliminarCita(a.id,e)}
+                                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                                title="Eliminar"
+                              >
+                                <Trash2 size={14}/>
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )
