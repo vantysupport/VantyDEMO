@@ -8,7 +8,7 @@ import {
   FileText, Users, AlertTriangle, Sparkles,
   Bell, ArrowUpRight, MessageCircle, TrendingUp,
   CheckCircle2, AlertCircle, Zap, BarChart3,
-  ClipboardList, Target
+  ClipboardList, Target, X
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -67,13 +67,13 @@ function KPI({ label, value, sub, icon: Icon, bar, urgent, onClick }: any) {
 }
 
 // ─── Alerta row ───────────────────────────────────────────────────────────────
-function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick }: any) {
+function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick, onDismiss }: any) {
   const bar = prioridad === 1 ? '#c0524a' : prioridad === 2 ? '#b07830' : '#3a68a0'
   return (
-    <button onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:opacity-80"
+    <div
+      className="w-full flex items-center gap-2 px-4 py-3 rounded-lg transition-all"
       style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: `3px solid ${bar}` }}>
-      <div className="flex-1 min-w-0">
+      <button onClick={onClick} className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
         {tipo && (
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{tipo.replace(/_/g, ' ')}</span>
@@ -81,9 +81,18 @@ function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick }: any) {
         )}
         <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{paciente || mensaje}</p>
         {paciente && mensaje && <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{mensaje}</p>}
+      </button>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} onClick={onClick} className="cursor-pointer hover:opacity-70 transition-opacity" />
+        <button
+          onClick={(e) => { e.stopPropagation(); onDismiss?.() }}
+          title="Descartar alerta"
+          className="flex items-center justify-center w-5 h-5 rounded-full hover:opacity-80 transition-opacity"
+          style={{ background: 'rgba(0,0,0,0.08)' }}>
+          <X size={10} style={{ color: 'var(--text-muted)' }} />
+        </button>
       </div>
-      <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} className="flex-shrink-0" />
-    </button>
+    </div>
   )
 }
 
@@ -328,6 +337,10 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
   const realizadasHoy = metricas?.hoy?.sesiones?.realizadas ?? 0
   const totalPacientes = metricas?.pacientes?.total ?? 0
   const alertasUrgentes = metricas?.alertas?.urgentes ?? 0
+
+  const dismissAlerta = useCallback((index: number) => {
+    setAlertasClinicas(prev => prev.filter((_, i) => i !== index))
+  }, [])
   const mensajesPendientes = metricas?.tareas?.formPendientes ?? 0
   const tasaAsistencia = metricas?.hoy?.tasaAsistencia ?? 0
   const totalSes7d = sesSemanales.reduce((a, b) => a + b, 0)
@@ -464,12 +477,15 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
           <div className="p-3 space-y-2 overflow-y-auto" style={{ maxHeight: '320px' }}>
             {alertasClinicas.length > 0
               ? alertasClinicas.map((a, i) => (
-                  <AlertaRow key={i} {...a} onClick={() => {
-                    if (a.child_id && navigateToPatient) {
-                      const tab = (a.tipo === 'regresion' || a.tipo?.startsWith('regresion')) ? 'programas' : undefined
-                      navigateToPatient(a.child_id, tab)
-                    } else navigateTo('ninos')
-                  }} />
+                  <AlertaRow key={i} {...a}
+                    onClick={() => {
+                      if (a.child_id && navigateToPatient) {
+                        const tab = (a.tipo === 'regresion' || a.tipo?.startsWith('regresion')) ? 'programas' : undefined
+                        navigateToPatient(a.child_id, tab)
+                      } else navigateTo('ninos')
+                    }}
+                    onDismiss={() => dismissAlerta(i)}
+                  />
                 ))
               : (
                 <div className="flex flex-col items-center py-10">
