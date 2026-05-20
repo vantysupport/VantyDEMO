@@ -656,7 +656,7 @@ function RellenarFichaConWord({ childId, childName, isDark }: {
   return <RellenarFicha childId={childId} childName={childName} isDark={isDark} onSaved={handleSaved} />
 }
 
-export default function PatientsView({ onPatientSelect, initialChildId }: { onPatientSelect?: (id: string, name: string) => void; initialChildId?: string | null } = {}) {
+export default function PatientsView({ onPatientSelect, initialChildId, initialTab }: { onPatientSelect?: (id: string, name: string) => void; initialChildId?: string | null; initialTab?: string | null } = {}) {
   const { t } = useI18n()
   const toast  = useToast()
 
@@ -718,7 +718,10 @@ export default function PatientsView({ onPatientSelect, initialChildId }: { onPa
   useEffect(() => {
     if (!initialChildId || pacientes.length === 0) return
     const target = pacientes.find(p => p.id === initialChildId)
-    if (target) selectPatient(target)
+    if (target) {
+      selectPatient(target)
+      if (initialTab) setTab(initialTab as any)
+    }
   }, [initialChildId, pacientes])
 
   useEffect(() => {
