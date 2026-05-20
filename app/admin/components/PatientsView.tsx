@@ -719,8 +719,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
     if (!initialChildId || pacientes.length === 0) return
     const target = pacientes.find(p => p.id === initialChildId)
     if (target) {
-      selectPatient(target)
-      if (initialTab) setTab(initialTab as any)
+      selectPatient(target, initialTab || undefined)
     }
   }, [initialChildId, pacientes])
 
@@ -740,8 +739,8 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   }, [search, pacientes])
 
   // ── Seleccionar paciente ──────────────────────────────────────────────────
-  const selectPatient = (p: any) => {
-    setSelected(p); setTab('info')
+  const selectPatient = (p: any, overrideTab?: string) => {
+    setSelected(p); setTab((overrideTab as any) || 'info')
     setMobileView('detail')   // en móvil ir a la ficha
     if (onPatientSelect) onPatientSelect(p.id, p.name)  // notify parent for ARIA context
   }
