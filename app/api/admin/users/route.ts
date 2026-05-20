@@ -138,10 +138,10 @@ export async function POST(request: NextRequest) {
         }
         throw createErr
       }
-      // Create profile
+      // Upsert profile: si Supabase ya lo creó via trigger, lo actualiza con los datos correctos
       const { error: profileErr } = await supabaseAdmin
         .from('profiles')
-        .insert({
+        .upsert({
           id: newUser.user.id,
           email,
           full_name: full_name || email.split('@')[0],
@@ -149,14 +149,10 @@ export async function POST(request: NextRequest) {
           tokens: 0,
           is_active: true,
           specialty: specialty || null,
-        })
+        }, { onConflict: 'id' })
       if (profileErr) {
-        // Rollback: si falla el perfil, eliminar el usuario de auth para evitar usuarios huérfanos
+        // Rollback: eliminar el usuario de auth para no dejar huérfanos
         await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
-        // Si el error es duplicate key, el usuario auth ya existía previamente como huérfano
-        if (profileErr.message?.includes('duplicate key') || profileErr.message?.includes('unique constraint')) {
-          return NextResponse.json({ error: `El email ${email} ya estaba registrado parcialmente. Se limpió automáticamente. Intentá crearlo de nuevo ahora.` }, { status: 400 })
-        }
         throw profileErr
       }
       return NextResponse.json({ success: true, message: 'Usuario creado exitosamente' })
