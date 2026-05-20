@@ -100,3 +100,52 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const conversacionId = searchParams.get('conversacion_id')
+    const userId = searchParams.get('user_id')
+
+    if (!userId) {
+      return NextResponse.json({ error: 'user_id requerido' }, { status: 400 })
+    }
+
+    // Borrar mensajes de la conversación específica o todas las del usuario
+    if (conversacionId) {
+      await supabaseAdmin
+        .from('agente_mensajes')
+        .delete()
+        .eq('conversacion_id', conversacionId)
+
+      await supabaseAdmin
+        .from('agente_conversaciones')
+        .delete()
+        .eq('id', conversacionId)
+        .eq('user_id', userId)
+    } else {
+      // Borrar todas las conversaciones del usuario
+      const { data: convs } = await supabaseAdmin
+        .from('agente_conversaciones')
+        .select('id')
+        .eq('user_id', userId)
+
+      if (convs && convs.length > 0) {
+        const ids = convs.map(c => c.id)
+        await supabaseAdmin
+          .from('agente_mensajes')
+          .delete()
+          .in('conversacion_id', ids)
+
+        await supabaseAdmin
+          .from('agente_conversaciones')
+          .delete()
+          .eq('user_id', userId)
+      }
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
