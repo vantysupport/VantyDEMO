@@ -291,9 +291,15 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
         setAttachedFile(null)
       }
       const content = text || (msgType==='image' ? '📷 Imagen' : msgType==='audio' ? '🎤 Mensaje de voz' : '📎 Documento')
-      await fetch('/api/chat-familias', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch('/api/chat-familias', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: selected.child_id, content, sender_id: userId, sender_role: userRole,
           sender_name: userName, message_type: msgType, file_url: fileUrl||null, file_name: fileName||null, file_size: fileSize||null }) })
+      const json = await res.json().catch(() => null)
+      // Optimistic update — no depender solo del realtime
+      if (json?.data) {
+        const newMsg = json.data as Msg
+        setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+      }
       scrollToBottom()
     } catch { setInput(prevInput) }
     finally { setSending(false); setUploading(false); inputRef.current?.focus() }
@@ -331,10 +337,15 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
     setUploading(true); setSending(true)
     try {
       const up = await uploadFile(file)
-      await fetch('/api/chat-familias', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch('/api/chat-familias', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: selected!.child_id, content: '🎤 Mensaje de voz', sender_id: userId,
           sender_role: userRole, sender_name: userName, message_type: 'audio',
           file_url: up.url, file_name: up.fileName, file_size: up.fileSize }) })
+      const json = await res.json().catch(() => null)
+      if (json?.data) {
+        const newMsg = json.data as Msg
+        setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+      }
       scrollToBottom()
     } catch { } finally { setUploading(false); setSending(false) }
   }

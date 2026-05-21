@@ -171,9 +171,14 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
       const text = type === 'audio'
         ? `🎤 [Audio] ${url}`
         : `📎 [${fileName || 'archivo'}] ${url}`
-      await fetch('/api/chat-familias', { method: 'POST',
+      const res = await fetch('/api/chat-familias', { method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: childId, content: text, sender_id: userId, sender_role: 'padre', sender_name: userName }) })
+      const json = await res.json().catch(() => null)
+      if (json?.data) {
+        const newMsg = json.data as Msg
+        setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+      }
       setAudioBlob(null); setAttachFile(null)
       scrollToBottom()
     } catch (e: any) { alert('Error al enviar: ' + e.message) }
@@ -185,9 +190,15 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
     if (!text || sending || !childId) return
     setSending(true); setInput('')
     try {
-      await fetch('/api/chat-familias', { method: 'POST',
+      const res = await fetch('/api/chat-familias', { method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: childId, content: text, sender_id: userId, sender_role: 'padre', sender_name: userName }) })
+      const json = await res.json().catch(() => null)
+      // Optimistic update — agregar al estado local sin esperar realtime (que puede no estar habilitado)
+      if (json?.data) {
+        const newMsg = json.data as Msg
+        setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+      }
       scrollToBottom()
     } finally { setSending(false); inputRef.current?.focus() }
   }
