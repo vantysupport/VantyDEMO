@@ -1748,6 +1748,35 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             }
                           })
                         }}
+                        onFaseChange={async (nuevaFase: string) => {
+                          const res = await fetch('/api/programas-aba', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              action: 'editar_sesion',
+                              sesion_id: s.id,
+                              updates: { fase: nuevaFase },
+                            }),
+                          })
+                          const json = await res.json()
+                          if (json.error) { toast.error(json.error); return }
+                          const labelMap: Record<string, string> = {
+                            linea_base: 'Baseline',
+                            intervencion: 'Intervención',
+                            mantenimiento: 'Mantenimiento',
+                            dominado: 'Dominado',
+                          }
+                          toast.success(`🔄 Fase cambiada a ${labelMap[nuevaFase] || nuevaFase}`)
+                          setDetalle((prev: any) => {
+                            const base = prev ?? programa
+                            return {
+                              ...base,
+                              sesiones_datos_aba: (base.sesiones_datos_aba || []).map((x: any) =>
+                                x.id === s.id ? { ...x, fase: nuevaFase } : x
+                              )
+                            }
+                          })
+                        }}
                       />
                     ))}
                   </div>
@@ -1910,8 +1939,8 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
 }
 
 // ── Fila de sesión con edición de fecha inline ────────────────────────────────
-function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChange }: {
-  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void; onPctChange: (pct: number, correctas: number, totales: number) => void; onSetChange: (nuevoSet: string) => void
+function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChange, onFaseChange }: {
+  s: any; programa: any; onDelete: () => void; onDateChange: (fecha: string) => void; onPctChange: (pct: number, correctas: number, totales: number) => void; onSetChange: (nuevoSet: string) => void; onFaseChange?: (nuevaFase: string) => void
 }) {
   const [editingDate, setEditingDate] = useState(false)
   const [tempDate, setTempDate] = useState(s.fecha)
@@ -1919,6 +1948,13 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
   const [tempCorrectas, setTempCorrectas] = useState(String(s.respuestas_correctas ?? ''))
   const [tempTotales, setTempTotales] = useState(String(s.oportunidades_totales ?? ''))
   const [editingSet, setEditingSet] = useState(false)
+  const [editingFase, setEditingFase] = useState(false)
+  const fasesDisponibles: { value: string; label: string }[] = [
+    { value: 'linea_base',    label: 'Baseline' },
+    { value: 'intervencion',  label: 'Intervención' },
+    { value: 'mantenimiento', label: 'Mantenimiento' },
+    { value: 'dominado',      label: 'Dominado' },
+  ]
   const availableSets: string[] = [...(programa.objetivos_cp || [])].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((o: any) =>
     o.numero_set ? `Set ${o.numero_set}` : o.descripcion
   )
@@ -1961,7 +1997,31 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
           {s.fecha}
         </button>
       )}
-      <FaseTag fase={s.fase} small />
+      {/* Fase badge — click to change */}
+      {editingFase && onFaseChange ? (
+        <div className="flex items-center gap-1 flex-wrap">
+          {fasesDisponibles.map(f => (
+            <button
+              key={f.value}
+              onClick={() => { setEditingFase(false); if (f.value !== s.fase) onFaseChange(f.value) }}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
+                f.value === s.fase
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300'
+              }`}
+            >{f.label}</button>
+          ))}
+          <button onClick={() => setEditingFase(false)} className="text-slate-400 hover:text-slate-600 text-[10px] px-1">✕</button>
+        </div>
+      ) : (
+        <button
+          onClick={() => onFaseChange && setEditingFase(true)}
+          title={onFaseChange ? 'Clic para cambiar la fase' : undefined}
+          className={onFaseChange ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'cursor-default'}
+        >
+          <FaseTag fase={s.fase} small />
+        </button>
+      )}
       {/* Set badge — click to change */}
       {editingSet ? (
         <div className="flex items-center gap-1 flex-wrap">
