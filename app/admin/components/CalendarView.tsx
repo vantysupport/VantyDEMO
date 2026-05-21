@@ -662,6 +662,20 @@ function MonthlyCalendarView() {
                           </div>
                           <p className="font-bold text-sm truncate" style={{ color: "var(--text-primary)" }}>{a.children?.name||'Paciente'}</p>
                           <p className="text-xs font-medium mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{a.service_type}</p>
+                          {a.specialist?.full_name && (
+                            <p className="text-[11px] font-semibold mt-0.5 flex items-center gap-1 truncate" style={{ color: '#3a68a0' }}>
+                              <User size={10}/>
+                              <span className="truncate">
+                                {a.specialist.full_name}
+                                {a.specialist.specialty && <span className="font-normal opacity-75"> · {a.specialist.specialty}</span>}
+                              </span>
+                            </p>
+                          )}
+                          {!a.specialist?.full_name && a.specialist_id && (
+                            <p className="text-[11px] italic mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                              <User size={10}/> Especialista no encontrado
+                            </p>
+                          )}
                           {editingId === a.id ? (
                             <div className="flex items-center gap-2 mt-2 flex-wrap">
                               <div className="flex items-center gap-1">

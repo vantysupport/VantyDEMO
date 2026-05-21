@@ -30,7 +30,31 @@ export async function GET(request: NextRequest) {
       .order('appointment_time', { ascending: true })
 
     if (error) throw error
-    return NextResponse.json({ data })
+
+    // Adjuntar info del especialista asignado a cada cita
+    const specialistIds = Array.from(new Set(
+      (data || [])
+        .map((a: any) => a.specialist_id)
+        .filter((id: any) => !!id)
+    ))
+
+    let specialistMap: Record<string, { full_name: string; specialty: string | null; role: string | null }> = {}
+    if (specialistIds.length > 0) {
+      const { data: specialists } = await supabaseAdmin
+        .from('profiles')
+        .select('id, full_name, specialty, role')
+        .in('id', specialistIds)
+      for (const s of (specialists || []) as any[]) {
+        specialistMap[s.id] = { full_name: s.full_name, specialty: s.specialty, role: s.role }
+      }
+    }
+
+    const enriched = (data || []).map((a: any) => ({
+      ...a,
+      specialist: a.specialist_id ? specialistMap[a.specialist_id] || null : null,
+    }))
+
+    return NextResponse.json({ data: enriched })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
