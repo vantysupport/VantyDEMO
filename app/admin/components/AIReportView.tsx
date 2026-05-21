@@ -219,9 +219,33 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
       .select('*')
       .eq('child_id', childId)
       .order('fecha_sesion', { ascending: false })
-    
-    if (abaError) console.error('❌ Error cargando sesiones ABA:', abaError)
-    console.log('📊 Sesiones ABA encontradas:', aba?.length || 0)
+
+    if (abaError) console.error('❌ Error cargando sesiones ABA (registro_aba):', abaError)
+    console.log('📊 Sesiones ABA legacy (registro_aba):', aba?.length || 0)
+
+    // Sesiones de DATOS ABA — las que se registran al evaluar un programa específico.
+    // Esta es la fuente actual del gráfico de "Progreso ABA — Líneas" del padre.
+    // Antes este conteo solo miraba registro_aba (legacy) y siempre daba 0 aunque
+    // hubiera datos en los programas, lo que generaba la inconsistencia mostrada.
+    const { data: progIdsRaw } = await supabase
+      .from('programas_aba')
+      .select('id')
+      .eq('child_id', childId)
+    const progIds = (progIdsRaw || []).map((p: any) => p.id)
+
+    let sesionesDataAba: any[] = []
+    if (progIds.length > 0) {
+      const { data: sda } = await supabase
+        .from('sesiones_datos_aba')
+        .select('id, programa_id, fecha, fase, set, porcentaje_exito, oportunidades_totales, respuestas_correctas, notas')
+        .in('programa_id', progIds)
+        .order('fecha', { ascending: false })
+      sesionesDataAba = sda || []
+    }
+    console.log('📊 Sesiones de programas (sesiones_datos_aba):', sesionesDataAba.length)
+
+    // Total visible al usuario = legacy + actuales
+    const totalSesionesAba = (aba?.length || 0) + sesionesDataAba.length
     
     const { data: entorno, error: entornoError } = await supabase
       .from('registro_entorno_hogar')
@@ -304,9 +328,11 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     (r: any) => !['brief2','ados2','vineland3','wiscv','basc3'].includes(r.form_type)
   );
 
-  setHistoryData({ 
-    anamnesis: anamnesis ? anamnesis.datos : null, 
+  setHistoryData({
+    anamnesis: anamnesis ? anamnesis.datos : null,
     aba: aba || [],
+    sesionesDataAba: sesionesDataAba,             // registros nuevos por programa
+    totalSesionesAba: totalSesionesAba,           // suma para badges
     entorno: entorno || [],
     brief2: resolvedBrief2,
     ados2: resolvedAdos2,
@@ -331,9 +357,9 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
     console.warn('⚠️ No se encontraron visitas domiciliarias para este paciente')
   }
       
-     setMessages([{ 
-    role: 'ai', 
-    text: `✅ Historial completo de **${nombre}** cargado.\n\n📊 **Evaluaciones Profesionales:** ${totalEvaluaciones}/5\n• ${resolvedBrief2 ? "✅" : "❌"} BRIEF-2\n• ${resolvedAdos2 ? "✅" : "❌"} ADOS-2\n• ${resolvedVineland ? "✅" : "❌"} Vineland-3\n• ${resolvedWiscv ? "✅" : "❌"} WISC-V\n• ${resolvedBasc3 ? "✅" : "❌"} BASC-3\n\n📋 **Sesiones ABA:** ${aba?.length || 0}\n🏠 **Visitas Hogar:** ${entorno?.length || 0}\n📝 **NeuroFormas / Formularios:** ${totalFormularios}${totalFormularios > 0 ? `\n${[...(filteredFormResponses), ...(parentFormsCompleted||[])].slice(0,8).map((f: any) => `  • ${f.form_title || f.form_type} (${new Date(f.completed_at || f.created_at).toLocaleDateString(toBCP47(locale))})`).join('\n')}` : ''}${!anamnesis ? '\n\n⚠️ Falta Anamnesis Inicial' : ''}${(!entorno || entorno.length === 0) ? '\n⚠️ Falta Visita Domiciliaria' : ''}\n\n¿Qué deseas analizar?`
+     setMessages([{
+    role: 'ai',
+    text: `✅ Historial completo de **${nombre}** cargado.\n\n📊 **Evaluaciones Profesionales:** ${totalEvaluaciones}/5\n• ${resolvedBrief2 ? "✅" : "❌"} BRIEF-2\n• ${resolvedAdos2 ? "✅" : "❌"} ADOS-2\n• ${resolvedVineland ? "✅" : "❌"} Vineland-3\n• ${resolvedWiscv ? "✅" : "❌"} WISC-V\n• ${resolvedBasc3 ? "✅" : "❌"} BASC-3\n\n📋 **Sesiones ABA:** ${totalSesionesAba}${sesionesDataAba.length > 0 ? ` _(${sesionesDataAba.length} registros en programas)_` : ''}${(aba?.length || 0) > 0 && sesionesDataAba.length > 0 ? ` + ${aba?.length || 0} en registro legacy` : ''}\n🏠 **Visitas Hogar:** ${entorno?.length || 0}\n📝 **NeuroFormas / Formularios:** ${totalFormularios}${totalFormularios > 0 ? `\n${[...(filteredFormResponses), ...(parentFormsCompleted||[])].slice(0,8).map((f: any) => `  • ${f.form_title || f.form_type} (${new Date(f.completed_at || f.created_at).toLocaleDateString(toBCP47(locale))})`).join('\n')}` : ''}${!anamnesis ? '\n\n⚠️ Falta Anamnesis Inicial' : ''}${(!entorno || entorno.length === 0) ? '\n⚠️ Falta Visita Domiciliaria' : ''}\n\n¿Qué deseas analizar?`
   }])
 
     // Cargar todos los reportes Word del paciente
@@ -494,7 +520,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
             id="historial"
             title={t('ui.clinical_record')}
             icon={<History size={16} className="text-orange-400"/>}
-            badge={<span className="text-[10px] px-2 py-0.5 rounded-full font-black" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>{historyData.aba.length + historyData.entorno.length} registros</span>}
+            badge={<span className="text-[10px] px-2 py-0.5 rounded-full font-black" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>{(historyData.totalSesionesAba ?? historyData.aba.length) + historyData.entorno.length} registros</span>}
             defaultOpen={false}
           >
             <div className="p-4 space-y-3" style={{ background: 'var(--background)' }}>
