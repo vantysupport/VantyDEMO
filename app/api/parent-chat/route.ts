@@ -69,6 +69,9 @@ export async function POST(req: NextRequest) {
 
     // Cargar contexto FILTRADO del paciente (solo info apta para padres)
     const contexto = await cargarContextoPadre(childId)
+    if ((contexto as any)._debug) {
+      console.log('[parent-chat] contexto cargado:', (contexto as any)._debug)
+    }
 
     // Guardar mensaje (solo si hay parentUserId para no generar basura)
     if (parentUserId) {
@@ -129,18 +132,20 @@ export async function GET(req: NextRequest) {
 async function cargarContextoPadre(childId: string) {
   const [
     { data: child },
-    { data: sesiones },
+    { data: sesionesLegacy },
+    { data: sesionesAba },
     { data: tareasPendientes },
     { data: programas },
-    { data: proximaCita },
+    { data: proximaCitaAgenda },
+    { data: proximaCitaAppt },
   ] = await Promise.all([
     supabaseAdmin
       .from('children')
       .select('name, age, birth_date, diagnosis')
       .eq('id', childId)
-      .single(),
+      .maybeSingle(),
 
-    // Cargar sesiones con TODOS los campos relevantes para padres
+    // Sesiones legacy (registro_aba) — formato amplio
     supabaseAdmin
       .from('registro_aba')
       .select('fecha_sesion, datos')
@@ -148,7 +153,19 @@ async function cargarContextoPadre(childId: string) {
       .order('fecha_sesion', { ascending: false })
       .limit(5),
 
-    // Tareas del hogar activas con instrucciones completas
+    // Sesiones reales registradas en programas (sesiones_datos_aba) — fuente principal hoy
+    supabaseAdmin
+      .from('sesiones_datos_aba')
+      .select('programa_id, fecha, fase, set, porcentaje_exito, oportunidades_totales, respuestas_correctas, notas')
+      .in(
+        'programa_id',
+        // subquery via separate fetch — Supabase no soporta subselects directos aquí
+        (await supabaseAdmin.from('programas_aba').select('id').eq('child_id', childId)).data?.map((p: any) => p.id) || []
+      )
+      .order('fecha', { ascending: false })
+      .limit(8),
+
+    // Tareas del hogar activas
     supabaseAdmin
       .from('tareas_hogar')
       .select('titulo, completada, fecha_asignada, instrucciones, fecha_limite')
@@ -157,22 +174,25 @@ async function cargarContextoPadre(childId: string) {
       .order('fecha_asignada', { ascending: false })
       .limit(8),
 
-    // Programas ABA con TODOS los campos de práctica
+    // Programas ABA — SIN filtrar por estado (usa intervencion / linea_base / mantenimiento).
+    // Trae también los campos clínicos de cada SET (objetivos_cp.*) donde vive la data real.
     supabaseAdmin
       .from('programas_aba')
       .select(`
-        titulo, area, fase_actual, estado,
-        objetivo_lp, sd_estimulo, generalizacion,
-        reforzadores, materiales, correccion_error,
-        notas_programa,
-        objetivos_cp ( descripcion, estado, numero_set )
+        id, titulo, area, fase_actual, estado, criterio_dominio_pct,
+        sd_estimulo, ayudas, reforzadores, materiales, instrucciones_casa,
+        objetivos_cp (
+          descripcion, estado, numero_set,
+          sd_estimulo, materiales, unidad_positiva, unidad_negativa,
+          reforzadores, correction_errores, generalizacion
+        )
       `)
       .eq('child_id', childId)
-      .eq('estado', 'activo')
+      .neq('estado', 'archivado')
       .order('created_at', { ascending: false })
-      .limit(6),
+      .limit(8),
 
-    // Próxima cita
+    // Próxima cita (agenda_sesiones)
     supabaseAdmin
       .from('agenda_sesiones')
       .select('fecha, hora_inicio, tipo')
@@ -181,11 +201,45 @@ async function cargarContextoPadre(childId: string) {
       .in('estado', ['programada', 'confirmada'])
       .order('fecha', { ascending: true })
       .limit(1)
-      .single(),
+      .maybeSingle(),
+
+    // Próxima cita (appointments) — fuente alternativa que sí usa el admin
+    supabaseAdmin
+      .from('appointments')
+      .select('appointment_date, appointment_time, service_type')
+      .eq('child_id', childId)
+      .gte('appointment_date', new Date().toISOString().split('T')[0])
+      .not('status', 'in', '(cancelled,completed,realizada,completada,done)')
+      .order('appointment_date', { ascending: true })
+      .order('appointment_time', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
   ])
 
-  // ── Resumen de sesiones — incluye tarea_casa y mensaje_familia ──────────────
-  const resumenSesiones = sesiones?.map((s, i) => {
+  // ── Mapa programa_id → título (para anotar las sesiones con el programa) ──
+  const progIdToTitulo: Record<string, string> = {}
+  for (const p of (programas || []) as any[]) progIdToTitulo[p.id] = p.titulo
+
+  // ── Resumen de sesiones reales (sesiones_datos_aba) ──
+  const resumenSesionesAba = (sesionesAba || []).map((s: any, i: number) => {
+    const pct = s.porcentaje_exito ?? (s.oportunidades_totales > 0
+      ? Math.round((Number(s.respuestas_correctas) / Number(s.oportunidades_totales)) * 100)
+      : null)
+    const logro = pct == null ? 'sin medición'
+      : pct >= 80 ? 'excelente'
+      : pct >= 60 ? 'muy bien'
+      : pct >= 40 ? 'en progreso'
+      : 'necesita apoyo'
+    const partes = [
+      `Sesión ${i + 1} (${s.fecha}) — Programa "${progIdToTitulo[s.programa_id] || 'programa'}"${s.set ? ` · ${s.set}` : ''}: ${logro}${pct != null ? ` (${pct}%)` : ''}`,
+      s.fase ? `Fase: ${s.fase === 'linea_base' ? 'línea base' : s.fase}` : '',
+      s.notas ? `Notas de la terapeuta: ${s.notas}` : '',
+    ].filter(Boolean)
+    return partes.join(' | ')
+  }).join('\n')
+
+  // ── Resumen de sesiones legacy (registro_aba) ──
+  const resumenSesionesLegacy = (sesionesLegacy || []).map((s: any, i: number) => {
     const d = s.datos || {}
     const nivelLogro = String(d.nivel_logro_objetivos || '')
     const logro = (nivelLogro.includes('76') || nivelLogro.includes('Completamente') || Number(nivelLogro) >= 76) ? 'excelente'
@@ -194,52 +248,77 @@ async function cargarContextoPadre(childId: string) {
       : 'necesita apoyo'
 
     const partes = [
-      `Sesión \${i + 1} (\${s.fecha_sesion}): Trabajó en "\${d.objetivo_principal || 'objetivos del día'}". Resultado: \${logro}.`,
-      d.avances_observados ? `Avances: \${d.avances_observados}` : '',
-      d.habilidades_objetivo ? `Habilidades trabajadas: \${Array.isArray(d.habilidades_objetivo) ? d.habilidades_objetivo.join(', ') : d.habilidades_objetivo}` : '',
-      d.reforzadores_efectivos ? `Lo que más lo motivó en sesión: \${d.reforzadores_efectivos}` : '',
-      // ← CRÍTICO: tarea que dejó la terapeuta para casa
-      d.tarea_casa ? `TAREA PARA CASA (indicada por la terapeuta): \${d.tarea_casa}` : '',
-      // ← CRÍTICO: mensaje directo de la terapeuta a la familia
-      d.mensaje_familia ? `MENSAJE DE LA TERAPEUTA A LA FAMILIA: \${d.mensaje_familia}` : '',
+      `Sesión ${i + 1} (${s.fecha_sesion}): Trabajó en "${d.objetivo_principal || 'objetivos del día'}". Resultado: ${logro}.`,
+      d.avances_observados ? `Avances: ${d.avances_observados}` : '',
+      d.habilidades_objetivo ? `Habilidades trabajadas: ${Array.isArray(d.habilidades_objetivo) ? d.habilidades_objetivo.join(', ') : d.habilidades_objetivo}` : '',
+      d.reforzadores_efectivos ? `Lo que más lo motivó en sesión: ${d.reforzadores_efectivos}` : '',
+      d.tarea_casa ? `TAREA PARA CASA (indicada por la terapeuta): ${d.tarea_casa}` : '',
+      d.mensaje_familia ? `MENSAJE DE LA TERAPEUTA A LA FAMILIA: ${d.mensaje_familia}` : '',
     ].filter(Boolean)
 
     return partes.join(' | ')
-  }).join('\n') || 'Sin sesiones recientes registradas'
+  }).join('\n')
 
-  // ── Programas ABA con instrucciones completas para practicar en casa ─────────
+  const resumenSesiones = [resumenSesionesAba, resumenSesionesLegacy]
+    .filter(Boolean)
+    .join('\n')
+    || 'Sin sesiones recientes registradas'
+
+  // ── Programas ABA con instrucciones completas (combinando programa + set activo) ──
   const programasTexto = programas && programas.length > 0
-    ? programas.map((p: any) => {
-        const pasos = (p.objetivos_cp || [])
+    ? (programas as any[]).map((p: any) => {
+        // Set activo: el primero no dominado del programa
+        const sets = (p.objetivos_cp || [])
           .sort((a: any, b: any) => (a.numero_set || 0) - (b.numero_set || 0))
+        const setActivo = sets.find((o: any) => o.estado === 'en_progreso')
+          || sets.find((o: any) => o.estado !== 'dominado')
+          || sets[0] || null
+
+        // Prioridad: campo del set activo → campo del programa
+        const sd          = setActivo?.sd_estimulo      || p.sd_estimulo
+        const materiales  = setActivo?.materiales       || p.materiales
+        // En el admin la "Ayudas" se guarda en el campo `reforzadores` del set
+        const ayudas      = setActivo?.reforzadores     || p.ayudas
+        const correccion  = setActivo?.correction_errores
+        const generaliz   = setActivo?.generalizacion
+        const reforzProg  = p.reforzadores
+        const instrCasa   = p.instrucciones_casa
+
+        const pasos = sets
           .filter((o: any) => o.estado !== 'dominado')
           .slice(0, 5)
-          .map((o: any, i: number) => `  Paso \${i + 1}: \${o.descripcion}`)
+          .map((o: any) => `  · Set ${o.numero_set ?? '?'}${o.estado === 'en_progreso' ? ' [EN CURSO]' : ''}: ${o.descripcion || '(sin descripción)'}`)
           .join('\n')
 
         return [
-          `\n📌 PROGRAMA: "\${p.titulo}" | Área: \${p.area} | Fase: \${p.fase_actual || 'inicial'}`,
-          p.objetivo_lp        ? `  🎯 Objetivo: \${p.objetivo_lp}`                             : '',
-          p.sd_estimulo        ? `  🗣️ Cómo dar la instrucción: \${p.sd_estimulo}`              : '',
-          p.reforzadores       ? `  ⭐ Reforzadores/motivadores: \${p.reforzadores}`            : '',
-          p.materiales         ? `  🧩 Materiales necesarios: \${p.materiales}`                 : '',
-          p.correccion_error   ? `  🔄 Cómo corregir errores: \${p.correccion_error}`           : '',
-          p.generalizacion     ? `  🏠 Para practicar en casa: \${p.generalizacion}`            : '',
-          p.notas_programa     ? `  📝 Notas del programa: \${p.notas_programa}`               : '',
-          pasos                ? `  📋 Pasos actuales a trabajar:\n\${pasos}`                  : '',
+          `\n📌 PROGRAMA: "${p.titulo}" | Área: ${p.area || 'general'} | Fase: ${p.fase_actual || 'inicial'} | Criterio: ${p.criterio_dominio_pct || 90}%`,
+          sd          ? `  🗣️ Cómo dar la instrucción (Sd): ${sd}`                : '',
+          ayudas      ? `  ✋ Ayudas / Prompts: ${ayudas}`                          : '',
+          reforzProg  ? `  ⭐ Reforzadores del programa: ${reforzProg}`             : '',
+          materiales  ? `  🧩 Materiales necesarios: ${materiales}`                : '',
+          correccion  ? `  🔄 Si se equivoca, cómo corregir: ${correccion}`        : '',
+          generaliz   ? `  🏠 Generalización en casa: ${generaliz}`                : '',
+          instrCasa   ? `  📋 Instrucciones extra: ${instrCasa}`                   : '',
+          pasos       ? `  📊 Sets actuales:\n${pasos}`                            : '',
         ].filter(Boolean).join('\n')
       }).join('\n')
     : 'Sin programas ABA activos actualmente'
 
-  // ── Tareas del hogar ──────────────────────────────────────────────────────────
-  const tareasTexto = tareasPendientes?.map(t => {
-    const instrCompletas = t.instrucciones || ''
-    return `- "\${t.titulo}" (\${t.completada ? 'COMPLETADA ✅' : 'PENDIENTE ⏳'})\n  Instrucciones: \${instrCompletas || 'Ver con la terapeuta'}`
+  // ── Tareas del hogar ──
+  const tareasTexto = (tareasPendientes || []).map((t: any) => {
+    const instr = t.instrucciones || ''
+    return `- "${t.titulo}" (${t.completada ? 'COMPLETADA ✅' : 'PENDIENTE ⏳'})\n  Instrucciones: ${instr || 'Ver con la terapeuta'}`
   }).join('\n') || 'Sin tareas asignadas actualmente'
 
-  const proximaCitaTexto = proximaCita
-    ? `Próxima cita: \${(proximaCita as any).fecha} a las \${(proximaCita as any).hora_inicio?.slice(0, 5)}`
-    : 'Sin próxima cita programada'
+  // ── Próxima cita (combinar agenda_sesiones + appointments) ──
+  let proximaCitaTexto = 'Sin próxima cita programada'
+  if (proximaCitaAppt) {
+    const a: any = proximaCitaAppt
+    proximaCitaTexto = `Próxima cita: ${a.appointment_date} a las ${a.appointment_time?.slice(0, 5)}${a.service_type ? ` (${a.service_type})` : ''}`
+  } else if (proximaCitaAgenda) {
+    const a: any = proximaCitaAgenda
+    proximaCitaTexto = `Próxima cita: ${a.fecha} a las ${a.hora_inicio?.slice(0, 5)}${a.tipo ? ` (${a.tipo})` : ''}`
+  }
 
   const edadTexto = calcularEdad((child as any)?.birth_date, (child as any)?.age)
 
@@ -251,7 +330,13 @@ async function cargarContextoPadre(childId: string) {
     proximaCita: proximaCitaTexto,
     tareas: tareasTexto,
     programas: programasTexto,
-    tieneTareasActivas: (tareasPendientes?.filter((t: any) => !t.completada).length || 0) > 0
+    tieneTareasActivas: ((tareasPendientes || []).filter((t: any) => !t.completada).length || 0) > 0,
+    _debug: {
+      sesiones_legacy: (sesionesLegacy || []).length,
+      sesiones_aba: (sesionesAba || []).length,
+      programas_encontrados: (programas || []).length,
+      tareas: (tareasPendientes || []).length,
+    },
   }
 }
 
