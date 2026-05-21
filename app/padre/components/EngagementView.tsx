@@ -73,9 +73,11 @@ export default function EngagementView({ childId }: { childId: string }) {
 
   const cargar = async () => {
     setLoading(true)
+    // Reset al cambiar de niño — evita mostrar el plan del hijo anterior
+    setPlan(null); setPlanId(null); setCompletadas(new Set()); setExpanded(null)
     try {
       const loc = typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale')||'es') : 'es'
-      const r = await fetch(`/api/engagement-padres?child_id=${childId}&locale=${loc}`)
+      const r = await fetch(`/api/engagement-padres?child_id=${childId}&locale=${loc}`, { cache: 'no-store' })
       const j = await r.json()
       if (j.plan) {
         const planData = j.plan
@@ -121,8 +123,8 @@ export default function EngagementView({ childId }: { childId: string }) {
         body: JSON.stringify({ childId, accion: 'generar_plan', locale: loc })
       })
       const j = await r.json()
-      if (j.error) throw new Error(j.error)
-      const pId = j.plan?.id || j.plan?.plan_id || null
+      if (j.error || !j.plan?.id) throw new Error(j.error || 'El plan no se pudo guardar. Reintentá.')
+      const pId = j.plan.id
       setPlan(j.plan); setPlanId(pId); setCompletadas(new Set()); setExpanded(null)
     } catch (e: any) { alert('Error: ' + e.message) }
     setGenerando(false)

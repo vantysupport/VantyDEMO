@@ -157,6 +157,16 @@ Responde ÚNICAMENTE con JSON válido, sin markdown, sin explicaciones:
       .select()
       .single()
 
+    // FIX: Si el guardado falla (RLS, constraint, columna faltante…), informarlo
+    // en vez de devolver "success" y dejar al padre con un plan fantasma que
+    // desaparece al recargar.
+    if (saveErr) {
+      console.error('[engagement-padres] save failed:', saveErr)
+      return NextResponse.json({
+        error: `No se pudo guardar el plan: ${saveErr.message}. Reintentá en unos segundos.`,
+      }, { status: 500 })
+    }
+
     return NextResponse.json({
       success: true,
       plan: {
@@ -179,13 +189,30 @@ export async function GET(req: NextRequest) {
   if (!childId) return NextResponse.json({ error: 'child_id requerido' }, { status: 400 })
 
   const semanaNum = getWeekNumber(new Date())
-  const { data: plan } = await supabaseAdmin
+  const anio = new Date().getFullYear()
+
+  // 1. Intentar plan de la semana en curso
+  const { data: planSemanaActual } = await supabaseAdmin
     .from('engagement_planes')
     .select('*')
     .eq('child_id', childId)
     .eq('semana', semanaNum)
-    .eq('anio', new Date().getFullYear())
-    .single()
+    .eq('anio', anio)
+    .maybeSingle()
+
+  // 2. Fallback: si no hay plan de esta semana, traer el más reciente
+  //    (cubre cambios de semana naturales que no deberían borrar el plan visible)
+  let plan = planSemanaActual
+  if (!plan) {
+    const { data: planReciente } = await supabaseAdmin
+      .from('engagement_planes')
+      .select('*')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    plan = planReciente
+  }
 
   const { data: historial } = await supabaseAdmin
     .from('engagement_planes')
