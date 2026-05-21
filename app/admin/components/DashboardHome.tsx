@@ -203,17 +203,27 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
   const cargar = useCallback(async () => {
     setLoading(true)
     try {
+      // 0. Refrescar alertas para TODOS los pacientes (logros + alertas negativas).
+      //    Esto detecta nuevos logros automáticamente y resuelve alertas que ya no aplican.
+      //    No bloquea el render si falla.
+      try {
+        await fetch('/api/agente/refrescar-alertas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+          cache: 'no-store',
+        })
+      } catch { /* silencioso — sigue con datos existentes */ }
+
       // 1. API de métricas (usa agenda_sesiones, agente_alertas, etc.)
       const resM = await fetch('/api/dashboard/metricas?periodo=7d', { cache: 'no-store' })
       const dataM = resM.ok ? await resM.json() : null
       setMetricas(dataM)
 
-      // Próximas citas — solo futuras y no finalizadas. Excluye:
-      //  - cancelled / cancelada (cita cancelada manualmente)
-      //  - completed / completada / done / realizada (sesión ya terminó — fue al historial)
-      // Adicionalmente filtra en cliente las citas de HOY que ya pasaron (date=hoy AND time < ahora).
+      // Próximas citas — fechas de hoy en adelante, no canceladas ni completadas.
+      // No filtramos por hora del día: si una cita de hoy es de las 3pm y son las 5pm,
+      // sigue siendo "del día de hoy" mientras no esté en estado terminal.
       const hoyStr = new Date().toISOString().split('T')[0]
-      const ahoraHHMM = new Date().toTimeString().slice(0, 5)
       const estadosTerminados = ['cancelled', 'cancelada', 'completed', 'completada', 'done', 'realizada']
       const { data: citasDirectas } = await supabase
         .from('appointments')
@@ -221,20 +231,10 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         .gte('appointment_date', hoyStr)
         .not('status', 'in', `(${estadosTerminados.join(',')})`)
         .order('appointment_date').order('appointment_time')
-        .limit(20)
+        .limit(6)
 
-      // Filtro extra: en HOY excluir las que ya pasaron (sesión vencida, 45 min después)
-      const citasUpcoming = (citasDirectas || []).filter((c: any) => {
-        if (c.appointment_date !== hoyStr) return true
-        const hhmm = (c.appointment_time || '00:00').slice(0, 5)
-        const [h, m] = hhmm.split(':').map(Number)
-        const finSesion = new Date()
-        finSesion.setHours(h, m + 45, 0, 0)
-        return finSesion.getTime() > Date.now()
-      }).slice(0, 6)
-
-      if (citasUpcoming.length > 0) {
-        setProximasCitas(citasUpcoming)
+      if (citasDirectas && citasDirectas.length > 0) {
+        setProximasCitas(citasDirectas)
       } else if (dataM?.proximasSesiones?.length > 0) {
         // Fallback: agenda_sesiones via API métricas
         setProximasCitas(dataM.proximasSesiones)
