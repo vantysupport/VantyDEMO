@@ -142,33 +142,32 @@ export async function GET(req: NextRequest) {
       masteryRate = totalProg > 0 ? Math.round((domProg / totalProg) * 100) : 0
     }
 
-    // ── Calcular sesiones unificadas ──────────────────────────
-    // sesiones_datos_aba: usar misma lógica que agente-prediccion (sesiones.length = filas)
-    // ya que el admin muestra "9 sesiones totales" contando filas directamente
-    const sesionesDesdePrograma = sesionesPrograma?.length || 0
+    // ── Conteo de sesiones REALES de terapia ──────────────────
+    // IMPORTANTE: hay dos conceptos distintos que antes se mezclaban:
+    //  1. Sesiones REALES de terapia → agenda_sesiones / appointments completados / aba_sessions_v2
+    //  2. Registros de DATOS ABA → filas en sesiones_datos_aba (puede haber varias por sesión real,
+    //     una por cada programa trabajado en la misma sesión)
+    //
+    // El stat "Sesiones" del dashboard del padre debe reflejar SESIONES REALES, no registros.
+    // De lo contrario un centro con 4 programas y 1 sesión real puede mostrar "4 sesiones".
 
-    // registro_aba: una fila = una sesión
-    const sesionesDesdeRegistro = registroAba?.length || 0
+    const sesionesDesdeRegistro      = registroAba?.length || 0
+    const sesionesDesdeAgenda        = agendaSesiones?.length || 0
+    const sesionesDesdeAppointments  = appointmentsCompleted?.length || 0
+    const sesionesDesdeV2            = sessionsV2?.length || 0
+    const sesionesDesdePrograma      = sesionesPrograma?.length || 0   // registros, no sesiones
 
-    // agenda_sesiones: una fila = una sesión (ya filtradas por estado)
-    const sesionesDesdeAgenda = agendaSesiones?.length || 0
-
-    // appointments completadas: una fila = una cita completada
-    const sesionesDesdeAppointments = appointmentsCompleted?.length || 0
-
-    // aba_sessions_v2
-    const sesionesDesdeV2 = sessionsV2?.length || 0
-
-    // Usar el mayor valor entre todas las fuentes reales
+    // Total = MAX entre fuentes REALES (excluye sesiones_datos_aba como fuente primaria)
     const totalSesiones = Math.max(
-      sesionesDesdePrograma,
       sesionesDesdeRegistro,
       sesionesDesdeAgenda,
       sesionesDesdeAppointments,
       sesionesDesdeV2
     )
 
-    // ── Horas totales ─────────────────────────────────────────
+    // ── Horas totales — SOLO de fuentes reales con duración medible ──
+    // Si no hay ninguna sesión real registrada, las horas son 0 (no extrapolar
+    // desde registros de datos, eso producía "4.5h sin sesiones" engañosas).
     const minutosAgenda = (agendaSesiones || []).reduce((sum: number, s: any) => {
       if (s.hora_inicio && s.hora_fin) {
         const [h1, m1] = s.hora_inicio.split(':').map(Number)
@@ -178,10 +177,15 @@ export async function GET(req: NextRequest) {
       return sum + 45
     }, 0)
 
-    const totalMinutes =
-      (sessionsV2 || []).reduce((s: number, x: any) => s + (x.duration_minutes || 45), 0) ||
-      minutosAgenda ||
-      totalSesiones * 45
+    const minutosV2 = (sessionsV2 || []).reduce(
+      (s: number, x: any) => s + (x.duration_minutes || 45), 0
+    )
+
+    // Si hay appointments completados pero no tienen duración, estimar 45 min cada uno
+    const minutosAppts = sesionesDesdeAppointments * 45
+
+    // Tomar el mayor de las fuentes reales (no se acumulan porque pueden solaparse)
+    const totalMinutes = Math.max(minutosV2, minutosAgenda, minutosAppts)
     const hoursTotal = Math.round((totalMinutes / 60) * 10) / 10
 
     // ── Nivel basado en sesiones ──────────────────────────────
@@ -200,7 +204,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      totalSesiones,
+      totalSesiones,                                    // SOLO sesiones reales de terapia
+      registrosDatos: sesionesDesdePrograma,            // Registros de datos ABA (informativo)
       totalGoals,
       goalsAchieved,
       masteryRate,

@@ -316,9 +316,9 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
     const achieved  = apiStats?.goalsAchieved  ?? 0
     const totalGoals = apiStats?.totalGoals    ?? 0
     const masteryRate = apiStats?.masteryRate  ?? 0
-    const hoursTotal  = apiStats?.hoursTotal && apiStats.hoursTotal > 0
-      ? apiStats.hoursTotal
-      : Math.round(totalSess * 0.75 * 10) / 10
+    // Horas: SIEMPRE del API (que ya filtra por fuentes reales). Si no hay sesiones
+    // reales, hoursTotal = 0 — no extrapolar para no engañar al padre.
+    const hoursTotal  = apiStats?.hoursTotal ?? 0
     let level = apiStats?.level ?? 'Inicial'
     // Calcular nivel localmente si la API falló
     if (!apiStats?.level || totalSess !== (apiStats?.totalSesiones ?? 0)) {
@@ -495,9 +495,9 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
       {/* ── STATS ROW ── */}
       <div className="hv-card" style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
         {[
-          { val: loading ? '…' : stats.sessions,                    label:'Sesiones',        sub: stats.monthSessions > 0 ? `+${stats.monthSessions} este mes` : 'Total realizadas', color:'#2563eb' },
+          { val: loading ? '…' : stats.sessions,                    label:'Sesiones',        sub: stats.monthSessions > 0 ? `+${stats.monthSessions} este mes` : (stats.sessions === 0 ? 'Aún sin sesiones agendadas' : 'Total realizadas'), color:'#2563eb' },
           { val: loading ? '…' : `${stats.goalsAchieved}/${stats.totalGoals||'?'}`, label:'Objetivos logrados', sub:'Con dominio ≥80%', color:'#059669' },
-          { val: loading ? '…' : `${stats.hoursTotal}h`,             label:'Horas de terapia', sub: stats.sessions > 0 ? `~${Math.round(stats.hoursTotal/Math.max(stats.sessions,1)*10)/10}h por sesión` : 'Sin sesiones', color:'#7c3aed' },
+          { val: loading ? '…' : (stats.hoursTotal > 0 ? `${stats.hoursTotal}h` : '—'),             label:'Horas de terapia', sub: stats.hoursTotal > 0 ? `~${Math.round(stats.hoursTotal/Math.max(stats.sessions,1)*10)/10}h por sesión` : 'Cuando haya sesiones', color:'#7c3aed' },
           { val: loading ? '…' : `${stats.masteryRate}%`,              label:'Dominio',          sub:'Promedio de objetivos', color:'#d97706' },
         ].map(({ val, label, sub, color }) => (
           <div key={label} style={{ background:'var(--c-card)', borderRadius:18, padding:'18px 16px', border:`1px solid var(--c-border)`, display:'flex', flexDirection:'column', gap:6, position:'relative', overflow:'hidden' }}>
