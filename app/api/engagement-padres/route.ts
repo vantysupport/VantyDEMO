@@ -141,25 +141,54 @@ Responde ÚNICAMENTE con JSON válido, sin markdown, sin explicaciones:
       throw new Error('La IA no generó un plan válido')
     }
 
-    // Guardar el plan en Supabase
+    // Guardar el plan en Supabase — UPSERT manual (no requiere unique constraint
+    // en la DB). Antes usábamos .upsert() con onConflict, pero rompía si la tabla
+    // no tenía el índice único correspondiente.
     const semanaNum = getWeekNumber(new Date())
-    const { data: planGuardado, error: saveErr } = await supabaseAdmin
-      .from('engagement_planes')
-      .upsert({
-        child_id: childId,
-        semana: semanaNum,
-        anio: new Date().getFullYear(),
-        actividades: plan.actividades,
-        mensaje_motivacional: plan.mensaje_motivacional,
-        completadas_pct: 0,
-        created_at: new Date().toISOString(),
-      }, { onConflict: 'child_id,semana,anio' })
-      .select()
-      .single()
+    const anio = new Date().getFullYear()
 
-    // FIX: Si el guardado falla (RLS, constraint, columna faltante…), informarlo
-    // en vez de devolver "success" y dejar al padre con un plan fantasma que
-    // desaparece al recargar.
+    const payload = {
+      child_id: childId,
+      semana: semanaNum,
+      anio,
+      actividades: plan.actividades,
+      mensaje_motivacional: plan.mensaje_motivacional,
+      completadas_pct: 0,
+    }
+
+    // 1. ¿Ya existe un plan para esta (child_id, semana, anio)?
+    const { data: existente } = await supabaseAdmin
+      .from('engagement_planes')
+      .select('id')
+      .eq('child_id', childId)
+      .eq('semana', semanaNum)
+      .eq('anio', anio)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    let planGuardado: any = null
+    let saveErr: any = null
+
+    if (existente?.id) {
+      // UPDATE — sobrescribir el plan existente
+      const { data, error } = await supabaseAdmin
+        .from('engagement_planes')
+        .update(payload)
+        .eq('id', existente.id)
+        .select()
+        .single()
+      planGuardado = data; saveErr = error
+    } else {
+      // INSERT — primera vez para esta semana
+      const { data, error } = await supabaseAdmin
+        .from('engagement_planes')
+        .insert({ ...payload, created_at: new Date().toISOString() })
+        .select()
+        .single()
+      planGuardado = data; saveErr = error
+    }
+
     if (saveErr) {
       console.error('[engagement-padres] save failed:', saveErr)
       return NextResponse.json({
