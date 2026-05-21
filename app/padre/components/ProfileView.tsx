@@ -54,20 +54,20 @@ function CalBtn({ label, icon, grad, profile, apiBase, paramKey, role='padre' }:
         <p style={{ fontWeight:700,fontSize:14,color:'var(--c-text-primary)',margin:0 }}>{label}</p>
         <p style={{ fontSize:12,color:'#10b981',display:'flex',alignItems:'center',gap:4,margin:'2px 0 0' }}><Check size={11}/>Conectado · <span style={{ color:'var(--c-text-muted)' }}>{email}</span></p>
       </div>
-      <button onClick={disconnect} style={{ fontSize:12,fontWeight:700,color:'#ef4444',background:'#fef2f2',border:'1px solid rgba(239,68,68,0.25)',borderRadius:10,padding:'6px 12px',cursor:'pointer',flexShrink:0 }}>Quitar</button>
+      <button onClick={disconnect} style={{ fontSize:12,fontWeight:700,color:'#ef4444',background:'rgba(239,68,68,0.10)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:10,padding:'6px 12px',cursor:'pointer',flexShrink:0 }}>Quitar</button>
     </div>
   ) : (
     <button onClick={connect} disabled={connecting} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 20px',borderBottom:'1px solid var(--c-border)',background:'none',border:'none',cursor:'pointer',transition:'background .15s',fontFamily:'inherit' }}
-      onMouseEnter={e=>(e.currentTarget as any).style.background='#f8fafc'}
+      onMouseEnter={e=>(e.currentTarget as any).style.background='var(--c-surface)'}
       onMouseLeave={e=>(e.currentTarget as any).style.background='transparent'}>
       <div style={{ width:42,height:42,background:`${grad.replace('linear-gradient(135deg,','').split(',')[0]}18`,borderRadius:13,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0 }}>
-        {connecting?<Loader2 size={18} style={{ animation:'spin 1s linear infinite' }} color="#64748b"/>:icon}
+        {connecting?<Loader2 size={18} style={{ animation:'spin 1s linear infinite' }} color="var(--c-text-muted)"/>:icon}
       </div>
       <div style={{ textAlign:'left',flex:1,minWidth:0 }}>
         <p style={{ fontWeight:700,fontSize:14,color:'var(--c-text-primary)',margin:0 }}>{connecting?'Conectando...':label}</p>
         <p style={{ fontSize:12,color:'var(--c-text-muted)',margin:'2px 0 0' }}>Sincronizá tus citas automáticamente</p>
       </div>
-      {!connecting&&<ChevronRight size={18} color="#cbd5e1" style={{ flexShrink:0 }}/>}
+      {!connecting&&<ChevronRight size={18} color="var(--c-text-muted)" style={{ flexShrink:0 }}/>}
     </button>
   )
 }
@@ -146,7 +146,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
             </div>
             <div style={{ display:'flex',gap:6 }}>
               <button onClick={() => setEditing(true)} style={{ fontSize:11,fontWeight:700,color:'#6d28d9',background:'var(--c-stat-purple)',border:'1px solid var(--c-border)',borderRadius:10,padding:'6px 10px',cursor:'pointer' }}>Cambiar</button>
-              <button onClick={handleRemove} disabled={saving} style={{ fontSize:11,fontWeight:700,color:'#dc2626',background:'#fef2f2',border:'1px solid rgba(239,68,68,0.25)',borderRadius:10,padding:'6px 10px',cursor:'pointer' }}>Quitar</button>
+              <button onClick={handleRemove} disabled={saving} style={{ fontSize:11,fontWeight:700,color:'#dc2626',background:'rgba(239,68,68,0.10)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:10,padding:'6px 10px',cursor:'pointer' }}>Quitar</button>
             </div>
           </div>
           {/* Qué recibirá */}
