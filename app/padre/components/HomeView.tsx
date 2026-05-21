@@ -638,14 +638,38 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
                 {programas.map((prog:any, i:number) => {
                   const emoji = AREA_EMOJI[(prog.area||'').toLowerCase()] || AREA_EMOJI.default
                   return (
-                    <div key={prog.id||i} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 12px', background:'var(--c-surface)', borderRadius:14, border:'1px solid var(--c-border-light)' }}>
+                    <button
+                      key={prog.id||i}
+                      onClick={() => onChangeView('programas')}
+                      title="Ver detalles del programa"
+                      style={{
+                        display:'flex', alignItems:'center', gap:12,
+                        padding:'10px 12px',
+                        background:'var(--c-surface)', borderRadius:14,
+                        border:'1px solid var(--c-border-light)',
+                        cursor:'pointer', textAlign:'left',
+                        width:'100%', fontFamily:'inherit',
+                        transition:'transform .12s, border-color .12s, background .12s',
+                      }}
+                      onMouseEnter={e => {
+                        const el = e.currentTarget as HTMLButtonElement
+                        el.style.borderColor = 'var(--c-accent, #7c3aed)'
+                        el.style.transform = 'translateY(-1px)'
+                      }}
+                      onMouseLeave={e => {
+                        const el = e.currentTarget as HTMLButtonElement
+                        el.style.borderColor = 'var(--c-border-light)'
+                        el.style.transform = 'translateY(0)'
+                      }}
+                    >
                       <div style={{ width:36, height:36, background:'var(--c-card)', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, border:'1px solid var(--c-border)', boxShadow:'0 1px 4px rgba(0,0,0,.05)' }}>{emoji}</div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <p style={{ fontWeight:700, fontSize:13, color:'var(--c-text-primary)', margin:0, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{prog.nombre || prog.titulo || 'Programa'}</p>
                         {prog.area && <p style={{ fontSize:11, color:'var(--c-text-placeholder)', margin:'1px 0 0', textTransform:'capitalize' }}>{prog.area}</p>}
                       </div>
                       <span style={{ fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:10, flexShrink:0, ...(prog.estado==='activo'?{background:'var(--c-stat-green)',color:'#16a34a'}:prog.estado==='completado'?{background:'var(--c-stat-purple)',color:'#7c3aed'}:{background:'var(--c-stat-amber)',color:'#d97706'}) }}>{prog.estado||'activo'}</span>
-                    </div>
+                      <ChevronRight size={14} color="var(--c-text-placeholder)" style={{ flexShrink: 0 }}/>
+                    </button>
                   )
                 })}
               </div>
