@@ -9,7 +9,7 @@ import {
   ArrowLeft, Baby, BarChart3, Brain, Calendar, Check, ChevronRight,
   ClipboardList, Edit, Link, Link2Off, Loader2, Mail, Plus, Save,
   Search, Stethoscope, User, UserCheck, Users, X,
-  FolderOpen, FileText
+  FolderOpen, FileText, Heart
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
@@ -281,6 +281,136 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
   )
 }
 
+// ── Card de bienestar del padre ────────────────────────────────────────────
+// Muestra el último chequeo de bienestar y el historial (collapsable).
+const MOOD_CONFIG: Record<string, { emoji: string; label: string; bg: string; border: string; color: string }> = {
+  bien:    { emoji: '😊', label: 'Bien',    bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
+  regular: { emoji: '😐', label: 'Regular', bg: '#fffbeb', border: '#fde68a', color: '#b45309' },
+  dificil: { emoji: '😔', label: 'Difícil', bg: '#fef2f2', border: '#fecaca', color: '#b91c1c' },
+}
+
+function ParentWellbeingCard({ childId }: { childId: string }) {
+  const [checkins, setCheckins] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    fetch(`/api/parent-wellbeing?child_id=${childId}&limit=12`)
+      .then(r => r.json())
+      .then(json => { if (!cancelled) setCheckins(json?.data || []) })
+      .catch(() => { if (!cancelled) setCheckins([]) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [childId])
+
+  if (loading) {
+    return (
+      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Heart size={12} style={{ color: 'var(--text-muted)' }} />
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            Bienestar del padre/madre
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <Loader2 size={12} className="animate-spin" /> Cargando...
+        </div>
+      </div>
+    )
+  }
+
+  if (checkins.length === 0) {
+    return (
+      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Heart size={12} style={{ color: 'var(--text-muted)' }} />
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            Bienestar del padre/madre
+          </p>
+        </div>
+        <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
+          Aún no hay chequeos de bienestar registrados. El padre/madre los recibe mensualmente desde su app.
+        </p>
+      </div>
+    )
+  }
+
+  const ultimo = checkins[0]
+  const cfg = MOOD_CONFIG[ultimo.mood] || MOOD_CONFIG.regular
+  const fechaUltimo = new Date(ultimo.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5">
+          <Heart size={12} style={{ color: 'var(--text-muted)' }} />
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            Bienestar del padre/madre
+          </p>
+        </div>
+        {checkins.length > 1 && (
+          <button
+            onClick={() => setExpanded(e => !e)}
+            className="text-[10px] font-semibold hover:underline"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {expanded ? 'Ocultar historial' : `Ver historial (${checkins.length})`}
+          </button>
+        )}
+      </div>
+
+      {/* Último check-in */}
+      <div
+        className="rounded-lg p-3 flex items-start gap-3"
+        style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
+      >
+        <span style={{ fontSize: 28, lineHeight: 1 }}>{cfg.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-sm font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
+            <p className="text-[10px]" style={{ color: cfg.color, opacity: 0.75 }}>{fechaUltimo}</p>
+          </div>
+          {ultimo.nota && (
+            <p className="text-xs mt-1.5 italic leading-relaxed" style={{ color: cfg.color }}>
+              "{ultimo.nota}"
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Historial expandido */}
+      {expanded && checkins.length > 1 && (
+        <div className="mt-3 space-y-1.5">
+          {checkins.slice(1).map((c: any) => {
+            const ccfg = MOOD_CONFIG[c.mood] || MOOD_CONFIG.regular
+            const fecha = new Date(c.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+            return (
+              <div
+                key={c.id}
+                className="flex items-start gap-2 rounded-lg p-2"
+                style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}
+              >
+                <span style={{ fontSize: 16, lineHeight: 1 }}>{ccfg.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>{ccfg.label}</p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{fecha}</p>
+                  </div>
+                  {c.nota && (
+                    <p className="text-[11px] mt-0.5 italic" style={{ color: 'var(--text-secondary)' }}>"{c.nota}"</p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Tab Info del paciente ──────────────────────────────────────────────────
 function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
   const { t, locale } = useI18n()
@@ -459,6 +589,9 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
 
           {/* ── Cuenta vinculada ── */}
           <LinkedAccountSection nino={nino} onLinked={onSaved} />
+
+          {/* ── Bienestar del padre ── */}
+          <ParentWellbeingCard childId={nino.id} />
         </div>
 
       ) : (

@@ -103,14 +103,47 @@ function GoalCelebration({ childName, goalsAchieved, onClose }: { childName: str
   )
 }
 
-function WellbeingSurvey({ childName, onClose }: { childName: string; onClose: () => void }) {
+function WellbeingSurvey({ childName, childId, parentId, onClose }: { childName: string; childId: string; parentId: string; onClose: () => void }) {
   const [answered, setAnswered] = useState(false)
-  const options = [
-    { emoji: '😊', label: 'Bien, con energía para seguir', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
-    { emoji: '😐', label: 'Regular, algo cansado/a', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
-    { emoji: '😔', label: 'Difícil, necesito más apoyo', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
+  const [selectedMood, setSelectedMood] = useState<'bien' | 'regular' | 'dificil' | null>(null)
+  const [nota, setNota] = useState('')
+  const [saving, setSaving] = useState(false)
+  const options: { emoji: string; label: string; mood: 'bien'|'regular'|'dificil'; color: string; bg: string; border: string }[] = [
+    { emoji: '😊', label: 'Bien, con energía para seguir', mood: 'bien',    color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
+    { emoji: '😐', label: 'Regular, algo cansado/a',       mood: 'regular', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+    { emoji: '😔', label: 'Difícil, necesito más apoyo',   mood: 'dificil', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
   ]
-  const handleAnswer = () => { setAnswered(true); setTimeout(onClose, 3000) }
+
+  const persistir = async (mood: 'bien'|'regular'|'dificil', notaTexto?: string) => {
+    if (!parentId || !childId) return
+    setSaving(true)
+    try {
+      await fetch('/api/parent-wellbeing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parent_id: parentId, child_id: childId, mood, nota: notaTexto || null }),
+      })
+    } catch {/* silencioso — no romper la UX si falla */}
+    finally { setSaving(false) }
+  }
+
+  const handleMoodClick = async (mood: 'bien'|'regular'|'dificil') => {
+    setSelectedMood(mood)
+    if (mood === 'dificil') {
+      // No persistir aún — esperar a que escriba la nota opcional
+      return
+    }
+    await persistir(mood)
+    setAnswered(true)
+    setTimeout(onClose, 3000)
+  }
+
+  const handleSubmitDificil = async () => {
+    await persistir('dificil', nota.trim() || undefined)
+    setAnswered(true)
+    setTimeout(onClose, 3000)
+  }
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9998, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', padding: '0 16px 24px' }}>
       <div style={{ background: 'var(--c-card)', borderRadius: '28px 28px 20px 20px', padding: 28, maxWidth: 440, width: '100%', boxShadow: '0 -30px 80px rgba(0,0,0,.15)', animation: 'slideUp .4s cubic-bezier(.175,.885,.32,1.275)' }}>
@@ -128,12 +161,60 @@ function WellbeingSurvey({ childName, onClose }: { childName: string; onClose: (
             </div>
             <p style={{ fontSize: 14, color: 'var(--c-text-secondary)', lineHeight: 1.6, marginBottom: 16 }}>Acompañar a <strong>{childName || 'tu hijo/a'}</strong> es un trabajo importante. ¿Cómo te has sentido esta semana?</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {options.map(opt => (
-                <button key={opt.label} onClick={handleAnswer} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: opt.bg, border: `2px solid ${opt.border}`, borderRadius: 14, fontSize: 14, fontWeight: 600, color: opt.color, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
-                  <span style={{ fontSize: 22 }}>{opt.emoji}</span> {opt.label}
-                </button>
-              ))}
+              {options.map(opt => {
+                const isSelected = selectedMood === opt.mood
+                return (
+                  <button
+                    key={opt.label}
+                    onClick={() => handleMoodClick(opt.mood)}
+                    disabled={saving}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                      background: opt.bg,
+                      border: `${isSelected ? '3px' : '2px'} solid ${opt.border}`,
+                      borderRadius: 14, fontSize: 14, fontWeight: 600,
+                      color: opt.color, cursor: saving ? 'wait' : 'pointer',
+                      textAlign: 'left', fontFamily: 'inherit',
+                      opacity: saving && !isSelected ? 0.5 : 1,
+                    }}
+                  >
+                    <span style={{ fontSize: 22 }}>{opt.emoji}</span> {opt.label}
+                  </button>
+                )
+              })}
             </div>
+            {selectedMood === 'dificil' && (
+              <div style={{ marginTop: 16, animation: 'fadeIn .3s ease' }}>
+                <p style={{ fontSize: 13, color: 'var(--c-text-secondary)', marginBottom: 8 }}>
+                  ¿Querés contarnos más? (opcional)
+                </p>
+                <textarea
+                  value={nota}
+                  onChange={e => setNota(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Cualquier cosa que quieras compartir con tu terapeuta — lo verá en privado."
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: 12,
+                    border: '1.5px solid #e5e7eb', fontSize: 13, fontFamily: 'inherit',
+                    resize: 'none', outline: 'none', background: 'var(--c-surface)',
+                    color: 'var(--c-text-primary)',
+                  }}
+                />
+                <button
+                  onClick={handleSubmitDificil}
+                  disabled={saving}
+                  style={{
+                    marginTop: 10, width: '100%', padding: '11px 16px', borderRadius: 12,
+                    background: '#dc2626', color: 'white', border: 'none',
+                    fontSize: 14, fontWeight: 700, cursor: saving ? 'wait' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                  }}
+                >
+                  {saving ? 'Enviando...' : 'Enviar a mi terapeuta'}
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '16px 0' }}>
@@ -143,7 +224,7 @@ function WellbeingSurvey({ childName, onClose }: { childName: string; onClose: (
           </div>
         )}
       </div>
-      <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   )
 }
@@ -332,7 +413,14 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
       `}</style>
 
       {showCelebration && <GoalCelebration childName={child?.name||'tu hijo/a'} goalsAchieved={stats.goalsAchieved} onClose={()=>setShowCelebration(false)}/>}
-      {showWellbeing  && <WellbeingSurvey childName={child?.name} onClose={()=>setShowWellbeing(false)}/>}
+      {showWellbeing && child?.id && child?.parent_id && (
+        <WellbeingSurvey
+          childName={child.name}
+          childId={child.id}
+          parentId={child.parent_id}
+          onClose={() => setShowWellbeing(false)}
+        />
+      )}
 
       {/* ── GOOGLE CALENDAR BANNER ── */}
       {gcalConnected===false && !gcalBannerDismissed && (
