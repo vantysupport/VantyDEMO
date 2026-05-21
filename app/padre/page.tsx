@@ -15,7 +15,8 @@ import {
   Award, Target, Smile, Book, Star, Zap, Bell, Download, Share2, Eye, Mail, Phone,
   Settings, HelpCircle, FileText, Video, Headphones, Image as ImageIcon, ExternalLink,
   Camera, Upload, Gift, PartyPopper, Flame, TrendingDown, Baby, Stethoscope, PlayCircle,
-  CalendarDays, ShoppingBag, BookOpen, MoreHorizontal, FolderOpen, Users
+  CalendarDays, ShoppingBag, BookOpen, MoreHorizontal, FolderOpen, Users,
+  Shield, KeyRound, ServerCog, UserCog, Database, ScrollText
 } from 'lucide-react'
 
 import { NavBtnDesktop, NavBtnMobile, NotificationItem, HelpItem } from './components/shared'
@@ -1162,56 +1163,165 @@ export default function ParentDashboard() {
             </div>
         )}
 
-        {/* 🔒 MODAL - PRIVACIDAD */}
+        {/* 🔒 MODAL - PRIVACIDAD Y SEGURIDAD */}
         {showPrivacy && (
-            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-                <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col">
-                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                                <Lock size={24}/>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowPrivacy(false)}>
+                <div
+                    className="rounded-3xl w-full max-w-2xl shadow-2xl animate-scale-in overflow-hidden max-h-[92vh] flex flex-col"
+                    style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)' }}
+                    onClick={e => e.stopPropagation()}
+                >
+                    {/* Header — gradiente Vanty con badges de cumplimiento */}
+                    <div className="relative overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#db2777 100%)' }}>
+                        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, background: 'rgba(255,255,255,.08)', borderRadius: '50%' }}/>
+                        <div style={{ position: 'absolute', bottom: -30, left: 30, width: 100, height: 100, background: 'rgba(255,255,255,.06)', borderRadius: '50%' }}/>
+
+                        <div className="relative z-10 p-6 text-white">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                                        <Shield size={24} strokeWidth={2.5}/>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-lg leading-tight">Privacidad y Seguridad</h3>
+                                        <p className="text-xs text-white/80 font-medium">Cómo Vanty protege los datos clínicos de tu familia</p>
+                                    </div>
+                                </div>
+                                <button onClick={()=>setShowPrivacy(false)} className="p-2 hover:bg-white/15 rounded-xl transition-all">
+                                    <X size={18}/>
+                                </button>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-lg">Privacidad y Seguridad</h3>
-                                <p className="text-xs text-purple-100">Tus datos están protegidos</p>
+
+                            {/* Badges técnicos */}
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                {[
+                                    { icon: <KeyRound size={10}/>, label: 'AES-256' },
+                                    { icon: <ServerCog size={10}/>, label: 'TLS 1.3' },
+                                    { icon: <Database size={10}/>, label: 'RLS activo' },
+                                    { icon: <CheckCircle2 size={10}/>, label: 'Ley 29733 PE' },
+                                ].map(b => (
+                                    <span key={b.label} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', backdropFilter: 'blur(4px)' }}>
+                                        {b.icon} {b.label}
+                                    </span>
+                                ))}
                             </div>
                         </div>
-                        <button onClick={()=>setShowPrivacy(false)} className="p-2 hover:bg-white/10 rounded-xl transition-all hover:rotate-90">
-                            <X size={20}/>
-                        </button>
                     </div>
-                    <div className="p-6 space-y-4 overflow-y-auto">
-                        <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100">
-                            <h4 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
-                                <Lock size={16}/> Protección de Datos
+
+                    {/* Contenido — scrolleable */}
+                    <div className="p-5 md:p-6 space-y-3 overflow-y-auto" style={{ background: 'var(--c-card)' }}>
+                        {/* 1. Cifrado y arquitectura */}
+                        <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.15)' }}>
+                                    <KeyRound size={13} className="text-violet-500"/>
+                                </div>
+                                Cifrado y arquitectura
                             </h4>
-                            <p className="text-sm text-purple-700 leading-relaxed">
-                                Toda la información de tu familia está cifrada y protegida según estándares internacionales. Solo tú y los profesionales autorizados pueden acceder a los datos clínicos.
+                            <p className="text-xs leading-relaxed mb-2" style={{ color: 'var(--c-text-secondary)' }}>
+                                Toda la información clínica de tu familia se almacena cifrada con <strong>AES-256</strong> en reposo y se transmite por <strong>TLS 1.3</strong>. Cada fila en nuestra base de datos está protegida con <strong>Row Level Security</strong> — solo cuentas autorizadas pueden verla.
                             </p>
                         </div>
-                        
-                        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                            <h4 className="font-bold text-blue-900 mb-2">Compartir Información</h4>
-                            <p className="text-sm text-blue-700 leading-relaxed mb-3">
-                                Puedes compartir acceso temporal con:
-                            </p>
-                            <ul className="text-sm text-blue-700 space-y-1 ml-4">
-                                <li>• Familiares cercanos</li>
-                                <li>• Otros profesionales de salud</li>
-                                <li>• Instituciones educativas (con tu autorización)</li>
+
+                        {/* 2. Quién accede */}
+                        <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(37,99,235,0.15)' }}>
+                                    <UserCog size={13} className="text-blue-500"/>
+                                </div>
+                                Quién puede acceder
+                            </h4>
+                            <ul className="text-xs space-y-1.5" style={{ color: 'var(--c-text-secondary)' }}>
+                                <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5 flex-shrink-0"/> <span><strong>Vos</strong> (padre/madre/tutor titular de la cuenta)</span></li>
+                                <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5 flex-shrink-0"/> <span><strong>Terapeutas y especialistas del centro</strong> asignados al paciente</span></li>
+                                <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5 flex-shrink-0"/> <span><strong>Soporte técnico</strong> de Vanty, solo bajo consentimiento explícito y acuerdo de confidencialidad</span></li>
+                                <li className="flex items-start gap-2 pt-1 mt-1" style={{ borderTop: '1px dashed var(--c-border)' }}>
+                                    <X size={12} className="text-red-500 mt-0.5 flex-shrink-0"/>
+                                    <span><strong>Nunca:</strong> anunciantes, brokers de datos, ni terceros con fines comerciales</span>
+                                </li>
                             </ul>
                         </div>
 
-                        <div className="bg-green-50 p-4 rounded-2xl border border-green-100">
-                            <h4 className="font-bold text-green-900 mb-2">Control Total</h4>
-                            <p className="text-sm text-green-700 leading-relaxed">
-                                Puedes exportar, eliminar o modificar cualquier información en cualquier momento. Tienes control absoluto sobre tus datos.
+                        {/* 3. Inteligencia Artificial (ARIA) */}
+                        <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(219,39,119,0.15)' }}>
+                                    <Brain size={13} className="text-pink-500"/>
+                                </div>
+                                Inteligencia Artificial (ARIA)
+                            </h4>
+                            <p className="text-xs leading-relaxed" style={{ color: 'var(--c-text-secondary)' }}>
+                                Los datos clínicos <strong>no se utilizan para entrenar modelos públicos</strong>. ARIA procesa cada consulta de forma contextual — solo se envía la información mínima necesaria al proveedor de IA y se descarta después de generar la respuesta. La generación de reportes y análisis se realiza con datos anonimizados cuando es posible.
                             </p>
                         </div>
 
-                        <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95">
-                            Leer Política Completa
-                        </button>
+                        {/* 4. Tus derechos */}
+                        <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
+                                    <ScrollText size={13} className="text-emerald-500"/>
+                                </div>
+                                Tus derechos (Ley 29733 · Perú)
+                            </h4>
+                            <div className="grid grid-cols-2 gap-1.5">
+                                {[
+                                    { label: 'Acceso',         desc: 'Solicitar copia de todo lo registrado' },
+                                    { label: 'Rectificación',  desc: 'Corregir datos inexactos' },
+                                    { label: 'Eliminación',    desc: 'Borrar tu cuenta y la del paciente' },
+                                    { label: 'Portabilidad',   desc: 'Exportar tu historial en formato abierto' },
+                                    { label: 'Oposición',      desc: 'Limitar el uso de tus datos' },
+                                    { label: 'Información',    desc: 'Saber qué datos tenemos y por qué' },
+                                ].map(d => (
+                                    <div key={d.label} className="p-2 rounded-lg" style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)' }}>
+                                        <p className="text-[11px] font-bold" style={{ color: 'var(--c-text-primary)' }}>{d.label}</p>
+                                        <p className="text-[10px] leading-tight" style={{ color: 'var(--c-text-muted)' }}>{d.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[10px] mt-2.5" style={{ color: 'var(--c-text-muted)' }}>
+                                Para ejercer cualquier derecho:{' '}
+                                <a href="mailto:aprendizaje.santi@gmail.com" className="font-bold underline" style={{ color: '#7c3aed' }}>
+                                    aprendizaje.santi@gmail.com
+                                </a>
+                            </p>
+                        </div>
+
+                        {/* 5. Retención */}
+                        <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.15)' }}>
+                                    <Database size={13} className="text-amber-500"/>
+                                </div>
+                                Conservación de datos
+                            </h4>
+                            <p className="text-xs leading-relaxed" style={{ color: 'var(--c-text-secondary)' }}>
+                                Los datos clínicos se conservan durante el período activo de tratamiento y hasta <strong>5 años</strong> luego del último servicio, según la normativa peruana de registros clínicos. Podés solicitar la eliminación anticipada en cualquier momento.
+                            </p>
+                        </div>
+
+                        {/* CTAs */}
+                        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                            <a
+                                href="/privacidad"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg transition-all hover:shadow-xl active:scale-[.98]"
+                                style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed,#db2777)' }}
+                            >
+                                <ScrollText size={15}/> Leer Política Completa <ExternalLink size={12}/>
+                            </a>
+                            <a
+                                href="mailto:aprendizaje.santi@gmail.com?subject=Consulta%20sobre%20privacidad%20de%20datos"
+                                className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all hover:opacity-80"
+                                style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', color: 'var(--c-text-primary)' }}
+                            >
+                                <Mail size={14}/> Contactar DPO
+                            </a>
+                        </div>
+
+                        <p className="text-[10px] text-center pt-1" style={{ color: 'var(--c-text-muted)' }}>
+                            Plataforma Vanty · Neuropsicología y Terapias SANTI · Pueblo Libre, Lima
+                        </p>
                     </div>
                 </div>
             </div>
