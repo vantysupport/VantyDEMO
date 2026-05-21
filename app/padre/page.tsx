@@ -409,8 +409,8 @@ export default function ParentDashboard() {
           {/* Help contact */}
           <p className="text-center text-sm text-slate-400 mt-6">
             ¿Tienes dudas? Escríbenos:{' '}
-            <a href="https://wa.me/51924807183" className="text-violet-600 font-bold hover:underline">
-              +51 XXX XXX XXX
+            <a href="https://wa.me/51991070734" className="text-violet-600 font-bold hover:underline">
+              +51 991 070 734
             </a>
           </p>
         </div>
@@ -1266,7 +1266,7 @@ export default function ParentDashboard() {
                                     <Mail size={14}/> <a href="mailto:contacto@santi.com" className="hover:underline">contacto@santi.com</a>
                                 </p>
                                 <p className="flex items-center gap-2">
-                                    <Phone size={14}/> <a href="tel:+51924807183" className="hover:underline">+51 XXX XXX XXX</a>
+                                    <Phone size={14}/> <a href="tel:+51991070734" className="hover:underline">+51 991 070 734</a>
                                 </p>
                                 <p className="text-xs text-green-600 mt-2">Horario: Lun-Vie 8:00 AM - 6:00 PM</p>
                             </div>

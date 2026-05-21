@@ -431,7 +431,7 @@ export default function LandingPage() {
   useEffect(() => { setActiveAccordion(null) }, [lang])
 
   const waMsg = encodeURIComponent(t.wa.msg)
-  const waUrl = `https://wa.me/51924807183?text=${waMsg}`
+  const waUrl = `https://wa.me/51991070734?text=${waMsg}`
 
   const benefitIcons = [
     { icon: <ClipboardList size={20} color="#fff" />, bg: 'linear-gradient(135deg,#f97316,#fb923c)' },
@@ -916,7 +916,7 @@ export default function LandingPage() {
               <Clock size={15} color="#f97316" /><span><strong>{t.map.schedule}</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13, color: '#44403c' }}>
-              <Phone size={15} color="#25d366" /><span>+51 XXX XXX XXX</span>
+              <Phone size={15} color="#25d366" /><span>+51 991 070 734</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13, color: '#44403c' }}>
               <Mail size={15} color="#f59e0b" /><span>contacto@santi.com</span>

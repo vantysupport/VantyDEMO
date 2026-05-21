@@ -81,7 +81,7 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
             <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--c-text-muted)" }}>
               Tu pedido fue registrado. Nos pondremos en contacto contigo para confirmar el pago y la entrega.
             </p>
-            <a href="https://wa.me/51924807183" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all">
               <Phone size={16} /> Coordinar por WhatsApp
             </a>
@@ -409,7 +409,7 @@ export default function StoreView({ profile }: { profile: any }) {
               <p className="text-xs text-blue-500 leading-relaxed">
                 {t('ui.physical_items_note')}
                 Los <strong>{t('ui.digitales')}</strong> te los enviamos por WhatsApp tras confirmar el pago.
-                ¿Dudas? Escríbenos al <a href="https://wa.me/51924807183" className="underline font-bold">+51 XXX XXX XXX</a>.
+                ¿Dudas? Escríbenos al <a href="https://wa.me/51991070734" className="underline font-bold">+51 991 070 734</a>.
               </p>
             </div>
           </div>

@@ -386,9 +386,9 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
               Las citas son programadas por el equipo del centro. Para cualquier cambio contáctanos directamente.
             </p>
             <div className="flex flex-col gap-2">
-              <a href="tel:+51924807183" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold"
+              <a href="tel:+51991070734" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold"
                 style={{ background: 'rgba(255,255,255,0.1)', textDecoration: 'none', color: 'white' }}>
-                <Phone size={14}/> +51 XXX XXX XXX
+                <Phone size={14}/> +51 991 070 734
               </a>
               <a href="mailto:contacto@santi.com" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold"
                 style={{ background: 'rgba(255,255,255,0.1)', textDecoration: 'none', color: 'white' }}>
