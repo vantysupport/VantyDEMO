@@ -75,16 +75,16 @@ function CalBtn({ label, icon, grad, profile, apiBase, paramKey, role='padre' }:
 function MenuItem({ icon, label, sub, onClick, danger=false, badge='' }: any) {
   return (
     <button onClick={onClick} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 20px',background:'none',border:'none',borderBottom:'1px solid var(--c-border)',cursor:'pointer',transition:'background .15s',fontFamily:'inherit' }}
-      onMouseEnter={e=>(e.currentTarget as any).style.background=danger?'#fff5f5':'#f8fafc'}
+      onMouseEnter={e=>(e.currentTarget as any).style.background = danger ? 'rgba(239,68,68,0.08)' : 'var(--c-surface)'}
       onMouseLeave={e=>(e.currentTarget as any).style.background='transparent'}>
-      <div style={{ width:42,height:42,borderRadius:13,background:danger?'#fef2f2':'#f8fafc',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>{icon}</div>
+      <div style={{ width:42,height:42,borderRadius:13,background:danger?'rgba(239,68,68,0.10)':'var(--c-surface)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,border:'1px solid var(--c-border)' }}>{icon}</div>
       <div style={{ flex:1,textAlign:'left' }}>
-        <p style={{ fontWeight:700,fontSize:14,color:danger?'#ef4444':'#1e293b',margin:0 }}>{label}</p>
+        <p style={{ fontWeight:700,fontSize:14,color:danger?'#ef4444':'var(--c-text-primary)',margin:0 }}>{label}</p>
         {sub&&<p style={{ fontSize:12,color:'var(--c-text-muted)',margin:'2px 0 0' }}>{sub}</p>}
       </div>
       <div style={{ display:'flex',alignItems:'center',gap:6 }}>
         {badge&&<span style={{ background:'#7c3aed',color:'#fff',fontSize:10,fontWeight:800,padding:'2px 8px',borderRadius:20 }}>{badge}</span>}
-        {!danger&&<ChevronRight size={16} color="#cbd5e1"/>}
+        {!danger&&<ChevronRight size={16} color="var(--c-text-muted)"/>}
       </div>
     </button>
   )
@@ -152,7 +152,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
           {/* Qué recibirá */}
           <div style={{ display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:6 }}>
             {['📅 Nueva cita agendada','❌ Cita cancelada','📊 Informe disponible','💬 Mensaje del terapeuta'].map(item => (
-              <div key={item} style={{ fontSize:11,color:'var(--c-text-muted)',fontWeight:600,padding:'6px 10px',background:'#f8fafc',borderRadius:10,display:'flex',alignItems:'center',gap:6 }}>
+              <div key={item} style={{ fontSize:11,color:'var(--c-text-muted)',fontWeight:600,padding:'6px 10px',background:'var(--c-surface)',border:'1px solid var(--c-border)',borderRadius:10,display:'flex',alignItems:'center',gap:6 }}>
                 {item}
               </div>
             ))}
@@ -169,7 +169,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
               value={phone}
               onChange={e => { setPhone(e.target.value); setError('') }}
               placeholder="+51 XXX XXX XXX"
-              style={{ flex:1,padding:'11px 14px',borderRadius:14,border:`1.5px solid ${error?'#fca5a5':'#e2e8f0'}`,fontSize:13,fontWeight:600,color:'var(--c-text-primary)',outline:'none',fontFamily:'inherit',background:'#f8fafc' }}
+              style={{ flex:1,padding:'11px 14px',borderRadius:14,border:`1.5px solid ${error?'#fca5a5':'var(--c-border)'}`,fontSize:13,fontWeight:600,color:'var(--c-text-primary)',outline:'none',fontFamily:'inherit',background:'var(--c-surface)' }}
               onKeyDown={e => e.key==='Enter' && handleSave()}
             />
             <button onClick={handleSave} disabled={saving} style={{ padding:'11px 18px',borderRadius:14,border:'none',background:'linear-gradient(135deg,#22c55e,#16a34a)',color:'#fff',fontWeight:700,fontSize:13,cursor:saving?'not-allowed':'pointer',flexShrink:0,display:'flex',alignItems:'center',gap:6,fontFamily:'inherit',boxShadow:'0 4px 12px rgba(34,197,94,.3)' }}>
@@ -179,7 +179,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
           </div>
           {error && <p style={{ fontSize:11,color:'#dc2626',margin:'4px 0 0',fontWeight:600 }}>{error}</p>}
           {saved && <p style={{ fontSize:11,color:'#16a34a',margin:'6px 0 0',fontWeight:700,display:'flex',alignItems:'center',gap:5 }}><CheckCircle size={11}/>¡Listo! Notificaciones activadas</p>}
-          <p style={{ fontSize:10,color:'#cbd5e1',margin:'8px 0 0' }}>Perú: +51 · Colombia: +57 · México: +52 · España: +34 · Tu número no se comparte con terceros.</p>
+          <p style={{ fontSize:10,color:'var(--c-text-muted)',margin:'8px 0 0' }}>Perú: +51 · Colombia: +57 · México: +52 · España: +34 · Tu número no se comparte con terceros.</p>
         </div>
       )}
     </div>
