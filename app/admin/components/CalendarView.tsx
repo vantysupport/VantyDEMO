@@ -247,7 +247,20 @@ function MonthlyCalendarView() {
         ? { ...a, appointment_date: editDate, appointment_time: `${editTime}:00` }
         : a
       ))
-      toast.success('Horario actualizado')
+
+      // Contar calendarios externos sincronizados
+      const sync = json.calendarSync || {}
+      const synced: string[] = []
+      if (sync.google?.ok && sync.google?.updated) synced.push('Google')
+      if (sync.microsoft?.ok && sync.microsoft?.updated) synced.push('Outlook')
+      if (sync.parentGoogle?.ok && sync.parentGoogle?.updated) synced.push('Google padre')
+      if (sync.parentMicrosoft?.ok && sync.parentMicrosoft?.updated) synced.push('Outlook padre')
+
+      if (synced.length > 0) {
+        toast.success(`✅ Horario actualizado · Sincronizado en: ${synced.join(', ')}`)
+      } else {
+        toast.success('Horario actualizado')
+      }
       cancelarEdicion()
     } catch (err: any) {
       toast.error(err?.message || 'No se pudo actualizar')
