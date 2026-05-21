@@ -187,13 +187,15 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
     if (!form.concept.trim()) { toast.error('Ingresa el concepto'); return }
     setSaving(true)
     try {
-      await supabase.from('payments').insert({
+      const { error } = await supabase.from('payments').insert({
         child_id: form.child_id, amount: Number(form.amount), concept: form.concept.trim(),
         payment_method: form.method, status: form.status, notes: form.notes || null,
         paid_at: form.status === 'paid' ? new Date(form.date).toISOString() : null,
         created_by: profile?.id,
       })
+      if (error) throw error
       toast.success('✅ Pago registrado'); setShowNew(false); setForm(emptyForm)
+      await cargar()   // ← refrescar tabla para que el nuevo pago aparezca de inmediato
     } catch (e: any) { toast.error(e.message) }
     finally { setSaving(false) }
   }
@@ -226,6 +228,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
       if (error) throw error
       toast.success(`✅ ${pkgDates.length} pagos creados · S/ ${(Number(pkg.amount) * pkgDates.length).toFixed(2)} total`)
       setShowPkg(false); setPkg(emptyPkg); setPkgDates([])
+      await cargar()   // ← refrescar tabla para que los nuevos pagos aparezcan de inmediato
     } catch (e: any) { toast.error(e.message) }
     finally { setSavingPkg(false) }
   }
