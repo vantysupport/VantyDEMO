@@ -469,8 +469,8 @@ export default function ParentDashboard() {
   }
 
   const PAGE_TITLES_MOBILE: Record<string, string> = {
-    home: 'Inicio', miscitas: 'Mis Citas', engagement: 'Act. en Casa',
-    chat: 'Asistente IA', mensajes: 'Notificaciones', misformularios: 'Mi Centro',
+    home: 'Inicio', miscitas: 'Agenda', engagement: 'Practicar en Casa',
+    chat: 'Asistente IA', mensajes: 'Notificaciones', misformularios: 'Recursos adicionales',
     tienda: 'Tienda', documentos: 'Documentos', profile: 'Mi Perfil',
     'chat-familias': 'Chat', 'programas': 'Programas ABA',
   }
@@ -537,13 +537,13 @@ export default function ParentDashboard() {
             {/* Nav */}
             <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
                 <NavBtnDesktop icon={<Home size={17}/>} label="Inicio" active={activeView==='home'} onClick={()=>setActiveView('home')} />
-                <NavBtnDesktop icon={<Calendar size={17}/>} label="Mis Citas" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} />
-                <NavBtnDesktop icon={<Heart size={17}/>} label="Act. en Casa" active={activeView==='engagement'} onClick={()=>setActiveView('engagement')} badge="IA" />
+                <NavBtnDesktop icon={<Calendar size={17}/>} label="Agenda" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} />
+                <NavBtnDesktop icon={<Heart size={17}/>} label="Practicar en Casa" active={activeView==='engagement'} onClick={()=>setActiveView('engagement')} badge="IA" />
                 <NavBtnDesktop icon={<Sparkles size={17}/>} label={t('familias.asistente')} active={activeView==='chat'} onClick={()=>setActiveView('chat')} badge="NUEVO" />
                 <NavBtnDesktop icon={<Bell size={17}/>} label="Notificaciones" active={activeView==='mensajes'} onClick={()=>setActiveView('mensajes')} badge={unreadCount > 0 ? unreadCount : null} />
                 <NavBtnDesktop icon={<BookOpen size={17}/>} label="Programas ABA" active={activeView==='programas'} onClick={()=>setActiveView('programas')} />
                 <NavBtnDesktop icon={<Users size={17}/>} label="Chat" active={activeView==='chat-familias'} onClick={()=>setActiveView('chat-familias')} badge={familiasUnread > 0 ? familiasUnread : null} />
-                <NavBtnDesktop icon={<FileText size={17}/>} label="Mi Centro" active={activeView==='misformularios'||activeView==='tienda'||activeView==='documentos'} onClick={()=>setActiveView('misformularios')} badge={pendingFormsCount > 0 ? pendingFormsCount : null} />
+                <NavBtnDesktop icon={<FileText size={17}/>} label="Recursos adicionales" active={activeView==='misformularios'||activeView==='tienda'||activeView==='documentos'} onClick={()=>setActiveView('misformularios')} badge={pendingFormsCount > 0 ? pendingFormsCount : null} />
                 <NavBtnDesktop icon={<User size={17}/>} label="Mi Perfil" active={activeView==='profile'} onClick={()=>setActiveView('profile')} />
             </nav>
 
@@ -721,9 +721,9 @@ export default function ParentDashboard() {
                 <div className="flex justify-center">
                   <NavBtnMobile icon={<Home size={22}/>} label="Inicio" active={activeView==='home'} onClick={()=>setActiveView('home')} />
                 </div>
-                {/* Mis Citas */}
+                {/* Agenda */}
                 <div className="flex justify-center">
-                  <NavBtnMobile icon={<Calendar size={22}/>} label="Mis Citas" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} badge={null} />
+                  <NavBtnMobile icon={<Calendar size={22}/>} label="Agenda" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} badge={null} />
                 </div>
                 {/* Botón IA central flotante */}
                 <div className="flex justify-center">
@@ -763,11 +763,11 @@ export default function ParentDashboard() {
                   {showMoreMenu && (
                     <div className="absolute bottom-14 right-0 rounded-2xl shadow-2xl border p-2 w-56 z-50 flex flex-col gap-1" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
                       {[
-                        { id: 'engagement',    icon: <Zap size={18}/>,            label: 'Act. en Casa' },
+                        { id: 'engagement',    icon: <Zap size={18}/>,            label: 'Practicar en Casa' },
                         { id: 'chat-familias', icon: <MessageCircle size={18}/>,  label: 'Chat', badge: familiasUnread > 0 ? familiasUnread : null },
                         { id: 'mensajes',      icon: <Bell size={18}/>,           label: 'Notificaciones', badge: unreadCount > 0 ? unreadCount : null },
                         { id: 'programas',     icon: <BookOpen size={18}/>,       label: 'Programas ABA' },
-                        { id: 'misformularios',icon: <FileText size={18}/>,       label: 'Mi Centro', badge: pendingFormsCount > 0 ? pendingFormsCount : null },
+                        { id: 'misformularios',icon: <FileText size={18}/>,       label: 'Recursos adicionales', badge: pendingFormsCount > 0 ? pendingFormsCount : null },
                       ].map(item => (
                         <button key={item.id} onClick={()=>{setActiveView(item.id);setShowMoreMenu(false)}}
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative ${activeView===item.id ? 'bg-purple-50 text-purple-700' : 'text-slate-700 hover:bg-slate-50'}`}>
@@ -1244,7 +1244,7 @@ export default function ParentDashboard() {
                         <HelpItem 
                             icon={<Calendar className="text-blue-600"/>}
                             title="¿Cómo ver mis citas?"
-                            description="En la sección 'Mis Citas' podés ver todas las citas programadas por el centro. Para cambios o cancelaciones, contactá a recepción directamente."
+                            description="En la sección 'Agenda' podés ver todas las citas programadas por el centro. Para cambios o cancelaciones, contactá a recepción directamente."
                         />
                         <HelpItem 
                             icon={<MessageCircle className="text-purple-600"/>}

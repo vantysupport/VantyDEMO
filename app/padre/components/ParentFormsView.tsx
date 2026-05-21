@@ -456,7 +456,7 @@ function ParentFormsResourcesView({ profile, selectedChild, onFormsLoaded, initi
         <div style={{ position:'relative',zIndex:1 }}>
           <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:4 }}>
             <FileText size={15} style={{ opacity:.8 }}/>
-            <span style={{ fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:1.2,color:'rgba(255,255,255,.7)' }}>Mi Centro</span>
+            <span style={{ fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:1.2,color:'rgba(255,255,255,.7)' }}>Recursos adicionales</span>
           </div>
           <h2 style={{ fontSize:22,fontWeight:900,margin:'0 0 4px' }}>Formularios y materiales</h2>
           <p style={{ fontSize:12,color:'rgba(255,255,255,.65)',margin:'0 0 16px' }}>{t('familias.formsMateriales')}</p>
