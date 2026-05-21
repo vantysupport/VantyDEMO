@@ -229,97 +229,26 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
             <p style={{ fontSize: 13, color: 'var(--c-text-secondary)', lineHeight: 1.6, margin: '14px 0 12px' }}>{prog.descripcion}</p>
           )}
 
-          {/* Cómo aplicar el programa — lee del SET activo (objetivos_cp) con fallback al programa */}
-          {(() => {
-            // Set activo = primer set "en_progreso" o el primero no dominado o el último
-            const setsNoDominados = (prog.objetivos_cp || []).filter(o => o.estado !== 'dominado')
-            const setActivo = setsNoDominados.find(o => o.estado === 'en_progreso')
-              || setsNoDominados[0]
-              || (prog.objetivos_cp || [])[(prog.objetivos_cp || []).length - 1]
-              || null
-
-            // Prioridad: campo del set → campo del programa
-            const sd          = setActivo?.sd_estimulo      || prog.sd_estimulo
-            const materiales  = setActivo?.materiales       || prog.materiales
-            // En el admin la "Ayudas" se guarda en el campo `reforzadores` del set
-            const ayudas      = setActivo?.reforzadores     || prog.ayudas
-            const correccion  = setActivo?.correction_errores
-            const generaliz   = setActivo?.generalizacion
-            const reforzProg  = prog.reforzadores
-            const instrCasa   = prog.instrucciones_casa
-
-            const tieneAlgo = sd || materiales || ayudas || correccion || generaliz || reforzProg || instrCasa
-
-            return (
-              <div style={{ background: 'var(--c-stat-blue)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '14px 16px', marginTop: 14, marginBottom: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
-                  <p style={{ fontSize: 12, fontWeight: 800, color: '#2563eb', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <BookOpen size={13} /> Cómo practicarlo en casa
-                  </p>
-                  {setActivo && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', background: 'rgba(37,99,235,0.12)', padding: '2px 8px', borderRadius: 8 }}>
-                      Set {setActivo.numero_set ?? '?'}
-                    </span>
-                  )}
+          {/* Instrucciones generales del programa (no del set) — solo si existen */}
+          {(prog.instrucciones_casa || prog.reforzadores) && (
+            <div style={{ background: 'var(--c-stat-blue)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '12px 14px', marginTop: 14, marginBottom: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 800, color: '#2563eb', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <BookOpen size={13} /> Indicaciones generales del programa
+              </p>
+              {prog.instrucciones_casa && (
+                <div style={{ marginBottom: prog.reforzadores ? 8 : 0 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>📋 Instrucciones</span>
+                  <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{prog.instrucciones_casa}</p>
                 </div>
-
-                {sd && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>📍 Qué decir o hacer (Sd)</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{sd}</p>
-                  </div>
-                )}
-
-                {instrCasa && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>📋 Instrucciones</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{instrCasa}</p>
-                  </div>
-                )}
-
-                {ayudas && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>🤝 Ayudas / Prompts</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{ayudas}</p>
-                  </div>
-                )}
-
-                {reforzProg && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>🎁 Reforzadores</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{reforzProg}</p>
-                  </div>
-                )}
-
-                {materiales && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>🧸 Materiales</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{materiales}</p>
-                  </div>
-                )}
-
-                {correccion && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>✏️ Si se equivoca</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{correccion}</p>
-                  </div>
-                )}
-
-                {generaliz && (
-                  <div style={{ marginBottom: 0 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>🌱 Generalización</span>
-                    <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{generaliz}</p>
-                  </div>
-                )}
-
-                {!tieneAlgo && (
-                  <p style={{ fontSize: 12, color: 'var(--c-text-muted)', margin: 0, fontStyle: 'italic' }}>
-                    Tu terapeuta aún no ha agregado instrucciones para casa. Consúltale en la próxima sesión.
-                  </p>
-                )}
-              </div>
-            )
-          })()}
+              )}
+              {prog.reforzadores && (
+                <div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>🎁 Reforzadores</span>
+                  <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{prog.reforzadores}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Sets / Objetivos actuales */}
           {prog.objetivos_cp && prog.objetivos_cp.filter(o => o.estado !== 'dominado').length > 0 && (
@@ -359,11 +288,31 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
                           <ChevronDown size={15} />
                         </div>
                       </button>
-                      {/* Expanded detail */}
-                      {isExpObj && (
-                        <div style={{ padding: '10px 14px 12px', background: 'var(--c-card)', borderTop: `1px solid ${area.color}30` }}>
-                          {hasDetail ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {/* Expanded detail — incluye los campos clínicos del set */}
+                      {isExpObj && (() => {
+                        // Fallback al programa para SD/Materiales/Ayudas si el set no los tiene
+                        const sd         = obj.sd_estimulo      || prog.sd_estimulo
+                        const materiales = obj.materiales       || prog.materiales
+                        // En el admin la "Ayudas" se guarda en el campo `reforzadores` del set
+                        const ayudas     = obj.reforzadores     || prog.ayudas
+                        const correccion = obj.correction_errores
+                        const generaliz  = obj.generalizacion
+                        const hayClinico = sd || materiales || ayudas || correccion || generaliz
+
+                        const Field = ({ icon, label, value }: { icon: string; label: string; value?: string }) => {
+                          if (!value) return null
+                          return (
+                            <div>
+                              <span style={{ fontSize: 10, fontWeight: 700, color: area.color, textTransform: 'uppercase', letterSpacing: 0.5 }}>{icon} {label}</span>
+                              <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{value}</p>
+                            </div>
+                          )
+                        }
+
+                        return (
+                          <div style={{ padding: '12px 14px 14px', background: 'var(--c-card)', borderTop: `1px solid ${area.color}30`, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {/* Objetivo */}
+                            {hasDetail && (
                               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 10px', background: area.bg, borderRadius: 10 }}>
                                 <Target size={13} color={area.color} style={{ flexShrink: 0, marginTop: 2 }} />
                                 <div>
@@ -371,20 +320,33 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
                                   <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: 0, lineHeight: 1.6 }}>{obj.descripcion || obj.nombre}</p>
                                 </div>
                               </div>
+                            )}
+
+                            {/* Campos clínicos del set */}
+                            {hayClinico && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 12px', background: 'var(--c-surface)', borderRadius: 10, border: '1px solid var(--c-border)' }}>
+                                <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--c-text-muted)', margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                  Cómo practicarlo en casa
+                                </p>
+                                <Field icon="📍" label="Qué decir o hacer (Sd)" value={sd} />
+                                <Field icon="🤝" label="Ayudas / Prompts"        value={ayudas} />
+                                <Field icon="🧸" label="Materiales"              value={materiales} />
+                                <Field icon="✏️" label="Si se equivoca"          value={correccion} />
+                                <Field icon="🌱" label="Generalización"          value={generaliz} />
+                              </div>
+                            )}
+
+                            {!hayClinico && (
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'rgba(16,185,129,0.08)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.15)' }}>
                                 <span style={{ fontSize: 11 }}>💡</span>
                                 <p style={{ fontSize: 11, color: '#065f46', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
-                                  Practica este objetivo en casa según las instrucciones del programa. Si tienes dudas, consulta con el terapeuta.
+                                  El terapeuta aún no agregó detalles de este set. Consúltale en la próxima sesión.
                                 </p>
                               </div>
-                            </div>
-                          ) : (
-                            <p style={{ fontSize: 12, color: 'var(--c-text-muted)', margin: 0, fontStyle: 'italic' }}>
-                              Consulta con el terapeuta para más detalles sobre este objetivo.
-                            </p>
-                          )}
-                        </div>
-                      )}
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   )
                 })}
