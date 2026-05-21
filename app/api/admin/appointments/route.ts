@@ -91,7 +91,6 @@ export async function PATCH(request: NextRequest) {
     if (status !== undefined) updates.status = status
     if (appointment_date !== undefined) updates.appointment_date = appointment_date
     if (appointment_time !== undefined) {
-      // Normaliza a HH:MM:SS
       const t = String(appointment_time)
       updates.appointment_time = t.length === 5 ? `${t}:00` : t
     }
@@ -108,7 +107,108 @@ export async function PATCH(request: NextRequest) {
       .select()
       .single()
     if (error) throw error
-    return NextResponse.json({ data })
+
+    // ── Sincronizar cambio de fecha/hora con calendarios externos ──
+    const timeChanged = appointment_date !== undefined || appointment_time !== undefined
+    let calendarSync: any = { google: null, microsoft: null, parentGoogle: null, parentMicrosoft: null }
+
+    if (timeChanged) {
+      const newDate = appointment_date ?? data.appointment_date
+      const newTime = (appointment_time ?? data.appointment_time)
+      const timeOnly = String(newTime).slice(0, 5)
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+      // Cargar event IDs y owners
+      const { data: apt } = await supabaseAdmin
+        .from('appointments')
+        .select('google_calendar_event_id, microsoft_calendar_event_id, parent_google_calendar_event_id, parent_microsoft_calendar_event_id, created_by, child_id')
+        .eq('id', id)
+        .single()
+
+      // 1. Google del especialista/admin
+      if (apt?.google_calendar_event_id && apt?.created_by) {
+        try {
+          const r = await fetch(`${baseUrl}/api/google-calendar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update-event',
+              userId: apt.created_by,
+              eventId: apt.google_calendar_event_id,
+              appointment_date: newDate,
+              appointment_time: timeOnly,
+              notifyAttendees: true,
+            }),
+          })
+          calendarSync.google = await r.json().catch(() => null)
+        } catch (e: any) { calendarSync.google = { error: e?.message } }
+      }
+
+      // 2. Microsoft del especialista/admin
+      if (apt?.microsoft_calendar_event_id && apt?.created_by) {
+        try {
+          const r = await fetch(`${baseUrl}/api/microsoft-calendar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update-event',
+              userId: apt.created_by,
+              eventId: apt.microsoft_calendar_event_id,
+              appointment_date: newDate,
+              appointment_time: timeOnly,
+            }),
+          })
+          calendarSync.microsoft = await r.json().catch(() => null)
+        } catch (e: any) { calendarSync.microsoft = { error: e?.message } }
+      }
+
+      // 3. Google del PADRE
+      if (apt?.parent_google_calendar_event_id && apt?.child_id) {
+        try {
+          const { data: child } = await supabaseAdmin
+            .from('children').select('parent_id').eq('id', apt.child_id).single()
+          if (child?.parent_id) {
+            const r = await fetch(`${baseUrl}/api/google-calendar`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'update-event',
+                userId: child.parent_id,
+                eventId: apt.parent_google_calendar_event_id,
+                appointment_date: newDate,
+                appointment_time: timeOnly,
+                notifyAttendees: true,
+              }),
+            })
+            calendarSync.parentGoogle = await r.json().catch(() => null)
+          }
+        } catch (e: any) { calendarSync.parentGoogle = { error: e?.message } }
+      }
+
+      // 4. Microsoft del PADRE
+      if (apt?.parent_microsoft_calendar_event_id && apt?.child_id) {
+        try {
+          const { data: child } = await supabaseAdmin
+            .from('children').select('parent_id').eq('id', apt.child_id).single()
+          if (child?.parent_id) {
+            const r = await fetch(`${baseUrl}/api/microsoft-calendar`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'update-event',
+                userId: child.parent_id,
+                eventId: apt.parent_microsoft_calendar_event_id,
+                appointment_date: newDate,
+                appointment_time: timeOnly,
+              }),
+            })
+            calendarSync.parentMicrosoft = await r.json().catch(() => null)
+          }
+        } catch (e: any) { calendarSync.parentMicrosoft = { error: e?.message } }
+      }
+    }
+
+    return NextResponse.json({ data, calendarSync: timeChanged ? calendarSync : undefined })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

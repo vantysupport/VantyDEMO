@@ -418,6 +418,74 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Borrar evento del calendario Outlook ───────────────────────────
+    if (action === 'update-event') {
+      const { eventId, appointment_date, appointment_time } = body
+      if (!eventId) return NextResponse.json({ ok: true, skipped: 'no eventId' })
+      if (!appointment_date || !appointment_time) {
+        return NextResponse.json({ ok: false, error: 'appointment_date y appointment_time requeridos' })
+      }
+
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('microsoft_calendar_token, microsoft_calendar_refresh_token')
+        .eq('id', userId)
+        .single()
+
+      if (!profile?.microsoft_calendar_token) {
+        return NextResponse.json({ ok: true, skipped: 'not connected' })
+      }
+
+      let accessToken = profile.microsoft_calendar_token
+      try {
+        const refreshRes = await fetch(
+          `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/token`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              client_id:     MS_CLIENT_ID,
+              client_secret: MS_CLIENT_SECRET,
+              refresh_token: profile.microsoft_calendar_refresh_token || '',
+              grant_type:    'refresh_token',
+              scope:         'Calendars.ReadWrite offline_access',
+            }),
+          }
+        )
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json()
+          accessToken = refreshData.access_token
+          await supabaseAdmin.from('profiles').update({ microsoft_calendar_token: accessToken }).eq('id', userId)
+        }
+      } catch { /* use existing token */ }
+
+      const timeClean = String(appointment_time).slice(0, 5)
+      const [hh, mm] = timeClean.split(':').map(Number)
+      const endHH = String(Math.floor((hh * 60 + mm + 60) / 60) % 24).padStart(2, '0')
+      const endMM = String((mm + 60) % 60).padStart(2, '0')
+      const startISO = `${appointment_date}T${timeClean}:00`
+      const endISO   = `${appointment_date}T${endHH}:${endMM}:00`
+
+      const patchRes = await fetch(
+        `https://graph.microsoft.com/v1.0/me/events/${eventId}`,
+        {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            start: { dateTime: startISO, timeZone: 'America/Lima' },
+            end:   { dateTime: endISO,   timeZone: 'America/Lima' },
+          }),
+        }
+      )
+
+      if (!patchRes.ok && patchRes.status !== 404) {
+        const err = await patchRes.text()
+        console.error('[MSCal] update-event failed:', patchRes.status, err)
+        return NextResponse.json({ ok: false, error: `Microsoft Calendar error ${patchRes.status}: ${err}` })
+      }
+
+      return NextResponse.json({ ok: true, updated: eventId })
+    }
+
     if (action === 'delete-event') {
       const { eventId } = body
       if (!eventId) return NextResponse.json({ ok: true, skipped: 'no eventId' })

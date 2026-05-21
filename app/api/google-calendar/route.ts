@@ -438,6 +438,72 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Borrar evento del calendario ────────────────────────────────────
+    if (action === 'update-event') {
+      const { eventId, appointment_date, appointment_time, notifyAttendees } = body
+      if (!eventId) return NextResponse.json({ ok: true, skipped: 'no eventId' })
+      if (!appointment_date || !appointment_time) {
+        return NextResponse.json({ ok: false, error: 'appointment_date y appointment_time requeridos' })
+      }
+
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('google_calendar_token, google_calendar_refresh_token')
+        .eq('id', userId)
+        .single()
+
+      if (!profile?.google_calendar_token) {
+        return NextResponse.json({ ok: true, skipped: 'not connected' })
+      }
+
+      let accessToken = profile.google_calendar_token
+      try {
+        const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id:     process.env.GOOGLE_CALENDAR_CLIENT_ID || '',
+            client_secret: process.env.GOOGLE_CALENDAR_CLIENT_SECRET || '',
+            refresh_token: profile.google_calendar_refresh_token || '',
+            grant_type:    'refresh_token',
+          }),
+        })
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json()
+          accessToken = refreshData.access_token
+          await supabaseAdmin.from('profiles').update({ google_calendar_token: accessToken }).eq('id', userId)
+        }
+      } catch { /* use existing token */ }
+
+      const timeClean = String(appointment_time).slice(0, 5)
+      const [hh, mm] = timeClean.split(':').map(Number)
+      const endHH = String(Math.floor((hh * 60 + mm + 60) / 60) % 24).padStart(2, '0')
+      const endMM = String((mm + 60) % 60).padStart(2, '0')
+      const startISO = `${appointment_date}T${timeClean}:00`
+      const endISO   = `${appointment_date}T${endHH}:${endMM}:00`
+
+      const sendUpdates = notifyAttendees ? 'all' : 'none'
+
+      const patchRes = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}?sendUpdates=${sendUpdates}`,
+        {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            start: { dateTime: startISO, timeZone: 'America/Lima' },
+            end:   { dateTime: endISO,   timeZone: 'America/Lima' },
+          }),
+        }
+      )
+
+      if (!patchRes.ok && patchRes.status !== 404 && patchRes.status !== 410) {
+        const err = await patchRes.text()
+        console.error('[GCal] update-event failed:', patchRes.status, err)
+        return NextResponse.json({ ok: false, error: `Google Calendar error ${patchRes.status}: ${err}` })
+      }
+
+      return NextResponse.json({ ok: true, updated: eventId })
+    }
+
     if (action === 'delete-event') {
       const { eventId } = body
       if (!eventId) return NextResponse.json({ ok: true, skipped: 'no eventId' })
