@@ -178,6 +178,147 @@ ${sesiones ? '  Últimas sesiones (recientes primero):\n' + sesiones : '  Sin se
     if (formsTexto) partes.push(`Evaluaciones de formularios:\n${formsTexto}`)
   }
 
+  // 6. Fichas clínicas (actas de sesión, visita escolar, visita casa, historia clínica…)
+  try {
+    const { data: fichas } = await supabaseAdmin
+      .from('clinical_template_responses')
+      .select('created_at, filler_name, filler_role, responses, notes, clinical_templates(name)')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(8)
+    if (fichas && fichas.length > 0) {
+      const fichasTxt = (fichas as any[]).map(f => {
+        const fName = f.clinical_templates?.name || 'Ficha'
+        const fecha = (f.created_at || '').slice(0, 10)
+        const responsable = f.filler_name ? `${f.filler_name}${f.filler_role ? ` (${f.filler_role})` : ''}` : 'profesional'
+        const resumen = Object.values(f.responses || {})
+          .filter((v: any) => typeof v === 'string' && v.trim().length > 0)
+          .slice(0, 2)
+          .map((v: any) => String(v).slice(0, 220))
+          .join(' | ')
+        return `• ${fecha} — ${fName} (${responsable}): ${resumen}${f.notes ? ` | Notas: ${String(f.notes).slice(0, 150)}` : ''}`
+      }).join('\n')
+      partes.push(`Fichas clínicas (${fichas.length}):\n${fichasTxt}`)
+    }
+  } catch { /* tabla puede no existir */ }
+
+  // 7. Análisis predictivo
+  try {
+    const { data: pred } = await supabaseAdmin
+      .from('predicciones_ia')
+      .select('analisis_ia, prediccion_30d, sesiones_analizadas, fecha_analisis')
+      .eq('child_id', childId)
+      .maybeSingle()
+    if (pred && (pred as any).analisis_ia) {
+      partes.push(
+        `Análisis predictivo IA (${(pred as any).sesiones_analizadas || 0} sesiones analizadas):\n${String((pred as any).analisis_ia).slice(0, 600)}${(pred as any).prediccion_30d ? `\nProyección 30d: ${String((pred as any).prediccion_30d).slice(0, 300)}` : ''}`
+      )
+    }
+  } catch { /* opcional */ }
+
+  // 8. Patrones detectados
+  try {
+    const { data: pats } = await supabaseAdmin
+      .from('patrones_detectados')
+      .select('analisis_ia, patrones, sesiones_analizadas')
+      .eq('child_id', childId)
+      .maybeSingle()
+    if (pats && (pats as any).analisis_ia) {
+      partes.push(`Patrones detectados:\n${String((pats as any).analisis_ia).slice(0, 500)}`)
+    }
+  } catch { /* opcional */ }
+
+  // 9. Alertas activas (logros y atención)
+  try {
+    const { data: alertas } = await supabaseAdmin
+      .from('agente_alertas')
+      .select('tipo, titulo, descripcion, mensaje, prioridad')
+      .eq('child_id', childId)
+      .eq('resuelta', false)
+      .order('created_at', { ascending: false })
+      .limit(10)
+    if (alertas && alertas.length > 0) {
+      const alertasTxt = (alertas as any[]).map(a => {
+        const tipoStr = String(a.tipo || '')
+        const esLogro = tipoStr.startsWith('logro_') || tipoStr === 'criterio_alcanzado'
+        const icon = esLogro ? '🎉' : (a.prioridad === 'alta' || a.prioridad === 1) ? '⚠️' : 'ℹ️'
+        return `${icon} ${a.titulo || a.tipo}: ${(a.descripcion || a.mensaje || '').slice(0, 200)}`
+      }).join('\n')
+      partes.push(`Alertas activas:\n${alertasTxt}`)
+    }
+  } catch { /* opcional */ }
+
+  // 10. Plan de Practicar en Casa generado por IA (engagement)
+  try {
+    const { data: engagement } = await supabaseAdmin
+      .from('engagement_planes')
+      .select('semana, anio, actividades, mensaje_motivacional, completadas_pct, created_at')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (engagement) {
+      const p: any = engagement
+      const acts = Array.isArray(p.actividades) ? p.actividades.slice(0, 4) : []
+      const actTxt = acts.map((a: any, i: number) =>
+        `  ${i + 1}. ${a.titulo || 'Actividad'} (${a.duracion_minutos || 15}min)${a.completada ? ' ✅' : ''}`
+      ).join('\n')
+      partes.push(`Plan Practicar en Casa (semana ${p.semana}/${p.anio}, ${p.completadas_pct || 0}% completado):\n${actTxt}`)
+    }
+  } catch { /* opcional */ }
+
+  // 11. Bienestar del padre (chequeos mensuales)
+  try {
+    const { data: wellbeing } = await supabaseAdmin
+      .from('parent_wellbeing_checkins')
+      .select('mood, nota, created_at')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(3)
+    if (wellbeing && wellbeing.length > 0) {
+      const wbTxt = (wellbeing as any[]).map(w => {
+        const moodLabel = w.mood === 'bien' ? '😊 Bien' : w.mood === 'regular' ? '😐 Regular' : '😔 Difícil'
+        return `• ${(w.created_at || '').slice(0, 10)}: ${moodLabel}${w.nota ? ` — "${String(w.nota).slice(0, 200)}"` : ''}`
+      }).join('\n')
+      partes.push(`Chequeos de bienestar del padre/madre:\n${wbTxt}`)
+    }
+  } catch { /* tabla puede no existir aún */ }
+
+  // 12. Citas próximas y pasadas
+  try {
+    const hoy = new Date().toISOString().split('T')[0]
+    const [{ data: proximas }, { data: pasadas }] = await Promise.all([
+      supabaseAdmin
+        .from('appointments')
+        .select('appointment_date, appointment_time, service_type, status')
+        .eq('child_id', childId)
+        .gte('appointment_date', hoy)
+        .not('status', 'in', '(cancelled,completed,realizada,completada,done)')
+        .order('appointment_date', { ascending: true })
+        .limit(3),
+      supabaseAdmin
+        .from('appointments')
+        .select('appointment_date, appointment_time, service_type, status')
+        .eq('child_id', childId)
+        .lt('appointment_date', hoy)
+        .in('status', ['completed', 'completada', 'realizada'])
+        .order('appointment_date', { ascending: false })
+        .limit(5),
+    ])
+    const citasTxt: string[] = []
+    if (proximas && proximas.length > 0) {
+      citasTxt.push('Próximas:\n' + (proximas as any[]).map(c =>
+        `  · ${c.appointment_date} ${c.appointment_time?.slice(0, 5) || ''} — ${c.service_type || 'Sesión'} [${c.status}]`
+      ).join('\n'))
+    }
+    if (pasadas && pasadas.length > 0) {
+      citasTxt.push('Recientes realizadas:\n' + (pasadas as any[]).map(c =>
+        `  · ${c.appointment_date} ${c.appointment_time?.slice(0, 5) || ''} — ${c.service_type || 'Sesión'}`
+      ).join('\n'))
+    }
+    if (citasTxt.length > 0) partes.push(`Agenda:\n${citasTxt.join('\n')}`)
+  } catch { /* opcional */ }
+
   return {
     nombre: (child as any).name || 'Sin nombre',
     edad: edadTexto,

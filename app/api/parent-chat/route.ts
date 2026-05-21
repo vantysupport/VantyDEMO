@@ -128,8 +128,41 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ─── CONTEXTO FILTRADO PARA PADRES ───────────────────────────
+// ─── CONTEXTO COMPLETO PARA PADRES ───────────────────────────
+// ARIA del padre carga ABSOLUTAMENTE TODOS los datos del niño:
+//  · Datos básicos + diagnóstico
+//  · Programas ABA con sets y campos clínicos
+//  · Sesiones de datos ABA (las últimas 12)
+//  · Sesiones legacy (registro_aba)
+//  · Tareas del hogar
+//  · Citas próximas y pasadas
+//  · Evaluaciones profesionales (BRIEF-2, ADOS-2, Vineland-3, WISC-V, BASC-3)
+//  · Formularios respondidos
+//  · Anamnesis
+//  · Plan de Practicar en Casa generado por IA (engagement_planes)
+//  · Fichas clínicas (actas de sesión, visitas, etc.)
+//  · Predicciones y patrones detectados
+//  · Alertas activas (logros + atención)
+//  · Checkins de bienestar del padre
+//  · Mensajes del terapeuta a la familia
 async function cargarContextoPadre(childId: string) {
+  // 1. IDs de programas — base para varias queries dependientes
+  const { data: programaIdsRaw } = await supabaseAdmin
+    .from('programas_aba')
+    .select('id')
+    .eq('child_id', childId)
+  const programaIds = (programaIdsRaw || []).map((p: any) => p.id)
+  const hoy = new Date().toISOString().split('T')[0]
+  const semanaNum = (() => {
+    const d = new Date()
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7))
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
+    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  })()
+  const anioActual = new Date().getFullYear()
+
+  // 2. Cargar TODO en paralelo
   const [
     { data: child },
     { data: sesionesLegacy },
@@ -138,6 +171,16 @@ async function cargarContextoPadre(childId: string) {
     { data: programas },
     { data: proximaCitaAgenda },
     { data: proximaCitaAppt },
+    { data: citasPasadas },
+    { data: anamnesis },
+    { data: formResponses },
+    { data: engagementPlan },
+    { data: fichasClinicas },
+    { data: prediccion },
+    { data: patrones },
+    { data: alertas },
+    { data: wellbeingCheckins },
+    { data: practicaCasa },
   ] = await Promise.all([
     supabaseAdmin
       .from('children')
@@ -145,41 +188,38 @@ async function cargarContextoPadre(childId: string) {
       .eq('id', childId)
       .maybeSingle(),
 
-    // Sesiones legacy (registro_aba) — formato amplio
+    // Sesiones legacy (registro_aba) — incluye notas del terapeuta y mensajes a la familia
     supabaseAdmin
       .from('registro_aba')
-      .select('fecha_sesion, datos')
+      .select('fecha_sesion, datos, ai_analysis')
       .eq('child_id', childId)
       .order('fecha_sesion', { ascending: false })
       .limit(5),
 
-    // Sesiones reales registradas en programas (sesiones_datos_aba) — fuente principal hoy
-    supabaseAdmin
-      .from('sesiones_datos_aba')
-      .select('programa_id, fecha, fase, set, porcentaje_exito, oportunidades_totales, respuestas_correctas, notas')
-      .in(
-        'programa_id',
-        // subquery via separate fetch — Supabase no soporta subselects directos aquí
-        (await supabaseAdmin.from('programas_aba').select('id').eq('child_id', childId)).data?.map((p: any) => p.id) || []
-      )
-      .order('fecha', { ascending: false })
-      .limit(8),
+    // Sesiones reales (sesiones_datos_aba) — las últimas 12 con todo el detalle
+    programaIds.length > 0
+      ? supabaseAdmin
+          .from('sesiones_datos_aba')
+          .select('programa_id, fecha, fase, set, porcentaje_exito, oportunidades_totales, respuestas_correctas, nivel_ayuda, notas')
+          .in('programa_id', programaIds)
+          .order('fecha', { ascending: false })
+          .limit(12)
+      : Promise.resolve({ data: [] as any[] }),
 
-    // Tareas del hogar activas
+    // Tareas del hogar (activas y completadas para que ARIA sepa lo que ya hicieron)
     supabaseAdmin
       .from('tareas_hogar')
       .select('titulo, completada, fecha_asignada, instrucciones, fecha_limite')
       .eq('child_id', childId)
       .eq('activa', true)
       .order('fecha_asignada', { ascending: false })
-      .limit(8),
+      .limit(10),
 
-    // Programas ABA — SIN filtrar por estado (usa intervencion / linea_base / mantenimiento).
-    // Trae también los campos clínicos de cada SET (objetivos_cp.*) donde vive la data real.
+    // Programas ABA — con sets y campos clínicos completos
     supabaseAdmin
       .from('programas_aba')
       .select(`
-        id, titulo, area, fase_actual, estado, criterio_dominio_pct,
+        id, titulo, area, fase_actual, estado, criterio_dominio_pct, objetivo_lp,
         sd_estimulo, ayudas, reforzadores, materiales, instrucciones_casa,
         objetivos_cp (
           descripcion, estado, numero_set,
@@ -190,31 +230,149 @@ async function cargarContextoPadre(childId: string) {
       .eq('child_id', childId)
       .neq('estado', 'archivado')
       .order('created_at', { ascending: false })
-      .limit(8),
+      .limit(10),
 
     // Próxima cita (agenda_sesiones)
     supabaseAdmin
       .from('agenda_sesiones')
       .select('fecha, hora_inicio, tipo')
       .eq('child_id', childId)
-      .gte('fecha', new Date().toISOString().split('T')[0])
+      .gte('fecha', hoy)
       .in('estado', ['programada', 'confirmada'])
       .order('fecha', { ascending: true })
       .limit(1)
       .maybeSingle(),
 
-    // Próxima cita (appointments) — fuente alternativa que sí usa el admin
+    // Próxima cita (appointments)
     supabaseAdmin
       .from('appointments')
       .select('appointment_date, appointment_time, service_type')
       .eq('child_id', childId)
-      .gte('appointment_date', new Date().toISOString().split('T')[0])
+      .gte('appointment_date', hoy)
       .not('status', 'in', '(cancelled,completed,realizada,completada,done)')
       .order('appointment_date', { ascending: true })
       .order('appointment_time', { ascending: true })
       .limit(1)
       .maybeSingle(),
+
+    // Historial de citas pasadas — para que ARIA pueda decir "el martes pasado vino..."
+    supabaseAdmin
+      .from('appointments')
+      .select('appointment_date, appointment_time, service_type, status')
+      .eq('child_id', childId)
+      .lt('appointment_date', hoy)
+      .in('status', ['completed', 'completada', 'realizada'])
+      .order('appointment_date', { ascending: false })
+      .limit(8),
+
+    // Anamnesis (historia clínica inicial)
+    supabaseAdmin
+      .from('anamnesis_completa')
+      .select('fecha_creacion, datos')
+      .eq('child_id', childId)
+      .order('fecha_creacion', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+
+    // Formularios respondidos (con análisis IA)
+    supabaseAdmin
+      .from('form_responses')
+      .select('form_type, form_title, created_at, ai_analysis')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(8),
+
+    // Plan de Practicar en Casa generado por IA
+    supabaseAdmin
+      .from('engagement_planes')
+      .select('semana, anio, actividades, mensaje_motivacional, completadas_pct, created_at')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+
+    // Fichas clínicas (actas de sesión, visitas, historia clínica)
+    supabaseAdmin
+      .from('clinical_template_responses')
+      .select('id, created_at, filler_name, filler_role, responses, notes, clinical_templates(name, category)')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(8),
+
+    // Predicción IA del progreso
+    supabaseAdmin
+      .from('predicciones_ia')
+      .select('analisis_ia, prediccion_30d, sesiones_analizadas, fecha_analisis')
+      .eq('child_id', childId)
+      .maybeSingle(),
+
+    // Patrones detectados
+    supabaseAdmin
+      .from('patrones_detectados')
+      .select('patrones, analisis_ia, sesiones_analizadas, fecha_analisis')
+      .eq('child_id', childId)
+      .maybeSingle(),
+
+    // Alertas activas (logros + atención)
+    supabaseAdmin
+      .from('agente_alertas')
+      .select('tipo, titulo, descripcion, mensaje, prioridad, created_at')
+      .eq('child_id', childId)
+      .eq('resuelta', false)
+      .order('created_at', { ascending: false })
+      .limit(10),
+
+    // Checkins de bienestar del padre
+    supabaseAdmin
+      .from('parent_wellbeing_checkins')
+      .select('mood, nota, created_at')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(3),
+
+    // Práctica en casa registrada por el padre (tabla puede no existir aún → fallback vacío)
+    (async () => {
+      try {
+        const res = await supabaseAdmin
+          .from('practica_casa_registros')
+          .select('fecha, set_practicado, observaciones')
+          .eq('child_id', childId)
+          .order('fecha', { ascending: false })
+          .limit(7)
+        return res
+      } catch {
+        return { data: [] as any[] }
+      }
+    })(),
   ])
+
+  // 3. Cargar evaluaciones profesionales en paralelo (no fallar si alguna tabla no existe)
+  const evalTablas = [
+    { table: 'evaluacion_brief2',    label: 'BRIEF-2 (Funciones Ejecutivas)' },
+    { table: 'evaluacion_ados2',     label: 'ADOS-2 (TEA)' },
+    { table: 'evaluacion_vineland3', label: 'Vineland-3 (Conducta Adaptativa)' },
+    { table: 'evaluacion_wiscv',     label: 'WISC-V (Cognitivo)' },
+    { table: 'evaluacion_basc3',     label: 'BASC-3 (Conducta)' },
+  ]
+  const evaluacionesPro: { label: string; fecha: string; resumen: string }[] = []
+  await Promise.all(evalTablas.map(async ({ table, label }) => {
+    try {
+      const { data } = await supabaseAdmin
+        .from(table)
+        .select('created_at, ai_analysis')
+        .eq('child_id', childId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (data && (data as any).ai_analysis) {
+        evaluacionesPro.push({
+          label,
+          fecha: ((data as any).created_at || '').slice(0, 10),
+          resumen: String((data as any).ai_analysis).slice(0, 400),
+        })
+      }
+    } catch { /* tabla puede no existir */ }
+  }))
 
   // ── Mapa programa_id → título (para anotar las sesiones con el programa) ──
   const progIdToTitulo: Record<string, string> = {}
@@ -320,6 +478,100 @@ async function cargarContextoPadre(childId: string) {
     proximaCitaTexto = `Próxima cita: ${a.fecha} a las ${a.hora_inicio?.slice(0, 5)}${a.tipo ? ` (${a.tipo})` : ''}`
   }
 
+  // ── Historial de citas pasadas ──
+  const citasPasadasTexto = (citasPasadas || []).length > 0
+    ? (citasPasadas as any[]).map(c =>
+        `  · ${c.appointment_date} ${c.appointment_time?.slice(0, 5) || ''} — ${c.service_type || 'Sesión'}`
+      ).join('\n')
+    : 'Sin historial de citas previas'
+
+  // ── Anamnesis ──
+  const anamnesisTexto = anamnesis && (anamnesis as any).datos
+    ? `Anamnesis (${(anamnesis as any).fecha_creacion?.slice(0, 10)}): ${JSON.stringify((anamnesis as any).datos).slice(0, 800)}`
+    : 'Sin anamnesis registrada'
+
+  // ── Formularios respondidos ──
+  const formsTexto = (formResponses || []).length > 0
+    ? (formResponses as any[])
+        .filter(f => f.ai_analysis)
+        .slice(0, 5)
+        .map(f => `  · ${f.form_title} (${f.created_at?.slice(0, 10)}): ${String(f.ai_analysis).slice(0, 220)}`)
+        .join('\n')
+    : 'Sin formularios respondidos'
+
+  // ── Evaluaciones profesionales ──
+  const evaluacionesProTexto = evaluacionesPro.length > 0
+    ? evaluacionesPro.map(e => `  · ${e.label} (${e.fecha}): ${e.resumen}`).join('\n')
+    : 'Sin evaluaciones profesionales registradas'
+
+  // ── Plan de Practicar en Casa generado por IA ──
+  const engagementTexto = engagementPlan
+    ? (() => {
+        const p: any = engagementPlan
+        const acts = Array.isArray(p.actividades) ? p.actividades.slice(0, 5) : []
+        const actTxt = acts.map((a: any, i: number) =>
+          `  ${i + 1}. ${a.titulo || 'Actividad'} (${a.duracion_minutos || 15}min, ${a.dificultad || 'media'})${a.completada ? ' ✅' : ''}: ${a.descripcion || ''}`
+        ).join('\n')
+        return `Plan semanal de actividades (semana ${p.semana}/${p.anio}, ${p.completadas_pct || 0}% completado):
+${p.mensaje_motivacional ? `Mensaje: ${p.mensaje_motivacional}` : ''}
+Actividades:
+${actTxt}`
+      })()
+    : 'Sin plan de Practicar en Casa generado todavía'
+
+  // ── Fichas clínicas (Actas de Sesión, visitas, etc.) ──
+  const fichasTexto = (fichasClinicas || []).length > 0
+    ? (fichasClinicas as any[]).slice(0, 5).map(f => {
+        const fName = f.clinical_templates?.name || 'Ficha clínica'
+        const fecha = (f.created_at || '').slice(0, 10)
+        const responsable = f.filler_name ? `${f.filler_name}${f.filler_role ? ` (${f.filler_role})` : ''}` : 'profesional'
+        // Concatenar respuestas claves
+        const resumen = Object.values(f.responses || {})
+          .filter((v: any) => typeof v === 'string' && v.trim().length > 0)
+          .slice(0, 3)
+          .map((v: any) => String(v).slice(0, 200))
+          .join(' | ')
+        return `  · ${fecha} — ${fName} por ${responsable}: ${resumen || '(sin contenido textual)'}${f.notes ? ` | Notas: ${String(f.notes).slice(0, 150)}` : ''}`
+      }).join('\n')
+    : 'Sin fichas clínicas registradas'
+
+  // ── Predicción IA ──
+  const prediccionTexto = prediccion && (prediccion as any).analisis_ia
+    ? `Análisis IA del progreso (${(prediccion as any).sesiones_analizadas || 0} sesiones analizadas):
+${String((prediccion as any).analisis_ia).slice(0, 600)}
+${(prediccion as any).prediccion_30d ? `\nPredicción a 30 días: ${String((prediccion as any).prediccion_30d).slice(0, 400)}` : ''}`
+    : 'Sin análisis predictivo disponible'
+
+  // ── Patrones detectados ──
+  const patronesTexto = patrones && (patrones as any).analisis_ia
+    ? `Patrones detectados: ${String((patrones as any).analisis_ia).slice(0, 500)}`
+    : 'Sin patrones detectados aún'
+
+  // ── Alertas activas ──
+  const alertasTexto = (alertas || []).length > 0
+    ? (alertas as any[]).slice(0, 6).map(a => {
+        const tipoStr = String(a.tipo || '')
+        const esLogro = tipoStr.startsWith('logro_') || tipoStr === 'criterio_alcanzado'
+        const icon = esLogro ? '🎉' : (a.prioridad === 'alta' || a.prioridad === 1) ? '⚠️' : 'ℹ️'
+        return `  ${icon} ${a.titulo || a.tipo}: ${(a.descripcion || a.mensaje || '').slice(0, 200)}`
+      }).join('\n')
+    : 'Sin alertas activas en este momento'
+
+  // ── Bienestar del padre ──
+  const wellbeingTexto = (wellbeingCheckins || []).length > 0
+    ? (wellbeingCheckins as any[]).map(w => {
+        const moodLabel = w.mood === 'bien' ? '😊 Bien' : w.mood === 'regular' ? '😐 Regular' : '😔 Difícil'
+        return `  · ${(w.created_at || '').slice(0, 10)}: ${moodLabel}${w.nota ? ` — "${String(w.nota).slice(0, 200)}"` : ''}`
+      }).join('\n')
+    : 'Sin chequeos de bienestar registrados'
+
+  // ── Práctica en casa registrada por el padre ──
+  const practicaCasaTexto = (practicaCasa || []).length > 0
+    ? (practicaCasa as any[]).map(p =>
+        `  · ${p.fecha}${p.set_practicado ? ` (Set ${p.set_practicado})` : ''}${p.observaciones ? `: ${String(p.observaciones).slice(0, 200)}` : ''}`
+      ).join('\n')
+    : 'Sin registros de práctica en casa todavía'
+
   const edadTexto = calcularEdad((child as any)?.birth_date, (child as any)?.age)
 
   return {
@@ -328,6 +580,17 @@ async function cargarContextoPadre(childId: string) {
     diagnostico: (child as any)?.diagnosis || 'En evaluación',
     resumenSesiones,
     proximaCita: proximaCitaTexto,
+    citasPasadas: citasPasadasTexto,
+    anamnesis: anamnesisTexto,
+    formsRespondidos: formsTexto,
+    evaluacionesProfesionales: evaluacionesProTexto,
+    engagement: engagementTexto,
+    fichasClinicas: fichasTexto,
+    prediccion: prediccionTexto,
+    patrones: patronesTexto,
+    alertas: alertasTexto,
+    bienestarPadre: wellbeingTexto,
+    practicaCasa: practicaCasaTexto,
     tareas: tareasTexto,
     programas: programasTexto,
     tieneTareasActivas: ((tareasPendientes || []).filter((t: any) => !t.completada).length || 0) > 0,
@@ -336,6 +599,17 @@ async function cargarContextoPadre(childId: string) {
       sesiones_aba: (sesionesAba || []).length,
       programas_encontrados: (programas || []).length,
       tareas: (tareasPendientes || []).length,
+      evaluaciones_pro: evaluacionesPro.length,
+      forms: (formResponses || []).length,
+      citas_pasadas: (citasPasadas || []).length,
+      fichas: (fichasClinicas || []).length,
+      alertas: (alertas || []).length,
+      tiene_anamnesis: !!anamnesis,
+      tiene_engagement: !!engagementPlan,
+      tiene_prediccion: !!prediccion,
+      tiene_patrones: !!patrones,
+      wellbeing_checkins: (wellbeingCheckins || []).length,
+      practica_casa: (practicaCasa || []).length,
     },
   }
 }
@@ -356,19 +630,53 @@ async function generarRespuestaPadre(
   const langNote = userLocale !== 'es' ? `\n\n[RESPONDE SIEMPRE EN: ${localeNamesPC[userLocale] || 'español'}. No uses español si el idioma es diferente.]` : ''
   const systemPrompt = `Eres ARIA, el asistente virtual del Centro Neuropsicología y Terapias SANTI para familias.
 Eres cálida, paciente, positiva y muy accesible. Conoces en detalle el caso de ${contexto.nombre}.
+Tenés acceso a TODOS los datos del expediente del niño — usalos siempre que correspondan.
 
 ━━━ INFORMACIÓN DEL PACIENTE ━━━
 Nombre: ${contexto.nombre} | Edad: ${contexto.edad} | Diagnóstico: ${contexto.diagnostico}
 ${contexto.proximaCita}
 
-━━━ PROGRAMAS ABA ACTIVOS (con instrucciones completas) ━━━
+━━━ ANAMNESIS / HISTORIA CLÍNICA INICIAL ━━━
+${contexto.anamnesis}
+
+━━━ PROGRAMAS ABA ACTIVOS (con instrucciones completas para casa) ━━━
 ${contexto.programas}
 
-━━━ ÚLTIMAS SESIONES (incluye tareas y mensajes de la terapeuta) ━━━
+━━━ ÚLTIMAS SESIONES ABA ━━━
 ${contexto.resumenSesiones}
 
 ━━━ TAREAS PARA EL HOGAR ━━━
 ${contexto.tareas}
+
+━━━ PLAN SEMANAL DE PRACTICAR EN CASA (generado por IA) ━━━
+${contexto.engagement}
+
+━━━ REGISTROS DE PRÁCTICA EN CASA (lo que el padre ya hizo) ━━━
+${contexto.practicaCasa}
+
+━━━ EVALUACIONES PROFESIONALES ━━━
+${contexto.evaluacionesProfesionales}
+
+━━━ FORMULARIOS RESPONDIDOS (con análisis) ━━━
+${contexto.formsRespondidos}
+
+━━━ FICHAS CLÍNICAS (actas de sesión, visitas, etc.) ━━━
+${contexto.fichasClinicas}
+
+━━━ HISTORIAL DE CITAS PASADAS ━━━
+${contexto.citasPasadas}
+
+━━━ ANÁLISIS PREDICTIVO DEL PROGRESO ━━━
+${contexto.prediccion}
+
+━━━ PATRONES DETECTADOS POR IA ━━━
+${contexto.patrones}
+
+━━━ ALERTAS ACTIVAS (logros, atenciones) ━━━
+${contexto.alertas}
+
+━━━ BIENESTAR DEL PADRE (chequeos mensuales) ━━━
+${contexto.bienestarPadre}
 
 ━━━ REGLAS DE COMPORTAMIENTO ━━━
 1. LENGUAJE: Usa lenguaje SIMPLE, CÁLIDO y sin términos técnicos. Convierte conceptos clínicos a palabras de todos los días.
@@ -376,16 +684,20 @@ ${contexto.tareas}
    - "reforzador" → "lo que más lo motiva o le gusta"
    - "ensayo discreto" → "practicar paso a paso"
    - "criterio de dominio" → "cuando ya lo hace bien solo"
+   - "línea base" → "punto de partida antes de empezar a trabajar el objetivo"
 
-2. USA SIEMPRE los datos del contexto. NUNCA digas "no tengo esa información" si está disponible arriba.
+2. **USA SIEMPRE los datos del contexto**. NUNCA digas "no tengo esa información" si está disponible arriba. Si ves un dato relevante, citalo.
 
 3. CÓMO RESPONDER SEGÚN EL TIPO DE PREGUNTA:
-   - "¿Cómo puedo practicar X en casa?" → Da pasos CONCRETOS usando sd_estimulo, materiales, reforzadores y pasos del programa. Sé específico.
-   - "¿Qué tarea dejó la terapeuta?" → Usa tarea_casa y mensaje_familia de las sesiones.
-   - "¿Cómo le fue?" → Usa el resumen de sesiones con datos reales.
-   - "¿En qué está trabajando?" → Explica los programas activos en lenguaje simple.
-   - Preguntas generales → 2-4 oraciones concisas.
-   - Preguntas de PRÁCTICA o CÓMO HACER algo → Responde con pasos claros y ejemplos (puedes usar más espacio).
+   - "¿Cómo puedo practicar X en casa?" → Da pasos CONCRETOS usando sd_estimulo, materiales, reforzadores del programa específico.
+   - "¿Qué tarea dejó la terapeuta?" → Usa las tareas del hogar y los mensajes de las sesiones.
+   - "¿Cómo le fue?" → Usa el resumen de sesiones con datos reales, mencionando porcentajes y avances.
+   - "¿Cómo va el progreso?" o "¿Está mejorando?" → Usa el ANÁLISIS PREDICTIVO, PATRONES DETECTADOS y % de sesiones recientes.
+   - "¿Qué evaluaciones le hicieron?" → Resumí las EVALUACIONES PROFESIONALES (BRIEF-2, ADOS-2, etc.) en lenguaje simple.
+   - "¿En qué está trabajando?" → Lista los programas activos con sus objetivos.
+   - "¿Hay logros?" → Buscá en ALERTAS las que empiezan con 🎉 (logros).
+   - "¿Qué hicieron la sesión pasada?" → Usá HISTORIAL DE CITAS + ÚLTIMAS SESIONES + FICHAS CLÍNICAS.
+   - Si el padre menciona algo difícil sobre él/ella → reconocé sus chequeos de bienestar pasados, sé empático/a.
 
 4. ESTRUCTURA para preguntas de práctica en casa:
    ✅ Qué necesitas (materiales)
@@ -394,15 +706,16 @@ ${contexto.tareas}
    ✅ Qué hacer si se equivoca (corrección)
    ✅ Cuánto practicar (tiempo/frecuencia sugerida)
 
-5. POSITIVO pero HONESTO. Celebra los avances, reconoce los retos.
+5. POSITIVO pero HONESTO. Celebra avances (mencioná las alertas tipo logro), reconocé los retos.
 6. Trata a la familia por su nombre: ${nombrePadre}.
-7. Si hay tareas del hogar pendientes, explica CON DETALLE cómo hacerlas.
-8. Cuando una pregunta requiera cambiar el programa o tomar decisiones clínicas, indica amablemente que eso lo decide la terapeuta.
-9. ARIA complementa al terapeuta, nunca lo reemplaza.
+7. Si hay tareas del hogar pendientes, explica CON DETALLE cómo hacerlas usando los campos del programa correspondiente.
+8. Cuando una pregunta requiera cambiar el programa o tomar decisiones clínicas, indicá amablemente que eso lo decide la terapeuta.
+9. NUNCA inventes datos. Si un campo está vacío en el contexto, decí "todavía no tengo registro de eso" en vez de inventar.
+10. ARIA complementa al terapeuta, nunca lo reemplaza.
 ${knowledgeCtx ? `
 ━━━ CONOCIMIENTO CLÍNICO DE RESPALDO (Cerebro IA) ━━━
 ${knowledgeCtx}
-Usa este conocimiento para enriquecer tus respuestas sobre cómo practicar, siempre en lenguaje simple para padres.
+Usa este conocimiento para enriquecer tus respuestas, siempre en lenguaje simple para padres.
 ━━━ FIN ━━━` : ''}`
 
   // Build chat messages for Groq
