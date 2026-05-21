@@ -523,7 +523,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
       {/* ── STATS ROW ── */}
       <div className="hv-card" style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
         {[
-          { val: loading ? '…' : stats.sessions,                    label:'Sesiones',        sub: stats.monthSessions > 0 ? `+${stats.monthSessions} este mes` : (stats.sessions === 0 ? 'Aún sin sesiones agendadas' : 'Total realizadas'), color:'#2563eb' },
+          { val: loading ? '…' : stats.sessions,                    label:'Sesiones',        sub: stats.monthSessions > 0 ? `+${stats.monthSessions} este mes` : (stats.sessions === 0 ? (nextAppt ? 'Próxima cita programada' : 'Aún ninguna realizada') : 'Realizadas hasta hoy'), color:'#2563eb' },
           { val: loading ? '…' : `${stats.goalsAchieved}/${stats.totalGoals||'?'}`, label:'Objetivos logrados', sub:'Con dominio ≥80%', color:'#059669' },
           { val: loading ? '…' : (stats.hoursTotal > 0 ? `${stats.hoursTotal}h` : '—'),             label:'Horas de terapia', sub: stats.hoursTotal > 0 ? `~${Math.round(stats.hoursTotal/Math.max(stats.sessions,1)*10)/10}h por sesión` : 'Cuando haya sesiones', color:'#7c3aed' },
           { val: loading ? '…' : `${stats.masteryRate}%`,              label:'Dominio',          sub:'Promedio de objetivos', color:'#d97706' },
