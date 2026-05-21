@@ -33,7 +33,6 @@ import StoreView from './components/StoreView'
 import DocumentosView from '@/app/admin/components/DocumentosView'
 import ChatInterface from './components/ChatInterface'
 import ChatFamilias from './components/ChatFamilias'
-import MensajesView from './components/MensajesView'
 import ProgramasABAView from './components/ProgramasABAView'
 import EngagementView from './components/EngagementView'
 import PushNotificationBanner from '../../components/PushNotificationBanner'
@@ -63,7 +62,6 @@ export default function ParentDashboard() {
     { id: 'home',        icon: Home,      label: t('nav.inicio') },
     { id: 'citas',       icon: Calendar,  label: t('nav.miscitas') },
     { id: 'actividades', icon: Zap,       label: t('nav.actividades') },
-    { id: 'mensajes',    icon: MessageCircle, label: t('nav.mensajes') },
     { id: 'recursos',    icon: BookOpen,  label: 'Centro de Recursos' },
     { id: 'perfil',      icon: User,      label: t('nav.miperfil') },
   ]
@@ -470,7 +468,7 @@ export default function ParentDashboard() {
 
   const PAGE_TITLES_MOBILE: Record<string, string> = {
     home: 'Inicio', miscitas: 'Agenda', engagement: 'Practicar en Casa',
-    chat: 'Asistente IA', mensajes: 'Notificaciones', misformularios: 'Recursos adicionales',
+    chat: 'Asistente IA', misformularios: 'Recursos adicionales',
     tienda: 'Tienda', documentos: 'Documentos', profile: 'Mi Perfil',
     'chat-familias': 'Chat', 'programas': 'Programas ABA',
   }
@@ -540,7 +538,6 @@ export default function ParentDashboard() {
                 <NavBtnDesktop icon={<Calendar size={17}/>} label="Agenda" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} />
                 <NavBtnDesktop icon={<Heart size={17}/>} label="Practicar en Casa" active={activeView==='engagement'} onClick={()=>setActiveView('engagement')} badge="IA" />
                 <NavBtnDesktop icon={<Sparkles size={17}/>} label={t('familias.asistente')} active={activeView==='chat'} onClick={()=>setActiveView('chat')} badge="NUEVO" />
-                <NavBtnDesktop icon={<Bell size={17}/>} label="Notificaciones" active={activeView==='mensajes'} onClick={()=>setActiveView('mensajes')} badge={unreadCount > 0 ? unreadCount : null} />
                 <NavBtnDesktop icon={<BookOpen size={17}/>} label="Programas ABA" active={activeView==='programas'} onClick={()=>setActiveView('programas')} />
                 <NavBtnDesktop icon={<Users size={17}/>} label="Chat" active={activeView==='chat-familias'} onClick={()=>setActiveView('chat-familias')} badge={familiasUnread > 0 ? familiasUnread : null} />
                 <NavBtnDesktop icon={<FileText size={17}/>} label="Recursos adicionales" active={activeView==='misformularios'||activeView==='tienda'||activeView==='documentos'} onClick={()=>setActiveView('misformularios')} badge={pendingFormsCount > 0 ? pendingFormsCount : null} />
@@ -684,7 +681,6 @@ export default function ParentDashboard() {
                     )}
 
                     {(activeView === 'misformularios' || activeView === 'tienda' || activeView === 'documentos') && <ParentFormsView profile={profile} selectedChild={selectedChild} onFormsLoaded={(count: number) => setPendingFormsCount(count)} initialTab={activeView === 'tienda' ? 'store' : activeView === 'documentos' ? 'documentos' : 'forms'} />}
-                    {activeView === 'mensajes' && <MensajesView profile={profile} />}
                     {activeView === 'programas' && selectedChild && <ProgramasABAView childId={selectedChild.id} childName={selectedChild.name} />}
                     {activeView === 'chat-familias' && selectedChild && (
                       <div className="overflow-hidden flex flex-col rounded-2xl lg:rounded-3xl" style={{ height: "calc(100svh - 200px)", border: "1px solid var(--card-border)", background: "var(--card)" }}>
@@ -765,7 +761,6 @@ export default function ParentDashboard() {
                       {[
                         { id: 'engagement',    icon: <Zap size={18}/>,            label: 'Practicar en Casa' },
                         { id: 'chat-familias', icon: <MessageCircle size={18}/>,  label: 'Chat', badge: familiasUnread > 0 ? familiasUnread : null },
-                        { id: 'mensajes',      icon: <Bell size={18}/>,           label: 'Notificaciones', badge: unreadCount > 0 ? unreadCount : null },
                         { id: 'programas',     icon: <BookOpen size={18}/>,       label: 'Programas ABA' },
                         { id: 'misformularios',icon: <FileText size={18}/>,       label: 'Recursos adicionales', badge: pendingFormsCount > 0 ? pendingFormsCount : null },
                       ].map(item => (
