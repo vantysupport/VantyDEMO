@@ -188,10 +188,23 @@ export async function POST(req: NextRequest) {
     const sesiones: any[] = []
     const todosPatrones: PatronDetectado[] = []
 
+    // Helper: pendiente por regresión lineal (% por sesión)
+    const slopeLineal = (ys: number[]) => {
+      const n = ys.length
+      if (n < 2) return 0
+      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0
+      ys.forEach((y, i) => { const x = i + 1; sumX += x; sumY += y; sumXY += x * y; sumXX += x * x })
+      const denom = n * sumXX - sumX * sumX
+      return denom === 0 ? 0 : (n * sumXY - sumX * sumY) / denom
+    }
+
     for (const prog of (programas || [])) {
-      const sesionesProg = ((prog as any).sesiones_datos_aba || [])
+      const sesionesProgRaw = ((prog as any).sesiones_datos_aba || [])
         .filter((s: any) => s.fecha >= fechaInicioStr && s.porcentaje_exito != null)
         .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha))
+
+      // Excluir línea base del análisis de progreso del tratamiento
+      const sesionesProg = sesionesProgRaw.filter((s: any) => s.fase !== 'linea_base')
 
       for (const s of sesionesProg) {
         sesiones.push({
@@ -209,7 +222,7 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // Detectar patrones por programa individual (mínimo 2 sesiones)
+      // Detectar patrones por programa individual (mínimo 2 sesiones de intervención)
       if (sesionesProg.length >= 2) {
         const valores = sesionesProg.map((s: any) => s.porcentaje_exito as number)
         const criterio = (prog as any).criterio_dominio_pct || 90
@@ -259,16 +272,19 @@ export async function POST(req: NextRequest) {
             accion_sugerida: `Identificar qué está funcionando en "${nombreProg}" y replicar la estrategia`
           })
         }
-        // ESTANCAMIENTO: sin avance en 3+ sesiones con promedio bajo
-        else if (valores.length >= 3) {
-          const ultimas3 = valores.slice(-3)
-          const rango = Math.max(...ultimas3) - Math.min(...ultimas3)
-          if (rango < 10 && promReciente < criterio) {
+        // ESTANCAMIENTO: ≥5 sesiones de intervención, pendiente plana, lejos del criterio
+        else if (valores.length >= 5) {
+          const ventana = valores.slice(-Math.min(6, valores.length))
+          const slope = Math.round(slopeLineal(ventana) * 10) / 10
+          const promVentana = ventana.reduce((a: number, b: number) => a + b, 0) / ventana.length
+          const esPlana = Math.abs(slope) <= 1.5
+          const lejosDelCriterio = promVentana < Math.min(70, criterio - 10)
+          if (esPlana && lejosDelCriterio) {
             todosPatrones.push({
               tipo: 'estancamiento', area: nombreProg,
-              descripcion: `"${nombreProg}" lleva ${ultimas3.length} sesiones sin avance (${Math.round(Math.min(...ultimas3))}-${Math.round(Math.max(...ultimas3))}%, criterio: ${criterio}%)`,
-              confianza: 80, sesiones_involucradas: ultimas3.length,
-              valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
+              descripcion: `"${nombreProg}" sin mejora estadística en ${valores.length} sesiones de intervención (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${ventana.length}, promedio ${Math.round(promVentana)}%, criterio ${criterio}%)`,
+              confianza: 80, sesiones_involucradas: ventana.length,
+              valor_actual: Math.round(promVentana), valor_anterior: Math.round(promAnterior),
               semanas_detectado: semanas_,
               accion_sugerida: `Revisar estrategia de enseñanza en "${nombreProg}". Considerar cambio de método o ajuste de la dificultad`
             })

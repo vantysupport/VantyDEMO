@@ -109,12 +109,24 @@ async function analizarPaciente(childId: string): Promise<any[]> {
   }
 
   // ── REGLA 2: Estancamiento/regresión por programa ABA individual ───
+  // Solo se analizan sesiones de INTERVENCIÓN (fase ≠ 'linea_base').
+  // La línea base mide el nivel pre-tratamiento y no debe incluirse en el
+  // análisis de progreso. Tendencia detectada por regresión lineal (slope).
   const { data: programasABA } = await supabaseAdmin
     .from('programas_aba')
-    .select('id, titulo, criterio_dominio_pct, sesiones_datos_aba(fecha, porcentaje_exito)')
+    .select('id, titulo, criterio_dominio_pct, sesiones_datos_aba(fecha, porcentaje_exito, fase)')
     .eq('child_id', childId)
 
-  // Analizar cada programa individualmente
+  // Helper local — pendiente por regresión lineal
+  const slopeLineal = (ys: number[]) => {
+    const n = ys.length
+    if (n < 2) return 0
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0
+    ys.forEach((y, i) => { const x = i + 1; sumX += x; sumY += y; sumXY += x * y; sumXX += x * x })
+    const denom = n * sumXX - sumX * sumX
+    return denom === 0 ? 0 : (n * sumXY - sumX * sumY) / denom
+  }
+
   const todasSesiones: { fecha: string; porcentaje_exito: number }[] = []
   for (const prog of (programasABA || [])) {
     const sesionesProg = ((prog as any).sesiones_datos_aba || [])
@@ -123,23 +135,27 @@ async function analizarPaciente(childId: string): Promise<any[]> {
 
     for (const s of sesionesProg) todasSesiones.push(s)
 
-    if (sesionesProg.length < 2) continue
+    // Excluir línea base para análisis de progreso del tratamiento
+    const sesionesIntervencion = sesionesProg.filter((s: any) => s.fase !== 'linea_base')
+    if (sesionesIntervencion.length < 2) continue
 
-    const valores = sesionesProg.map((s: any) => s.porcentaje_exito as number)
     const criterio = (prog as any).criterio_dominio_pct || 90
     const nombre = (prog as any).titulo || 'Programa ABA'
 
-    // Estancamiento: 3 sesiones sin avance y por debajo del criterio
-    if (valores.length >= 3) {
-      const ultimas3 = valores.slice(-3)
-      const rango = Math.max(...ultimas3) - Math.min(...ultimas3)
-      const prom = ultimas3.reduce((a: number, b: number) => a + b, 0) / 3
-      if (rango < 10 && prom < criterio) {
+    // Estancamiento: ≥5 sesiones de intervención, pendiente plana, promedio bajo
+    if (sesionesIntervencion.length >= 5) {
+      const ventana = sesionesIntervencion.slice(-Math.min(6, sesionesIntervencion.length))
+      const valores = ventana.map((s: any) => s.porcentaje_exito as number)
+      const prom = valores.reduce((a: number, b: number) => a + b, 0) / valores.length
+      const slope = Math.round(slopeLineal(valores) * 10) / 10
+      const esPlana = Math.abs(slope) <= 1.5
+      const lejosDelCriterio = prom < Math.min(70, criterio - 10)
+      if (esPlana && lejosDelCriterio) {
         await crearAlertaSiNoExiste({
           child_id: childId,
           tipo: `estancamiento_${(prog as any).id}`,
           titulo: `Estancamiento en "${nombre}"`,
-          descripcion: `"${nombre}" lleva 3 sesiones sin avance significativo (${Math.round(Math.min(...ultimas3))}-${Math.round(Math.max(...ultimas3))}%). Criterio: ${criterio}%. Revisar estrategia.`,
+          descripcion: `${sesionesIntervencion.length} sesiones de intervención sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${valores.length}, promedio ${Math.round(prom)}%, criterio ${criterio}%). Revisar estrategia.`,
           prioridad: 1,
           resuelta: false
         })
@@ -147,8 +163,9 @@ async function analizarPaciente(childId: string): Promise<any[]> {
       }
     }
 
-    // Regresión: bajó más de 15 puntos vs sesiones anteriores
-    if (valores.length >= 4) {
+    // Regresión: bajó más de 15 puntos vs sesiones de intervención anteriores
+    if (sesionesIntervencion.length >= 4) {
+      const valores = sesionesIntervencion.map((s: any) => s.porcentaje_exito as number)
       const recientes = valores.slice(-2)
       const anteriores = valores.slice(-4, -2)
       const promReciente = recientes.reduce((a: number, b: number) => a + b, 0) / recientes.length

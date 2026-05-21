@@ -181,26 +181,60 @@ const AGENT_TOOLS = {
 }
 
 // ── Calcular tendencia localmente ────────────────────────────────────────────
+// Calcula tendencia clínica usando regresión lineal sobre la ventana de sesiones.
+// IMPORTANTE: para análisis de estancamiento de la INTERVENCIÓN, el caller debe
+// filtrar previamente las sesiones de línea base (fase === 'linea_base'),
+// porque la baseline mide nivel pre-intervención y sesgaría la pendiente.
 function calcularTendenciaLocal(sesiones: any[]) {
-  if (sesiones.length < 2) return { tendencia: 'insuficiente', mensaje: 'Pocas sesiones' }
+  // Considerar solo sesiones con porcentaje_exito numérico válido
+  const validas = (sesiones || []).filter(
+    s => typeof s.porcentaje_exito === 'number' && !isNaN(s.porcentaje_exito)
+  )
 
-  const recientes = sesiones.slice(-5).map(s => s.porcentaje_exito).filter(Boolean)
-  const anteriores = sesiones.slice(-10, -5).map(s => s.porcentaje_exito).filter(Boolean)
+  if (validas.length < 2) {
+    return { tendencia: 'insuficiente', n: validas.length, mensaje: 'Pocas sesiones' }
+  }
 
-  if (recientes.length === 0) return { tendencia: 'sin_datos', mensaje: 'Sin datos de %' }
+  // Ventana de análisis: últimas N sesiones (máximo 6, mínimo 3)
+  const ventana = validas.slice(-Math.min(6, validas.length))
+  const valores = ventana.map(s => s.porcentaje_exito as number)
+  const n = valores.length
 
-  const promReciente = recientes.reduce((a, b) => a + b, 0) / recientes.length
-  const promAnterior = anteriores.length > 0
-    ? anteriores.reduce((a, b) => a + b, 0) / anteriores.length
+  // Promedios
+  const promReciente = valores.reduce((a, b) => a + b, 0) / n
+  const promAnterior = validas.length > n
+    ? (() => {
+        const ant = validas.slice(-2 * n, -n).map(s => s.porcentaje_exito as number)
+        return ant.length > 0 ? ant.reduce((a, b) => a + b, 0) / ant.length : promReciente
+      })()
     : promReciente
 
-  const cambio = promReciente - promAnterior
+  // Regresión lineal — x = índice de sesión (1..n), y = porcentaje_exito
+  // slope = (n·Σxy − Σx·Σy) / (n·Σx² − (Σx)²)
+  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0
+  valores.forEach((y, i) => {
+    const x = i + 1
+    sumX += x; sumY += y; sumXY += x * y; sumXX += x * x
+  })
+  const denom = n * sumXX - sumX * sumX
+  const slope = denom === 0 ? 0 : (n * sumXY - sumX * sumY) / denom   // % por sesión
+
+  // Clasificación clínica según pendiente — basada en literatura ABA:
+  //  > +1.5%/sesión → mejora clara
+  //  < −1.5%/sesión → regresión
+  //  entre ambos   → estable (potencial estancamiento si promedio bajo)
+  let tendencia: 'mejorando' | 'regresion' | 'estable'
+  if (slope > 1.5) tendencia = 'mejorando'
+  else if (slope < -1.5) tendencia = 'regresion'
+  else tendencia = 'estable'
 
   return {
     promedio_reciente: Math.round(promReciente),
     promedio_anterior: Math.round(promAnterior),
-    cambio: Math.round(cambio),
-    tendencia: cambio > 5 ? 'mejorando' : cambio < -5 ? 'regresion' : 'estable',
+    cambio: Math.round(promReciente - promAnterior),
+    slope: Math.round(slope * 10) / 10,           // % por sesión, 1 decimal
+    n_sesiones_analizadas: n,
+    tendencia,
   }
 }
 
@@ -440,36 +474,53 @@ export class VantyAgent {
       const sugerencias: string[] = []
 
       for (const prog of programas as any[]) {
-        const sesiones = sesionesPorPrograma[prog.id] || []
-        if (sesiones.length < 2) continue
+        const sesionesAll = sesionesPorPrograma[prog.id] || []
 
-        const tendencia = calcularTendenciaLocal(sesiones)
+        // FIX clínico: separar baseline e intervención.
+        // La línea base mide el nivel PRE-intervención y NO debe contar para
+        // detectar estancamiento del tratamiento. Solo se analizan sesiones de
+        // intervención/mantenimiento.
+        const sesionesIntervencion = sesionesAll.filter(s => s.fase !== 'linea_base')
 
+        if (sesionesIntervencion.length < 2) continue
+
+        const tendencia = calcularTendenciaLocal(sesionesIntervencion)
+        const criterio = prog.criterio_dominio_pct || 90
+        const slope = tendencia.slope ?? 0
+        const nAnalizadas = tendencia.n_sesiones_analizadas ?? sesionesIntervencion.length
+
+        // Regresión real: pendiente negativa marcada Y cambio fuerte vs ventana previa
         if (tendencia.tendencia === 'regresion' && (tendencia.cambio || 0) < -10) {
           alertas.push({
             tipo: 'regresion',
             titulo: `Regresión en "${prog.titulo}"`,
-            mensaje: `El % de éxito bajó ${Math.abs(tendencia.cambio || 0)}% en las últimas sesiones (${tendencia.promedio_anterior}% → ${tendencia.promedio_reciente}%). Revisar antecedentes y reforzadores.`,
+            mensaje: `El % de éxito bajó ${Math.abs(tendencia.cambio || 0)} puntos (${tendencia.promedio_anterior}% → ${tendencia.promedio_reciente}%, pendiente ${slope}%/sesión). Revisar antecedentes y reforzadores.`,
             prioridad: 'alta',
             programa_id: prog.id,
           })
         }
 
-        if (sesiones.length >= 5 && tendencia.tendencia === 'estable' && (tendencia.promedio_reciente || 0) < 70) {
+        // Estancamiento real: ≥5 sesiones de INTERVENCIÓN, pendiente plana
+        // (no mejora estadística) Y promedio aún lejos del criterio de dominio.
+        if (
+          sesionesIntervencion.length >= 5 &&
+          tendencia.tendencia === 'estable' &&
+          (tendencia.promedio_reciente || 0) < Math.min(70, criterio - 10)
+        ) {
           alertas.push({
             tipo: 'estancamiento',
             titulo: `Estancamiento en "${prog.titulo}"`,
-            mensaje: `Lleva ${sesiones.length} sesiones con promedio estable de ${tendencia.promedio_reciente}%. Considera revisar el procedimiento o nivel de ayuda.`,
+            mensaje: `${sesionesIntervencion.length} sesiones de intervención sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${nAnalizadas}, promedio ${tendencia.promedio_reciente}%, criterio ${criterio}%). Considera revisar procedimiento o nivel de ayuda.`,
             prioridad: 'media',
             programa_id: prog.id,
           })
         }
 
-        if ((tendencia.promedio_reciente || 0) >= prog.criterio_dominio_pct - 5) {
-          sugerencias.push(`"${prog.titulo}" está al ${tendencia.promedio_reciente}% — cerca del criterio de dominio (${prog.criterio_dominio_pct}%). ¡Excelente progreso!`)
+        if ((tendencia.promedio_reciente || 0) >= criterio - 5) {
+          sugerencias.push(`"${prog.titulo}" está al ${tendencia.promedio_reciente}% — cerca del criterio de dominio (${criterio}%). ¡Excelente progreso!`)
         }
 
-        const ultimaFecha = sesiones[sesiones.length - 1]?.fecha
+        const ultimaFecha = sesionesAll[sesionesAll.length - 1]?.fecha
         if (ultimaFecha) {
           const diasSinSesion = Math.floor((Date.now() - new Date(ultimaFecha).getTime()) / 86400000)
           if (diasSinSesion >= 7) {
