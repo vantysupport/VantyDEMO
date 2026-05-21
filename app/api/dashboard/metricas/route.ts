@@ -142,13 +142,14 @@ export async function GET(req: NextRequest) {
       .limit(5)
 
     // ── ALERTAS RECIENTES DETALLADAS ──────────────────────────
+    // Trae más alertas para que los logros (prioridad baja) no queden cortados
+    // por el cupo cuando hay varias negativas. El cliente las ordena y limita.
     const { data: alertasRecientes } = await supabaseAdmin
       .from('agente_alertas')
       .select('*, children(name)')
       .eq('resuelta', false)
-      .order('prioridad', { ascending: true })
       .order('created_at', { ascending: false })
-      .limit(5)
+      .limit(30)
 
     // ── TERAPEUTAS CON CARGA HOY ──────────────────────────────
     const { data: terapeutasCarga } = await supabaseAdmin

@@ -207,13 +207,19 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       //    Esto detecta nuevos logros automáticamente y resuelve alertas que ya no aplican.
       //    No bloquea el render si falla.
       try {
-        await fetch('/api/agente/refrescar-alertas', {
+        const refRes = await fetch('/api/agente/refrescar-alertas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({}),
           cache: 'no-store',
         })
-      } catch { /* silencioso — sigue con datos existentes */ }
+        const refData = await refRes.json().catch(() => null)
+        if (refData) {
+          console.log('[Dashboard] refrescar-alertas:', refData)
+        }
+      } catch (e) {
+        console.warn('[Dashboard] refrescar-alertas falló:', e)
+      }
 
       // 1. API de métricas (usa agenda_sesiones, agente_alertas, etc.)
       const resM = await fetch('/api/dashboard/metricas?periodo=7d', { cache: 'no-store' })
@@ -366,16 +372,45 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       const dismissed: string[] = JSON.parse(localStorage.getItem('alertas_descartadas') || '[]')
 
       // Alertas de agente_alertas (regresiones, etc.) — filtrar ids descartadas en BD (ya vienen con resuelta=false)
-      const alertasApi = (dataM?.alertas?.recientes || [])
+      const alertasRawTodas = (dataM?.alertas?.recientes || [])
         .filter((a: any) => !dismissed.includes((a.tipo || '') + ':' + a.child_id))
-        .map((a: any) => ({
-          id: a.id,
-          tipo: a.tipo,
-          child_id: a.child_id,
-          paciente: a.children?.name || 'Paciente',
-          mensaje: a.descripcion || a.mensaje || '',
-          prioridad: a.prioridad || 2,
-        }))
+
+      // Consolidar SIN SESIÓN duplicadas por paciente — mostramos solo la más urgente por niño.
+      // Si Sophia tiene 4 programas sin sesión, vemos 1 sola entrada que dice "4 programas".
+      const sinSesionPorNino = new Map<string, any[]>()
+      const otrasAlertas: any[] = []
+      for (const a of alertasRawTodas) {
+        const t = String(a.tipo || '')
+        const esSinSesion = t === 'sin_sesion' || t.startsWith('sin_sesion_')
+        if (esSinSesion && a.child_id) {
+          if (!sinSesionPorNino.has(a.child_id)) sinSesionPorNino.set(a.child_id, [])
+          sinSesionPorNino.get(a.child_id)!.push(a)
+        } else {
+          otrasAlertas.push(a)
+        }
+      }
+      const sinSesionConsolidadas = Array.from(sinSesionPorNino.values()).map((grupo: any[]) => {
+        // Tomar la alerta de mayor prioridad como representante
+        const rep = grupo.sort((x, y) => {
+          const px = String(x.prioridad || '').toLowerCase()
+          const py = String(y.prioridad || '').toLowerCase()
+          const rank: Record<string, number> = { alta: 1, media: 2, baja: 3 }
+          return (rank[px] || 2) - (rank[py] || 2)
+        })[0]
+        const mensaje = grupo.length > 1
+          ? `${grupo.length} programas sin sesiones recientes. ${rep.descripcion || rep.mensaje || ''}`
+          : (rep.descripcion || rep.mensaje || '')
+        return { ...rep, descripcion: mensaje, mensaje, _grupo: grupo.length }
+      })
+
+      const alertasApi = [...otrasAlertas, ...sinSesionConsolidadas].map((a: any) => ({
+        id: a.id,
+        tipo: a.tipo,
+        child_id: a.child_id,
+        paciente: a.children?.name || 'Paciente',
+        mensaje: a.descripcion || a.mensaje || '',
+        prioridad: a.prioridad || 2,
+      }))
 
       // Alertas sin_sesion — evitar duplicar pacientes ya en alertasApi
       const idsEnApi = new Set(alertasApi.map((a: any) => a.child_id))

@@ -91,7 +91,8 @@ async function generarAlertasParaNiño(childId: string): Promise<AlertaGenerada[
     const criterio = prog.criterio_dominio_pct || 90
     const nConsecutivas = Number(prog.criterio_sesiones_consecutivas) || 2
 
-    if (sesionesIntervencion.length < 2) continue
+    // Permitir analizar programas con 1 sesión (caso "Falta 1 sesión para dominar")
+    if (sesionesIntervencion.length < 1) continue
 
     const tendencia = calcularTendencia(sesionesIntervencion)
     const slope = tendencia.slope ?? 0
@@ -230,10 +231,15 @@ export async function POST(req: NextRequest) {
         .eq('child_id', cid)
         .eq('resuelta', false)
 
+      // Resolver: (a) alertas con suffix que ya no aplican, (b) alertas legacy sin suffix
+      // que fueron reemplazadas por la nueva versión con programa_id (sin_sesion → sin_sesion_<id>)
       const aResolver = (existentes || [])
         .filter((e: any) => {
           const t = String(e.tipo || '')
-          // Solo auto-resolver alertas que generamos nosotros (tienen suffix de programa_id)
+          // Tipos legacy sin suffix → siempre resolver para que mi endpoint los reemplace con la versión nueva
+          const esLegacy = ['sin_sesion', 'regresion', 'estancamiento', 'criterio_alcanzado'].includes(t)
+          if (esLegacy) return true
+          // Tipos con suffix de programa que ya no aplican (regla dejó de cumplirse)
           const esDeRegla = /^(logro_|regresion_|estancamiento_|sin_sesion_)/.test(t)
           return esDeRegla && !tiposActuales.has(t)
         })
