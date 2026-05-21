@@ -567,6 +567,38 @@ export function RellenarFicha({
   const [saving, setSaving]           = useState(false)
   const [loading, setLoading]         = useState(true)
   const [showHistory, setShowHistory] = useState(false)
+  const [currentUser, setCurrentUser] = useState<{ full_name: string; role: string } | null>(null)
+
+  // Cargar perfil del especialista actual para mostrarlo en el header de la ficha
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, role')
+          .eq('id', user.id)
+          .maybeSingle()
+        if (profile) setCurrentUser(profile as any)
+      } catch { /* silencioso */ }
+    })()
+  }, [])
+
+  const roleLabel = (r?: string) => {
+    const map: Record<string, string> = {
+      jefe: 'Director(a)',
+      admin: 'Administrador(a)',
+      especialista: 'Especialista',
+      terapeuta: 'Terapeuta',
+      secretaria: 'Secretaría',
+    }
+    return map[r || ''] || r || 'Profesional'
+  }
+
+  const fechaHoyFmt = new Date().toLocaleDateString('es-PE', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
 
   const cc = {
     card:  isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200',
@@ -725,6 +757,35 @@ export function RellenarFicha({
             <p className={`font-black text-base ${cc.txt1}`}>{selected.name}</p>
             {selected.description && <p className={`text-xs mt-0.5 ${cc.txt3}`}>{selected.description}</p>}
           </div>
+
+          {/* ── Header automatizado: Fecha / Alumno / Especialista ─────────────── */}
+          <div className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-blue-50/50 border-blue-100'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${cc.txt3}`}>📅 Fecha</p>
+                <p className={`text-sm font-bold capitalize ${cc.txt1}`}>{fechaHoyFmt}</p>
+              </div>
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${cc.txt3}`}>👤 Alumno</p>
+                <p className={`text-sm font-bold ${cc.txt1}`}>{childName}</p>
+              </div>
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${cc.txt3}`}>👨‍⚕️ Especialista a cargo</p>
+                {currentUser ? (
+                  <p className={`text-sm font-bold ${cc.txt1}`}>
+                    {currentUser.full_name}
+                    <span className={`ml-1.5 text-[10px] font-semibold ${cc.txt3}`}>· {roleLabel(currentUser.role)}</span>
+                  </p>
+                ) : (
+                  <p className={`text-xs italic ${cc.txt3}`}>Cargando...</p>
+                )}
+              </div>
+            </div>
+            <p className={`text-[10px] mt-3 italic ${cc.txt3}`}>
+              Estos campos se registran automáticamente al guardar la ficha.
+            </p>
+          </div>
+
           {selected.fields.filter(f => !f.section).length > 0 && (
             <div className="space-y-4">{selected.fields.filter(f => !f.section).map(renderField)}</div>
           )}
