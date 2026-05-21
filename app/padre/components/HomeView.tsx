@@ -320,7 +320,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
         `\n    · appointments (completed):  ${dbg.appointments_completed}`,
         `\n    · agenda_sesiones:           ${dbg.agenda_sesiones}`,
         `\n    · aba_sessions_v2:           ${dbg.aba_sessions_v2}`,
-        `\n    · registro_aba (legacy):     ${dbg.registro_aba}`,
+        `\n    · registro_aba (legacy):     ${dbg.registro_aba}  (IGNORADO — tabla obsoleta)`,
         `\n  Registros de datos ABA:        ${dbg.sesiones_datos_aba_filas_total}  (informativo, NO cuenta como sesión)`,
       )
     }

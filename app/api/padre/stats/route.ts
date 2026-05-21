@@ -151,15 +151,22 @@ export async function GET(req: NextRequest) {
     // El stat "Sesiones" del dashboard del padre debe reflejar SESIONES REALES, no registros.
     // De lo contrario un centro con 4 programas y 1 sesión real puede mostrar "4 sesiones".
 
-    const sesionesDesdeRegistro      = registroAba?.length || 0
+    const sesionesDesdeRegistro      = registroAba?.length || 0          // legacy — NO se cuenta
     const sesionesDesdeAgenda        = agendaSesiones?.length || 0
     const sesionesDesdeAppointments  = appointmentsCompleted?.length || 0
     const sesionesDesdeV2            = sessionsV2?.length || 0
-    const sesionesDesdePrograma      = sesionesPrograma?.length || 0   // registros, no sesiones
+    const sesionesDesdePrograma      = sesionesPrograma?.length || 0     // registros de datos, no sesiones
 
-    // Total = MAX entre fuentes REALES (excluye sesiones_datos_aba como fuente primaria)
+    // Total = MAX entre las fuentes ACTUALES de citas/sesiones:
+    //  - appointments (módulo Agenda actual del admin)
+    //  - agenda_sesiones (sesiones formales registradas)
+    //  - aba_sessions_v2 (registro de sesión ABA nueva versión)
+    //
+    // EXCLUIMOS `registro_aba` (tabla legacy del sistema viejo). Esa tabla puede
+    // contener filas de pruebas antiguas que ya no representan citas reales y
+    // genera "sesiones fantasma" en el portal del padre. Si se necesita rescatar
+    // datos históricos de ahí, se hace una migración explícita a las tablas nuevas.
     const totalSesiones = Math.max(
-      sesionesDesdeRegistro,
       sesionesDesdeAgenda,
       sesionesDesdeAppointments,
       sesionesDesdeV2
