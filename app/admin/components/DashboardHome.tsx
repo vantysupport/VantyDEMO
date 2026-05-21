@@ -8,7 +8,7 @@ import {
   FileText, Users, AlertTriangle, Sparkles,
   Bell, ArrowUpRight, MessageCircle, TrendingUp,
   CheckCircle2, AlertCircle, Zap, BarChart3,
-  ClipboardList, Target, X
+  ClipboardList, Target, X, Trophy
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -68,15 +68,45 @@ function KPI({ label, value, sub, icon: Icon, bar, urgent, onClick }: any) {
 
 // ─── Alerta row ───────────────────────────────────────────────────────────────
 function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick, onDismiss }: any) {
-  const bar = prioridad === 1 ? '#c0524a' : prioridad === 2 ? '#b07830' : '#3a68a0'
+  // Detecta alertas positivas (logros) por prefijo del tipo
+  const tipoStr = String(tipo || '')
+  const esLogro = tipoStr.startsWith('logro_') || tipoStr === 'criterio_alcanzado'
+
+  // Color de la barra: verde para logros, rojo/ámbar/azul para alertas negativas
+  const bar = esLogro
+    ? '#2e7a56'
+    : prioridad === 1 ? '#c0524a' : prioridad === 2 ? '#b07830' : '#3a68a0'
+
+  // Etiqueta legible del tipo
+  const tipoLabel = (() => {
+    if (tipoStr.startsWith('logro_dominio')) return 'criterio alcanzado'
+    if (tipoStr.startsWith('logro_progreso')) return 'progreso consistente'
+    if (tipoStr.startsWith('logro_criterio')) return 'criterio dominado'
+    if (tipoStr === 'criterio_alcanzado') return 'criterio dominado'
+    return tipoStr.replace(/_[0-9a-f-]{8,}$/i, '').replace(/_/g, ' ')
+  })()
+
   return (
     <div
       className="w-full flex items-center gap-2 px-4 py-3 rounded-lg transition-all"
-      style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: `3px solid ${bar}` }}>
+      style={{
+        background: esLogro ? 'rgba(46,122,86,0.06)' : 'var(--muted-bg)',
+        border: '1px solid var(--card-border)',
+        borderLeft: `3px solid ${bar}`,
+      }}>
+      {esLogro && (
+        <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(46,122,86,0.15)' }}>
+          <Trophy size={14} style={{ color: '#2e7a56' }} />
+        </div>
+      )}
       <button onClick={onClick} className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
         {tipo && (
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{tipo.replace(/_/g, ' ')}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider"
+              style={{ color: esLogro ? '#2e7a56' : 'var(--text-muted)' }}>
+              {tipoLabel}
+            </span>
           </div>
         )}
         <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{paciente || mensaje}</p>
@@ -330,8 +360,19 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
           mensaje: 'Sin sesión en los últimos 30 días.', prioridad: 2,
         }))
 
-      // Una sola escritura de estado — sin parpadeo
-      setAlertasClinicas([...alertasApi, ...alertasSinSesion])
+      // Ordenar: alertas negativas (prioridad 1, 2) primero, logros (prioridad 3) al final
+      const todasAlertas = [...alertasApi, ...alertasSinSesion]
+      const esLogro = (a: any) => {
+        const t = String(a.tipo || '')
+        return t.startsWith('logro_') || t === 'criterio_alcanzado'
+      }
+      todasAlertas.sort((a, b) => {
+        const aLogro = esLogro(a) ? 1 : 0
+        const bLogro = esLogro(b) ? 1 : 0
+        if (aLogro !== bLogro) return aLogro - bLogro
+        return (a.prioridad || 2) - (b.prioridad || 2)
+      })
+      setAlertasClinicas(todasAlertas)
 
     } catch (e) {
       console.error('Dashboard error:', e)

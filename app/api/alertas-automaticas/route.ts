@@ -114,7 +114,7 @@ async function analizarPaciente(childId: string): Promise<any[]> {
   // análisis de progreso. Tendencia detectada por regresión lineal (slope).
   const { data: programasABA } = await supabaseAdmin
     .from('programas_aba')
-    .select('id, titulo, criterio_dominio_pct, sesiones_datos_aba(fecha, porcentaje_exito, fase)')
+    .select('id, titulo, criterio_dominio_pct, criterio_sesiones_consecutivas, sesiones_datos_aba(fecha, porcentaje_exito, fase)')
     .eq('child_id', childId)
 
   // Helper local — pendiente por regresión lineal
@@ -160,6 +160,48 @@ async function analizarPaciente(childId: string): Promise<any[]> {
           resuelta: false
         })
         alertasNuevas.push({ tipo: `estancamiento_${(prog as any).id}` })
+      }
+    }
+
+    // ── LOGRO: Dominio alcanzado ──
+    // Las últimas N sesiones de intervención (N = criterio_sesiones_consecutivas
+    // del programa, por defecto 2) cumplen TODAS el criterio_dominio_pct.
+    const nConsecutivas = Number((prog as any).criterio_sesiones_consecutivas) || 2
+    if (sesionesIntervencion.length >= nConsecutivas) {
+      const ultimas = sesionesIntervencion.slice(-nConsecutivas)
+      const todasCumplen = ultimas.every((s: any) => s.porcentaje_exito >= criterio)
+      if (todasCumplen) {
+        const promUltimas = Math.round(ultimas.reduce((a: number, s: any) => a + s.porcentaje_exito, 0) / ultimas.length)
+        await crearAlertaSiNoExiste({
+          child_id: childId,
+          tipo: `logro_dominio_${(prog as any).id}`,
+          titulo: `🎯 Criterio alcanzado: "${nombre}"`,
+          descripcion: `${nConsecutivas} sesiones consecutivas cumpliendo criterio de ${criterio}% (promedio ${promUltimas}%). Considera pasar a mantenimiento o avanzar al siguiente objetivo.`,
+          prioridad: 3,
+          resuelta: false
+        })
+        alertasNuevas.push({ tipo: `logro_dominio_${(prog as any).id}` })
+      }
+    }
+
+    // ── LOGRO: Progreso consistente ──
+    // ≥5 sesiones de intervención con pendiente claramente positiva (slope ≥ +5%/sesión)
+    // y promedio ya bueno (≥60%). Reconoce buen avance aunque aún no se alcance criterio.
+    if (sesionesIntervencion.length >= 5) {
+      const ventana = sesionesIntervencion.slice(-Math.min(6, sesionesIntervencion.length))
+      const valoresV = ventana.map((s: any) => s.porcentaje_exito as number)
+      const promV = valoresV.reduce((a: number, b: number) => a + b, 0) / valoresV.length
+      const slopeV = Math.round(slopeLineal(valoresV) * 10) / 10
+      if (slopeV >= 5 && promV >= 60) {
+        await crearAlertaSiNoExiste({
+          child_id: childId,
+          tipo: `logro_progreso_${(prog as any).id}`,
+          titulo: `📈 Progreso consistente en "${nombre}"`,
+          descripcion: `Tendencia ascendente clara: +${slopeV}% por sesión, promedio ${Math.round(promV)}% sobre las últimas ${valoresV.length} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
+          prioridad: 3,
+          resuelta: false
+        })
+        alertasNuevas.push({ tipo: `logro_progreso_${(prog as any).id}` })
       }
     }
 

@@ -340,14 +340,15 @@ async function verificarCriterioDominio(programaId: string) {
     )
 
     if (cumpleCriterio) {
-      // Crear alerta de dominio alcanzado
+      // Crear alerta de dominio alcanzado (positiva, prioridad informativa)
       await supabaseAdmin.from('agente_alertas').insert({
         child_id: (prog as any).child_id,
         programa_id: programaId,
-        tipo: 'criterio_alcanzado',
-        titulo: `✅ Criterio dominado: "${(prog as any).titulo}"`,
-        mensaje: `Se alcanzó el criterio de ${(prog as any).criterio_dominio_pct}% en ${(prog as any).criterio_sesiones_consecutivas} sesiones consecutivas${setActivo !== '__none__' ? ` (${setActivo})` : ''}. Considera pasar a mantenimiento.`,
-        prioridad: 'alta',
+        tipo: `logro_criterio_${programaId}`,
+        titulo: `🎯 Criterio dominado: "${(prog as any).titulo}"`,
+        descripcion: `Se alcanzó el criterio de ${(prog as any).criterio_dominio_pct}% en ${(prog as any).criterio_sesiones_consecutivas} sesiones consecutivas${setActivo !== '__none__' ? ` (${setActivo})` : ''}. Considera pasar a mantenimiento.`,
+        prioridad: 3,
+        resuelta: false,
       })
     }
   } catch (e) { /* silencioso */ }
