@@ -72,14 +72,25 @@ function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick, onDismiss }: a
   const tipoStr = String(tipo || '')
   const esLogro = tipoStr.startsWith('logro_') || tipoStr === 'criterio_alcanzado'
 
+  // Normaliza prioridad — acepta números (1,2,3) y strings ('alta','media','baja')
+  const prioridadNum = (() => {
+    if (typeof prioridad === 'number') return prioridad
+    const p = String(prioridad || '').toLowerCase()
+    if (p === 'alta' || p === 'high' || p === 'urgent') return 1
+    if (p === 'media' || p === 'medium') return 2
+    if (p === 'baja' || p === 'low' || p === 'info') return 3
+    return 2
+  })()
+
   // Color de la barra: verde para logros, rojo/ámbar/azul para alertas negativas
   const bar = esLogro
     ? '#2e7a56'
-    : prioridad === 1 ? '#c0524a' : prioridad === 2 ? '#b07830' : '#3a68a0'
+    : prioridadNum === 1 ? '#c0524a' : prioridadNum === 2 ? '#b07830' : '#3a68a0'
 
   // Etiqueta legible del tipo
   const tipoLabel = (() => {
     if (tipoStr.startsWith('logro_dominio')) return 'criterio alcanzado'
+    if (tipoStr.startsWith('logro_cerca_dominio')) return 'falta 1 sesión'
     if (tipoStr.startsWith('logro_progreso')) return 'progreso consistente'
     if (tipoStr.startsWith('logro_criterio')) return 'criterio dominado'
     if (tipoStr === 'criterio_alcanzado') return 'criterio dominado'
@@ -384,11 +395,19 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         const t = String(a.tipo || '')
         return t.startsWith('logro_') || t === 'criterio_alcanzado'
       }
+      const prioridadNum = (p: any): number => {
+        if (typeof p === 'number') return p
+        const s = String(p || '').toLowerCase()
+        if (s === 'alta' || s === 'high' || s === 'urgent') return 1
+        if (s === 'media' || s === 'medium') return 2
+        if (s === 'baja' || s === 'low' || s === 'info') return 3
+        return 2
+      }
       todasAlertas.sort((a, b) => {
         const aLogro = esLogro(a) ? 1 : 0
         const bLogro = esLogro(b) ? 1 : 0
         if (aLogro !== bLogro) return aLogro - bLogro
-        return (a.prioridad || 2) - (b.prioridad || 2)
+        return prioridadNum(a.prioridad) - prioridadNum(b.prioridad)
       })
       setAlertasClinicas(todasAlertas)
 

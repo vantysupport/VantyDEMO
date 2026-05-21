@@ -447,7 +447,7 @@ export class VantyAgent {
       // FIX: sin filtro de estado
       const { data: programas } = await supabaseAdmin
         .from('programas_aba')
-        .select('id, titulo, area, fase_actual, criterio_dominio_pct')
+        .select('id, titulo, area, fase_actual, criterio_dominio_pct, criterio_sesiones_consecutivas')
         .eq('child_id', childId)
 
       if (!programas || programas.length === 0) {
@@ -458,7 +458,7 @@ export class VantyAgent {
       const programaIds = (programas as any[]).map(p => p.id)
       const { data: todasSesiones } = await supabaseAdmin
         .from('sesiones_datos_aba')
-        .select('programa_id, fecha, porcentaje_exito, fase')
+        .select('programa_id, fecha, porcentaje_exito, fase, set')
         .in('programa_id', programaIds)
         .order('fecha', { ascending: true })
 
@@ -512,6 +512,63 @@ export class VantyAgent {
             titulo: `Estancamiento en "${prog.titulo}"`,
             mensaje: `${sesionesIntervencion.length} sesiones de intervención sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${nAnalizadas}, promedio ${tendencia.promedio_reciente}%, criterio ${criterio}%). Considera revisar procedimiento o nivel de ayuda.`,
             prioridad: 'media',
+            programa_id: prog.id,
+          })
+        }
+
+        // ── LOGROS POSITIVOS (per-set, mismo criterio que la UI) ──
+        // Usa el SET ACTIVO (último set con sesiones) y aplica el criterio del programa.
+        const nConsecutivas = Number((prog as any).criterio_sesiones_consecutivas) || 2
+        const setsConSesiones = Array.from(new Set(sesionesIntervencion.map((s: any) => s.set ?? '__none__')))
+        const setActivo = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
+        const sesionesSetActivo = sesionesIntervencion.filter((s: any) => (s.set ?? '__none__') === setActivo)
+
+        // 1. CRITERIO ALCANZADO: últimas N consecutivas del set activo ≥ criterio
+        const criterioAlcanzado =
+          sesionesSetActivo.length >= nConsecutivas &&
+          sesionesSetActivo.slice(-nConsecutivas).every((s: any) => (s.porcentaje_exito ?? 0) >= criterio)
+
+        if (criterioAlcanzado) {
+          const ultimas = sesionesSetActivo.slice(-nConsecutivas)
+          const promUlt = Math.round(ultimas.reduce((a: number, s: any) => a + s.porcentaje_exito, 0) / ultimas.length)
+          const etiquetaSet = setActivo && setActivo !== '__none__' ? ` (${setActivo})` : ''
+          alertas.push({
+            tipo: `logro_dominio_${prog.id}`,
+            titulo: `🎯 Criterio alcanzado en "${prog.titulo}"`,
+            mensaje: `${nConsecutivas} sesiones consecutivas cumpliendo criterio de ${criterio}% (promedio ${promUlt}%)${etiquetaSet}. Considera pasar a mantenimiento o avanzar al siguiente objetivo.`,
+            prioridad: 'baja',
+            programa_id: prog.id,
+          })
+        }
+
+        // 2. CERCA DE DOMINIO: últimas (N-1) del set activo ≥ criterio, falta 1 sesión
+        else if (
+          nConsecutivas >= 2 &&
+          sesionesSetActivo.length >= nConsecutivas - 1 &&
+          sesionesSetActivo.slice(-(nConsecutivas - 1)).every((s: any) => (s.porcentaje_exito ?? 0) >= criterio)
+        ) {
+          const ultima = sesionesSetActivo[sesionesSetActivo.length - 1]
+          const etiquetaSet = setActivo && setActivo !== '__none__' ? ` (${setActivo})` : ''
+          alertas.push({
+            tipo: `logro_cerca_dominio_${prog.id}`,
+            titulo: `⚡ Falta 1 sesión para dominar "${prog.titulo}"`,
+            mensaje: `Última sesión al ${ultima?.porcentaje_exito}% cumpliendo criterio (${criterio}%)${etiquetaSet}. Una sesión más en el criterio confirma el dominio.`,
+            prioridad: 'baja',
+            programa_id: prog.id,
+          })
+        }
+
+        // 3. PROGRESO CONSISTENTE: ≥5 sesiones de intervención, pendiente clara, promedio bueno
+        else if (
+          sesionesIntervencion.length >= 5 &&
+          slope >= 5 &&
+          (tendencia.promedio_reciente || 0) >= 60
+        ) {
+          alertas.push({
+            tipo: `logro_progreso_${prog.id}`,
+            titulo: `📈 Progreso consistente en "${prog.titulo}"`,
+            mensaje: `Tendencia ascendente clara: +${slope}% por sesión, promedio ${tendencia.promedio_reciente}% sobre las últimas ${nAnalizadas} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
+            prioridad: 'baja',
             programa_id: prog.id,
           })
         }
