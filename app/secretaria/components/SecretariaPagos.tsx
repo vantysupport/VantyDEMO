@@ -233,6 +233,49 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
     finally { setSavingPkg(false) }
   }
 
+  // ─── Eliminar pago ──────────────────────────────────────────────────────────
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const handleDeletePago = async (p: any) => {
+    const monto = `S/ ${Number(p.amount).toFixed(2)}`
+    const nombre = p.children?.name || 'paciente'
+    if (!confirm(`¿Eliminar este pago de ${nombre}?\n\nConcepto: ${p.concept}\nMonto: ${monto}\n\nEsta acción no se puede deshacer.`)) return
+    setDeletingId(p.id)
+    // Optimistic update — sacar de la lista al instante
+    const prev = payments
+    const next = payments.filter(x => x.id !== p.id)
+    setPayments(next); buildStats(next)
+    try {
+      const { error } = await supabase.from('payments').delete().eq('id', p.id)
+      if (error) throw error
+      toast.success('🗑 Pago eliminado')
+    } catch (e: any) {
+      // Rollback si falla
+      setPayments(prev); buildStats(prev)
+      toast.error('No se pudo eliminar: ' + e.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  // Eliminar paquete completo (todos los pagos del grupo)
+  const handleDeletePaquete = async (g: any) => {
+    const total = `S/ ${g.total.toFixed(2)}`
+    const cantidad = g.pays.length
+    if (!confirm(`¿Eliminar el paquete completo de ${g.child}?\n\n${cantidad} sesión${cantidad !== 1 ? 'es' : ''} · ${total}\n\nEsta acción borrará TODOS los pagos del paquete y no se puede deshacer.`)) return
+    const ids = g.pays.map((p: any) => p.id)
+    const prev = payments
+    const next = payments.filter(x => !ids.includes(x.id))
+    setPayments(next); buildStats(next)
+    try {
+      const { error } = await supabase.from('payments').delete().in('id', ids)
+      if (error) throw error
+      toast.success(`🗑 Paquete eliminado (${cantidad} pago${cantidad !== 1 ? 's' : ''})`)
+    } catch (e: any) {
+      setPayments(prev); buildStats(prev)
+      toast.error('No se pudo eliminar: ' + e.message)
+    }
+  }
+
   // ─── Rate CRUD ──────────────────────────────────────────────────────────────
   const emptyRate = { name: '', description: '', amount: '', duration_min: '60' }
   const [rateForm, setRateForm] = useState(emptyRate)
@@ -751,14 +794,14 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
             </div>
           ) : (
             <div className="rounded-2xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', overflow: 'visible' }}>
-              <div className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto] gap-4 px-5 py-3 text-[10px] font-black uppercase tracking-widest rounded-t-2xl"
+              <div className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 text-[10px] font-black uppercase tracking-widest rounded-t-2xl"
                 style={{ borderBottom: '1px solid var(--card-border)', color: 'var(--text-muted)', background: 'var(--muted-bg)' }}>
-                <span>Paciente</span><span>Concepto</span><span>Monto</span><span>Método</span><span>Estado</span><span></span>
+                <span>Paciente</span><span>Concepto</span><span>Monto</span><span>Método</span><span>Estado</span><span></span><span></span>
               </div>
               {filtered.map(p => {
                 const st = STATUS_CFG[p.status] || { label: p.status, color: '#6b7280', bg: '#f3f4f6' }
                 return (
-                  <div key={p.id} className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto] gap-4 px-5 py-3.5 items-center transition-colors hover:bg-[var(--muted-bg)]"
+                  <div key={p.id} className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3.5 items-center transition-colors hover:bg-[var(--muted-bg)]"
                     style={{ borderBottom: '1px solid var(--card-border)' }}>
                     <div>
                       <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.children?.name || '—'}</p>
@@ -803,6 +846,14 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                       className="p-1.5 rounded-lg transition-all hover:opacity-70 flex-shrink-0"
                       style={{ background: 'var(--muted-bg)', color: '#3b82f6' }}>
                       <FileText size={13} />
+                    </button>
+                    <button
+                      onClick={() => handleDeletePago(p)}
+                      disabled={deletingId === p.id}
+                      title="Eliminar pago"
+                      className="p-1.5 rounded-lg transition-all hover:opacity-100 flex-shrink-0 disabled:opacity-50"
+                      style={{ background: 'rgba(239,68,68,0.10)', color: '#ef4444', opacity: 0.7 }}>
+                      {deletingId === p.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                     </button>
                   </div>
                 )
@@ -860,6 +911,14 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                       style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6' }}>
                       <FileText size={14} />
                     </button>
+                    {/* Eliminar paquete completo */}
+                    <button
+                      onClick={e => { e.stopPropagation(); handleDeletePaquete(g) }}
+                      title="Eliminar paquete completo"
+                      className="p-2 rounded-lg transition-all hover:opacity-100 flex-shrink-0"
+                      style={{ background: 'rgba(239,68,68,0.10)', color: '#ef4444', opacity: 0.7 }}>
+                      <Trash2 size={14} />
+                    </button>
                     {isOpen ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />}
                   </div>
                 </button>
@@ -876,6 +935,14 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                           <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>{p.concept}</span>
                           <span className="text-sm font-black flex-shrink-0" style={{ color: '#10b981' }}>S/ {Number(p.amount).toFixed(2)}</span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg flex-shrink-0" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                          <button
+                            onClick={() => handleDeletePago(p)}
+                            disabled={deletingId === p.id}
+                            title="Eliminar este pago"
+                            className="p-1 rounded-md transition-all hover:opacity-100 flex-shrink-0 disabled:opacity-50"
+                            style={{ background: 'rgba(239,68,68,0.10)', color: '#ef4444', opacity: 0.7 }}>
+                            {deletingId === p.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                          </button>
                         </div>
                       )
                     })}
