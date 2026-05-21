@@ -2,6 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
+// Desactiva cache de Next.js — el dashboard debe reflejar cambios inmediatos
+// (citas creadas/editadas/borradas, alertas resueltas, etc.)
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const periodo = searchParams.get('periodo') || '7d' // 7d | 30d | 90d

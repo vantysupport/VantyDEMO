@@ -8,7 +8,7 @@ import {
   FileText, Users, AlertTriangle, Sparkles,
   Bell, ArrowUpRight, MessageCircle, TrendingUp,
   CheckCircle2, AlertCircle, Zap, BarChart3,
-  ClipboardList, Target, X, Trophy
+  ClipboardList, Target, X, Trophy, RefreshCw
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -193,24 +193,42 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
     setLoading(true)
     try {
       // 1. API de métricas (usa agenda_sesiones, agente_alertas, etc.)
-      const resM = await fetch('/api/dashboard/metricas?periodo=7d')
+      const resM = await fetch('/api/dashboard/metricas?periodo=7d', { cache: 'no-store' })
       const dataM = resM.ok ? await resM.json() : null
       setMetricas(dataM)
 
-      // Próximas citas — siempre de appointments (misma fuente que CalendarView)
+      // Próximas citas — solo futuras y no finalizadas. Excluye:
+      //  - cancelled / cancelada (cita cancelada manualmente)
+      //  - completed / completada / done / realizada (sesión ya terminó — fue al historial)
+      // Adicionalmente filtra en cliente las citas de HOY que ya pasaron (date=hoy AND time < ahora).
       const hoyStr = new Date().toISOString().split('T')[0]
+      const ahoraHHMM = new Date().toTimeString().slice(0, 5)
+      const estadosTerminados = ['cancelled', 'cancelada', 'completed', 'completada', 'done', 'realizada']
       const { data: citasDirectas } = await supabase
         .from('appointments')
         .select('*, children(name)')
         .gte('appointment_date', hoyStr)
-        .neq('status', 'cancelled')
+        .not('status', 'in', `(${estadosTerminados.join(',')})`)
         .order('appointment_date').order('appointment_time')
-        .limit(6)
-      if (citasDirectas && citasDirectas.length > 0) {
-        setProximasCitas(citasDirectas)
+        .limit(20)
+
+      // Filtro extra: en HOY excluir las que ya pasaron (sesión vencida, 45 min después)
+      const citasUpcoming = (citasDirectas || []).filter((c: any) => {
+        if (c.appointment_date !== hoyStr) return true
+        const hhmm = (c.appointment_time || '00:00').slice(0, 5)
+        const [h, m] = hhmm.split(':').map(Number)
+        const finSesion = new Date()
+        finSesion.setHours(h, m + 45, 0, 0)
+        return finSesion.getTime() > Date.now()
+      }).slice(0, 6)
+
+      if (citasUpcoming.length > 0) {
+        setProximasCitas(citasUpcoming)
       } else if (dataM?.proximasSesiones?.length > 0) {
         // Fallback: agenda_sesiones via API métricas
         setProximasCitas(dataM.proximasSesiones)
+      } else {
+        setProximasCitas([])
       }
 
       // Sesiones hoy desde appointments
@@ -382,6 +400,18 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
+
+  // Refrescar al volver al tab — captura cambios hechos en otra ventana/dispositivo
+  useEffect(() => {
+    const onFocus = () => { cargar() }
+    const onVisibility = () => { if (document.visibilityState === 'visible') cargar() }
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [cargar])
 
   // Derived stats
   const totalSesHoy = sesHoyCount || metricas?.hoy?.sesiones?.total || 0
@@ -580,11 +610,21 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
               <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
               <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Próximas Citas</p>
             </div>
-            <button onClick={() => navigateTo('agenda')}
-              className="text-[10px] font-semibold flex items-center gap-1"
-              style={{ color: '#3a68a0' }}>
-              Ver agenda <ArrowUpRight size={10} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => cargar()}
+                disabled={loading}
+                title="Refrescar datos"
+                className="p-1 rounded-md hover:bg-[var(--muted-bg)] transition-colors disabled:opacity-40"
+              >
+                <RefreshCw size={11} style={{ color: 'var(--text-muted)' }} className={loading ? 'animate-spin' : ''} />
+              </button>
+              <button onClick={() => navigateTo('agenda')}
+                className="text-[10px] font-semibold flex items-center gap-1"
+                style={{ color: '#3a68a0' }}>
+                Ver agenda <ArrowUpRight size={10} />
+              </button>
+            </div>
           </div>
           <div className="p-3 overflow-y-auto" style={{ maxHeight: '320px' }}>
             {proximasCitas.length > 0
