@@ -303,10 +303,26 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
     // ── Stats con service_role via API (evita restricciones RLS en objetivos_cp y sesiones_datos_aba)
     let apiStats: any = null
     try {
-      const res = await fetch(`/api/padre/stats?child_id=${child.id}`)
+      const res = await fetch(`/api/padre/stats?child_id=${child.id}`, { cache: 'no-store' })
       if (res.ok) apiStats = await res.json()
     } catch (e) {
       console.warn('[HomeView] Error cargando stats via API:', e)
+    }
+
+    // Diagnóstico — muestra de qué tabla viene el conteo de sesiones (útil cuando aparece
+    // un número que el padre no reconoce como real).
+    if (apiStats?._debug) {
+      const dbg = apiStats._debug
+      console.log(
+        `%c[stats:${child?.name || 'paciente'}]`,
+        'background:#7c3aed;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold',
+        `\n  Total sesiones REALES: ${dbg.total_sesiones_final}`,
+        `\n    · appointments (completed):  ${dbg.appointments_completed}`,
+        `\n    · agenda_sesiones:           ${dbg.agenda_sesiones}`,
+        `\n    · aba_sessions_v2:           ${dbg.aba_sessions_v2}`,
+        `\n    · registro_aba (legacy):     ${dbg.registro_aba}`,
+        `\n  Registros de datos ABA:        ${dbg.sesiones_datos_aba_filas_total}  (informativo, NO cuenta como sesión)`,
+      )
     }
 
     const completedAppts = monthSess?.length || 0  // monthSess is now ALL completed appointments
@@ -451,8 +467,20 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
               <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
                 <span style={{ background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', color:'#ffffff', fontSize:11, fontWeight:600, padding:'4px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,.2)' }}>{age} años</span>
                 {child?.diagnosis && <span style={{ background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', color:'#ffffff', fontSize:11, fontWeight:600, padding:'4px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,.2)' }}>{child.diagnosis}</span>}
-                <span style={{ background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', color:'#ffffff', fontSize:11, fontWeight:600, padding:'4px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,.2)' }}>{stats.sessions} sesiones</span>
-                
+                {/* Badge dinámico: completadas + próxima si existe */}
+                {stats.sessions > 0 ? (
+                  <span style={{ background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', color:'#ffffff', fontSize:11, fontWeight:600, padding:'4px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,.2)' }}>
+                    ✓ {stats.sessions} {stats.sessions === 1 ? 'sesión realizada' : 'sesiones realizadas'}
+                  </span>
+                ) : nextAppt ? (
+                  <span style={{ background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', color:'#ffffff', fontSize:11, fontWeight:600, padding:'4px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,.2)' }}>
+                    📅 Empieza pronto
+                  </span>
+                ) : (
+                  <span style={{ background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', color:'rgba(255,255,255,.85)', fontSize:11, fontWeight:600, padding:'4px 12px', borderRadius:20, border:'1px solid rgba(255,255,255,.2)' }}>
+                    Aún sin sesiones
+                  </span>
+                )}
               </div>
             </div>
             <div style={{ position:'relative', flexShrink:0 }}>
