@@ -215,7 +215,10 @@ async function cargarContextoPadre(childId: string) {
       .order('fecha_asignada', { ascending: false })
       .limit(10),
 
-    // Programas ABA — con sets y campos clínicos completos
+    // Programas ABA — con sets y campos clínicos completos.
+    // FIX: NO filtrar por estado. Antes usábamos .neq('estado', 'archivado') pero
+    // en PostgREST `column != 'x'` cuando la columna es NULL devuelve NULL (falsy)
+    // y excluía programas válidos sin estado explícito. Filtramos archivados en JS.
     supabaseAdmin
       .from('programas_aba')
       .select(`
@@ -228,9 +231,8 @@ async function cargarContextoPadre(childId: string) {
         )
       `)
       .eq('child_id', childId)
-      .neq('estado', 'archivado')
       .order('created_at', { ascending: false })
-      .limit(10),
+      .limit(15),
 
     // Próxima cita (agenda_sesiones)
     supabaseAdmin
@@ -374,9 +376,18 @@ async function cargarContextoPadre(childId: string) {
     } catch { /* tabla puede no existir */ }
   }))
 
-  // ── Mapa programa_id → título (para anotar las sesiones con el programa) ──
+  // Filtrar archivados en JS (después del fetch para incluir programas con estado null)
+  const programasActivos = (programas || []).filter((p: any) => p.estado !== 'archivado')
+
+  // ── Mapa programa_id → título ──
+  // Si el programa fue archivado o no se encuentra, intentamos sacar el título
+  // desde sesiones_datos_aba (no tiene ese campo) — fallback "programa".
+  // También hacemos lookup por todos los programas (no solo activos) para que
+  // sesiones de programas viejos sigan teniendo título correcto.
   const progIdToTitulo: Record<string, string> = {}
-  for (const p of (programas || []) as any[]) progIdToTitulo[p.id] = p.titulo
+  for (const p of (programas || []) as any[]) {
+    if (p.id && p.titulo) progIdToTitulo[p.id] = p.titulo
+  }
 
   // ── Resumen de sesiones reales (sesiones_datos_aba) ──
   const resumenSesionesAba = (sesionesAba || []).map((s: any, i: number) => {
@@ -423,8 +434,9 @@ async function cargarContextoPadre(childId: string) {
     || 'Sin sesiones recientes registradas'
 
   // ── Programas ABA con instrucciones completas (combinando programa + set activo) ──
-  const programasTexto = programas && programas.length > 0
-    ? (programas as any[]).map((p: any) => {
+  // Usamos programasActivos (que excluye archivados pero incluye los con estado null)
+  const programasTexto = programasActivos.length > 0
+    ? (programasActivos as any[]).map((p: any) => {
         // Set activo: el primero no dominado del programa
         const sets = (p.objetivos_cp || [])
           .sort((a: any, b: any) => (a.numero_set || 0) - (b.numero_set || 0))
@@ -600,6 +612,8 @@ ${(prediccion as any).prediccion_30d ? `\nPredicción a 30 días: ${String((pred
       programas_encontrados: (programas || []).length,
       tareas: (tareasPendientes || []).length,
       evaluaciones_pro: evaluacionesPro.length,
+      programas_activos: programasActivos.length,
+      programas_archivados: (programas || []).length - programasActivos.length,
       forms: (formResponses || []).length,
       citas_pasadas: (citasPasadas || []).length,
       fichas: (fichasClinicas || []).length,
