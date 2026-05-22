@@ -442,8 +442,10 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                   <XAxis dataKey="mes" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={45} tickFormatter={v => `S/${v}`} />
                   <Tooltip formatter={(v: any) => [`S/ ${Number(v).toFixed(2)}`, 'Ingresos']}
-                    contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 12, fontSize: 12 }}
-                    labelStyle={{ color: 'var(--text-primary)', fontWeight: 700 }} cursor={{ fill: 'var(--muted-bg)' }} />
+                    contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 12, fontSize: 12, color: 'var(--text-primary)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+                    labelStyle={{ color: 'var(--text-primary)', fontWeight: 700 }}
+                    itemStyle={{ color: 'var(--text-secondary)' }}
+                    cursor={{ fill: 'var(--muted-bg)' }} />
                   <Bar dataKey="total" fill="#3b82f6" radius={[6,6,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -471,7 +473,9 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                         {stats.porMetodo.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
                       <Tooltip formatter={(v: any) => `S/ ${Number(v).toFixed(2)}`}
-                        contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 10, fontSize: 11 }} />
+                        contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 10, fontSize: 11, color: 'var(--text-primary)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+                        labelStyle={{ color: 'var(--text-primary)', fontWeight: 700 }}
+                        itemStyle={{ color: 'var(--text-secondary)' }} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="flex-1 space-y-3">
