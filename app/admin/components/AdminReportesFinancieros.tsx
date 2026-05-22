@@ -345,7 +345,9 @@ export default function AdminReportesFinancieros() {
                               {data.porMetodo.map((e, i) => <Cell key={i} fill={e.color} />)}
                             </Pie>
                             <Tooltip formatter={(v: any) => `S/ ${Number(v).toFixed(2)}`}
-                              contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 10, fontSize: 11 }} />
+                              contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 10, fontSize: 11, color: 'var(--text-primary)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+                              labelStyle={{ color: 'var(--text-primary)', fontWeight: 700 }}
+                              itemStyle={{ color: 'var(--text-secondary)' }} />
                           </PieChart>
                         </ResponsiveContainer>
                         <div className="flex-1 space-y-2.5">
@@ -528,7 +530,9 @@ export default function AdminReportesFinancieros() {
                             {data.porServicio.map((e, i) => <Cell key={i} fill={e.color} />)}
                           </Pie>
                           <Tooltip formatter={(v: any) => `S/ ${Number(v).toFixed(2)}`}
-                            contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 10, fontSize: 11 }} />
+                            contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 10, fontSize: 11, color: 'var(--text-primary)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+                            labelStyle={{ color: 'var(--text-primary)', fontWeight: 700 }}
+                            itemStyle={{ color: 'var(--text-secondary)' }} />
                           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, color: 'var(--text-muted)' }} />
                         </PieChart>
                       </ResponsiveContainer>
