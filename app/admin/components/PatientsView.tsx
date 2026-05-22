@@ -19,6 +19,7 @@ import EvaluacionesUnificadas from './EvaluacionesUnificadas'
 import AIReportView from './AIReportView'
 import DocumentosView from './DocumentosView'
 import { RellenarFicha, GestorPlantillas } from './PlantillasClinicas'
+import EvaluacionInicialAdmin from './EvaluacionInicialAdmin'
 
 // ── Color badge por diagnóstico ────────────────────────────────────────────
 const DX_BORDER: Record<string, string> = {
@@ -1026,7 +1027,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   // En móvil: 'list' | 'detail'. En desktop ambos visibles.
   const [mobileView, setMobileView] = useState<'list'|'detail'>('list')
   const [selected, setSelected] = useState<any>(null)
-  const [tab, setTab] = useState<'info'|'programas'|'evaluaciones'|'historial'|'fichas'|'documentos'>('info')
+  const [tab, setTab] = useState<'info'|'programas'|'evaluaciones'|'eval-inicial'|'historial'|'fichas'|'documentos'>('info')
 
   // Nuevo paciente
   const [showNew, setShowNew] = useState(false)
@@ -1131,6 +1132,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
     { id:'info',         icon:<User size={14}/>,          label: t('pacientes.informacion'), short: 'Info'  },
     { id:'programas',    icon:<BarChart3 size={14}/>,     label: t('nav.programas'),          short: 'ABA'   },
     { id:'evaluaciones', icon:<ClipboardList size={14}/>, label: t('nav.evaluaciones'),       short: 'Eval.' },
+    { id:'eval-inicial', icon:<ClipboardList size={14}/>, label: 'Evaluación Inicial',        short: 'Inicial' },
     { id:'historial',    icon:<Brain size={14}/>,         label: 'Historial & IA',            short: 'Hist.' },
     { id:'fichas',       icon:<FileText size={14}/>,      label: 'Fichas',                    short: 'Fichas'},
     { id:'documentos',   icon:<FolderOpen size={14}/>,    label: 'Documentos',                short: 'Docs'  },
@@ -1285,6 +1287,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                     {tb.id === 'info'         && <User         size={16}/>}
                     {tb.id === 'programas'    && <BarChart3    size={16}/>}
                     {tb.id === 'evaluaciones' && <ClipboardList size={16}/>}
+                    {tb.id === 'eval-inicial' && <ClipboardList size={16}/>}
                     {tb.id === 'historial'    && <Brain        size={16}/>}
                     {tb.id === 'fichas'       && <FileText     size={16}/>}
                     {tb.id === 'documentos'   && <FolderOpen   size={16}/>}
@@ -1316,6 +1319,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
               />}
             {tab==='programas' && <div style={{ padding: '20px 24px' }}><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
             {tab==='evaluaciones' && <div style={{ padding: '20px 24px' }}><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
+            {tab==='eval-inicial' && <div style={{ padding: '20px 24px' }}><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
             {tab==='historial' && <div style={{ padding: '20px 24px' }}><AIReportView initialChildId={selected.id} /></div>}
             {tab==='fichas' && (
               <FichasTab

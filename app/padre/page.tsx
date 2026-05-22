@@ -16,7 +16,7 @@ import {
   Settings, HelpCircle, FileText, Video, Headphones, Image as ImageIcon, ExternalLink,
   Camera, Upload, Gift, PartyPopper, Flame, TrendingDown, Baby, Stethoscope, PlayCircle,
   CalendarDays, ShoppingBag, BookOpen, MoreHorizontal, FolderOpen, Users,
-  Shield, KeyRound, ServerCog, UserCog, Database, ScrollText
+  Shield, KeyRound, ServerCog, UserCog, Database, ScrollText, ClipboardCheck
 } from 'lucide-react'
 
 import { NavBtnDesktop, NavBtnMobile, NotificationItem, HelpItem } from './components/shared'
@@ -36,6 +36,7 @@ import ChatInterface from './components/ChatInterface'
 import ChatFamilias from './components/ChatFamilias'
 import ProgramasABAView from './components/ProgramasABAView'
 import EngagementView from './components/EngagementView'
+import EvaluacionInicialView from './components/EvaluacionInicialView'
 import PushNotificationBanner from '../../components/PushNotificationBanner'
 import { TIME_SLOTS, calculateAge } from './utils/helpers'
 
@@ -472,6 +473,7 @@ export default function ParentDashboard() {
     chat: 'Asistente IA', misformularios: 'Recursos adicionales',
     tienda: 'Tienda', documentos: 'Documentos', profile: 'Mi Perfil',
     'chat-familias': 'Chat', 'programas': 'Programas ABA',
+    'evaluacion-inicial': 'Evaluación Inicial',
   }
 
   return (
@@ -536,6 +538,7 @@ export default function ParentDashboard() {
             {/* Nav */}
             <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
                 <NavBtnDesktop icon={<Home size={17}/>} label="Inicio" active={activeView==='home'} onClick={()=>setActiveView('home')} />
+                <NavBtnDesktop icon={<ClipboardCheck size={17}/>} label="Evaluación Inicial" active={activeView==='evaluacion-inicial'} onClick={()=>setActiveView('evaluacion-inicial')} badge="NUEVO" />
                 <NavBtnDesktop icon={<Calendar size={17}/>} label="Agenda" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} />
                 <NavBtnDesktop icon={<Heart size={17}/>} label="Practicar en Casa" active={activeView==='engagement'} onClick={()=>setActiveView('engagement')} badge="IA" />
                 <NavBtnDesktop icon={<Sparkles size={17}/>} label={t('familias.asistente')} active={activeView==='chat'} onClick={()=>setActiveView('chat')} badge="NUEVO" />
@@ -695,6 +698,11 @@ export default function ParentDashboard() {
                       </div>
                     )}
                     {activeView === 'engagement' && <EngagementView childId={selectedChild?.id || ''} />}
+                    {activeView === 'evaluacion-inicial' && (
+                      <div className="animate-fade-in">
+                        <EvaluacionInicialView child={selectedChild} profile={profile} />
+                      </div>
+                    )}
                     {activeView === 'profile' && (
                         <div className="animate-fade-in">
                           <ProfileView
@@ -760,6 +768,7 @@ export default function ParentDashboard() {
                   {showMoreMenu && (
                     <div className="absolute bottom-14 right-0 rounded-2xl shadow-2xl border p-2 w-56 z-50 flex flex-col gap-1" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
                       {[
+                        { id: 'evaluacion-inicial', icon: <ClipboardCheck size={18}/>, label: 'Evaluación Inicial', badge: 'NUEVO' as any },
                         { id: 'engagement',    icon: <Zap size={18}/>,            label: 'Practicar en Casa' },
                         { id: 'chat-familias', icon: <MessageCircle size={18}/>,  label: 'Chat', badge: familiasUnread > 0 ? familiasUnread : null },
                         { id: 'programas',     icon: <BookOpen size={18}/>,       label: 'Programas ABA' },
