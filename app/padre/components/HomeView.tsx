@@ -289,10 +289,17 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
     ] = await Promise.all([
       supabase.from('appointments').select('*').eq('child_id', child.id).gte('appointment_date', today).neq('status', 'cancelled').neq('status', 'completed').order('appointment_date', { ascending: true }).order('appointment_time', { ascending: true }).limit(1),
       supabase.from('appointments').select('id').eq('child_id', child.id).in('status', ['completed', 'realizada', 'completada']),
-      supabase.from('notifications').select('*').eq('user_id', child.parent_id || '').eq('is_read', false).order('created_at', { ascending: false }).limit(5),
-      supabase.from('parent_messages').select('*').eq('child_id', child.id).order('created_at', { ascending: false }).limit(5),
-      supabase.from('predicciones_ia').select('*').eq('child_id', child.id).single(),
-      supabase.from('patrones_detectados').select('*').eq('child_id', child.id).single(),
+      // Skip notifications si el niño no tiene parent_id vinculado (evita 400 con user_id=eq.)
+      child.parent_id
+        ? supabase.from('notifications').select('*').eq('user_id', child.parent_id).eq('is_read', false).order('created_at', { ascending: false }).limit(5)
+        : Promise.resolve({ data: [] as any[] }),
+      // parent_messages puede no existir en algunos ambientes — capturar el error
+      supabase.from('parent_messages').select('*').eq('child_id', child.id).order('created_at', { ascending: false }).limit(5)
+        .then((r: any) => r.error ? { data: [] } : r),
+      // .maybeSingle() en vez de .single() — no es error que el niño no tenga
+      // predicciones/patrones generados aún (genera 406 en consola innecesario)
+      supabase.from('predicciones_ia').select('*').eq('child_id', child.id).maybeSingle(),
+      supabase.from('patrones_detectados').select('*').eq('child_id', child.id).maybeSingle(),
     ])
 
     setNextAppt(appts?.[0] || null)
@@ -375,7 +382,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
           .from('predicciones_ia')
           .select('*')
           .eq('child_id', child.id)
-          .single()
+          .maybeSingle()
         const fressSess = fresh?.sesiones_analizadas ?? fresh?.total_sesiones_unificado ?? 0
         const textoNuevo = fresh?.analisis_ia || fresh?.prediccion_30d || ''
         const textoListo = !!(textoNuevo) &&
