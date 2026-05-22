@@ -65,6 +65,31 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SANTI" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/*
+          Script de pre-hidratación: aplica la clase `dark` ANTES del primer paint
+          para evitar el "flash" de modo claro cuando el usuario tiene modo oscuro
+          configurado en el OS. Lee localStorage y/o prefers-color-scheme.
+          También quita la clase si la ruta es login (login siempre claro).
+        */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                var p = window.location.pathname;
+                var isLogin = p === '/' || p === '/login';
+                if (isLogin) {
+                  document.documentElement.classList.remove('dark');
+                  return;
+                }
+                var stored = localStorage.getItem('app-theme');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var dark = stored === 'dark' || ((stored === 'system' || !stored) && prefersDark);
+                if (dark) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+              } catch (e) { /* silencioso */ }
+            })();
+          `
+        }} />
       </head>
       <body className="antialiased">
         <ThemeProvider>

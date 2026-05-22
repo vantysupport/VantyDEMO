@@ -411,6 +411,155 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
   )
 }
 
+// ── Card: Contador de sesiones (auto desde agenda + ajuste manual histórico) ──
+function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void }) {
+  const toast = useToast()
+  const [sessionsBefore, setSessionsBefore] = useState<number>(nino.sessions_before_platform || 0)
+  const [autoCount, setAutoCount] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [tempInput, setTempInput] = useState(String(nino.sessions_before_platform || 0))
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    setSessionsBefore(nino.sessions_before_platform || 0)
+    setTempInput(String(nino.sessions_before_platform || 0))
+  }, [nino.id, nino.sessions_before_platform])
+
+  // Contar sesiones reales en la plataforma:
+  //   appointments con status completed/completada/realizada + aba_sessions_v2 + agenda_sesiones realizadas
+  // Tomamos el MAX entre las fuentes (no se suman porque pueden solaparse)
+  useEffect(() => {
+    let cancelled = false
+    async function loadAuto() {
+      setLoading(true)
+      try {
+        const [a, b, c] = await Promise.all([
+          supabase.from('appointments').select('id', { count: 'exact', head: true })
+            .eq('child_id', nino.id).in('status', ['completed','completada','realizada']),
+          supabase.from('agenda_sesiones').select('id', { count: 'exact', head: true })
+            .eq('child_id', nino.id).in('estado', ['realizada','completada','completed']),
+          supabase.from('aba_sessions_v2').select('id', { count: 'exact', head: true })
+            .eq('child_id', nino.id),
+        ])
+        const max = Math.max(a.count || 0, b.count || 0, c.count || 0)
+        if (!cancelled) setAutoCount(max)
+      } catch { /* silencioso */ }
+      finally { if (!cancelled) setLoading(false) }
+    }
+    loadAuto()
+    return () => { cancelled = true }
+  }, [nino.id])
+
+  const total = sessionsBefore + autoCount
+
+  const handleSave = async () => {
+    const n = parseInt(tempInput.replace(/[^0-9]/g, ''), 10)
+    if (isNaN(n) || n < 0) { toast.error('Ingresá un número válido (0 o mayor)'); return }
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('children')
+        .update({ sessions_before_platform: n })
+        .eq('id', nino.id)
+      if (error) throw error
+      setSessionsBefore(n)
+      setEditing(false)
+      toast.success('✓ Contador actualizado')
+      onSaved()
+    } catch (e: any) {
+      toast.error('Error: ' + (e?.message || 'no se pudo guardar'))
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5">
+          <BarChart3 size={12} style={{ color: 'var(--text-muted)' }} />
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            Total de sesiones del paciente
+          </p>
+        </div>
+        {!editing && (
+          <button
+            onClick={() => { setTempInput(String(sessionsBefore)); setEditing(true) }}
+            className="flex items-center gap-1 text-[10px] font-semibold hover:underline"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            <Edit size={10}/> Ajustar previas
+          </button>
+        )}
+      </div>
+
+      {/* Total grande */}
+      <div className="flex items-baseline gap-2 mb-3">
+        <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>
+          {loading ? '…' : total}
+        </p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>sesiones totales</p>
+      </div>
+
+      {/* Desglose */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg p-2.5" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+          <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>
+            Previas al sistema
+          </p>
+          {editing ? (
+            <div className="flex items-center gap-1.5 mt-1">
+              <input
+                type="number"
+                min={0}
+                autoFocus
+                value={tempInput}
+                onChange={e => setTempInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleSave()
+                  if (e.key === 'Escape') { setEditing(false); setTempInput(String(sessionsBefore)) }
+                }}
+                className="w-16 px-2 py-1 rounded-md text-sm font-bold outline-none focus:ring-2 focus:ring-blue-400"
+                style={{ background: 'var(--card)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)' }}
+              />
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="p-1 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 disabled:opacity-50"
+                title="Guardar"
+              >
+                {saving ? <Loader2 size={12} className="animate-spin"/> : <Check size={12}/>}
+              </button>
+              <button
+                onClick={() => { setEditing(false); setTempInput(String(sessionsBefore)) }}
+                className="p-1 rounded-md bg-slate-100 text-slate-500 hover:text-slate-700"
+                title="Cancelar"
+              >
+                <X size={12}/>
+              </button>
+            </div>
+          ) : (
+            <p className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+              {sessionsBefore}
+            </p>
+          )}
+        </div>
+        <div className="rounded-lg p-2.5" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+          <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>
+            En la plataforma
+          </p>
+          <p className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+            {loading ? '…' : autoCount}
+          </p>
+        </div>
+      </div>
+
+      <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+        💡 Las "previas al sistema" son sesiones que el paciente tuvo antes de empezar a usar la plataforma. Se suman a las citas completadas registradas aquí.
+      </p>
+    </div>
+  )
+}
+
 // ── Tab Info del paciente ──────────────────────────────────────────────────
 function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
   const { t, locale } = useI18n()
@@ -586,6 +735,9 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
               : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin notas adicionales</p>
             }
           </div>
+
+          {/* ── Contador de sesiones (auto + previas manuales) ── */}
+          <SessionCounterCard nino={nino} onSaved={onSaved} />
 
           {/* ── Cuenta vinculada ── */}
           <LinkedAccountSection nino={nino} onLinked={onSaved} />
