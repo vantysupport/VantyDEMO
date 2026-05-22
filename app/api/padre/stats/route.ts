@@ -14,6 +14,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // 0. Datos del niño — incluye `sessions_before_platform` para sumar al conteo
+    const { data: childRow } = await supabaseAdmin
+      .from('children')
+      .select('sessions_before_platform')
+      .eq('id', childId)
+      .maybeSingle()
+    const sesionesPrevias = Number((childRow as any)?.sessions_before_platform || 0)
+
     // 1. Programas ABA con objetivos_cp anidados (usando service_role)
     const { data: programas, error: errProg } = await supabaseAdmin
       .from('programas_aba')
@@ -166,11 +174,14 @@ export async function GET(req: NextRequest) {
     // contener filas de pruebas antiguas que ya no representan citas reales y
     // genera "sesiones fantasma" en el portal del padre. Si se necesita rescatar
     // datos históricos de ahí, se hace una migración explícita a las tablas nuevas.
-    const totalSesiones = Math.max(
+    // Sesiones reales registradas en la plataforma
+    const sesionesEnPlataforma = Math.max(
       sesionesDesdeAgenda,
       sesionesDesdeAppointments,
       sesionesDesdeV2
     )
+    // Total mostrado al padre = previas históricas (configuradas en admin) + las reales en plataforma
+    const totalSesiones = sesionesPrevias + sesionesEnPlataforma
 
     // ── Horas totales — SOLO de fuentes reales con duración medible ──
     // Si no hay ninguna sesión real registrada, las horas son 0 (no extrapolar
@@ -211,7 +222,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      totalSesiones,                                    // SOLO sesiones reales de terapia
+      totalSesiones,                                    // Previas + en-plataforma (visible al padre)
+      sesionesPrevias,                                  // Configuradas manualmente por el admin
+      sesionesEnPlataforma,                             // Detectadas desde appointments/agenda
       registrosDatos: sesionesDesdePrograma,            // Registros de datos ABA (informativo)
       totalGoals,
       goalsAchieved,
@@ -223,6 +236,7 @@ export async function GET(req: NextRequest) {
         child_id_recibido: childId,
         programas_encontrados: (programas || []).length,
         prog_ids: progIds,
+        sesiones_previas_manuales: sesionesPrevias,
         registro_aba: sesionesDesdeRegistro,
         aba_sessions_v2: sesionesDesdeV2,
         sesiones_datos_aba_filas_total: sesionesPrograma?.length ?? 0,

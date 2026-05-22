@@ -316,10 +316,12 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
       console.log(
         `%c[stats:${child?.name || 'paciente'}]`,
         'background:#7c3aed;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold',
-        `\n  Total sesiones REALES: ${dbg.total_sesiones_final}`,
-        `\n    · appointments (completed):  ${dbg.appointments_completed}`,
-        `\n    · agenda_sesiones:           ${dbg.agenda_sesiones}`,
-        `\n    · aba_sessions_v2:           ${dbg.aba_sessions_v2}`,
+        `\n  Total mostrado al padre: ${dbg.total_sesiones_final}`,
+        `\n    · Previas (configurado en admin):  ${dbg.sesiones_previas_manuales || 0}`,
+        `\n    · En plataforma:                   ${(dbg.total_sesiones_final || 0) - (dbg.sesiones_previas_manuales || 0)}`,
+        `\n        ├─ appointments (completed):  ${dbg.appointments_completed}`,
+        `\n        ├─ agenda_sesiones:           ${dbg.agenda_sesiones}`,
+        `\n        └─ aba_sessions_v2:           ${dbg.aba_sessions_v2}`,
         `\n    · registro_aba (legacy):     ${dbg.registro_aba}  (IGNORADO — tabla obsoleta)`,
         `\n  Registros de datos ABA:        ${dbg.sesiones_datos_aba_filas_total}  (informativo, NO cuenta como sesión)`,
       )

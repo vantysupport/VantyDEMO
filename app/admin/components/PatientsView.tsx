@@ -9,7 +9,7 @@ import {
   ArrowLeft, Baby, BarChart3, Brain, Calendar, Check, ChevronRight,
   ClipboardList, Edit, Link, Link2Off, Loader2, Mail, Plus, Save,
   Search, Stethoscope, User, UserCheck, Users, X,
-  FolderOpen, FileText, Heart
+  FolderOpen, FileText, Heart, Trash2
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
@@ -561,7 +561,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
 }
 
 // ── Tab Info del paciente ──────────────────────────────────────────────────
-function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
+function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () => void; onDeleted?: () => void }) {
   const { t, locale } = useI18n()
   const toast = useToast()
   const [editing, setEditing] = useState(false)
@@ -623,6 +623,54 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
     finally { setSaving(false) }
   }
 
+  // ─── Eliminar paciente ──────────────────────────────────────────────────────
+  const [deleting, setDeleting] = useState(false)
+  const handleDelete = async () => {
+    const tieneCuentaVinculada = !!nino.parent_id
+    const nombre = nino.name || 'el paciente'
+
+    // Mensaje de confirmación detallado según vinculación
+    const mensaje = tieneCuentaVinculada
+      ? `⚠️ "${nombre}" TIENE una cuenta de padre/madre vinculada.\n\n` +
+        `Si lo eliminás, esa familia ya no podrá ver su información.\n\n` +
+        `Esta acción borrará TODO el historial del paciente:\n` +
+        `· Citas y agenda\n` +
+        `· Programas ABA y sesiones registradas\n` +
+        `· Evaluaciones, formularios y fichas\n` +
+        `· Documentos y reportes\n\n` +
+        `Esta acción NO se puede deshacer.\n\n` +
+        `Para confirmar, escribí el nombre exacto del paciente:`
+      : `¿Eliminar a "${nombre}"?\n\n` +
+        `Este paciente NO tiene cuenta de padre vinculada (probablemente es de prueba).\n\n` +
+        `Se borrará todo su historial (citas, programas, evaluaciones, fichas, documentos).\n\n` +
+        `Esta acción no se puede deshacer.`
+
+    if (tieneCuentaVinculada) {
+      const respuesta = prompt(mensaje, '')
+      if (respuesta?.trim() !== nombre.trim()) {
+        if (respuesta !== null) toast.error('El nombre no coincide. Eliminación cancelada.')
+        return
+      }
+    } else {
+      if (!confirm(mensaje)) return
+    }
+
+    setDeleting(true)
+    try {
+      // Borrar el niño — el cascade de Supabase debería limpiar relaciones FK.
+      // Si alguna tabla NO tiene ON DELETE CASCADE, la eliminación dejará registros
+      // huérfanos pero al menos el niño desaparece de la lista del admin.
+      const { error } = await supabase.from('children').delete().eq('id', nino.id)
+      if (error) throw error
+      toast.success(`🗑 "${nombre}" eliminado correctamente`)
+      onDeleted?.()
+    } catch (e: any) {
+      toast.error(`No se pudo eliminar: ${e?.message || 'error desconocido'}`)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const birthFormatted = nino.birth_date
     ? new Date(nino.birth_date + 'T12:00:00').toLocaleDateString(toBCP47(locale), { day: 'numeric', month: 'long', year: 'numeric' })
     : null
@@ -642,11 +690,21 @@ function PatientInfoTab({ nino, onSaved }: { nino: any; onSaved: () => void }) {
       {!editing ? (
         /* ───────────── VISTA ───────────── */
         <div className="space-y-2">
-          <div className="flex justify-end mb-1">
+          <div className="flex justify-end mb-1 gap-2">
             <button onClick={() => setEditing(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
               <Edit size={12}/> {t('common.editar')}
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-50"
+              style={{ background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.30)' }}
+              title={nino.parent_id ? 'Paciente con cuenta de padre vinculada — requiere confirmación por nombre' : 'Eliminar paciente'}
+            >
+              {deleting ? <Loader2 size={12} className="animate-spin"/> : <Trash2 size={12}/>}
+              Eliminar
             </button>
           </div>
 
@@ -1228,12 +1286,20 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
           {/* Contenido tab */}
           <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
             {tab==='info' &&
-              <PatientInfoTab nino={selected} onSaved={async()=>{
-                await cargar()
-                // Fetch fresh data directly from DB to avoid stale closure
-                const { data: fresh } = await supabase.from('children').select('*').eq('id', selected.id).maybeSingle()
-                if (fresh) setSelected(fresh)
-              }}/>}
+              <PatientInfoTab
+                nino={selected}
+                onSaved={async()=>{
+                  await cargar()
+                  // Fetch fresh data directly from DB to avoid stale closure
+                  const { data: fresh } = await supabase.from('children').select('*').eq('id', selected.id).maybeSingle()
+                  if (fresh) setSelected(fresh)
+                }}
+                onDeleted={async()=>{
+                  // El paciente fue eliminado — recargar la lista y deseleccionarlo
+                  setSelected(null)
+                  await cargar()
+                }}
+              />}
             {tab==='programas' && <div style={{ padding: '20px 24px' }}><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
             {tab==='evaluaciones' && <div style={{ padding: '20px 24px' }}><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
             {tab==='historial' && <div style={{ padding: '20px 24px' }}><AIReportView initialChildId={selected.id} /></div>}
