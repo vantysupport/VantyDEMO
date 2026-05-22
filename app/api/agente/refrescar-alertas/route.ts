@@ -62,12 +62,25 @@ function calcularTendencia(sesiones: any[]) {
   }
 }
 
+// Helper: slug seguro para usar como sufijo de tipo de alerta (sets pueden tener
+// nombres como "Set 1", "Conjunto A", etc.)
+function slugSet(setName: string): string {
+  return setName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'main'
+}
+
 async function generarAlertasParaNiño(childId: string): Promise<AlertaGenerada[]> {
   const alertas: AlertaGenerada[] = []
 
+  // FIX clínico: traer también los objetivos_cp (sets) para conocer su estado
+  // (pendiente / en_progreso / dominado). Esto permite:
+  //  1. Analizar SOLO los sets no-dominados (no perder tiempo con sets cerrados)
+  //  2. Marcar el programa como logrado SOLO cuando TODOS sus sets están dominados
   const { data: programas } = await supabaseAdmin
     .from('programas_aba')
-    .select('id, titulo, criterio_dominio_pct, criterio_sesiones_consecutivas')
+    .select(`
+      id, titulo, criterio_dominio_pct, criterio_sesiones_consecutivas, estado,
+      objetivos_cp ( id, numero_set, descripcion, estado )
+    `)
     .eq('child_id', childId)
 
   if (!programas || programas.length === 0) return alertas
@@ -91,97 +104,144 @@ async function generarAlertasParaNiño(childId: string): Promise<AlertaGenerada[
     const criterio = prog.criterio_dominio_pct || 90
     const nConsecutivas = Number(prog.criterio_sesiones_consecutivas) || 2
 
-    // Permitir analizar programas con 1 sesión (caso "Falta 1 sesión para dominar")
-    if (sesionesIntervencion.length < 1) continue
+    // ── Mapa nombre-de-set → estado del set ──
+    // Sets se identifican en sesiones_datos_aba.set como "Set 1", "Set 2", etc.
+    // En objetivos_cp tienen numero_set. Hacemos matching por la convención común.
+    const setsDefinidos: { nombre: string; estado: string }[] = (prog.objetivos_cp || [])
+      .map((o: any) => ({
+        nombre: o.numero_set ? `Set ${o.numero_set}` : (o.descripcion || '').slice(0, 20),
+        estado: o.estado || 'pendiente',
+      }))
+    const setEstadoMap: Record<string, string> = {}
+    for (const s of setsDefinidos) setEstadoMap[s.nombre] = s.estado
 
-    const tendencia = calcularTendencia(sesionesIntervencion)
-    const slope = tendencia.slope ?? 0
-    const nAnalizadas = tendencia.n_sesiones_analizadas ?? sesionesIntervencion.length
+    // ── Agrupar sesiones por set ──
+    const sesionesPorSet: Record<string, any[]> = {}
+    for (const s of sesionesIntervencion) {
+      const setKey = s.set || '__sin_set__'
+      if (!sesionesPorSet[setKey]) sesionesPorSet[setKey] = []
+      sesionesPorSet[setKey].push(s)
+    }
 
-    // ── Set activo (último set con sesiones) ──
-    const setsConSesiones = Array.from(new Set(sesionesIntervencion.map((s: any) => s.set ?? '__none__')))
-    const setActivo = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
-    const sesionesSetActivo = sesionesIntervencion.filter((s: any) => (s.set ?? '__none__') === setActivo)
+    // ── Analizar CADA set no-dominado con sesiones (sets en paralelo) ──
+    // Los terapeutas pueden trabajar varios sets a la vez, así que iteramos todos
+    // los que estén activos (no dominados) y tengan datos.
+    const setsParaAnalizar = Object.keys(sesionesPorSet).filter(setKey => {
+      const estadoSet = setEstadoMap[setKey] || 'en_progreso'  // si no está en objetivos_cp, asumir activo
+      return estadoSet !== 'dominado' && sesionesPorSet[setKey].length >= 1
+    })
 
-    // ── LOGROS POSITIVOS ──
-    const criterioAlcanzado =
-      sesionesSetActivo.length >= nConsecutivas &&
-      sesionesSetActivo.slice(-nConsecutivas).every((s: any) => (s.porcentaje_exito ?? 0) >= criterio)
+    for (const setNombre of setsParaAnalizar) {
+      const sesionesSet = sesionesPorSet[setNombre]
+      const etiquetaSet = setNombre !== '__sin_set__' ? ` (${setNombre})` : ''
+      const setSlug = slugSet(setNombre)
 
-    if (criterioAlcanzado) {
-      const ultimas = sesionesSetActivo.slice(-nConsecutivas)
-      const promUlt = Math.round(ultimas.reduce((a: number, s: any) => a + s.porcentaje_exito, 0) / ultimas.length)
-      const etiquetaSet = setActivo && setActivo !== '__none__' ? ` (${setActivo})` : ''
+      const tendencia = sesionesSet.length >= 2
+        ? calcularTendencia(sesionesSet)
+        : { tendencia: 'insuficiente' as const, slope: 0, promedio_reciente: 0, promedio_anterior: 0, cambio: 0, n_sesiones_analizadas: 0, n: sesionesSet.length }
+      const slope = tendencia.slope ?? 0
+      const nAnalizadas = tendencia.n_sesiones_analizadas ?? sesionesSet.length
+
+      // ── LOGROS POSITIVOS por set ──
+      const criterioAlcanzado =
+        sesionesSet.length >= nConsecutivas &&
+        sesionesSet.slice(-nConsecutivas).every((s: any) => (s.porcentaje_exito ?? 0) >= criterio)
+
+      if (criterioAlcanzado) {
+        const ultimas = sesionesSet.slice(-nConsecutivas)
+        const promUlt = Math.round(ultimas.reduce((a: number, s: any) => a + s.porcentaje_exito, 0) / ultimas.length)
+        alertas.push({
+          child_id: childId,
+          tipo: `logro_dominio_${prog.id}_${setSlug}`,
+          titulo: `🎯 Criterio alcanzado en "${prog.titulo}"${etiquetaSet}`,
+          mensaje: `${nConsecutivas} sesiones consecutivas cumpliendo criterio de ${criterio}% (promedio ${promUlt}%)${etiquetaSet}. Considera marcar el set como dominado y continuar con los demás.`,
+          prioridad: 'baja',
+          programa_id: prog.id,
+        })
+      }
+      else if (
+        nConsecutivas >= 2 &&
+        sesionesSet.length >= nConsecutivas - 1 &&
+        sesionesSet.slice(-(nConsecutivas - 1)).every((s: any) => (s.porcentaje_exito ?? 0) >= criterio)
+      ) {
+        const ultima = sesionesSet[sesionesSet.length - 1]
+        alertas.push({
+          child_id: childId,
+          tipo: `logro_cerca_dominio_${prog.id}_${setSlug}`,
+          titulo: `⚡ Falta 1 sesión para dominar "${prog.titulo}"${etiquetaSet}`,
+          mensaje: `Última sesión al ${ultima?.porcentaje_exito}% cumpliendo criterio (${criterio}%)${etiquetaSet}. Una sesión más en el criterio confirma el dominio del set.`,
+          prioridad: 'baja',
+          programa_id: prog.id,
+        })
+      }
+      else if (
+        sesionesSet.length >= 5 &&
+        slope >= 5 &&
+        (tendencia.promedio_reciente || 0) >= 60
+      ) {
+        alertas.push({
+          child_id: childId,
+          tipo: `logro_progreso_${prog.id}_${setSlug}`,
+          titulo: `📈 Progreso consistente en "${prog.titulo}"${etiquetaSet}`,
+          mensaje: `Tendencia ascendente clara dentro del set${etiquetaSet}: +${slope}% por sesión, promedio ${tendencia.promedio_reciente}% sobre las últimas ${nAnalizadas} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
+          prioridad: 'baja',
+          programa_id: prog.id,
+        })
+      }
+
+      // ── REGRESIÓN dentro del set ──
+      if (
+        sesionesSet.length >= 2 &&
+        tendencia.tendencia === 'regresion' &&
+        (tendencia.cambio || 0) < -10
+      ) {
+        alertas.push({
+          child_id: childId,
+          tipo: `regresion_${prog.id}_${setSlug}`,
+          titulo: `Regresión en "${prog.titulo}"${etiquetaSet}`,
+          mensaje: `Dentro del set${etiquetaSet}, el % bajó ${Math.abs(tendencia.cambio || 0)} puntos (${tendencia.promedio_anterior}% → ${tendencia.promedio_reciente}%, pendiente ${slope}%/sesión). Revisar antecedentes y reforzadores.`,
+          prioridad: 'alta',
+          programa_id: prog.id,
+        })
+      }
+
+      // ── ESTANCAMIENTO dentro del set ──
+      if (
+        !criterioAlcanzado &&
+        sesionesSet.length >= 5 &&
+        tendencia.tendencia === 'estable' &&
+        (tendencia.promedio_reciente || 0) < Math.min(70, criterio - 10)
+      ) {
+        alertas.push({
+          child_id: childId,
+          tipo: `estancamiento_${prog.id}_${setSlug}`,
+          titulo: `Estancamiento en "${prog.titulo}"${etiquetaSet}`,
+          mensaje: `${sesionesSet.length} sesiones en el set${etiquetaSet} sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión, promedio ${tendencia.promedio_reciente}%, criterio ${criterio}%). Considera revisar procedimiento o nivel de ayuda.`,
+          prioridad: 'media',
+          programa_id: prog.id,
+        })
+      }
+    }
+
+    // ── PROGRAMA LOGRADO COMPLETO: TODOS los sets dominados ──
+    // Solo emite la alerta de "programa logrado" si:
+    //  · el programa tiene al menos 1 set definido
+    //  · TODOS los sets están en estado 'dominado'
+    // No depende de las sesiones, depende del estado manual del set en objetivos_cp.
+    const totalSets = setsDefinidos.length
+    const setsDominados = setsDefinidos.filter(s => s.estado === 'dominado').length
+    if (totalSets > 0 && totalSets === setsDominados) {
       alertas.push({
         child_id: childId,
-        tipo: `logro_dominio_${prog.id}`,
-        titulo: `🎯 Criterio alcanzado en "${prog.titulo}"`,
-        mensaje: `${nConsecutivas} sesiones consecutivas cumpliendo criterio de ${criterio}% (promedio ${promUlt}%)${etiquetaSet}. Considera pasar a mantenimiento o avanzar al siguiente objetivo.`,
+        tipo: `logro_programa_${prog.id}`,
+        titulo: `🏆 Programa dominado: "${prog.titulo}"`,
+        mensaje: `Los ${totalSets} sets del programa están marcados como dominados. Considera pasar el programa a mantenimiento o cerrarlo y continuar con uno nuevo.`,
         prioridad: 'baja',
         programa_id: prog.id,
       })
     }
-    else if (
-      nConsecutivas >= 2 &&
-      sesionesSetActivo.length >= nConsecutivas - 1 &&
-      sesionesSetActivo.slice(-(nConsecutivas - 1)).every((s: any) => (s.porcentaje_exito ?? 0) >= criterio)
-    ) {
-      const ultima = sesionesSetActivo[sesionesSetActivo.length - 1]
-      const etiquetaSet = setActivo && setActivo !== '__none__' ? ` (${setActivo})` : ''
-      alertas.push({
-        child_id: childId,
-        tipo: `logro_cerca_dominio_${prog.id}`,
-        titulo: `⚡ Falta 1 sesión para dominar "${prog.titulo}"`,
-        mensaje: `Última sesión al ${ultima?.porcentaje_exito}% cumpliendo criterio (${criterio}%)${etiquetaSet}. Una sesión más en el criterio confirma el dominio.`,
-        prioridad: 'baja',
-        programa_id: prog.id,
-      })
-    }
-    else if (
-      sesionesIntervencion.length >= 5 &&
-      slope >= 5 &&
-      (tendencia.promedio_reciente || 0) >= 60
-    ) {
-      alertas.push({
-        child_id: childId,
-        tipo: `logro_progreso_${prog.id}`,
-        titulo: `📈 Progreso consistente en "${prog.titulo}"`,
-        mensaje: `Tendencia ascendente clara: +${slope}% por sesión, promedio ${tendencia.promedio_reciente}% sobre las últimas ${nAnalizadas} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
-        prioridad: 'baja',
-        programa_id: prog.id,
-      })
-    }
 
-    // ── REGRESIÓN (alerta negativa) ──
-    if (tendencia.tendencia === 'regresion' && (tendencia.cambio || 0) < -10) {
-      alertas.push({
-        child_id: childId,
-        tipo: `regresion_${prog.id}`,
-        titulo: `Regresión en "${prog.titulo}"`,
-        mensaje: `El % de éxito bajó ${Math.abs(tendencia.cambio || 0)} puntos (${tendencia.promedio_anterior}% → ${tendencia.promedio_reciente}%, pendiente ${slope}%/sesión). Revisar antecedentes y reforzadores.`,
-        prioridad: 'alta',
-        programa_id: prog.id,
-      })
-    }
-
-    // ── ESTANCAMIENTO (alerta negativa) ──
-    if (
-      !criterioAlcanzado &&
-      sesionesIntervencion.length >= 5 &&
-      tendencia.tendencia === 'estable' &&
-      (tendencia.promedio_reciente || 0) < Math.min(70, criterio - 10)
-    ) {
-      alertas.push({
-        child_id: childId,
-        tipo: `estancamiento_${prog.id}`,
-        titulo: `Estancamiento en "${prog.titulo}"`,
-        mensaje: `${sesionesIntervencion.length} sesiones de intervención sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión, promedio ${tendencia.promedio_reciente}%, criterio ${criterio}%). Considera revisar procedimiento o nivel de ayuda.`,
-        prioridad: 'media',
-        programa_id: prog.id,
-      })
-    }
-
-    // ── SIN SESIÓN reciente ──
+    // ── SIN SESIÓN reciente (a nivel programa, no por set) ──
     const ultimaFecha = sesionesAll[sesionesAll.length - 1]?.fecha
     if (ultimaFecha) {
       const diasSinSesion = Math.floor((Date.now() - new Date(ultimaFecha).getTime()) / 86400000)
@@ -231,15 +291,20 @@ export async function POST(req: NextRequest) {
         .eq('child_id', cid)
         .eq('resuelta', false)
 
-      // Resolver: (a) alertas con suffix que ya no aplican, (b) alertas legacy sin suffix
-      // que fueron reemplazadas por la nueva versión con programa_id (sin_sesion → sin_sesion_<id>)
+      // Resolver:
+      //  (a) alertas legacy sin suffix de programa
+      //  (b) alertas con suffix de programa (o programa+set) que ya no aplican
+      //      Esto incluye: regresion_<prog>, regresion_<prog>_<set>, logro_dominio_<prog>_<set>, etc.
+      //      Cuando un set se marca como dominado o se agrega un set nuevo, las alertas viejas
+      //      del set anterior (o de la combinación anterior) desaparecen del set tiposActuales
+      //      y deben resolverse automáticamente.
       const aResolver = (existentes || [])
         .filter((e: any) => {
           const t = String(e.tipo || '')
-          // Tipos legacy sin suffix → siempre resolver para que mi endpoint los reemplace con la versión nueva
+          // Legacy sin suffix → siempre resolver
           const esLegacy = ['sin_sesion', 'regresion', 'estancamiento', 'criterio_alcanzado'].includes(t)
           if (esLegacy) return true
-          // Tipos con suffix de programa que ya no aplican (regla dejó de cumplirse)
+          // Cualquier alerta con prefijo de regla — resolver si ya no está en tiposActuales
           const esDeRegla = /^(logro_|regresion_|estancamiento_|sin_sesion_)/.test(t)
           return esDeRegla && !tiposActuales.has(t)
         })

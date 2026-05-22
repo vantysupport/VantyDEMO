@@ -208,19 +208,29 @@ export async function POST(req: NextRequest) {
       const ultimoPct = porcentajes[porcentajes.length - 1]
       const media = calcularMedia(porcentajes)
       const mediana = calcularMediana(porcentajes)
-      const tendencia = calcularTendencia(porcentajes)
       const criterio = prog.criterio_dominio_pct || 90
-      const { logrado, sesionesConsecutivas } = verificarCriterioLogro(porcentajes, criterio)
 
-      // Agrupar por SET
+      // Agrupar por SET y mantener orden temporal
       const setsMap: Record<string, number[]> = {}
+      const setsOrden: string[] = []
       for (const s of sesiones) {
         const setKey = s.set_nombre || s.fase || 'Set 1'
-        if (!setsMap[setKey]) setsMap[setKey] = []
+        if (!setsMap[setKey]) { setsMap[setKey] = []; setsOrden.push(setKey) }
         setsMap[setKey].push(s.porcentaje_exito || 0)
       }
 
-      const sets = Object.entries(setsMap).map(([nombre, pcts]) => {
+      // FIX clínico CRÍTICO: la "tendencia" del programa se calcula sobre el
+      // set ACTIVO (el último), no combinando todos los sets. Cuando un niño
+      // pasa de Set 2 (90%) a Set 3 (20%) eso NO es regresión — es un nivel
+      // nuevo. Mezclar sets producía "Tendencia negativa ⚠️" engañosa.
+      const setActivoNombre = setsOrden[setsOrden.length - 1] || null
+      const porcentajesSetActivo = setActivoNombre ? setsMap[setActivoNombre] : porcentajes
+      const tendencia = calcularTendencia(porcentajesSetActivo)
+      const ultimoPctSet = porcentajesSetActivo[porcentajesSetActivo.length - 1] || 0
+      const { logrado, sesionesConsecutivas } = verificarCriterioLogro(porcentajesSetActivo, criterio)
+
+      const sets = setsOrden.map(nombre => {
+        const pcts = setsMap[nombre]
         const { logrado: setLogrado, sesionesConsecutivas: cons } = verificarCriterioLogro(pcts, criterio)
         return {
           nombre,
@@ -241,14 +251,20 @@ export async function POST(req: NextRequest) {
         fase_actual: prog.fase_actual,
         criterio_dominio: criterio,
         total_sesiones: sesiones.length,
+        set_activo: setActivoNombre,
         ultimo_porcentaje: Math.round(ultimoPct),
         media: Math.round(media),
         mediana: Math.round(mediana),
         tendencia_slope: Math.round(tendencia.slope * 10) / 10,
-        tendencia_descripcion: tendencia.slope > 1 ? 'Progreso positivo' : tendencia.slope < -1 ? 'Tendencia negativa ⚠️' : 'Estable',
+        tendencia_descripcion: tendencia.slope > 1
+          ? `Progreso positivo en ${setActivoNombre || 'set activo'}`
+          : tendencia.slope < -1
+            ? `Tendencia negativa dentro de ${setActivoNombre || 'set activo'} ⚠️`
+            : `Estable dentro de ${setActivoNombre || 'set activo'}`,
+        tendencia_scope: setActivoNombre || 'sin sets',   // explicita el alcance del análisis
         criterio_logrado: logrado,
         sesiones_consecutivas_sobre_criterio: sesionesConsecutivas,
-        estado_general: logrado ? 'LOGRADO ✅' : ultimoPct >= criterio ? 'En criterio — verificar 2 sesiones consecutivas' : ultimoPct >= criterio * 0.7 ? 'Cerca del criterio' : 'En progreso',
+        estado_general: logrado ? 'LOGRADO ✅' : ultimoPctSet >= criterio ? 'En criterio — verificar 2 sesiones consecutivas' : ultimoPctSet >= criterio * 0.7 ? 'Cerca del criterio' : 'En progreso',
         sets,
       })
     }
@@ -294,6 +310,15 @@ PACIENTE: ${childName}
 SESIONES TOTALES ANALIZADAS: ${totalSesionesAnalizadas}
 PROGRAMAS CON DATOS: ${progConSesiones.length} | SIN DATOS AÚN: ${progSinSesiones.length}
 CRITERIO DE DOMINIO: ≥${analisis_por_programa[0]?.criterio_dominio || 90}% en 2 sesiones consecutivas (criterio de transferencia de control de estímulos)
+
+═══ PRINCIPIO CLÍNICO FUNDAMENTAL ═══
+Cada SET dentro de un programa ABA es un nivel/objetivo independiente con su propia
+línea base. Cuando un niño cumple criterio en un Set y se avanza al siguiente Set
+(mayor dificultad), es ESPERABLE que comience con un porcentaje bajo (ej: pasar
+de 90% en Set 2 a 20% en Set 3). Eso NO constituye regresión clínica — es transición
+normal a un nivel más exigente. Los datos a continuación reportan la TENDENCIA
+SOLO DENTRO del set activo de cada programa, no combinada entre sets. Bajo ninguna
+circunstancia interpretes el inicio bajo de un nuevo set como deterioro del paciente.
 
 DATOS CLÍNICOS POR PROGRAMA:
 ${resumenParaIA.map(p => [

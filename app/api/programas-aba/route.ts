@@ -143,6 +143,46 @@ export async function POST(req: NextRequest) {
         .select()
         .single()
       if (error) throw error
+
+      // FIX clínico: si cambió el estado del set, sincronizar el estado del programa.
+      //   · TODOS los sets dominados → programa estado = 'dominado'
+      //   · Algún set NO dominado → programa estado = 'intervencion' (si estaba 'dominado')
+      // Esto refleja la regla del centro: un programa solo se considera logrado
+      // cuando TODOS sus sets están completados.
+      if (estado !== undefined && (data as any)?.programa_id) {
+        try {
+          const programa_id = (data as any).programa_id
+          const { data: allSets } = await supabaseAdmin
+            .from('objetivos_cp')
+            .select('estado')
+            .eq('programa_id', programa_id)
+          const sets = (allSets || []) as any[]
+          const totalSets = sets.length
+          const setsDominados = sets.filter(s => s.estado === 'dominado').length
+
+          if (totalSets > 0 && totalSets === setsDominados) {
+            // Todos los sets dominados → marcar programa como dominado
+            await supabaseAdmin
+              .from('programas_aba')
+              .update({ estado: 'dominado', fase_actual: 'dominado', fecha_dominio: new Date().toISOString().split('T')[0] })
+              .eq('id', programa_id)
+          } else {
+            // Algún set NO dominado → asegurarse que el programa no esté como 'dominado'
+            const { data: prog } = await supabaseAdmin
+              .from('programas_aba')
+              .select('estado')
+              .eq('id', programa_id)
+              .maybeSingle()
+            if (prog && (prog as any).estado === 'dominado') {
+              await supabaseAdmin
+                .from('programas_aba')
+                .update({ estado: 'intervencion', fase_actual: 'intervencion' })
+                .eq('id', programa_id)
+            }
+          }
+        } catch { /* no bloquear el update del set */ }
+      }
+
       return NextResponse.json({ data })
     }
 
@@ -173,6 +213,25 @@ export async function POST(req: NextRequest) {
         .select()
         .single()
       if (error) throw error
+
+      // FIX clínico: si el programa estaba marcado como 'dominado' y se agrega
+      // un set nuevo, el programa ya no está completo — revertir a 'intervencion'.
+      // El nuevo set arranca como 'pendiente', por lo que el programa global vuelve
+      // a estar en curso hasta que el terapeuta marque el nuevo set como dominado.
+      try {
+        const { data: prog } = await supabaseAdmin
+          .from('programas_aba')
+          .select('estado, fase_actual')
+          .eq('id', programa_id)
+          .maybeSingle()
+        if (prog && (prog as any).estado === 'dominado') {
+          await supabaseAdmin
+            .from('programas_aba')
+            .update({ estado: 'intervencion', fase_actual: 'intervencion' })
+            .eq('id', programa_id)
+        }
+      } catch { /* no bloquear el create del set */ }
+
       return NextResponse.json({ data })
     }
 

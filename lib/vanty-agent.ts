@@ -476,52 +476,63 @@ export class VantyAgent {
       for (const prog of programas as any[]) {
         const sesionesAll = sesionesPorPrograma[prog.id] || []
 
-        // FIX clínico: separar baseline e intervención.
-        // La línea base mide el nivel PRE-intervención y NO debe contar para
-        // detectar estancamiento del tratamiento. Solo se analizan sesiones de
-        // intervención/mantenimiento.
+        // FIX clínico 1: separar baseline e intervención.
+        // La línea base mide el nivel PRE-intervención y NO debe contar.
         const sesionesIntervencion = sesionesAll.filter(s => s.fase !== 'linea_base')
 
-        if (sesionesIntervencion.length < 2) continue
+        if (sesionesIntervencion.length < 1) continue
 
-        const tendencia = calcularTendenciaLocal(sesionesIntervencion)
+        // ── FIX clínico 2 (CRÍTICO): el análisis se hace POR SET, no combinado.
+        // Cada set es un nivel independiente. Cuando se pasa de Set 2 (90%) a
+        // Set 3 (20% inicial), eso NO es regresión — es transición normal a
+        // un nivel más difícil. Mezclar sets entre sí produce alertas falsas.
         const criterio = prog.criterio_dominio_pct || 90
-        const slope = tendencia.slope ?? 0
-        const nAnalizadas = tendencia.n_sesiones_analizadas ?? sesionesIntervencion.length
+        const nConsecutivas = Number((prog as any).criterio_sesiones_consecutivas) || 2
+        const setsConSesiones = Array.from(new Set(sesionesIntervencion.map((s: any) => s.set ?? '__none__')))
+        const setActivo = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
+        const sesionesSetActivo = sesionesIntervencion.filter((s: any) => (s.set ?? '__none__') === setActivo)
 
-        // Regresión real: pendiente negativa marcada Y cambio fuerte vs ventana previa
+        if (sesionesSetActivo.length < 2) {
+          // Si el set activo es nuevo (solo 1 sesión) saltamos la detección de
+          // tendencia/regresión — no hay suficientes datos en ESE set para
+          // sacar conclusiones, y mezclarlo con sets anteriores genera falsos
+          // positivos. Solo evaluamos los logros más adelante.
+        }
+
+        const tendencia = sesionesSetActivo.length >= 2
+          ? calcularTendenciaLocal(sesionesSetActivo)
+          : { tendencia: 'insuficiente' as const, slope: 0, promedio_reciente: 0, promedio_anterior: 0, cambio: 0, n_sesiones_analizadas: 0, n: sesionesSetActivo.length }
+        const slope = tendencia.slope ?? 0
+        const nAnalizadas = tendencia.n_sesiones_analizadas ?? sesionesSetActivo.length
+        const etiquetaSetGlobal = setActivo && setActivo !== '__none__' ? ` (${setActivo})` : ''
+
+        // Regresión real DENTRO del set activo: pendiente negativa marcada
         if (tendencia.tendencia === 'regresion' && (tendencia.cambio || 0) < -10) {
           alertas.push({
             tipo: 'regresion',
-            titulo: `Regresión en "${prog.titulo}"`,
-            mensaje: `El % de éxito bajó ${Math.abs(tendencia.cambio || 0)} puntos (${tendencia.promedio_anterior}% → ${tendencia.promedio_reciente}%, pendiente ${slope}%/sesión). Revisar antecedentes y reforzadores.`,
+            titulo: `Regresión en "${prog.titulo}"${etiquetaSetGlobal}`,
+            mensaje: `Dentro del set activo${etiquetaSetGlobal}, el % de éxito bajó ${Math.abs(tendencia.cambio || 0)} puntos (${tendencia.promedio_anterior}% → ${tendencia.promedio_reciente}%, pendiente ${slope}%/sesión). Revisar antecedentes y reforzadores.`,
             prioridad: 'alta',
             programa_id: prog.id,
           })
         }
 
-        // Estancamiento real: ≥5 sesiones de INTERVENCIÓN, pendiente plana
-        // (no mejora estadística) Y promedio aún lejos del criterio de dominio.
+        // Estancamiento real DENTRO del set: ≥5 sesiones en el set, pendiente plana, promedio lejos del criterio
         if (
-          sesionesIntervencion.length >= 5 &&
+          sesionesSetActivo.length >= 5 &&
           tendencia.tendencia === 'estable' &&
           (tendencia.promedio_reciente || 0) < Math.min(70, criterio - 10)
         ) {
           alertas.push({
             tipo: 'estancamiento',
-            titulo: `Estancamiento en "${prog.titulo}"`,
-            mensaje: `${sesionesIntervencion.length} sesiones de intervención sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${nAnalizadas}, promedio ${tendencia.promedio_reciente}%, criterio ${criterio}%). Considera revisar procedimiento o nivel de ayuda.`,
+            titulo: `Estancamiento en "${prog.titulo}"${etiquetaSetGlobal}`,
+            mensaje: `${sesionesSetActivo.length} sesiones en el set${etiquetaSetGlobal} sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${nAnalizadas}, promedio ${tendencia.promedio_reciente}%, criterio ${criterio}%). Considera revisar procedimiento o nivel de ayuda.`,
             prioridad: 'media',
             programa_id: prog.id,
           })
         }
 
         // ── LOGROS POSITIVOS (per-set, mismo criterio que la UI) ──
-        // Usa el SET ACTIVO (último set con sesiones) y aplica el criterio del programa.
-        const nConsecutivas = Number((prog as any).criterio_sesiones_consecutivas) || 2
-        const setsConSesiones = Array.from(new Set(sesionesIntervencion.map((s: any) => s.set ?? '__none__')))
-        const setActivo = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
-        const sesionesSetActivo = sesionesIntervencion.filter((s: any) => (s.set ?? '__none__') === setActivo)
 
         // 1. CRITERIO ALCANZADO: últimas N consecutivas del set activo ≥ criterio
         const criterioAlcanzado =
@@ -560,21 +571,21 @@ export class VantyAgent {
 
         // 3. PROGRESO CONSISTENTE: ≥5 sesiones de intervención, pendiente clara, promedio bueno
         else if (
-          sesionesIntervencion.length >= 5 &&
+          sesionesSetActivo.length >= 5 &&     // ← dentro del set activo, no global
           slope >= 5 &&
           (tendencia.promedio_reciente || 0) >= 60
         ) {
           alertas.push({
             tipo: `logro_progreso_${prog.id}`,
-            titulo: `📈 Progreso consistente en "${prog.titulo}"`,
-            mensaje: `Tendencia ascendente clara: +${slope}% por sesión, promedio ${tendencia.promedio_reciente}% sobre las últimas ${nAnalizadas} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
+            titulo: `📈 Progreso consistente en "${prog.titulo}"${etiquetaSetGlobal}`,
+            mensaje: `Tendencia ascendente clara dentro del set${etiquetaSetGlobal}: +${slope}% por sesión, promedio ${tendencia.promedio_reciente}% sobre las últimas ${nAnalizadas} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
             prioridad: 'baja',
             programa_id: prog.id,
           })
         }
 
-        if ((tendencia.promedio_reciente || 0) >= criterio - 5) {
-          sugerencias.push(`"${prog.titulo}" está al ${tendencia.promedio_reciente}% — cerca del criterio de dominio (${criterio}%). ¡Excelente progreso!`)
+        if ((tendencia.promedio_reciente || 0) >= criterio - 5 && sesionesSetActivo.length >= 2) {
+          sugerencias.push(`"${prog.titulo}"${etiquetaSetGlobal} está al ${tendencia.promedio_reciente}% — cerca del criterio de dominio (${criterio}%). ¡Excelente progreso!`)
         }
 
         const ultimaFecha = sesionesAll[sesionesAll.length - 1]?.fecha

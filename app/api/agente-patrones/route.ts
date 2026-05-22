@@ -222,9 +222,16 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // Detectar patrones por programa individual (mínimo 2 sesiones de intervención)
-      if (sesionesProg.length >= 2) {
-        const valores = sesionesProg.map((s: any) => s.porcentaje_exito as number)
+      // Detectar patrones DENTRO del set activo, no cruzando sets.
+      // FIX clínico: cada set es un nivel independiente. Pasar de Set 2 (90%)
+      // a Set 3 (20%) NO es regresión.
+      const setsConSesiones = Array.from(new Set(sesionesProg.map((s: any) => s.set ?? '__none__')))
+      const setActivoP = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
+      const sesionesSetActivoP = sesionesProg.filter((s: any) => (s.set ?? '__none__') === setActivoP)
+      const etiquetaSet = setActivoP && setActivoP !== '__none__' ? ` (${setActivoP})` : ''
+
+      if (sesionesSetActivoP.length >= 2) {
+        const valores = sesionesSetActivoP.map((s: any) => s.porcentaje_exito as number)
         const criterio = (prog as any).criterio_dominio_pct || 90
         const nombreProg = (prog as any).titulo || 'Programa'
         const recientes = valores.slice(-3)
@@ -237,22 +244,22 @@ export async function POST(req: NextRequest) {
         const ultimo = valores[valores.length - 1]
         const semanas_ = Math.ceil(valores.length / 2)
 
-        // DOMINIO: últimas sesiones >= criterio
+        // DOMINIO: últimas sesiones >= criterio (dentro del set activo)
         if (valores.length >= 2 && valores.slice(-2).every((v: number) => v >= criterio)) {
           todosPatrones.push({
             tipo: 'dominio', area: nombreProg,
-            descripcion: `"${nombreProg}" alcanzó criterio de dominio (≥${criterio}%) en las últimas ${Math.min(valores.length, 2)} sesiones`,
+            descripcion: `"${nombreProg}"${etiquetaSet} alcanzó criterio de dominio (≥${criterio}%) en las últimas ${Math.min(valores.length, 2)} sesiones`,
             confianza: 92, sesiones_involucradas: Math.min(valores.length, 2),
             valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
             semanas_detectado: semanas_,
-            accion_sugerida: `Avanzar al siguiente objetivo o fase de generalización en "${nombreProg}"`
+            accion_sugerida: `Avanzar al siguiente set o fase de generalización en "${nombreProg}"`
           })
         }
-        // REGRESIÓN: bajó más de 15 puntos
+        // REGRESIÓN dentro del set: bajó más de 15 puntos
         else if (delta < -15 && valores.length >= 2) {
           todosPatrones.push({
             tipo: 'regresion', area: nombreProg,
-            descripcion: `"${nombreProg}" bajó ${Math.abs(Math.round(delta))} puntos (${Math.round(promAnterior)}% → ${Math.round(promReciente)}%)`,
+            descripcion: `"${nombreProg}"${etiquetaSet} bajó ${Math.abs(Math.round(delta))} puntos dentro del set (${Math.round(promAnterior)}% → ${Math.round(promReciente)}%)`,
             confianza: Math.min(95, 60 + Math.abs(delta)),
             sesiones_involucradas: recientes.length,
             valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
@@ -260,11 +267,11 @@ export async function POST(req: NextRequest) {
             accion_sugerida: `Revisar reforzadores y antecedentes en "${nombreProg}". Posible necesidad de ajustar el SD o simplificar la tarea`
           })
         }
-        // ACELERACIÓN: subió más de 20 puntos
+        // ACELERACIÓN dentro del set: subió más de 20 puntos
         else if (delta > 20 && valores.length >= 2) {
           todosPatrones.push({
             tipo: 'aceleracion', area: nombreProg,
-            descripcion: `"${nombreProg}" aceleró +${Math.round(delta)} puntos en las últimas sesiones`,
+            descripcion: `"${nombreProg}"${etiquetaSet} aceleró +${Math.round(delta)} puntos en las últimas sesiones`,
             confianza: Math.min(95, 55 + delta),
             sesiones_involucradas: recientes.length,
             valor_actual: Math.round(promReciente), valor_anterior: Math.round(promAnterior),
@@ -272,7 +279,7 @@ export async function POST(req: NextRequest) {
             accion_sugerida: `Identificar qué está funcionando en "${nombreProg}" y replicar la estrategia`
           })
         }
-        // ESTANCAMIENTO: ≥5 sesiones de intervención, pendiente plana, lejos del criterio
+        // ESTANCAMIENTO dentro del set: ≥5 sesiones en el set, pendiente plana
         else if (valores.length >= 5) {
           const ventana = valores.slice(-Math.min(6, valores.length))
           const slope = Math.round(slopeLineal(ventana) * 10) / 10
@@ -282,7 +289,7 @@ export async function POST(req: NextRequest) {
           if (esPlana && lejosDelCriterio) {
             todosPatrones.push({
               tipo: 'estancamiento', area: nombreProg,
-              descripcion: `"${nombreProg}" sin mejora estadística en ${valores.length} sesiones de intervención (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${ventana.length}, promedio ${Math.round(promVentana)}%, criterio ${criterio}%)`,
+              descripcion: `"${nombreProg}"${etiquetaSet} sin mejora estadística en ${valores.length} sesiones del set (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión, promedio ${Math.round(promVentana)}%, criterio ${criterio}%)`,
               confianza: 80, sesiones_involucradas: ventana.length,
               valor_actual: Math.round(promVentana), valor_anterior: Math.round(promAnterior),
               semanas_detectado: semanas_,

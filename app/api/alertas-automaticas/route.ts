@@ -114,7 +114,7 @@ async function analizarPaciente(childId: string): Promise<any[]> {
   // análisis de progreso. Tendencia detectada por regresión lineal (slope).
   const { data: programasABA } = await supabaseAdmin
     .from('programas_aba')
-    .select('id, titulo, criterio_dominio_pct, criterio_sesiones_consecutivas, sesiones_datos_aba(fecha, porcentaje_exito, fase)')
+    .select('id, titulo, criterio_dominio_pct, criterio_sesiones_consecutivas, sesiones_datos_aba(fecha, porcentaje_exito, fase, set)')
     .eq('child_id', childId)
 
   // Helper local — pendiente por regresión lineal
@@ -135,16 +135,23 @@ async function analizarPaciente(childId: string): Promise<any[]> {
 
     for (const s of sesionesProg) todasSesiones.push(s)
 
-    // Excluir línea base para análisis de progreso del tratamiento
+    // Excluir línea base
     const sesionesIntervencion = sesionesProg.filter((s: any) => s.fase !== 'linea_base')
     if (sesionesIntervencion.length < 2) continue
+
+    // FIX clínico CRÍTICO: análisis dentro del SET activo, no cruzando sets.
+    // Pasar de Set 2 (90%) a Set 3 (20%) es transición esperada, no regresión.
+    const setsConSesiones = Array.from(new Set(sesionesIntervencion.map((s: any) => s.set ?? '__none__')))
+    const setActivoA = setsConSesiones[setsConSesiones.length - 1] ?? '__none__'
+    const sesionesSetActivoA = sesionesIntervencion.filter((s: any) => (s.set ?? '__none__') === setActivoA)
+    const etiquetaSet = setActivoA && setActivoA !== '__none__' ? ` (${setActivoA})` : ''
 
     const criterio = (prog as any).criterio_dominio_pct || 90
     const nombre = (prog as any).titulo || 'Programa ABA'
 
-    // Estancamiento: ≥5 sesiones de intervención, pendiente plana, promedio bajo
-    if (sesionesIntervencion.length >= 5) {
-      const ventana = sesionesIntervencion.slice(-Math.min(6, sesionesIntervencion.length))
+    // Estancamiento: ≥5 sesiones DEL SET ACTIVO, pendiente plana, promedio bajo
+    if (sesionesSetActivoA.length >= 5) {
+      const ventana = sesionesSetActivoA.slice(-Math.min(6, sesionesSetActivoA.length))
       const valores = ventana.map((s: any) => s.porcentaje_exito as number)
       const prom = valores.reduce((a: number, b: number) => a + b, 0) / valores.length
       const slope = Math.round(slopeLineal(valores) * 10) / 10
@@ -154,8 +161,8 @@ async function analizarPaciente(childId: string): Promise<any[]> {
         await crearAlertaSiNoExiste({
           child_id: childId,
           tipo: `estancamiento_${(prog as any).id}`,
-          titulo: `Estancamiento en "${nombre}"`,
-          descripcion: `${sesionesIntervencion.length} sesiones de intervención sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${valores.length}, promedio ${Math.round(prom)}%, criterio ${criterio}%). Revisar estrategia.`,
+          titulo: `Estancamiento en "${nombre}"${etiquetaSet}`,
+          descripcion: `${sesionesSetActivoA.length} sesiones en el set${etiquetaSet} sin mejora estadística (pendiente ${slope >= 0 ? '+' : ''}${slope}%/sesión sobre las últimas ${valores.length}, promedio ${Math.round(prom)}%, criterio ${criterio}%). Revisar estrategia.`,
           prioridad: 1,
           resuelta: false
         })
@@ -163,20 +170,18 @@ async function analizarPaciente(childId: string): Promise<any[]> {
       }
     }
 
-    // ── LOGRO: Dominio alcanzado ──
-    // Las últimas N sesiones de intervención (N = criterio_sesiones_consecutivas
-    // del programa, por defecto 2) cumplen TODAS el criterio_dominio_pct.
+    // ── LOGRO: Dominio alcanzado en el set activo ──
     const nConsecutivas = Number((prog as any).criterio_sesiones_consecutivas) || 2
-    if (sesionesIntervencion.length >= nConsecutivas) {
-      const ultimas = sesionesIntervencion.slice(-nConsecutivas)
+    if (sesionesSetActivoA.length >= nConsecutivas) {
+      const ultimas = sesionesSetActivoA.slice(-nConsecutivas)
       const todasCumplen = ultimas.every((s: any) => s.porcentaje_exito >= criterio)
       if (todasCumplen) {
         const promUltimas = Math.round(ultimas.reduce((a: number, s: any) => a + s.porcentaje_exito, 0) / ultimas.length)
         await crearAlertaSiNoExiste({
           child_id: childId,
           tipo: `logro_dominio_${(prog as any).id}`,
-          titulo: `🎯 Criterio alcanzado: "${nombre}"`,
-          descripcion: `${nConsecutivas} sesiones consecutivas cumpliendo criterio de ${criterio}% (promedio ${promUltimas}%). Considera pasar a mantenimiento o avanzar al siguiente objetivo.`,
+          titulo: `🎯 Criterio alcanzado: "${nombre}"${etiquetaSet}`,
+          descripcion: `${nConsecutivas} sesiones consecutivas cumpliendo criterio de ${criterio}% (promedio ${promUltimas}%)${etiquetaSet}. Considera pasar a mantenimiento o avanzar al siguiente set.`,
           prioridad: 3,
           resuelta: false
         })
@@ -184,11 +189,9 @@ async function analizarPaciente(childId: string): Promise<any[]> {
       }
     }
 
-    // ── LOGRO: Progreso consistente ──
-    // ≥5 sesiones de intervención con pendiente claramente positiva (slope ≥ +5%/sesión)
-    // y promedio ya bueno (≥60%). Reconoce buen avance aunque aún no se alcance criterio.
-    if (sesionesIntervencion.length >= 5) {
-      const ventana = sesionesIntervencion.slice(-Math.min(6, sesionesIntervencion.length))
+    // ── LOGRO: Progreso consistente dentro del set ──
+    if (sesionesSetActivoA.length >= 5) {
+      const ventana = sesionesSetActivoA.slice(-Math.min(6, sesionesSetActivoA.length))
       const valoresV = ventana.map((s: any) => s.porcentaje_exito as number)
       const promV = valoresV.reduce((a: number, b: number) => a + b, 0) / valoresV.length
       const slopeV = Math.round(slopeLineal(valoresV) * 10) / 10
@@ -196,8 +199,8 @@ async function analizarPaciente(childId: string): Promise<any[]> {
         await crearAlertaSiNoExiste({
           child_id: childId,
           tipo: `logro_progreso_${(prog as any).id}`,
-          titulo: `📈 Progreso consistente en "${nombre}"`,
-          descripcion: `Tendencia ascendente clara: +${slopeV}% por sesión, promedio ${Math.round(promV)}% sobre las últimas ${valoresV.length} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
+          titulo: `📈 Progreso consistente en "${nombre}"${etiquetaSet}`,
+          descripcion: `Tendencia ascendente clara dentro del set${etiquetaSet}: +${slopeV}% por sesión, promedio ${Math.round(promV)}% sobre las últimas ${valoresV.length} sesiones. Buen avance hacia el criterio de ${criterio}%.`,
           prioridad: 3,
           resuelta: false
         })
@@ -205,9 +208,9 @@ async function analizarPaciente(childId: string): Promise<any[]> {
       }
     }
 
-    // Regresión: bajó más de 15 puntos vs sesiones de intervención anteriores
-    if (sesionesIntervencion.length >= 4) {
-      const valores = sesionesIntervencion.map((s: any) => s.porcentaje_exito as number)
+    // Regresión DENTRO del set activo: bajó más de 15 puntos vs ventana previa del mismo set
+    if (sesionesSetActivoA.length >= 4) {
+      const valores = sesionesSetActivoA.map((s: any) => s.porcentaje_exito as number)
       const recientes = valores.slice(-2)
       const anteriores = valores.slice(-4, -2)
       const promReciente = recientes.reduce((a: number, b: number) => a + b, 0) / recientes.length
@@ -216,8 +219,8 @@ async function analizarPaciente(childId: string): Promise<any[]> {
         await crearAlertaSiNoExiste({
           child_id: childId,
           tipo: `regresion_${(prog as any).id}`,
-          titulo: `Regresión en "${nombre}"`,
-          descripcion: `"${nombre}" bajó ${Math.round(promAnterior - promReciente)} puntos (${Math.round(promAnterior)}% → ${Math.round(promReciente)}%). Revisar antecedentes y reforzadores.`,
+          titulo: `Regresión en "${nombre}"${etiquetaSet}`,
+          descripcion: `Dentro del set${etiquetaSet}, "${nombre}" bajó ${Math.round(promAnterior - promReciente)} puntos (${Math.round(promAnterior)}% → ${Math.round(promReciente)}%). Revisar antecedentes y reforzadores.`,
           prioridad: 1,
           resuelta: false
         })
