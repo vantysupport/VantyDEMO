@@ -16,11 +16,13 @@ export const revalidate = 0
 // El orden importa: primero las que dependen de programas_aba (sesiones_datos_aba
 // vía programa_id → child_id), después el resto, finalmente el child.
 const TABLAS_HIJAS_DIRECTAS = [
+  // Pagos y facturación
+  'payments',
+  'facturas',
   // Citas y agenda
   'appointments',
   'agenda_sesiones',
-  // Programas ABA — al borrar el programa, sus objetivos_cp y sesiones_datos_aba
-  // deberían caer por cascada interna (si está configurado), si no, los borramos
+  // Programas ABA — primero las dependientes por programa_id
   'sesiones_datos_aba',         // por seguridad, antes que programas_aba
   'objetivos_cp',                // idem
   'programas_aba',
@@ -50,9 +52,13 @@ const TABLAS_HIJAS_DIRECTAS = [
   'predicciones_ia',
   'patrones_detectados',
   'engagement_planes',
+  'agente_conversaciones',
+  'agente_acciones',
   // Bienestar y reportes
   'parent_wellbeing_checkins',
   'reportes_generados',
+  // Vinculaciones padre-paciente
+  'parent_accounts',
   // Práctica casa (puede no existir aún en algunos ambientes)
   'practica_casa_registros',
 ]
