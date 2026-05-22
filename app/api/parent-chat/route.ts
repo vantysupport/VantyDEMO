@@ -5,6 +5,11 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroq, callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
 import { buildParentChatContext } from '@/lib/ai-context-builder'
 
+// Forzar ejecución dinámica — el contexto del paciente cambia constantemente
+// (sesiones registradas, alertas nuevas, fichas, etc.) y no debe cachearse.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // FIX: calcular edad en años desde birth_date cuando age no está disponible
 function calcularEdad(birthDate: string | null | undefined, ageFallback: number | null | undefined): string {
   if (birthDate) {
@@ -100,8 +105,14 @@ export async function POST(req: NextRequest) {
       } catch {}
     }
 
-    // FIX: responder con AMBOS campos para compatibilidad con los dos frontends
-    return NextResponse.json({ respuesta, text: respuesta })
+    // FIX: responder con AMBOS campos para compatibilidad con los dos frontends.
+    // _debug expone qué cargó el contexto — útil cuando ARIA dice "no hay programas"
+    // pero la UI sí los muestra. Mirar en DevTools → Network → respuesta del POST.
+    return NextResponse.json({
+      respuesta,
+      text: respuesta,
+      _debug: (contexto as any)?._debug || null,
+    })
   } catch (e: any) {
     console.error('❌ Error en parent-chat:', e)
     return NextResponse.json({ error: e.message }, { status: 500 })
@@ -162,13 +173,14 @@ async function cargarContextoPadre(childId: string) {
   })()
   const anioActual = new Date().getFullYear()
 
-  // 2. Cargar TODO en paralelo
+  // 2. Cargar TODO en paralelo. Capturamos `error` de programas para diagnóstico
+  //    porque su fallo silencioso causaba que ARIA dijera "no hay programas activos".
   const [
     { data: child },
     { data: sesionesLegacy },
     { data: sesionesAba },
     { data: tareasPendientes },
-    { data: programas },
+    { data: programas, error: errProgramas },
     { data: proximaCitaAgenda },
     { data: proximaCitaAppt },
     { data: citasPasadas },
@@ -215,24 +227,16 @@ async function cargarContextoPadre(childId: string) {
       .order('fecha_asignada', { ascending: false })
       .limit(10),
 
-    // Programas ABA — con sets y campos clínicos completos.
-    // FIX: NO filtrar por estado. Antes usábamos .neq('estado', 'archivado') pero
-    // en PostgREST `column != 'x'` cuando la columna es NULL devuelve NULL (falsy)
-    // y excluía programas válidos sin estado explícito. Filtramos archivados en JS.
+    // Programas ABA — usar la MISMA query que /api/programas-aba (que sí funciona).
+    // FIX 1: NO filtrar por estado (PostgREST trata NULL != 'x' como NULL/falsy).
+    // FIX 2: Usar select('*') con objetivos_cp(*) — el select restrictivo o el join
+    //         tipado anterior fallaban silenciosamente dentro de Promise.all.
+    // FIX 3: Sin limit para no perder programas si hay más de 15.
     supabaseAdmin
       .from('programas_aba')
-      .select(`
-        id, titulo, area, fase_actual, estado, criterio_dominio_pct, objetivo_lp,
-        sd_estimulo, ayudas, reforzadores, materiales, instrucciones_casa,
-        objetivos_cp (
-          descripcion, estado, numero_set,
-          sd_estimulo, materiales, unidad_positiva, unidad_negativa,
-          reforzadores, correction_errores, generalizacion
-        )
-      `)
+      .select(`*, objetivos_cp(*)`)
       .eq('child_id', childId)
-      .order('created_at', { ascending: false })
-      .limit(15),
+      .order('created_at', { ascending: false }),
 
     // Próxima cita (agenda_sesiones)
     supabaseAdmin
@@ -377,7 +381,17 @@ async function cargarContextoPadre(childId: string) {
   }))
 
   // Filtrar archivados en JS (después del fetch para incluir programas con estado null)
+  // Si la query de programas falló, lo dejamos visible en logs para diagnóstico
+  if (errProgramas) {
+    console.error('[parent-chat] Error cargando programas_aba:', errProgramas.message, errProgramas)
+  }
   const programasActivos = (programas || []).filter((p: any) => p.estado !== 'archivado')
+  console.log('[parent-chat] Programas para child', childId, '→', {
+    raw_length: (programas || []).length,
+    activos_length: programasActivos.length,
+    error: errProgramas?.message || null,
+    titulos: (programas || []).map((p: any) => ({ id: p.id, titulo: p.titulo, estado: p.estado })),
+  })
 
   // ── Mapa programa_id → título ──
   // Si el programa fue archivado o no se encuentra, intentamos sacar el título
