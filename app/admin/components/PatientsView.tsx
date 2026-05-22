@@ -645,23 +645,37 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
         `Se borrará todo su historial (citas, programas, evaluaciones, fichas, documentos).\n\n` +
         `Esta acción no se puede deshacer.`
 
+    let confirmName = ''
     if (tieneCuentaVinculada) {
       const respuesta = prompt(mensaje, '')
-      if (respuesta?.trim() !== nombre.trim()) {
-        if (respuesta !== null) toast.error('El nombre no coincide. Eliminación cancelada.')
+      if (respuesta == null) return  // cancelado
+      if (respuesta.trim() !== nombre.trim()) {
+        toast.error('El nombre no coincide. Eliminación cancelada.')
         return
       }
+      confirmName = respuesta.trim()
     } else {
       if (!confirm(mensaje)) return
     }
 
     setDeleting(true)
     try {
-      // Borrar el niño — el cascade de Supabase debería limpiar relaciones FK.
-      // Si alguna tabla NO tiene ON DELETE CASCADE, la eliminación dejará registros
-      // huérfanos pero al menos el niño desaparece de la lista del admin.
-      const { error } = await supabase.from('children').delete().eq('id', nino.id)
-      if (error) throw error
+      // Usamos el endpoint /api/admin/delete-patient — borra en cascada manual
+      // todas las tablas relacionadas (appointments, programas_aba, evaluaciones,
+      // fichas, etc.) antes de eliminar al niño. El cliente no puede hacer esto
+      // directo porque appointments tiene FK sin ON DELETE CASCADE.
+      const res = await fetch('/api/admin/delete-patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: nino.id, confirm_name: confirmName }),
+      })
+      const json = await res.json()
+      if (!res.ok || json.error) throw new Error(json.error || 'Error desconocido')
+
+      // Log informativo de qué se limpió por consola
+      if (json.registros_limpiados) {
+        console.log(`[delete-patient] "${nombre}" eliminado · limpieza:`, json.registros_limpiados)
+      }
       toast.success(`🗑 "${nombre}" eliminado correctamente`)
       onDeleted?.()
     } catch (e: any) {
