@@ -611,13 +611,39 @@ function MiniChart({ chartData, minSlots, criterio }: { chartData: any[]; minSlo
     return () => ro.disconnect()
   }, [])
 
+  // FIX clínico: separar la mini-línea por set para que NO conecte sesiones
+  // de sets diferentes. Cada set es un nivel independiente — unirlos con una
+  // sola curva sugiere "regresión" engañosa al ojo cuando solo se cambió de set.
+  // Genera una columna distinta por set: pct_<setKey>
+  const setKeys: string[] = []
+  for (const d of chartData) {
+    if (d.pct !== null && d.set != null && !setKeys.includes(d.set)) setKeys.push(d.set)
+  }
+  // Si no hay info de set, fallback al pct único (un solo trazo)
+  const usePerSet = setKeys.length > 0
+  const dataConSets = usePerSet
+    ? chartData.map((d: any) => {
+        const row: any = { sesion: d.sesion }
+        for (const sk of setKeys) row[`pct_${sk}`] = d.set === sk ? d.pct : null
+        return row
+      })
+    : chartData
+
+  // Paleta consistente entre sets (mismo orden que el gráfico grande)
+  const colors = ['#6366f1', '#ef4444', '#0ea5e9', '#a855f7', '#f59e0b', '#10b981']
+
   return (
     <div ref={containerRef} className="mt-3 h-16 w-full" style={{ overflow: 'hidden' }}>
       {width > 0 && (
-        <LineChart width={width} height={64} data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+        <LineChart width={width} height={64} data={dataConSets} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
           <XAxis dataKey="sesion" type="number" domain={[0, minSlots + 1]} hide />
           <YAxis domain={[0, 100]} hide width={0} />
-          <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} connectNulls={false} />
+          {usePerSet
+            ? setKeys.map((sk, i) => (
+                <Line key={sk} type="linear" dataKey={`pct_${sk}`} stroke={colors[i % colors.length]} strokeWidth={2} dot={false} connectNulls={false} />
+              ))
+            : <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} connectNulls={false} />
+          }
           <ReferenceLine y={criterio} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
         </LineChart>
       )}
@@ -1034,18 +1060,25 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               )}
             </div>
             <p className="text-xs text-slate-400 mt-1 line-clamp-1">{programa.objetivo_lp}</p>
-            <div className="flex items-center gap-4 mt-2">
+            <div className="flex items-center gap-4 mt-2 flex-wrap">
+              {/* Total de sesiones (todos los sets) */}
               <span className="text-xs flex items-center gap-1" style={{color:"var(--text-muted)"}}>
-                <BarChart3 size={10} /> {sesiones.length} {t('programas.sesiones') || 'sesiones'}
+                <BarChart3 size={10} /> {sesiones.length} {t('programas.sesiones') || 'sesiones'} totales
               </span>
+              {/* % e indicador SOLO del set activo (no del programa) */}
               {ultimoPct !== null && (
-                <span className="text-xs font-bold flex items-center gap-1">
+                <span className="text-xs font-bold flex items-center gap-1" title={`Última sesión del ${setActivo !== '__none__' ? setActivo : 'set activo'}`}>
                   {tendencia === 'up' && <TrendingUp size={12} className="text-emerald-500" />}
                   {tendencia === 'down' && <TrendingDown size={12} className="text-red-500" />}
                   {tendencia === 'stable' && <Minus size={12} className="text-slate-400" />}
                   <span className={tendencia === 'up' ? 'text-emerald-600' : tendencia === 'down' ? 'text-red-600' : 'text-slate-500'}>
                     {ultimoPct.toFixed(0)}%
                   </span>
+                  {setActivo !== '__none__' && (
+                    <span className="text-[10px] font-semibold ml-0.5" style={{color:"var(--text-muted)"}}>
+                      en {setActivo}
+                    </span>
+                  )}
                 </span>
               )}
               <span className="text-xs" style={{color:"var(--text-muted)"}}>
