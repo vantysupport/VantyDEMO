@@ -561,10 +561,10 @@ async function generarReporteComparativo(childId: string, userLocale = 'es'): Pr
     pred180 = Math.min(100, avg2 + mm * 6)
     confianzaNota = `ÔÜá Proyecci├│n estimativa basada en benchmarks cl├¡nicos ABA (solo ${logros.length} sesiones registradas). La precisi├│n mejora con m├ís datos ÔÇö se recomienda re-evaluar a partir de la sesi├│n 8.`
   } else {
-    const se├▒al = diferencia !== 0 ? diferencia * 0.15 : 0
-    pred30  = Math.min(100, Math.max(avg2 + 1, Math.round(avg2 + pendiente * ses30d + se├▒al)))
-    pred90  = Math.min(100, Math.max(pred30 + 1, Math.round(avg2 + pendiente * ses90d + se├▒al * 2)))
-    pred180 = Math.min(100, Math.max(pred90 + 1, Math.round(avg2 + pendiente * ses180d + se├▒al * 3)))
+    const senal = diferencia !== 0 ? diferencia * 0.15 : 0
+    pred30  = Math.min(100, Math.max(avg2 + 1, Math.round(avg2 + pendiente * ses30d + senal)))
+    pred90  = Math.min(100, Math.max(pred30 + 1, Math.round(avg2 + pendiente * ses90d + senal * 2)))
+    pred180 = Math.min(100, Math.max(pred90 + 1, Math.round(avg2 + pendiente * ses180d + senal * 3)))
     confianzaNota = `Proyecci├│n basada en regresi├│n lineal sobre ${logros.length} sesiones (confianza ${logros.length >= 12 ? 'alta' : 'moderada'}).`
   }
 
