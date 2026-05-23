@@ -30,16 +30,17 @@ export async function POST(req: NextRequest) {
       .single()
     if (error) throw error
 
-    // 🔮 Disparar recomendación IA de terapias en background (best-effort).
-    //    Si el catálogo está vacío o falla, igual seguimos.
+    // 🔮 En paralelo, fire-and-forget:
+    //   • Recomendación IA de terapias del catálogo
+    //   • Generación del informe Word (que aparecerá en Historial & IA)
     try {
-      const url = new URL('/api/evaluacion-inicial/recomendar-terapias', req.url)
-      // fire-and-forget — el cliente verá las recomendaciones al refrescar
-      fetch(url.toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ evaluacion_id }),
-      }).catch(() => {})
+      const base = new URL(req.url)
+      const recUrl = new URL('/api/evaluacion-inicial/recomendar-terapias', base)
+      const wordUrl = new URL('/api/evaluacion-inicial/generar-informe-word', base)
+      const headers = { 'Content-Type': 'application/json' }
+      const body = JSON.stringify({ evaluacion_id })
+      fetch(recUrl.toString(),  { method: 'POST', headers, body }).catch(() => {})
+      fetch(wordUrl.toString(), { method: 'POST', headers, body }).catch(() => {})
     } catch { /* ignore */ }
 
     return NextResponse.json({ ok: true, evaluacion: data })

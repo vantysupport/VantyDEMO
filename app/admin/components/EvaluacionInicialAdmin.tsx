@@ -37,6 +37,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
   const [terapias, setTerapias] = useState<any[]>([])  // catálogo completo
   const [reanalizando, setReanalizando] = useState(false)
   const [reRecomendando, setReRecomendando] = useState(false)
+  const [generandoWord, setGenerandoWord] = useState(false)
   const [verDocumento, setVerDocumento] = useState(false)
   const [showResponder, setShowResponder] = useState(false)
   const [respuesta, setRespuesta] = useState('')
@@ -77,6 +78,21 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       await cargar()
     } catch (e: any) { alert('Error: ' + e.message) }
     finally { setReanalizando(false) }
+  }
+
+  const regenerarInformeWord = async () => {
+    if (!evaluacion?.id) return
+    setGenerandoWord(true)
+    try {
+      const r = await fetch('/api/evaluacion-inicial/generar-informe-word', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ evaluacion_id: evaluacion.id }),
+      })
+      const d = await r.json()
+      if (!d.ok) throw new Error(d.error)
+      alert(`✅ Informe generado: ${d.file_name}\nDisponible en la pestaña "Historial & IA" del paciente.`)
+    } catch (e: any) { alert('Error: ' + e.message) }
+    finally { setGenerandoWord(false) }
   }
 
   const reRecomendarTerapias = async () => {
@@ -183,6 +199,13 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 className="px-3 py-2 rounded-lg border-2 text-xs font-bold flex items-center gap-1.5"
                 style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
                 <Edit3 size={14} /> Editar respuesta
+              </button>
+            )}
+            {evaluacion.anamnesis_especifica && (
+              <button onClick={regenerarInformeWord} disabled={generandoWord}
+                className="px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                {generandoWord ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                Generar informe Word
               </button>
             )}
             {evaluacion.documento_md && (
