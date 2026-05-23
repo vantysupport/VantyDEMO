@@ -3,7 +3,12 @@
 
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-export async function getChildHistory(childId: string, childNameFallback?: string, childAgeFallback?: string | number) {
+export async function getChildHistory(
+  childId: string,
+  childNameFallback?: string,
+  childAgeFallback?: string | number,
+  options?: { forParent?: boolean }
+) {
   // 1. Datos básicos del niño
   const { data: child } = await supabaseAdmin
     .from('children')
@@ -317,6 +322,48 @@ ${sesiones ? '  Últimas sesiones (recientes primero):\n' + sesiones : '  Sin se
       ).join('\n'))
     }
     if (citasTxt.length > 0) partes.push(`Agenda:\n${citasTxt.join('\n')}`)
+  } catch { /* opcional */ }
+
+  // ── DOCUMENTOS DEL PACIENTE (textos extraídos por la IA) ─────────────────
+  //   Si `forParent`, solo incluye los marcados como visible_to_parent
+  try {
+    let dq = supabaseAdmin
+      .from('patient_documents')
+      .select('file_name, category, description, extracted_text, extraction_status, visible_to_parent, created_at')
+      .eq('child_id', childId)
+      .eq('extraction_status', 'done')
+      .not('extracted_text', 'is', null)
+    if (options?.forParent) dq = dq.eq('visible_to_parent', true)
+    const { data: docs } = await dq
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (docs && docs.length > 0) {
+      // Tope total: 12000 caracteres entre TODOS los docs para no saturar tokens.
+      // Por doc: máximo 3000. Si hay muchos docs, prorrateamos.
+      const MAX_TOTAL = 12_000
+      const MAX_POR_DOC = Math.min(3000, Math.floor(MAX_TOTAL / docs.length))
+
+      const bloques: string[] = []
+      let totalChars = 0
+      for (const d of docs as any[]) {
+        if (totalChars >= MAX_TOTAL) break
+        const restante = MAX_TOTAL - totalChars
+        const limite = Math.min(MAX_POR_DOC, restante)
+        const texto = String(d.extracted_text || '').trim()
+        if (!texto) continue
+        const fragmento = texto.length > limite ? texto.slice(0, limite) + '\n[…texto truncado]' : texto
+        const fecha = d.created_at ? new Date(d.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
+        const cat = d.category ? ` · ${d.category}` : ''
+        const desc = d.description ? `\n_${d.description}_` : ''
+        bloques.push(`📄 **${d.file_name}** (${fecha}${cat})${desc}\n${fragmento}`)
+        totalChars += fragmento.length
+      }
+
+      if (bloques.length > 0) {
+        partes.push(`Documentos del expediente (texto extraído automáticamente):\n${bloques.join('\n\n---\n\n')}`)
+      }
+    }
   } catch { /* opcional */ }
 
   return {

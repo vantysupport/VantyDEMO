@@ -235,6 +235,13 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
         }).select('id').single()
         if (dbErr) throw dbErr
         if (inserted?.id && currentFolder) newIds.push(inserted.id)
+        // 🧠 Auto-extraer texto en background para que la IA lo conozca
+        if (inserted?.id) {
+          fetch('/api/patient-documents/extract', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ document_id: inserted.id }),
+          }).catch(() => {})
+        }
         uploaded++
       }
       // Assign to current folder
@@ -344,6 +351,31 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border
                 ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-300 hover:bg-[#30363d]' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
               <FolderPlus size={14} /> Nueva carpeta
+            </button>
+          )}
+          {canUpload && !isPadre && (
+            <button
+              onClick={async () => {
+                if (!confirm('¿Procesar todos los documentos pendientes de este paciente para que la IA pueda leerlos? (puede tardar 30-60 seg)')) return
+                try {
+                  toast.success('⏳ Extrayendo texto en segundo plano…')
+                  const res = await fetch('/api/patient-documents/extract', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ child_id: childId, only_pending: true }),
+                  })
+                  const json = await res.json()
+                  if (!res.ok) throw new Error(json.error)
+                  const ok = json.resultados?.filter((r: any) => r.ok).length || 0
+                  toast.success(`✅ ${ok}/${json.procesados} documentos procesados`)
+                  loadDocs()
+                } catch (e: any) {
+                  toast.error('Error: ' + e.message)
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border
+                ${isDark ? 'bg-purple-900/30 border-purple-700/40 text-purple-300 hover:bg-purple-900/50' : 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'}`}
+              title="Hacer que la IA lea los documentos pendientes">
+              🧠 Procesar para IA
             </button>
           )}
           {canUpload && (

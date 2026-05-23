@@ -352,6 +352,18 @@ async function cargarContextoPadre(childId: string) {
     })(),
   ])
 
+  // 2b. Documentos del paciente VISIBLES PARA EL PADRE (texto ya extraído)
+  //     Solo trae los que el equipo clínico marcó como compartibles con la familia.
+  const { data: documentosVisibles } = await supabaseAdmin
+    .from('patient_documents')
+    .select('file_name, category, description, extracted_text, created_at')
+    .eq('child_id', childId)
+    .eq('visible_to_parent', true)
+    .eq('extraction_status', 'done')
+    .not('extracted_text', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(8)
+
   // 3. Cargar evaluaciones profesionales en paralelo (no fallar si alguna tabla no existe)
   const evalTablas = [
     { table: 'evaluacion_brief2',    label: 'BRIEF-2 (Funciones Ejecutivas)' },
@@ -561,6 +573,31 @@ ${actTxt}`
       }).join('\n')
     : 'Sin fichas clínicas registradas'
 
+  // ── Documentos compartidos con la familia ──
+  //   Solo los que el equipo marcó visible_to_parent=true y cuyo texto fue extraído.
+  //   Tope global: 8000 chars repartidos entre los docs (para no inflar tokens).
+  const documentosTexto = (() => {
+    const docs = (documentosVisibles || []) as any[]
+    if (docs.length === 0) return 'Sin documentos compartidos por el equipo'
+    const MAX_TOTAL = 8000
+    const MAX_POR_DOC = Math.min(2000, Math.floor(MAX_TOTAL / docs.length))
+    const bloques: string[] = []
+    let total = 0
+    for (const d of docs) {
+      if (total >= MAX_TOTAL) break
+      const texto = String(d.extracted_text || '').trim()
+      if (!texto) continue
+      const limite = Math.min(MAX_POR_DOC, MAX_TOTAL - total)
+      const frag = texto.length > limite ? texto.slice(0, limite) + ' […]' : texto
+      const fecha = d.created_at ? new Date(d.created_at).toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' }) : ''
+      const cat = d.category ? ` · ${d.category}` : ''
+      const desc = d.description ? ` — ${d.description}` : ''
+      bloques.push(`📄 ${d.file_name} (${fecha}${cat})${desc}\n${frag}`)
+      total += frag.length
+    }
+    return bloques.length > 0 ? bloques.join('\n\n---\n\n') : 'Sin documentos compartidos por el equipo'
+  })()
+
   // ── Predicción IA ──
   const prediccionTexto = prediccion && (prediccion as any).analisis_ia
     ? `Análisis IA del progreso (${(prediccion as any).sesiones_analizadas || 0} sesiones analizadas):
@@ -612,6 +649,7 @@ ${(prediccion as any).prediccion_30d ? `\nPredicción a 30 días: ${String((pred
     evaluacionesProfesionales: evaluacionesProTexto,
     engagement: engagementTexto,
     fichasClinicas: fichasTexto,
+    documentos: documentosTexto,
     prediccion: prediccionTexto,
     patrones: patronesTexto,
     alertas: alertasTexto,
@@ -691,6 +729,10 @@ ${contexto.formsRespondidos}
 ━━━ FICHAS CLÍNICAS (actas de sesión, visitas, etc.) ━━━
 ${contexto.fichasClinicas}
 
+━━━ DOCUMENTOS COMPARTIDOS CON LA FAMILIA ━━━
+(Estos son archivos que el equipo subió al expediente y marcó como visibles para los padres — informes, certificados, etc. El texto fue extraído automáticamente.)
+${contexto.documentos}
+
 ━━━ HISTORIAL DE CITAS PASADAS ━━━
 ${contexto.citasPasadas}
 
@@ -725,6 +767,13 @@ ${contexto.bienestarPadre}
    - "¿En qué está trabajando?" → Lista los programas activos con sus objetivos.
    - "¿Hay logros?" → Buscá en ALERTAS las que empiezan con 🎉 (logros).
    - "¿Qué hicieron la sesión pasada?" → Usá HISTORIAL DE CITAS + ÚLTIMAS SESIONES + FICHAS CLÍNICAS.
+   - "¿Qué dice el informe/documento de…?" o cualquier mención a un archivo → Usá DOCUMENTOS COMPARTIDOS. **CRUCIAL: traducí el contenido técnico a lenguaje de mamá/papá**:
+       · Diagnósticos → frasealos con calma y esperanza ("se identificaron rasgos de…" en lugar de "presenta criterios diagnósticos de…")
+       · Términos clínicos → palabras cotidianas (ej: "indicadores de neurodiversidad" → "señales de que su mente trabaja diferente")
+       · Recomendaciones → conviértelas en pasos concretos para casa
+       · NUNCA pegues párrafos textuales del documento clínico — siempre RESUMÍ y EXPLICÁ con tus palabras
+       · Si el doc tiene cifras o puntuaciones técnicas (T-scores, percentiles), explicá qué significan ("está dentro del rango promedio" / "por encima de lo esperado")
+       · Sé honesta pero esperanzadora — cada hallazgo es información valiosa para ayudar mejor a su hijo/a.
    - Si el padre menciona algo difícil sobre él/ella → reconocé sus chequeos de bienestar pasados, sé empático/a.
 
 4. ESTRUCTURA para preguntas de práctica en casa:
