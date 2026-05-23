@@ -36,7 +36,12 @@ function getLangInstruction(locale?: string | null): string {
 
 export async function POST(req: Request) {
   try {
-    const { question, childId } = await req.json();
+    const { question, childId, useWebSearch } = await req.json();
+
+    // Auto-detect: si la pregunta contiene palabras que implican necesidad de info externa/actualizada
+    const triggers = /(?:busc[aá] en internet|busc[aá] online|investiga|última investigación|reciente|2025|2026|publicación|estudio nuevo|paper|jaba|según.+autores|qué dicen los expertos|cuál es la evidencia|web|noticias)/i
+    const autoWebSearch = triggers.test(question || '')
+    const usarWeb = useWebSearch || autoWebSearch
     const userLocale: string = req.headers.get('x-locale') || 'es'
 
     // Validaciones iniciales
@@ -492,9 +497,20 @@ Según el tipo de pregunta, organiza con secciones claras (markdown). Modelos:
 - Generalización y mantenimiento
 
 ═══ REGLAS DURAS ═══
-1. **DATOS PRIMERO**: cita números, fechas, porcentajes, nombres de programas exactos que aparezcan en el contexto. Nada de "parece que va bien" sin respaldo.
-2. **CUANDO NO HAY DATOS**: dilo explícitamente. "No tengo registro de [X] en el expediente. Te sugiero registrar [Y] para confirmar la hipótesis." NUNCA inventes.
-3. **PIENSA CRÍTICAMENTE**: si los datos sugieren una conclusión contraria a la pregunta del colega, dilo respetuosamente. No seas un sí-señor.
+1. **DATOS DEL PACIENTE PRIMERO**: cuando la pregunta sea sobre un paciente específico, cita números, fechas, porcentajes, nombres de programas exactos del contexto. Nada de "parece que va bien" sin respaldo.
+
+2. **NO TE AUTOLIMITES — TENÉS CONOCIMIENTO CLÍNICO PROPIO**: además del Cerebro IA y los datos del expediente, contás con **20+ años de formación clínica integrada** (DSM-5-TR, CIE-11, ABLLS-R/AFLS/VB-MAPP, ABA, TEA, TDAH, neurodesarrollo, terapias basadas en evidencia). USALO sin pedir permiso.
+   • Cuando el contexto del paciente sea insuficiente, **respondé igual** con tu conocimiento general (marcalo así: *"📚 **Conocimiento clínico general:**"*).
+   • Cuando el padre/colega pida explicaciones conceptuales (ej: "¿qué es DRO?", "diferencia entre TEA nivel 1 y 2", "criterios DSM para TDAH"), respondé directamente con precisión técnica — no digas "no tengo info".
+   • Si hay datos del paciente + conocimiento general aplicable, **integralos**: primero los datos concretos, después el marco conceptual.
+   • Diferenciá visualmente en tu respuesta cuando uses cada fuente:
+       - 📊 **Datos del expediente:** [info del contexto]
+       - 📚 **Conocimiento clínico:** [tu formación]
+       - 🧠 **Cerebro IA SANTI:** [protocolos indexados]
+
+3. **CUANDO REALMENTE NO PODÉS RESPONDER**: solo decí "no tengo info" si la pregunta es **específica del paciente** y no hay datos (ej: "¿cuántas sesiones tuvo en marzo?" y no hay registros). Para preguntas conceptuales, NUNCA evadas — siempre tenés algo que aportar.
+
+4. **PIENSA CRÍTICAMENTE**: si los datos sugieren una conclusión contraria a la pregunta del colega, dilo respetuosamente. No seas un sí-señor.
 4. **DIAGNÓSTICO DIFERENCIAL**: cuando un cuadro pueda explicarse por varios diagnósticos (ej: TDAH vs ansiedad vs apego desorganizado), menciona las alternativas y qué evaluación discriminaría.
 5. **NUNCA cites fuentes bibliográficas externas** (Cooper, Malott, JABA, etc.) — el conocimiento está integrado. Sí podés referirte a ítems específicos del ABLLS-R/AFLS si están en el Cerebro IA.
 6. **CONOCIMIENTO DEL CEREBRO IA**: cuando uses información de protocolos, integralo naturalmente ("según el área de imitación motriz del ABLLS-R, el ítem D5..." está bien; "según Cooper 2007..." está mal).
@@ -506,10 +522,17 @@ Según el tipo de pregunta, organiza con secciones claras (markdown). Modelos:
 ═══ TONO ═══
 Profesional, segura, colaborativa, sin perder calidez humana cuando se hable de un paciente concreto. Sos colega, no robot.`
 
+    // Si la pregunta necesita búsqueda web → usar modelo Compound de Groq
+    // (incluye web search + ejecución de código integrados)
+    const modeloElegido = usarWeb ? GROQ_MODELS.WEB : GROQ_MODELS.SMART
+    const promptFinal = usarWeb
+      ? systemPromptVADI + `\n\n═══ MODO BÚSQUEDA WEB ACTIVO ═══\nTenés acceso a búsqueda en internet en tiempo real. Cuando uses información de la web, citá con 🌐 "Fuente web:" y un resumen breve del origen. Verificá la veracidad — preferí fuentes oficiales (NIH, CDC, AAP, BACB, publicaciones revisadas).`
+      : systemPromptVADI
+
     const response = await callGroqSimple(
-        systemPromptVADI,
+        promptFinal,
         contextConCerebro,
-        { model: GROQ_MODELS.SMART, temperature: 0.45, maxTokens: 2200 }
+        { model: modeloElegido, temperature: 0.45, maxTokens: 2400 }
       );
     
     // Se retorna la respuesta usando response

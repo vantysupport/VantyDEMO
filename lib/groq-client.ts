@@ -9,6 +9,10 @@ export const GROQ_MODELS = {
   SMART: 'llama-3.3-70b-versatile',   // reportes, análisis clínicos
   FAST:  'llama-3.1-8b-instant',      // chats rápidos
   LONG:  'llama-3.3-70b-versatile',   // contexto largo
+  // Modelo "compound" de Groq: agente con BÚSQUEDA WEB + ejecución de código integrados.
+  // Útil cuando la pregunta requiere info actualizada (research reciente, news, datos en vivo).
+  // Cuesta lo mismo que un modelo normal en el plan free pero tarda un poco más.
+  WEB:   'groq/compound-mini',
 }
 
 // Orden de fallback cuando se alcanza el límite de tokens/día
