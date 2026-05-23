@@ -264,11 +264,14 @@ export default function KnowledgeBaseView() {
     let totalChunks = 0
     let totalChars = 0
     let lote = 0
+    let lotesVacios = 0
+    let lotesProcesados = 0
 
     for (let start = 1; start <= totalPages; start += BATCH) {
       lote++
       const end = Math.min(start + BATCH - 1, totalPages)
       const buffer: string[] = []
+      let charsLote = 0
 
       onProgress(`Lote ${lote}/${totalLotes} · leyendo páginas ${start}-${end}...`)
 
@@ -277,7 +280,10 @@ export default function KnowledgeBaseView() {
           const page = await pdf.getPage(i)
           const tc = await page.getTextContent()
           const pageText = tc.items.map((it: any) => it.str || '').join(' ').replace(/\s+/g, ' ').trim()
-          if (pageText.length > 10) buffer.push(pageText)
+          if (pageText.length > 10) {
+            buffer.push(pageText)
+            charsLote += pageText.length
+          }
           page.cleanup()
         } catch (e: any) {
           console.warn(`pdfjs: página ${i} falló — ${e?.message}`)
@@ -287,8 +293,14 @@ export default function KnowledgeBaseView() {
       }
 
       const loteTexto = buffer.join('\n\n')
-      if (loteTexto.trim().length < 50) continue
+      if (loteTexto.trim().length < 50) {
+        lotesVacios++
+        console.warn(`Lote ${lote} (págs ${start}-${end}) sin texto extraíble (${charsLote} chars)`)
+        onProgress(`Lote ${lote}/${totalLotes} sin texto — ${lotesVacios} vacíos hasta ahora`)
+        continue
+      }
       totalChars += loteTexto.length
+      lotesProcesados++
 
       // Indexar este lote (puede partirlo internamente si excede 300KB)
       const MAX_PARTE = 300 * 1024
@@ -335,8 +347,24 @@ export default function KnowledgeBaseView() {
     try { await pdf.cleanup() } catch {}
     try { await pdf.destroy() } catch {}
 
-    onProgress(`✅ ${totalLotes} lotes procesados — ${totalChunks} fragmentos indexados (${Math.round(totalChars / 1000)}k chars totales)`)
-    return { partes: totalLotes, chunksIndexados: totalChunks }
+    // Diagnóstico: si la mayoría de lotes vinieron vacíos, el PDF es escaneado
+    if (totalChars < 1000 || lotesProcesados === 0) {
+      throw new Error(
+        `Este PDF parece ser ESCANEADO / basado en imágenes (extrajimos solo ${totalChars} caracteres de ${totalPages} páginas). pdfjs no puede leer texto en imágenes.\n\n` +
+        `OPCIONES:\n` +
+        `  1) Abrí el PDF en un visor OCR (Adobe Pro, FineReader) → exportá como "PDF con texto seleccionable" → subí esa versión\n` +
+        `  2) Usá una herramienta online tipo ilovepdf.com/ocr o smallpdf.com/ocr para convertirlo y luego subí el resultado\n` +
+        `  3) Si tenés el texto en otro lado (Word, web, etc.) usá modo "📝 Pegar texto"\n` +
+        `  4) Si es un protocolo (ABLLS-R/AFLS) con tablas, usá el modo "📋 Protocolo tabular" copiando de Excel/Sheets`
+      )
+    }
+
+    if (lotesVacios > 0) {
+      onProgress(`⚠️ ${lotesProcesados} lotes con texto · ${lotesVacios} vacíos · ${totalChunks} fragmentos indexados`)
+    } else {
+      onProgress(`✅ ${lotesProcesados} lotes procesados — ${totalChunks} fragmentos indexados (${Math.round(totalChars / 1000)}k chars totales)`)
+    }
+    return { partes: lotesProcesados, chunksIndexados: totalChunks }
   }
 
   const handleUpload = async () => {
