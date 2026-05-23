@@ -15,7 +15,7 @@ import {
   PageNumber, Footer,
 } from 'docx'
 import {
-  encabezado, tituloSeccion, subseccion, parrafo, items,
+  tituloPrincipal, tituloSeccion, subseccion, parrafo, items,
   tablaDatosGenerales, recomendaciones, piePaginaOficial,
   generarIniciales, DOC_NUMBERING, DOC_PAGE_PROPS,
 } from '@/lib/santi-report-template'
@@ -345,7 +345,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
           const label = m[1].replace(/^\d+\.\s*/, '').trim()
           const resto = m[2].trim()
           if (resto) {
-            out.push(...subseccion(label, resto))
+            out.push(subseccion(label, resto))
           } else {
             out.push(new Paragraph({
               spacing: { before: 200, after: 60 },
@@ -363,7 +363,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
 
     const seccionesDocx: (Paragraph | Table)[] = [
       // ── Encabezado profesional ──
-      ...encabezado(`Informe de Anamnesis ${tipoInforme}`, iniciales),
+      ...tituloPrincipal(`Informe de Anamnesis ${tipoInforme}`, iniciales),
 
       // ── Datos generales (estilo LuTr/SoRo) ──
       tituloSeccion('Datos Generales'),

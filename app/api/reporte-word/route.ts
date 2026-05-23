@@ -33,6 +33,9 @@ import {
   type SelloQROptions,
   type DatoGrafico,
 } from '@/lib/santi-report-template'
+import { Paragraph, Table, Document as DocxDocument, LevelFormat, AlignmentType } from 'docx'
+
+type DocChild = Paragraph | Table
 
 
 // ── BLOQUE B: makeDoc() mejorado — soporte portada en sección separada ────────
@@ -114,7 +117,7 @@ function makeDoc(
     ] as any[],
   }
 
-  return new Document({
+  return new DocxDocument({
     numbering: {
       config: [{
         reference: 'bul',
