@@ -345,11 +345,23 @@ export class VantyAgent {
       // 2. Construir contexto dinámico
       const preguntaSobrePacientes = /paciente|peor|mejor|progreso|todos|lista|quien|quién|comparar|estado|sesion|sesión|avance|regresion|regresión|alert/i.test(userMessage)
 
+      // FIX: cada query es defensiva — si una falla, el chat sigue con las otras
       const [knowledgeCtx, childCtx, globalCtx] = await Promise.all([
-        buildKnowledgeContext(userMessage),
-        options.childId ? AGENT_TOOLS.obtenerHistorialNino(options.childId) : Promise.resolve(''),
+        buildKnowledgeContext(userMessage).catch((e) => {
+          console.warn('[vanty-agent] buildKnowledgeContext falló:', e?.message)
+          return ''
+        }),
+        options.childId
+          ? AGENT_TOOLS.obtenerHistorialNino(options.childId).catch((e) => {
+              console.warn('[vanty-agent] obtenerHistorialNino falló:', e?.message)
+              return ''
+            })
+          : Promise.resolve(''),
         (!options.childId && preguntaSobrePacientes)
-          ? AGENT_TOOLS.obtenerResumenTodosPacientes()
+          ? AGENT_TOOLS.obtenerResumenTodosPacientes().catch((e) => {
+              console.warn('[vanty-agent] obtenerResumenTodosPacientes falló:', e?.message)
+              return ''
+            })
           : Promise.resolve(''),
       ])
 

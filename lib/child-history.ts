@@ -42,37 +42,57 @@ export async function getChildHistory(
   const partes: string[] = []
 
   // ── FIX PRIORIDAD 1: Programas ABA PRIMERO ───────────────────────────────
-  // Se ubican al inicio del texto para no ser truncados por el límite de tokens.
-  // La query de sesiones_datos_aba ahora trae solo las últimas 8, ordenadas desc.
-  // FIX: sin filtro de estado — evita fallos por mayúsculas o valores distintos en BD
-  const { data: programasAba } = await supabaseAdmin
-    .from('programas_aba')
-    .select(`
-      id, titulo, objetivo_lp, area, fase_actual, estado, criterio_dominio_pct,
-      objetivos_cp(numero_set, descripcion, estado)
-    `)
-    .eq('child_id', childId)
-    .order('updated_at', { ascending: false })
-    .limit(10)
+  // Defensivo: si el join con objetivos_cp falla, reintentamos sin join
+  let programasAba: any[] | null = null
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('programas_aba')
+      .select(`
+        id, titulo, objetivo_lp, area, fase_actual, estado, criterio_dominio_pct,
+        objetivos_cp(numero_set, descripcion, estado)
+      `)
+      .eq('child_id', childId)
+      .order('updated_at', { ascending: false })
+      .limit(10)
+    if (error) throw error
+    programasAba = data
+  } catch (e: any) {
+    console.warn('[getChildHistory] programas_aba con join falló, reintentando sin join:', e?.message)
+    try {
+      const { data } = await supabaseAdmin
+        .from('programas_aba')
+        .select('id, titulo, objetivo_lp, area, fase_actual, estado, criterio_dominio_pct')
+        .eq('child_id', childId)
+        .order('updated_at', { ascending: false })
+        .limit(10)
+      programasAba = data
+    } catch (e2: any) {
+      console.warn('[getChildHistory] programas_aba sin join también falló:', e2?.message)
+    }
+  }
 
-  // FIX: query separada para sesiones ordenadas y limitadas por programa
+  // FIX: query separada para sesiones — defensivo
   let sesionesPorPrograma: Record<string, any[]> = {}
   if (programasAba && programasAba.length > 0) {
-    const programaIds = (programasAba as any[]).map(p => p.id)
-    const { data: todasSesiones } = await supabaseAdmin
-      .from('sesiones_datos_aba')
-      .select('programa_id, fecha, porcentaje_exito, fase, nivel_ayuda, notas')
-      .in('programa_id', programaIds)
-      .order('fecha', { ascending: false })
-      .limit(80) // máx 80 en total, repartidas entre programas
+    try {
+      const programaIds = (programasAba as any[]).map(p => p.id)
+      const { data: todasSesiones } = await supabaseAdmin
+        .from('sesiones_datos_aba')
+        .select('programa_id, fecha, porcentaje_exito, fase, nivel_ayuda, notas')
+        .in('programa_id', programaIds)
+        .order('fecha', { ascending: false })
+        .limit(80)
 
-    if (todasSesiones) {
-      for (const s of todasSesiones as any[]) {
-        if (!sesionesPorPrograma[s.programa_id]) sesionesPorPrograma[s.programa_id] = []
-        if (sesionesPorPrograma[s.programa_id].length < 8) {
-          sesionesPorPrograma[s.programa_id].push(s)
+      if (todasSesiones) {
+        for (const s of todasSesiones as any[]) {
+          if (!sesionesPorPrograma[s.programa_id]) sesionesPorPrograma[s.programa_id] = []
+          if (sesionesPorPrograma[s.programa_id].length < 8) {
+            sesionesPorPrograma[s.programa_id].push(s)
+          }
         }
       }
+    } catch (e: any) {
+      console.warn('[getChildHistory] sesiones_datos_aba falló:', e?.message)
     }
   }
 
@@ -103,30 +123,59 @@ ${sesiones ? '  Últimas sesiones (recientes primero):\n' + sesiones : '  Sin se
     partes.push('Programas ABA activos: ninguno registrado.')
   }
 
-  // 2. Últimas 5 sesiones ABA (registro general)
-  const { data: sesionesAba } = await supabaseAdmin
-    .from('registro_aba')
-    .select('fecha_sesion, datos, ai_analysis')
-    .eq('child_id', childId)
-    .order('fecha_sesion', { ascending: false })
-    .limit(5)
+  // 2. Últimas 5 sesiones ABA (registro general) — defensivo
+  let sesionesAba: any[] | null = null
+  try {
+    const { data } = await supabaseAdmin
+      .from('registro_aba')
+      .select('fecha_sesion, datos, ai_analysis')
+      .eq('child_id', childId)
+      .order('fecha_sesion', { ascending: false })
+      .limit(5)
+    sesionesAba = data
+  } catch (e: any) {
+    console.warn('[getChildHistory] registro_aba falló:', e?.message)
+  }
 
-  // 3. Anamnesis más reciente
-  const { data: anamnesis } = await supabaseAdmin
-    .from('anamnesis_completa')
-    .select('fecha_creacion, datos')
-    .eq('child_id', childId)
-    .order('fecha_creacion', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // 3. Anamnesis más reciente — defensivo (columna fecha_creacion puede no existir)
+  let anamnesis: any = null
+  try {
+    const { data } = await supabaseAdmin
+      .from('anamnesis_completa')
+      .select('fecha_creacion, datos')
+      .eq('child_id', childId)
+      .order('fecha_creacion', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    anamnesis = data
+  } catch (e: any) {
+    console.warn('[getChildHistory] anamnesis_completa falló:', e?.message)
+    // Reintentar con created_at por si fecha_creacion no existe
+    try {
+      const { data } = await supabaseAdmin
+        .from('anamnesis_completa')
+        .select('created_at, datos')
+        .eq('child_id', childId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (data) anamnesis = { ...data, fecha_creacion: (data as any).created_at }
+    } catch { /* ya logueado */ }
+  }
 
-  // 4. Últimas evaluaciones clínicas
-  const { data: formResponses } = await supabaseAdmin
-    .from('form_responses')
-    .select('form_type, form_title, created_at, ai_analysis')
-    .eq('child_id', childId)
-    .order('created_at', { ascending: false })
-    .limit(8)
+  // 4. Últimas evaluaciones clínicas — defensivo
+  let formResponses: any[] | null = null
+  try {
+    const { data } = await supabaseAdmin
+      .from('form_responses')
+      .select('form_type, form_title, created_at, ai_analysis')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(8)
+    formResponses = data
+  } catch (e: any) {
+    console.warn('[getChildHistory] form_responses falló:', e?.message)
+  }
 
   // 5. Evaluaciones profesionales
   const evalTables = [
