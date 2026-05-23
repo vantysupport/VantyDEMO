@@ -14,6 +14,11 @@ import {
   AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat,
   PageNumber, Footer,
 } from 'docx'
+import {
+  encabezado, tituloSeccion, subseccion, parrafo, items,
+  tablaDatosGenerales, recomendaciones, piePaginaOficial,
+  generarIniciales, DOC_NUMBERING, DOC_PAGE_PROPS,
+} from '@/lib/santi-report-template'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -323,94 +328,121 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
       'Otros',
     ]
 
-    const seccionesDocx: (Paragraph | Table)[] = [
-      // Portada
-      new Paragraph({
-        spacing: { before: 0, after: 20 },
-        border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '5B21B6', space: 8 } },
-        children: [
-          new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS SANTI', bold: true, size: 38, font: 'Arial', color: '5B21B6' }),
-          new TextRun({ text: '  ·  Centro Especializado', size: 22, font: 'Arial', color: '9CA3AF' }),
-        ],
-      }),
-      title(`Informe de Anamnesis ${tipoInforme}`),
-      subtitle(`Doc. Nº ${docNum}   ·   Emitido: ${hoy}`),
+    // ─── CONSTRUCCIÓN CON ESTILO PROFESIONAL DEL CENTRO ──────────────────
+    //   Basado en los modelos oficiales LuTr (informe de tratamiento) y
+    //   SoRo (informe de evaluación). Sin emojis, colores sobrios, prosa formal.
 
-      // Datos del paciente
-      h2('I.  DATOS DEL PACIENTE'),
-      new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [3200, 6160],
-        rows: [
-          kv('Nombre', child.name || '—'),
-          kv('Fecha de nacimiento', (child as any).birth_date || '—'),
-          kv('Edad', (child as any).age != null ? `${(child as any).age} años` : '—'),
-          kv('Diagnóstico previo', (child as any).diagnosis || 'Ninguno reportado'),
-          kv('Informante', parentName || '—'),
-          kv('Fecha de la anamnesis', eval_.anamnesis_completada_en
-            ? new Date(eval_.anamnesis_completada_en).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
-            : hoy),
-          kv('Tipo de evaluación', tipoInforme),
-        ],
-      }),
+    const iniciales = generarIniciales(child.name || 'Paciente')
 
-      // Análisis IA
-      h2('II.  ANÁLISIS CLÍNICO EJECUTIVO'),
-      infoBox('Análisis generado a partir de la información proporcionada por la familia. Debe ser corroborado en sesión clínica.', 'EDE9FE', '5B21B6'),
-      ...analisisIA.split('\n')
-        .filter(l => l.trim())
-        .map(l => {
-          const isBold = /^\*\*.+\*\*$/.test(l.trim()) || /^[A-ZÁÉÍÓÚÑ\s\d\.]+$/.test(l.trim()) && l.trim().length < 80
-          if (isBold) return h3(l.replace(/\*\*/g, '').trim())
-          return pp(l)
-        }),
-
-      // Respuestas por sección
-      h2('III.  RESPUESTAS DETALLADAS POR ÁREA'),
-      pp('A continuación se presentan todas las respuestas proporcionadas por el informante, organizadas según las áreas de la anamnesis oficial:'),
-    ]
-
-    for (const sec of seccionesEnOrden) {
-      const items = seccionesMap[sec]
-      if (!items || items.length === 0) continue
-      seccionesDocx.push(h3(sec))
-      seccionesDocx.push(new Table({
-        width: { size: 9360, type: WidthType.DXA }, columnWidths: [4000, 5360],
-        rows: items.map(([q, a]) => kv(q, a)),
-      }))
+    // Parsear el análisis IA: detectar secciones marcadas con ** y separar
+    const parsearAnalisisIA = (texto: string): (Paragraph | Table)[] => {
+      const out: (Paragraph | Table)[] = []
+      const lineas = texto.split('\n').map(l => l.trim()).filter(Boolean)
+      for (const l of lineas) {
+        // Si la línea está en **negrita** = título de subsección
+        const m = l.match(/^\*\*(.+?)\*\*:?\s*(.*)$/)
+        if (m) {
+          const label = m[1].replace(/^\d+\.\s*/, '').trim()
+          const resto = m[2].trim()
+          if (resto) {
+            out.push(...subseccion(label, resto))
+          } else {
+            out.push(new Paragraph({
+              spacing: { before: 200, after: 60 },
+              children: [new TextRun({
+                text: label, bold: true, size: 21, font: 'Arial', color: '1E293B',
+              })],
+            }))
+          }
+        } else {
+          out.push(parrafo(l.replace(/\*\*/g, '')))
+        }
+      }
+      return out
     }
 
-    // Cierre
+    const seccionesDocx: (Paragraph | Table)[] = [
+      // ── Encabezado profesional ──
+      ...encabezado(`Informe de Anamnesis ${tipoInforme}`, iniciales),
+
+      // ── Datos generales (estilo LuTr/SoRo) ──
+      tituloSeccion('Datos Generales'),
+      tablaDatosGenerales([
+        ['Apellidos y nombres', child.name || '—'],
+        ['Fecha de nacimiento', (child as any).birth_date
+          ? new Date((child as any).birth_date).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+          : '—'],
+        ['Edad', (child as any).age != null ? `${(child as any).age} años` : '—'],
+        ['Diagnóstico previo', (child as any).diagnosis || 'Ninguno reportado'],
+        ['Tipo de informe', `Anamnesis ${tipoInforme}`],
+        ['Informante', parentName || '—'],
+        ['Fecha de la anamnesis', eval_.anamnesis_completada_en
+          ? new Date(eval_.anamnesis_completada_en).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+          : hoy],
+        ['Fecha de entrega del informe', hoy],
+        ['N° de documento', docNum],
+      ]),
+
+      // ── Análisis clínico ──
+      tituloSeccion('Análisis Clínico'),
+      parrafo('El presente análisis se elabora a partir de la información proporcionada por el padre/madre informante en la ficha de anamnesis ' + tipoInforme.toLowerCase() + ', y se complementa con criterios clínicos de referencia. El contenido es preliminar y deberá ser corroborado durante las sesiones de evaluación directa con el paciente.'),
+      ...parsearAnalisisIA(analisisIA),
+
+      // ── Respuestas detalladas ──
+      tituloSeccion('Respuestas detalladas por área'),
+      parrafo('A continuación se transcriben las respuestas brindadas por el informante, organizadas según las áreas establecidas en el protocolo oficial de anamnesis del centro:'),
+    ]
+
+    // Bloques por sección con tabla de pregunta/respuesta
+    for (const sec of seccionesEnOrden) {
+      const itemsSec = seccionesMap[sec]
+      if (!itemsSec || itemsSec.length === 0) continue
+
+      seccionesDocx.push(new Paragraph({
+        spacing: { before: 280, after: 80 },
+        children: [new TextRun({
+          text: sec,
+          bold: true,
+          size: 21,
+          font: 'Arial',
+          color: '1E293B',
+        })],
+      }))
+      seccionesDocx.push(tablaDatosGenerales(itemsSec))
+    }
+
+    // ── Observaciones finales ──
     seccionesDocx.push(
-      h2('IV.  OBSERVACIONES FINALES'),
-      pp(`Este informe fue generado a partir de la anamnesis ${tipoInforme.toLowerCase()} completada por la familia el ${hoy}. Su contenido es preliminar y debe ser validado, ampliado y contrastado durante las sesiones de evaluación clínica directa con el paciente.`),
-      pp(`Documento generado automáticamente. La información contenida es CONFIDENCIAL y de uso exclusivo del equipo clínico de Neuropsicología y Terapias SANTI.`),
+      tituloSeccion('Observaciones finales'),
+      parrafo(`El presente informe fue generado a partir de la ficha de anamnesis ${tipoInforme.toLowerCase()} completada por la familia el ${hoy}. La información aquí consignada constituye una base preliminar para el proceso de evaluación clínica directa con el paciente y deberá ser corroborada, ampliada y contrastada por el equipo profesional a cargo del caso.`),
+      parrafo(`La información contenida en este documento es confidencial y de uso exclusivo del equipo clínico del Centro de Neuropsicología y Terapias SANTI, en el marco del proceso de atención del paciente.`),
       new Paragraph({
-        spacing: { before: 400 },
-        border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0', space: 8 } },
-        children: [new TextRun({ text: 'Equipo Clínico — Neuropsicología y Terapias SANTI', size: 20, font: 'Arial', color: '5B21B6', bold: true })],
+        spacing: { before: 480, after: 40 },
+        children: [new TextRun({
+          text: 'Equipo Clínico',
+          bold: true,
+          size: 20,
+          font: 'Arial',
+          color: '1E3A8A',
+        })],
       }),
       new Paragraph({
-        spacing: { before: 40 },
-        children: [new TextRun({ text: `${hoy}  ·  Documento confidencial`, size: 16, font: 'Arial', color: '94A3B8' })],
+        spacing: { before: 0, after: 0 },
+        children: [new TextRun({
+          text: 'Neuropsicología y Terapias SANTI',
+          size: 18,
+          font: 'Arial',
+          color: '475569',
+        })],
       }),
     )
 
     const doc = new Document({
-      numbering: { config: [{ reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 600, hanging: 300 } } } }] }] },
+      numbering: DOC_NUMBERING,
       styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
       sections: [{
-        properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
-        footers: {
-          default: new Footer({
-            children: [new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({ text: `SANTI · ${fileName} · `, size: 16, font: 'Arial', color: '9CA3AF' }),
-                new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' }),
-              ],
-            })],
-          }),
-        },
+        properties: DOC_PAGE_PROPS,
+        footers: { default: piePaginaOficial() },
         children: seccionesDocx,
       }],
     })
