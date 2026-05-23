@@ -30,6 +30,18 @@ export async function POST(req: NextRequest) {
       .single()
     if (error) throw error
 
+    // 🔮 Disparar recomendación IA de terapias en background (best-effort).
+    //    Si el catálogo está vacío o falla, igual seguimos.
+    try {
+      const url = new URL('/api/evaluacion-inicial/recomendar-terapias', req.url)
+      // fire-and-forget — el cliente verá las recomendaciones al refrescar
+      fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ evaluacion_id }),
+      }).catch(() => {})
+    } catch { /* ignore */ }
+
     return NextResponse.json({ ok: true, evaluacion: data })
   } catch (e: any) {
     console.error('[evaluacion-inicial][anamnesis]', e)

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       nombre, descripcion, por_que, imagen_url, precio, moneda,
-      duracion, modalidad, categoria, orden,
+      duracion, modalidad, categoria, orden, color_tema,
     } = body
 
     if (!nombre?.trim()) return NextResponse.json({ error: 'nombre requerido' }, { status: 400 })
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
         duracion: duracion ?? null,
         modalidad: modalidad ?? 'presencial',
         categoria: categoria ?? null,
+        color_tema: color_tema ?? 'indigo',
         orden: orden ?? 0,
         activo: true,
       })
@@ -68,7 +69,7 @@ export async function PATCH(req: NextRequest) {
     if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 })
 
     const permitidos = ['nombre', 'descripcion', 'por_que', 'imagen_url', 'precio', 'moneda',
-                        'duracion', 'modalidad', 'categoria', 'orden', 'activo']
+                        'duracion', 'modalidad', 'categoria', 'orden', 'activo', 'color_tema']
     const patch: Record<string, any> = { updated_at: new Date().toISOString() }
     for (const k of Object.keys(campos)) {
       if (permitidos.includes(k)) patch[k] = campos[k]

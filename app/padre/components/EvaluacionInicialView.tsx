@@ -15,6 +15,20 @@ import {
 
 type Props = { child: any; profile: any }
 
+// Paleta para tarjetas de terapia (debe coincidir con CatalogoTerapiasView del admin)
+const TERAPIA_COLORES: Record<string, { gradient: string; accent: string; accentDark: string }> = {
+  indigo:   { gradient: 'from-indigo-500 to-blue-500',     accent: '#6366f1', accentDark: '#818cf8' },
+  purple:   { gradient: 'from-purple-500 to-fuchsia-500',  accent: '#a855f7', accentDark: '#c084fc' },
+  pink:     { gradient: 'from-pink-500 to-rose-500',       accent: '#ec4899', accentDark: '#f472b6' },
+  rose:     { gradient: 'from-rose-500 to-red-500',        accent: '#f43f5e', accentDark: '#fb7185' },
+  amber:    { gradient: 'from-amber-500 to-orange-500',    accent: '#f59e0b', accentDark: '#fbbf24' },
+  emerald:  { gradient: 'from-emerald-500 to-teal-500',    accent: '#10b981', accentDark: '#34d399' },
+  cyan:     { gradient: 'from-cyan-500 to-sky-500',        accent: '#06b6d4', accentDark: '#22d3ee' },
+  blue:     { gradient: 'from-blue-500 to-indigo-500',     accent: '#3b82f6', accentDark: '#60a5fa' },
+  orange:   { gradient: 'from-orange-500 to-red-500',      accent: '#f97316', accentDark: '#fb923c' },
+  slate:    { gradient: 'from-slate-600 to-slate-700',     accent: '#64748b', accentDark: '#94a3b8' },
+}
+
 type Pregunta =
   | { id: string; type: 'text' | 'textarea' | 'number'; label: string; placeholder?: string; required?: boolean }
   | { id: string; type: 'select' | 'radio'; label: string; options: string[]; required?: boolean }
@@ -438,14 +452,41 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
 
   // ═══ FASE 5: SELECCIÓN DE TERAPIAS ═════════════════════════════════════
   if (estado === 'anamnesis_completa') {
+    const recomendadasIds: string[] = evaluacion.terapias_recomendadas || []
+    const recSet = new Set(recomendadasIds)
+    // Ordenar: primero las recomendadas (en el orden que dio la IA), luego el resto
+    const terapiasOrdenadas = [...terapias].sort((a, b) => {
+      const ai = recomendadasIds.indexOf(a.id)
+      const bi = recomendadasIds.indexOf(b.id)
+      if (ai >= 0 && bi >= 0) return ai - bi
+      if (ai >= 0) return -1
+      if (bi >= 0) return 1
+      return 0
+    })
+
     return (
       <div className="max-w-4xl mx-auto pb-12">
         <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }}>
           <h1 className="text-2xl font-black mb-2">🎉 ¡Casi terminamos!</h1>
           <p className="text-white/95">
-            Estas son las terapias que ofrecemos en SANTI. Marca la(s) que te interese conocer más. El especialista te contactará con la propuesta personalizada.
+            {recomendadasIds.length > 0
+              ? <>Basándonos en lo que nos contaste sobre <strong>{child.name}</strong>, te recomendamos especialmente las terapias destacadas con <strong>✨</strong>. También puedes ver el resto del catálogo y marcar la(s) que te interese conocer más.</>
+              : <>Estas son las terapias que ofrecemos en SANTI. Marca la(s) que te interese conocer más. El especialista te contactará con la propuesta personalizada.</>
+            }
           </p>
         </div>
+
+        {/* Razonamiento general de la IA (si existe) */}
+        {evaluacion.terapias_recomendadas_razon && recomendadasIds.length > 0 && (
+          <div className="rounded-2xl p-5 mb-5 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.2)' }}>
+            <h3 className="text-sm font-black mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Sparkles size={16} className="text-purple-500" /> ¿Por qué te sugerimos estas terapias?
+            </h3>
+            <div className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {evaluacion.terapias_recomendadas_razon}
+            </div>
+          </div>
+        )}
 
         {terapias.length === 0 ? (
           <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
@@ -454,43 +495,77 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-4 mb-6">
-            {terapias.map(t => {
+            {terapiasOrdenadas.map(t => {
               const checked = terapiasElegidas.includes(t.id)
+              const esRecomendada = recSet.has(t.id)
+              const colorTema = TERAPIA_COLORES[t.color_tema || 'indigo'] || TERAPIA_COLORES.indigo
               return (
                 <button
                   key={t.id}
                   onClick={() => setTerapiasElegidas(arr => arr.includes(t.id) ? arr.filter(x => x !== t.id) : [...arr, t.id])}
-                  className={`text-left rounded-2xl border-2 overflow-hidden transition-all ${
-                    checked ? 'border-indigo-500 ring-2 ring-indigo-200 scale-[1.01]' : 'hover:border-indigo-300'
-                  }`}
-                  style={{ background: 'var(--card)', borderColor: checked ? '#6366f1' : 'var(--card-border)' }}
+                  className="relative text-left rounded-2xl border-2 overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl"
+                  style={{
+                    background: 'var(--card)',
+                    borderColor: checked ? colorTema.accent : esRecomendada ? colorTema.accent : 'var(--card-border)',
+                    boxShadow: checked ? `0 0 0 3px ${colorTema.accent}33` : undefined,
+                  }}
                 >
-                  {t.imagen_url ? (
-                    <img src={t.imagen_url} alt={t.nombre} className="w-full h-36 object-cover" />
-                  ) : (
-                    <div className="w-full h-36 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100">
-                      <ImageIcon size={36} className="text-indigo-300" />
+                  {/* Banda superior con el color */}
+                  <div className={`h-1.5 bg-gradient-to-r ${colorTema.gradient}`} />
+
+                  {esRecomendada && (
+                    <div className="absolute top-3.5 right-3 z-10 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1"
+                      style={{ background: `linear-gradient(135deg, ${colorTema.accent}, ${colorTema.accentDark})` }}>
+                      <Sparkles size={10} /> Recomendada
                     </div>
                   )}
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className="font-black text-base flex-1" style={{ color: 'var(--text-primary)' }}>{t.nombre}</h4>
-                      {checked && <CheckCircle2 size={20} className="text-indigo-600 shrink-0" />}
+                  {checked && (
+                    <div className="absolute top-3.5 left-3 z-10 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg"
+                      style={{ background: colorTema.accent }}>
+                      <CheckCircle2 size={16} />
                     </div>
+                  )}
+
+                  {t.imagen_url ? (
+                    <img src={t.imagen_url} alt={t.nombre} className="w-full h-40 object-cover" />
+                  ) : (
+                    <div className={`w-full h-40 flex items-center justify-center bg-gradient-to-br ${colorTema.gradient} opacity-30`}>
+                      <ImageIcon size={42} className="text-white/60" />
+                    </div>
+                  )}
+
+                  <div className="p-5 space-y-3">
                     {t.categoria && (
-                      <span className="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 mb-2">
+                      <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded text-white bg-gradient-to-r ${colorTema.gradient}`}>
                         {t.categoria}
                       </span>
                     )}
-                    {t.descripcion && <p className="text-xs mb-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{t.descripcion}</p>}
+                    <h4 className="font-black text-base leading-tight" style={{ color: 'var(--text-primary)' }}>{t.nombre}</h4>
+                    {t.descripcion && <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{t.descripcion}</p>}
                     {t.por_que && (
-                      <div className="rounded-lg p-2 text-xs mb-2" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--text-secondary)' }}>
-                        <strong className="text-indigo-600">¿Por qué?</strong> {t.por_que}
+                      <div className="rounded-lg p-3 text-sm leading-relaxed border-l-4"
+                        style={{ background: 'var(--muted-bg)', borderLeftColor: colorTema.accent, color: 'var(--text-secondary)' }}>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: colorTema.accent }}>
+                          ✨ ¿Por qué llevarla?
+                        </p>
+                        <p>{t.por_que}</p>
                       </div>
                     )}
-                    <div className="flex items-center justify-between text-xs pt-2 border-t" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
-                      {t.duracion && <span>⏱ {t.duracion}</span>}
-                      {t.precio && <span className="font-black text-indigo-600 text-sm">{Number(t.precio).toFixed(0)} {t.moneda || 'PEN'}</span>}
+                    <div className="flex items-end justify-between pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
+                      {t.duracion && (
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Duración</p>
+                          <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{t.duracion}</p>
+                        </div>
+                      )}
+                      {t.precio != null && (
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Inversión</p>
+                          <p className="text-xl font-black" style={{ color: colorTema.accent }}>
+                            {Number(t.precio).toFixed(0)} <span className="text-xs">{t.moneda || 'PEN'}</span>
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </button>

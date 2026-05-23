@@ -36,6 +36,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
   const [evaluacion, setEvaluacion] = useState<any>(null)
   const [terapias, setTerapias] = useState<any[]>([])  // catálogo completo
   const [reanalizando, setReanalizando] = useState(false)
+  const [reRecomendando, setReRecomendando] = useState(false)
   const [verDocumento, setVerDocumento] = useState(false)
   const [showResponder, setShowResponder] = useState(false)
   const [respuesta, setRespuesta] = useState('')
@@ -76,6 +77,21 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       await cargar()
     } catch (e: any) { alert('Error: ' + e.message) }
     finally { setReanalizando(false) }
+  }
+
+  const reRecomendarTerapias = async () => {
+    if (!evaluacion?.id) return
+    setReRecomendando(true)
+    try {
+      const r = await fetch('/api/evaluacion-inicial/recomendar-terapias', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ evaluacion_id: evaluacion.id }),
+      })
+      const d = await r.json()
+      if (!d.ok) throw new Error(d.error)
+      await cargar()
+    } catch (e: any) { alert('Error: ' + e.message) }
+    finally { setReRecomendando(false) }
   }
 
   const enviarRespuesta = async () => {
@@ -264,6 +280,87 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
               }`}>{areas.urgencia.toUpperCase()}</span>
             </p>
           )}
+        </div>
+      )}
+
+      {/* TERAPIAS RECOMENDADAS POR LA IA (basadas en el catálogo) */}
+      {evaluacion.terapias_recomendadas?.length > 0 && (
+        <div className="rounded-2xl p-5 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.3)' }}>
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Sparkles size={16} className="text-purple-500" />
+              Terapias recomendadas por IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">DEL CATÁLOGO</span>
+            </h3>
+            {evaluacion.anamnesis_especifica && (
+              <button onClick={reRecomendarTerapias} disabled={reRecomendando}
+                className="px-2.5 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                {reRecomendando ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                Re-recomendar
+              </button>
+            )}
+          </div>
+
+          {/* Lista de terapias recomendadas con orden */}
+          <div className="space-y-2 mb-3">
+            {evaluacion.terapias_recomendadas.map((id: string, i: number) => {
+              const t = terapias.find(t => t.id === id)
+              if (!t) return null
+              const elegida = (evaluacion.terapias_seleccionadas || []).includes(id)
+              return (
+                <div key={id} className="rounded-lg p-3 border flex items-center gap-3" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+                  <div className="w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </div>
+                  {t.imagen_url ? (
+                    <img src={t.imagen_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                      <Sparkles size={14} className="text-purple-500" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t.nombre}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                      {t.categoria && `${t.categoria} · `}{t.duracion}
+                      {t.precio && ` · ${t.precio} ${t.moneda}`}
+                    </p>
+                  </div>
+                  {elegida && (
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-green-100 text-green-700 flex items-center gap-1 shrink-0">
+                      <CheckCircle2 size={10} /> Elegida
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Razonamiento */}
+          {evaluacion.terapias_recomendadas_razon && (
+            <details className="text-sm">
+              <summary className="cursor-pointer font-bold text-purple-700 mb-2">Ver razonamiento de la IA</summary>
+              <div className="mt-2 whitespace-pre-wrap leading-relaxed rounded-lg p-3 text-sm"
+                style={{ background: 'var(--card)', color: 'var(--text-secondary)' }}>
+                {evaluacion.terapias_recomendadas_razon}
+              </div>
+            </details>
+          )}
+        </div>
+      )}
+
+      {/* Botón para generar recomendación si no existe pero ya hay anamnesis */}
+      {evaluacion.anamnesis_especifica && !evaluacion.terapias_recomendadas?.length && (
+        <div className="rounded-2xl p-4 border-2 border-dashed flex items-center justify-between gap-3"
+          style={{ borderColor: 'var(--card-border)' }}>
+          <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Sparkles size={16} className="text-purple-500" />
+            <span>La IA aún no ha recomendado terapias del catálogo para este caso.</span>
+          </div>
+          <button onClick={reRecomendarTerapias} disabled={reRecomendando}
+            className="px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 shrink-0">
+            {reRecomendando ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+            Generar ahora
+          </button>
         </div>
       )}
 
