@@ -137,10 +137,9 @@ async function main() {
     .insert({
       titulo,
       tipo: 'protocolo',
-      descripcion: `Sección D del Protocolo ABLLS-R (Assessment of Basic Language and Learning Skills - Revised). 27 ítems de imitación motriz: con objetos, gruesa, fina, con sugerencias, en espejo, secuencias, velocidad, intensidad, simultánea con vocalización y demorada.`,
+      descripcion: `Sección D del Protocolo ABLLS-R (Assessment of Basic Language and Learning Skills - Revised). 27 ítems de imitación motriz: con objetos, gruesa, fina, con sugerencias, en espejo, secuencias, velocidad, intensidad, simultánea con vocalización y demorada.\n\n[Fuente: ${FUENTE} · Área: ${AREA} · ${ITEMS.length} ítems · seeded:script]`,
       procesado: false,
       total_chunks: 0,
-      metadata: { fuente: FUENTE, area: AREA, items_count: ITEMS.length, source_type: 'tabla_estructurada', seeded_by: 'script' },
     })
     .select()
     .single()

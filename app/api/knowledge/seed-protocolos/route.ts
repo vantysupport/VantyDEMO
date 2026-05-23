@@ -106,16 +106,9 @@ export async function POST(req: NextRequest) {
       .insert({
         titulo: data.titulo,
         tipo: 'protocolo',
-        descripcion: data.descripcion,
+        descripcion: `${data.descripcion}\n\n[Fuente: ${data.fuente} · Área: ${data.area} · ${data.items.length} ítems · preset:${preset}]`,
         procesado: false,
         total_chunks: 0,
-        metadata: {
-          fuente: data.fuente,
-          area: data.area,
-          items_count: data.items.length,
-          source_type: 'tabla_estructurada',
-          preset,
-        },
       })
       .select()
       .single()

@@ -225,6 +225,120 @@ export default function KnowledgeBaseView() {
     return fullText
   }
 
+  // ── Procesar PDF MUY grande en lotes de 50 páginas e indexar cada lote ──
+  //   No retorna texto — manda directo a /api/knowledge/ingest cada lote.
+  //   Así nunca se mantienen >50 páginas de texto en memoria.
+  const extractAndIngestPdfBatched = async (
+    file: File,
+    baseTitulo: string,
+    baseTipo: string,
+    baseDescripcion: string,
+    onProgress: (p: string) => void,
+    locale: string,
+  ): Promise<{ partes: number; chunksIndexados: number }> => {
+    onProgress('Cargando lector de PDF...')
+
+    const pdfjs = await import('pdfjs-dist')
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString()
+
+    const sizeMB = Math.round(file.size / 1024 / 1024)
+    onProgress(`Leyendo archivo (${sizeMB} MB)...`)
+    const arrayBuffer = await file.arrayBuffer()
+
+    const pdf = await pdfjs.getDocument({
+      data: arrayBuffer,
+      disableFontFace: true,
+      useSystemFonts: false,
+      isEvalSupported: false,
+      verbosity: 0,
+    } as any).promise
+
+    const totalPages = pdf.numPages
+    const BATCH = 50
+    const totalLotes = Math.ceil(totalPages / BATCH)
+    onProgress(`PDF cargado: ${totalPages} páginas. Procesando en ${totalLotes} lotes de ${BATCH} páginas...`)
+
+    let totalChunks = 0
+    let totalChars = 0
+    let lote = 0
+
+    for (let start = 1; start <= totalPages; start += BATCH) {
+      lote++
+      const end = Math.min(start + BATCH - 1, totalPages)
+      const buffer: string[] = []
+
+      onProgress(`Lote ${lote}/${totalLotes} · leyendo páginas ${start}-${end}...`)
+
+      for (let i = start; i <= end; i++) {
+        try {
+          const page = await pdf.getPage(i)
+          const tc = await page.getTextContent()
+          const pageText = tc.items.map((it: any) => it.str || '').join(' ').replace(/\s+/g, ' ').trim()
+          if (pageText.length > 10) buffer.push(pageText)
+          page.cleanup()
+        } catch (e: any) {
+          console.warn(`pdfjs: página ${i} falló — ${e?.message}`)
+        }
+        // Yield al event loop cada 10 páginas
+        if (i % 10 === 0) await new Promise(r => setTimeout(r, 0))
+      }
+
+      const loteTexto = buffer.join('\n\n')
+      if (loteTexto.trim().length < 50) continue
+      totalChars += loteTexto.length
+
+      // Indexar este lote (puede partirlo internamente si excede 300KB)
+      const MAX_PARTE = 300 * 1024
+      const partes: string[] = []
+      if (new Blob([loteTexto]).size > MAX_PARTE) {
+        let off = 0
+        while (off < loteTexto.length) {
+          let cut = off + MAX_PARTE
+          if (cut < loteTexto.length) {
+            const nb = loteTexto.indexOf('\n', cut)
+            if (nb !== -1 && nb - cut < 2000) cut = nb
+          }
+          partes.push(loteTexto.slice(off, cut))
+          off = cut
+        }
+      } else {
+        partes.push(loteTexto)
+      }
+
+      for (let p = 0; p < partes.length; p++) {
+        const partNum = partes.length > 1 ? `, parte ${p + 1}/${partes.length}` : ''
+        onProgress(`Lote ${lote}/${totalLotes} (págs ${start}-${end}${partNum}) → indexando ${Math.round(partes[p].length / 1000)}k chars...`)
+
+        const titulo = `${baseTitulo} (págs ${start}-${end}${partes.length > 1 ? ` · ${p + 1}/${partes.length}` : ''})`
+        const res = await fetch('/api/knowledge/ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-locale': locale },
+          body: JSON.stringify({
+            titulo, tipo: baseTipo,
+            descripcion: `${baseDescripcion || ''}\n\n[Lote ${lote}/${totalLotes} — páginas ${start}-${end}${partNum}]`.trim(),
+            texto: partes[p],
+          }),
+        })
+        let json: any
+        try { json = await res.json() } catch { throw new Error(`HTTP ${res.status} en lote ${lote}`) }
+        if (!res.ok) throw new Error(json.error || `Error en lote ${lote} (HTTP ${res.status})`)
+        totalChunks += json.chunks || 0
+      }
+
+      // Pausa breve para no saturar y permitir GC
+      await new Promise(r => setTimeout(r, 100))
+    }
+
+    try { await pdf.cleanup() } catch {}
+    try { await pdf.destroy() } catch {}
+
+    onProgress(`✅ ${totalLotes} lotes procesados — ${totalChunks} fragmentos indexados (${Math.round(totalChars / 1000)}k chars totales)`)
+    return { partes: totalLotes, chunksIndexados: totalChunks }
+  }
+
   const handleUpload = async () => {
     if (!form.titulo) { toast.error('El título es requerido'); return }
     if (inputMode === 'archivo' && !selectedFile) { toast.error('Selecciona un archivo'); return }
@@ -272,9 +386,33 @@ export default function KnowledgeBaseView() {
       if (inputMode === 'archivo' && selectedFile) {
         const isPdf = selectedFile.name.toLowerCase().endsWith('.pdf')
         const isBig = selectedFile.size > 10 * 1024 * 1024 // >10MB
+        const isHuge = selectedFile.size > 40 * 1024 * 1024 // >40MB → modo lotes
+
+        // ── PDFs MUY grandes (>40MB): procesar por lotes de 50 páginas e ingerir cada lote ─
+        if (isPdf && isHuge) {
+          const sizeMB = Math.round(selectedFile.size / 1024 / 1024)
+          setUploadProgress(`PDF grande (${sizeMB} MB) — se procesará por lotes...`)
+          try {
+            const locale = typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es'
+            const result = await extractAndIngestPdfBatched(
+              selectedFile, form.titulo, form.tipo, form.descripcion, setUploadProgress, locale
+            )
+            toast.success(`✅ ${result.chunksIndexados} fragmentos indexados en ${result.partes} lotes`)
+            setForm({ titulo: '', tipo: 'libro', descripcion: '', texto: '', url: '' })
+            setSelectedFile(null)
+            setShowForm(false)
+            loadDocs()
+          } catch (e: any) {
+            toast.error('Error procesando PDF grande: ' + e.message)
+          } finally {
+            setUploading(false)
+            setUploadProgress('')
+          }
+          return
+        }
 
         if (isPdf && isBig) {
-          // ── Archivos grandes: extraer texto en el navegador ──────────────
+          // ── Archivos grandes (10-40MB): extraer texto en el navegador ──
           const sizeMB = Math.round(selectedFile.size / 1024 / 1024)
           setUploadProgress(`Archivo grande (${sizeMB} MB) — extrayendo texto localmente...`)
           try {

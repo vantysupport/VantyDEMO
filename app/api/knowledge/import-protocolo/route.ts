@@ -130,15 +130,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Crear el documento
+    const desc = (descripcion || `Protocolo estructurado ${fuente || ''} ${area || ''}`.trim()) +
+                 `\n\n[Fuente: ${fuente || '—'} · Área: ${area || '—'} · ${items.length} ítems]`
     const { data: doc, error: docErr } = await supabaseAdmin
       .from('knowledge_documents')
       .insert({
         titulo: titulo.trim(),
         tipo: 'protocolo',
-        descripcion: descripcion || `Protocolo estructurado ${fuente || ''} ${area || ''}`.trim(),
+        descripcion: desc,
         procesado: false,
         total_chunks: 0,
-        metadata: { fuente, area, items_count: items.length, source_type: 'tabla_estructurada' },
       })
       .select()
       .single()
