@@ -263,39 +263,91 @@ export default function KnowledgeBaseView() {
     return imgs
   }
 
-  // ── Enviar lote de imágenes al OCR del servidor (Gemini Vision) ────────
-  const ocrPaginasViaServidor = async (
+  // ── Worker de Tesseract reutilizable ──────────────────────────────────
+  //   Se crea una sola vez por subida y se destruye al final, para no descargar
+  //   el modelo de idioma (~10MB) en cada página.
+  const tesseractWorkerRef = useRef<any>(null)
+
+  const getTesseractWorker = async (onProgress: (m: string) => void) => {
+    if (tesseractWorkerRef.current) return tesseractWorkerRef.current
+    onProgress('Cargando OCR (Tesseract.js)… primera vez descarga ~10MB de idioma')
+    const Tesseract: any = await import('tesseract.js')
+    // 'spa+eng' → reconoce español E inglés en el mismo doc
+    const worker = await Tesseract.createWorker(['spa', 'eng'], 1, {
+      logger: (m: any) => {
+        if (m.status === 'recognizing text' && m.progress != null) {
+          // No log spam, lo manejamos afuera
+        }
+      },
+    })
+    tesseractWorkerRef.current = worker
+    return worker
+  }
+
+  const closeTesseractWorker = async () => {
+    if (tesseractWorkerRef.current) {
+      try { await tesseractWorkerRef.current.terminate() } catch {}
+      tesseractWorkerRef.current = null
+    }
+  }
+
+  // ── OCR de un lote de imágenes EN EL NAVEGADOR con Tesseract.js (gratis) ─
+  //   Reconoce páginas una por una, junta el texto, y lo manda al endpoint
+  //   /api/knowledge/ingest como texto plano (payload chico, sin timeout).
+  const ocrPaginasConTesseract = async (
     imgs: { pagina: number; blob: Blob }[],
     titulo: string,
     tipo: string,
     descripcion: string,
+    onProgress: (m: string) => void,
+    locale: string,
   ): Promise<{ ok: boolean; chunks: number; texto_chars: number; error?: string }> => {
     if (imgs.length === 0) return { ok: false, chunks: 0, texto_chars: 0, error: 'sin imágenes' }
 
-    // Vercel limit 4.5MB → mandamos máximo 6 imágenes por request
-    const MAX_POR_REQUEST = 6
-    let totalChunks = 0, totalChars = 0
-    for (let i = 0; i < imgs.length; i += MAX_POR_REQUEST) {
-      const sub = imgs.slice(i, i + MAX_POR_REQUEST)
-      const fd = new FormData()
-      const subTitulo = `${titulo} (págs ${sub[0].pagina}-${sub[sub.length - 1].pagina})`
-      fd.append('titulo', subTitulo)
-      fd.append('tipo', tipo)
-      fd.append('descripcion', descripcion)
-      fd.append('indexar', '1')
-      for (const it of sub) fd.append(`page_${it.pagina}`, it.blob, `page_${it.pagina}.jpg`)
+    try {
+      const worker = await getTesseractWorker(onProgress)
+      const textosPorPagina: string[] = []
 
-      try {
-        const res = await fetch('/api/knowledge/ocr-image', { method: 'POST', body: fd })
-        const json = await res.json()
-        if (!res.ok) return { ok: false, chunks: totalChunks, texto_chars: totalChars, error: json.error || `HTTP ${res.status}` }
-        totalChunks += json.chunks || 0
-        totalChars += json.texto_chars || 0
-      } catch (e: any) {
-        return { ok: false, chunks: totalChunks, texto_chars: totalChars, error: e?.message }
+      for (let idx = 0; idx < imgs.length; idx++) {
+        const { pagina, blob } = imgs[idx]
+        onProgress(`🔠 OCR página ${pagina} (${idx + 1}/${imgs.length})…`)
+        try {
+          const { data } = await worker.recognize(blob)
+          const txt = (data?.text || '').trim()
+          if (txt.length > 10) {
+            textosPorPagina.push(`=== PÁGINA ${pagina} ===\n${txt}`)
+          }
+        } catch (pageErr: any) {
+          console.warn(`Tesseract página ${pagina} falló:`, pageErr?.message)
+        }
+        // Yield para que el navegador no se cuelgue
+        if (idx % 2 === 0) await new Promise(r => setTimeout(r, 0))
       }
+
+      const textoCompleto = textosPorPagina.join('\n\n')
+      if (textoCompleto.length < 50) {
+        return { ok: false, chunks: 0, texto_chars: 0, error: 'Tesseract no produjo texto utilizable' }
+      }
+
+      // Mandar texto extraído al ingest (payload chico = sin riesgo de timeout)
+      const subTitulo = `${titulo} (págs ${imgs[0].pagina}-${imgs[imgs.length - 1].pagina})`
+      const res = await fetch('/api/knowledge/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-locale': locale },
+        body: JSON.stringify({
+          titulo: subTitulo,
+          tipo,
+          descripcion: `${descripcion || ''}\n[OCR Tesseract.js · ${imgs.length} páginas]`.trim(),
+          texto: textoCompleto,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) return { ok: false, chunks: 0, texto_chars: textoCompleto.length, error: json.error || `HTTP ${res.status}` }
+
+      return { ok: true, chunks: json.chunks || 0, texto_chars: textoCompleto.length }
+    } catch (e: any) {
+      return { ok: false, chunks: 0, texto_chars: 0, error: e?.message }
     }
-    return { ok: true, chunks: totalChunks, texto_chars: totalChars }
   }
 
   // ── Procesar PDF MUY grande en lotes de 50 páginas e indexar cada lote ──
@@ -369,20 +421,23 @@ export default function KnowledgeBaseView() {
 
       // ── FALLBACK AUTOMÁTICO: si pdfjs no extrajo texto, hacemos OCR ──
       //   Esto cubre PDFs escaneados (imágenes con texto). Renderizamos
-      //   cada página como JPEG y la mandamos al servidor para Gemini Vision.
+      //   cada página como JPEG y hacemos OCR en el NAVEGADOR con Tesseract.js
+      //   (gratis, ilimitado, sin API keys).
       if (loteTexto.trim().length < 50) {
         lotesVacios++
-        onProgress(`Lote ${lote}/${totalLotes} sin texto digital · iniciando OCR (Gemini Vision)…`)
+        onProgress(`Lote ${lote}/${totalLotes} sin texto digital · iniciando OCR (Tesseract.js)…`)
         try {
           const imgs = await renderPdfPagesAsJpegs(pdf, start, end, (m) => onProgress(`${m} (Lote ${lote}/${totalLotes})`))
           if (imgs.length === 0) {
             console.warn(`Lote ${lote} sin imágenes renderizables`)
             continue
           }
-          onProgress(`Lote ${lote}/${totalLotes} · OCR de ${imgs.length} páginas con Gemini…`)
-          const ocrRes = await ocrPaginasViaServidor(
+          onProgress(`Lote ${lote}/${totalLotes} · OCR Tesseract de ${imgs.length} páginas…`)
+          const ocrRes = await ocrPaginasConTesseract(
             imgs, baseTitulo, baseTipo,
-            `${baseDescripcion || ''}\n[OCR auto para PDF escaneado]`.trim(),
+            `${baseDescripcion || ''}\n[OCR auto Tesseract para PDF escaneado]`.trim(),
+            (m) => onProgress(`Lote ${lote}/${totalLotes} · ${m}`),
+            locale,
           )
           if (ocrRes.ok && ocrRes.chunks > 0) {
             totalChunks += ocrRes.chunks
@@ -445,6 +500,8 @@ export default function KnowledgeBaseView() {
 
     try { await pdf.cleanup() } catch {}
     try { await pdf.destroy() } catch {}
+    // Cerrar Tesseract si fue usado (libera memoria del modelo de idioma)
+    await closeTesseractWorker()
 
     // Diagnóstico: si después de pdfjs + OCR fallback NADA funcionó
     if (totalChars < 500 && totalChunks === 0) {

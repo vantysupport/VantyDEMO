@@ -80,11 +80,52 @@ REGLAS ESTRICTAS:
 - NO comentarios tuyos al inicio ni al final, solo el texto extraído`,
     })
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: [{ role: 'user', parts }],
-    })
-    const texto = response.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    // Retry con backoff exponencial cuando Gemini devuelve 429 (rate limit por minuto)
+    // OJO: si es el límite DIARIO (1500/día en flash-lite gratis), reintentar no sirve.
+    let texto = ''
+    let lastError: any = null
+    for (let intento = 1; intento <= 3; intento++) {
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash-lite',
+          contents: [{ role: 'user', parts }],
+        })
+        texto = response.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        lastError = null
+        break
+      } catch (e: any) {
+        lastError = e
+        const msg = String(e?.message || e?.error?.message || '')
+        const code = e?.status || e?.code || e?.error?.code
+
+        // 429 = quota exceeded
+        if (code === 429 || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
+          // Si menciona "PerDay" o "perDay" es la quota diaria → no reintentar
+          const esLimiteDiario = msg.toLowerCase().includes('perday') || msg.toLowerCase().includes('per_day') || msg.toLowerCase().includes('day')
+          if (esLimiteDiario && intento === 1) {
+            return NextResponse.json({
+              error: 'GEMINI_QUOTA_DAILY_EXCEEDED',
+              detalle: 'Se agotó la quota gratuita diaria de Gemini para OCR (típicamente 1500 requests/día en flash-lite). Opciones: (1) Esperar al reseteo (24h); (2) Activar billing en https://aistudio.google.com/apikey — Flash Lite cuesta ~$0.04 por 1M tokens, prácticamente gratis para uso real.',
+              raw: msg.slice(0, 300),
+            }, { status: 429 })
+          }
+          // Backoff: 28s, 60s, 120s
+          const waitMs = (intento === 1 ? 28 : intento === 2 ? 60 : 120) * 1000
+          console.warn(`[ocr-image] 429 Gemini intento ${intento}/3 — esperando ${waitMs}ms`)
+          await new Promise(r => setTimeout(r, waitMs))
+          continue
+        }
+        // Otros errores: no reintentar
+        throw e
+      }
+    }
+
+    if (lastError) {
+      return NextResponse.json({
+        error: 'No se pudo extraer texto tras 3 intentos',
+        detalle: String(lastError?.message || lastError).slice(0, 300),
+      }, { status: 502 })
+    }
 
     // Si quieren que también lo indexemos directo en el cerebro
     if (indexar && titulo) {
