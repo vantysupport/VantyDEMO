@@ -292,7 +292,10 @@ export default function AdminDashboard() {
         {/* Logo */}
         <div className={`flex items-center gap-3 px-4 h-[60px] border-b flex-shrink-0
           ${isDark ? 'border-[#21262d]' : 'border-slate-100/80'}`}>
-          <div className="relative w-9 h-9 flex-shrink-0 rounded-full bg-white p-1 shadow-md ring-1 ring-slate-200">
+          <div
+            className="relative w-10 h-10 flex-shrink-0 rounded-full shadow-md ring-2 overflow-hidden"
+            style={{ background: '#ffffff', padding: '3px', borderColor: '#ffffff', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}
+          >
             <Image src="/images/logo.png" alt="Logo" fill className="object-contain" />
           </div>
           <div className="flex-1 min-w-0">
