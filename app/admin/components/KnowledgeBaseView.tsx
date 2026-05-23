@@ -158,6 +158,10 @@ export default function KnowledgeBaseView() {
   }
 
   // ── Extraer texto de PDF en el navegador usando pdfjs-dist (npm) ────────────
+  //   Optimizado para PDFs grandes (>50MB):
+  //     - Libera la memoria de cada página después de extraerla (page.cleanup())
+  //     - Cede el control al event loop cada 20 páginas
+  //     - Desactiva fuentes embebidas y rendering (solo necesitamos texto)
   const extractPdfTextInBrowser = async (file: File, onProgress: (p: string) => void): Promise<string> => {
     onProgress('Cargando lector de PDF...')
 
@@ -168,27 +172,53 @@ export default function KnowledgeBaseView() {
       import.meta.url
     ).toString()
 
+    const sizeMB = Math.round(file.size / 1024 / 1024)
+    onProgress(`Leyendo archivo (${sizeMB} MB)...`)
     const arrayBuffer = await file.arrayBuffer()
-    const loadingTask = pdfjs.getDocument({ data: arrayBuffer })
+
+    const loadingTask = pdfjs.getDocument({
+      data: arrayBuffer,
+      // Optimizaciones para archivos grandes — solo extraemos texto
+      disableFontFace: true,
+      useSystemFonts: false,
+      isEvalSupported: false,
+      verbosity: 0,
+    } as any)
     const pdf = await loadingTask.promise
 
     const totalPages = pdf.numPages
-    onProgress(`Leyendo ${totalPages} páginas...`)
+    onProgress(`Leyendo ${totalPages} páginas... (esto puede tardar 1-3 min en archivos grandes)`)
 
     const textos: string[] = []
+    let charsTotales = 0
     for (let i = 1; i <= totalPages; i++) {
-      if (i % 30 === 0 || i === totalPages) {
-        onProgress(`Leyendo página ${i} de ${totalPages}...`)
+      if (i % 10 === 0 || i === totalPages) {
+        onProgress(`📖 Página ${i} de ${totalPages} · ${Math.round(charsTotales / 1000)}k chars extraídos`)
+        // Ceder el control al navegador para que respire (evita "Aw, snap!")
+        await new Promise(r => setTimeout(r, 0))
       }
-      const page = await pdf.getPage(i)
-      const textContent = await page.getTextContent()
-      const pageText = textContent.items
-        .map((item: any) => item.str || '')
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-      if (pageText.length > 10) textos.push(pageText)
+      try {
+        const page = await pdf.getPage(i)
+        const textContent = await page.getTextContent()
+        const pageText = textContent.items
+          .map((item: any) => item.str || '')
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+        if (pageText.length > 10) {
+          textos.push(pageText)
+          charsTotales += pageText.length
+        }
+        // CRÍTICO: liberar memoria de la página antes de pasar a la siguiente
+        page.cleanup()
+      } catch (pageErr: any) {
+        console.warn(`pdfjs: página ${i} falló — ${pageErr?.message || 'error'}`)
+      }
     }
+
+    // Liberar memoria del documento completo
+    try { await pdf.cleanup() } catch {}
+    try { await pdf.destroy() } catch {}
 
     const fullText = textos.join('\n\n')
     onProgress(`✅ ${totalPages} páginas leídas — ${Math.round(fullText.length / 1000)}k caracteres`)
@@ -245,7 +275,8 @@ export default function KnowledgeBaseView() {
 
         if (isPdf && isBig) {
           // ── Archivos grandes: extraer texto en el navegador ──────────────
-          setUploadProgress(`Archivo grande (${Math.round(selectedFile.size / 1024 / 1024)}MB) — extrayendo texto localmente...`)
+          const sizeMB = Math.round(selectedFile.size / 1024 / 1024)
+          setUploadProgress(`Archivo grande (${sizeMB} MB) — extrayendo texto localmente...`)
           try {
             const texto = await extractPdfTextInBrowser(selectedFile, setUploadProgress)
             if (!texto || texto.trim().length < 100) {
@@ -254,8 +285,19 @@ export default function KnowledgeBaseView() {
             body.texto = texto
             body.fileName = selectedFile.name
           } catch (pdfErr: any) {
-            // Si pdfjs falla, intentar subir a Storage de todas formas
-            console.warn('pdfjs falló, subiendo archivo directo:', pdfErr.message)
+            // Si pdfjs falla:
+            //   • Si el archivo es <= 40MB → intentar subir a Storage (el bucket tolera 50MB)
+            //   • Si el archivo es > 40MB → NO subir (fallaría seguro); mensaje claro al usuario
+            console.warn('pdfjs falló:', pdfErr?.message)
+            if (selectedFile.size > 40 * 1024 * 1024) {
+              throw new Error(
+                `No se pudo extraer texto en el navegador (PDF demasiado grande: ${sizeMB} MB) y Supabase Storage rechaza archivos >50MB. Opciones:\n` +
+                `  1) Abrí el PDF en Adobe Reader → Ctrl+A → Ctrl+C → pegá en modo "Pegar texto"\n` +
+                `  2) Convertilo a sections más chicas (ej: divide el PDF por capítulo)\n` +
+                `  3) Usá modo "📋 Protocolo tabular" si tu PDF es una tabla de items\n` +
+                `  4) Aumentá el límite del bucket "knowledge-base" en Supabase Storage Settings`
+              )
+            }
             setUploadProgress('Subiendo archivo a servidor...')
             const safeName = `${Date.now()}-${selectedFile.name.replace(/[^a-z0-9._-]/gi, '_')}`
             const { data: up, error: upErr } = await supabasePublic.storage
