@@ -1126,7 +1126,17 @@ async function generarInformeClinicoSanti(
       habilidades.push({
         area: areaMostrada ? '' : area,
         subarea: p.titulo || 'Sin nombre',
-        objetivo: p.objetivo_lp || `Criterio de éxito de ${p.criterio_dominio_pct || 90}% en dos sesiones consecutivas.`,
+        objetivo: (() => {
+          const base = p.objetivo_lp || ''
+          // Si el objetivo ya menciona el criterio, usarlo tal cual
+          if (base.toLowerCase().includes('criterio') || base.toLowerCase().includes('%')) return base
+          // Si hay texto pero no menciona criterio, anteponer el criterio
+          if (base.trim()) {
+            return `Con un criterio de éxito de ${p.criterio_dominio_pct || 90}% en dos sesiones consecutivas, ${base.charAt(0).toLowerCase() + base.slice(1)}`
+          }
+          // Fallback genérico con criterio explícito
+          return `Con un criterio de éxito de ${p.criterio_dominio_pct || 90}% en dos sesiones consecutivas, el estudiante podrá demostrar dominio del objetivo trabajado en el programa: ${p.titulo || 'sin descripción'}.`
+        })(),
         estado: promedioProg !== null
           ? (promedioProg >= (p.criterio_dominio_pct || 90) ? 'logrado'
             : promedioProg >= 80 ? 'casi_logrado'

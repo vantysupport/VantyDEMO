@@ -8,7 +8,7 @@
 import {
   Paragraph, TextRun, Table, TableRow, TableCell,
   AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat,
-  HeadingLevel, PageNumber, Footer, Header,
+  HeadingLevel, PageNumber, Footer, Header, VerticalMergeType,
 } from 'docx'
 
 // ─── Constantes de estilo ─────────────────────────────────────────────────
@@ -198,20 +198,33 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
     })],
   })
 
-  const dataCell = (texto: string, width: number, opts?: { bold?: boolean; align?: any; color?: string }) => new TableCell({
+  // Celda de datos normal (sin merge)
+  const dataCell = (
+    texto: string,
+    width: number,
+    opts?: { bold?: boolean; align?: any; color?: string; merge?: 'restart' | 'continue' },
+  ) => new TableCell({
     borders: BDR,
     width: { size: width, type: WidthType.DXA },
     margins: { top: 80, bottom: 80, left: 120, right: 80 },
-    children: [new Paragraph({
-      alignment: opts?.align,
-      children: [new TextRun({
-        text: texto || '',
-        bold: opts?.bold,
-        size: 16,
-        font: 'Arial',
-        color: opts?.color || COLOR_TEXTO,
-      })],
-    })],
+    verticalMerge: opts?.merge === 'restart'
+      ? VerticalMergeType.RESTART
+      : opts?.merge === 'continue'
+        ? VerticalMergeType.CONTINUE
+        : undefined,
+    children: opts?.merge === 'continue'
+      // Las celdas continuadas deben tener al menos un párrafo vacío
+      ? [new Paragraph({ children: [] })]
+      : [new Paragraph({
+          alignment: opts?.align,
+          children: [new TextRun({
+            text: texto || '',
+            bold: opts?.bold,
+            size: 16,
+            font: 'Arial',
+            color: opts?.color || COLOR_TEXTO,
+          })],
+        })],
   })
 
   const estadoLabel = (f: HabilidadFila): string => {
@@ -234,6 +247,9 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
     }
   }
 
+  // Una fila es "SET row" cuando subarea está vacío (se continúa el merge de área+subárea)
+  const isSetRow = (f: HabilidadFila) => !f.subarea || f.subarea.trim() === ''
+
   return new Table({
     width: { size: 9360, type: WidthType.DXA },
     columnWidths: [1800, 2200, 3760, 1600],
@@ -246,18 +262,32 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
           headerCell('LOGROS',               1600),
         ],
       }),
-      ...filas.map(f => new TableRow({
-        children: [
-          dataCell(f.area || '',                       1800, { bold: true }),
-          dataCell(f.subarea || '',                    2200),
-          dataCell((f.set ? `${f.set}\n` : '') + f.objetivo, 3760),
-          dataCell(estadoLabel(f),                     1600, {
-            align: AlignmentType.CENTER,
-            bold: true,
-            color: estadoColor(f),
-          }),
-        ],
-      })),
+      ...filas.map(f => {
+        const setRow = isSetRow(f)
+        // ÁREA: restart cuando tiene valor, continue cuando está vacío
+        const areaMerge = (f.area && f.area.trim() !== '') ? 'restart' : 'continue'
+        // SUBÁREA: restart cuando tiene valor, continue en SET rows
+        const subareaMerge = setRow ? 'continue' : 'restart'
+
+        return new TableRow({
+          children: [
+            dataCell(f.area || '', 1800, { bold: true, merge: areaMerge as any }),
+            dataCell(f.subarea || '', 2200, { merge: subareaMerge as any }),
+            // Objetivo: en SET rows muestra el texto del set; en filas normales muestra el objetivo completo
+            dataCell(
+              setRow
+                ? (f.set || '')
+                : ((f.set ? `${f.set}\n` : '') + f.objetivo),
+              3760,
+            ),
+            dataCell(estadoLabel(f), 1600, {
+              align: AlignmentType.CENTER,
+              bold: true,
+              color: estadoColor(f),
+            }),
+          ],
+        })
+      }),
     ],
   })
 }

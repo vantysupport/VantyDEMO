@@ -1589,7 +1589,7 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
 
   const tipoInfo = {
     padres:      { label: 'Para padres',          desc: 'Lenguaje emocional y accesible',                  emoji: '👨‍👩‍👧' },
-    seguro:      { label: 'Informe Clínico SANTI', desc: 'Formato oficial del centro (Área/Subárea/Sets)', emoji: '📋' },
+    seguro:      { label: 'Informe Clínico', desc: 'Formato oficial del centro (Área/Subárea/Sets)', emoji: '📋' },
     comparativo: { label: 'Comparativo + pred.',  desc: '"En 3 meses logrará X"',                          emoji: '📊' },
   }
 
