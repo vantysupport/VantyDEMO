@@ -212,10 +212,11 @@ export async function POST(req: Request) {
       .order('created_at', { ascending: false })
       .limit(10);
 
-    // Documentos subidos al expediente del paciente
+    // Documentos subidos al expediente del paciente — CON texto extraído
+    //   (la IA debe poder LEER el contenido, no solo ver los nombres)
     const { data: documentosPaciente } = await supabase
       .from('patient_documents')
-      .select('file_name, category, description, uploader_name, uploader_role, file_type, created_at')
+      .select('file_name, category, description, uploader_name, uploader_role, file_type, created_at, extracted_text, extraction_status, extracted_chars')
       .eq('child_id', childId)
       .order('created_at', { ascending: false })
       .limit(20);
@@ -446,7 +447,31 @@ ${documentosPaciente && documentosPaciente.length > 0 ? `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📁 DOCUMENTOS EN EXPEDIENTE (${documentosPaciente.length} archivos)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${documentosPaciente.map((d: any) => `  • [${d.category}] ${d.file_name}${d.description ? ` — "${d.description}"` : ''} (subido por ${d.uploader_name}, ${new Date(d.created_at).toLocaleDateString('es-PE')})`).join('\n')}
+
+🗂️ LISTA RESUMIDA:
+${documentosPaciente.map((d: any) => `  • [${d.category}] ${d.file_name}${d.description ? ` — "${d.description}"` : ''} (${d.uploader_name}, ${new Date(d.created_at).toLocaleDateString('es-PE')}) ${d.extraction_status === 'done' ? '✅ leído' : d.extraction_status === 'pending' ? '⏳ pendiente extracción' : d.extraction_status === 'not_supported' ? '⚠️ tipo no soportado' : d.extraction_status === 'failed' ? '❌ falló' : ''}`).join('\n')}
+
+📄 CONTENIDO EXTRAÍDO DE LOS DOCUMENTOS (lo que dicen por dentro):
+${(() => {
+  const docsConTexto = documentosPaciente.filter((d: any) => d.extraction_status === 'done' && d.extracted_text)
+  if (docsConTexto.length === 0) return '_(Ningún documento tiene texto extraído todavía. Pedir al usuario que use el botón "🧠 Procesar para IA" en la pestaña Documentos.)_'
+
+  // Tope global: 18000 chars repartidos entre los docs (no saturar tokens)
+  const MAX_TOTAL = 18000
+  const MAX_POR_DOC = Math.min(3500, Math.floor(MAX_TOTAL / docsConTexto.length))
+  const bloques: string[] = []
+  let total = 0
+  for (const d of docsConTexto as any[]) {
+    if (total >= MAX_TOTAL) break
+    const limite = Math.min(MAX_POR_DOC, MAX_TOTAL - total)
+    const texto = String(d.extracted_text || '').trim()
+    const frag = texto.length > limite ? texto.slice(0, limite) + '\n[…texto truncado para no exceder tokens]' : texto
+    const fecha = new Date(d.created_at).toLocaleDateString('es-PE')
+    bloques.push(`▼▼▼ ${d.file_name} (${d.category} · ${fecha}) ▼▼▼\n${frag}\n▲▲▲ fin de ${d.file_name} ▲▲▲`)
+    total += frag.length
+  }
+  return bloques.join('\n\n')
+})()}
 ` : ''}
 
 RESPONDE AHORA:
@@ -509,6 +534,8 @@ Según el tipo de pregunta, organiza con secciones claras (markdown). Modelos:
        - 🧠 **Cerebro IA SANTI:** [protocolos indexados]
 
 3. **CUANDO REALMENTE NO PODÉS RESPONDER**: solo decí "no tengo info" si la pregunta es **específica del paciente** y no hay datos (ej: "¿cuántas sesiones tuvo en marzo?" y no hay registros). Para preguntas conceptuales, NUNCA evadas — siempre tenés algo que aportar.
+
+3b. **DOCUMENTOS DEL EXPEDIENTE — SÍ PODÉS LEERLOS**: en el contexto hay una sección "📄 CONTENIDO EXTRAÍDO DE LOS DOCUMENTOS" con el texto completo de cada archivo del expediente del paciente (informes médicos, certificados, reportes externos, etc.). ESE ES EL CONTENIDO DEL DOCUMENTO — léelo y citalo cuando te pregunten "¿qué dice el informe X?" o "¿qué hallazgos tiene el doc Y?". **NUNCA digas "no puedo acceder a documentos externos"** — sí podés, el texto está integrado al contexto. Si un documento aparece como ⏳ pendiente o ❌ falló, sí decilo: "El documento [X] aún no fue procesado, pedí que se ejecute la extracción".
 
 4. **PIENSA CRÍTICAMENTE**: si los datos sugieren una conclusión contraria a la pregunta del colega, dilo respetuosamente. No seas un sí-señor.
 4. **DIAGNÓSTICO DIFERENCIAL**: cuando un cuadro pueda explicarse por varios diagnósticos (ej: TDAH vs ansiedad vs apego desorganizado), menciona las alternativas y qué evaluación discriminaría.
