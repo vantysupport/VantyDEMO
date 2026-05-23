@@ -1354,9 +1354,11 @@ export async function POST(req: NextRequest) {
     if (!childId) return NextResponse.json({ error: 'childId requerido' }, { status: 400 })
 
     let result: { doc: Document; fileName: string }
-    if (tipo === 'seguro') result = await generarReporteSeguro(childId, userLocale)
+    // Nota: 'seguro' ahora apunta al nuevo Informe Clínico estilo SANTI (formato LuTr)
+    //       El antiguo 'generarReporteSeguro' queda accesible bajo tipo: 'seguro_legacy' si se necesita.
+    if (tipo === 'seguro_legacy') result = await generarReporteSeguro(childId, userLocale)
+    else if (tipo === 'seguro' || tipo === 'clinico' || tipo === 'tratamiento') result = await generarInformeClinicoSanti(childId, userLocale)
     else if (tipo === 'comparativo') result = await generarReporteComparativo(childId, userLocale)
-    else if (tipo === 'clinico' || tipo === 'tratamiento') result = await generarInformeClinicoSanti(childId, userLocale)
     else result = await generarReportePadres(childId, userLocale)
 
     const buffer = await Packer.toBuffer(result.doc)

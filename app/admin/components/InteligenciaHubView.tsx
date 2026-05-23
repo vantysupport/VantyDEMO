@@ -1588,9 +1588,9 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
   }
 
   const tipoInfo = {
-    padres:      { label: 'Para padres',          desc: 'Lenguaje emocional y accesible',    emoji: '👨‍👩‍👧' },
-    seguro:      { label: 'Para seguros / IMSS',  desc: 'Formato técnico-legal con CIE-10',  emoji: '🏥' },
-    comparativo: { label: 'Comparativo + pred.',  desc: '"En 3 meses logrará X"',            emoji: '📊' },
+    padres:      { label: 'Para padres',          desc: 'Lenguaje emocional y accesible',                  emoji: '👨‍👩‍👧' },
+    seguro:      { label: 'Informe Clínico SANTI', desc: 'Formato oficial del centro (Área/Subárea/Sets)', emoji: '📋' },
+    comparativo: { label: 'Comparativo + pred.',  desc: '"En 3 meses logrará X"',                          emoji: '📊' },
   }
 
   return (
