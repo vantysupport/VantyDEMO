@@ -120,21 +120,27 @@ async function generarReportePadres(childId: string, userLocale = 'es'): Promise
   const edad = (child as any)?.age || 'N/A'
   const diagnostico = (child as any)?.diagnosis || 'TEA'
 
+  // FIX: programas necesita id para el join con sesiones_datos_aba, y SIN filtro de estado
+  //      para incluir programas con estado null (cuyo filter .in() los excluye silenciosamente)
   const [{ data: sesiones }, { data: programas }, { data: sesionesProg }] = await Promise.all([
     supabaseAdmin.from('registro_aba').select('datos, fecha_sesion').eq('child_id', childId).order('fecha_sesion', { ascending: true }).limit(30),
-    supabaseAdmin.from('programas_aba').select('titulo, area, fase_actual, criterio_dominio_pct, estado').eq('child_id', childId).in('estado', ['activo', 'intervencion']).limit(8),
-    supabaseAdmin.from('sesiones_datos_aba').select('fecha, porcentaje_exito, programa_id').eq('child_id', childId).order('fecha', { ascending: true }).limit(60),
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, criterio_dominio_pct, estado').eq('child_id', childId).limit(20),
+    supabaseAdmin.from('sesiones_datos_aba').select('fecha, porcentaje_exito, programa_id').eq('child_id', childId).order('fecha', { ascending: true }).limit(150),
   ])
 
   const sesArr = sesiones || []
-  const progArr = programas || []
-  const sesProgArr = sesionesProg || []
+  const progArr = (programas || []) as any[]
+  const sesProgArr = (sesionesProg || []) as any[]
 
+  // FIX: unificar fuentes — preferir sesiones modernas, fallback a legacy
   const extraerLogro = (s: any) =>
     parseNivelLogro(s.datos?.nivel_logro_objetivos) ?? parseNivelLogro(s.datos?.porcentaje_logro) ??
     parseNivelLogro(s.datos?.porcentaje_exito) ?? parseNivelLogro(s.datos?.logro_objetivos) ?? parseNivelLogro(s.datos?.logro)
 
-  const logros = sesArr.map(extraerLogro).filter((v: number | null): v is number => v !== null)
+  const logrosLegacy = sesArr.map(extraerLogro).filter((v: number | null): v is number => v !== null)
+  const logrosModernos = sesProgArr.map((s: any) => parseNivelLogro(s.porcentaje_exito)).filter((v: number | null): v is number => v !== null)
+  // Si hay datos modernos, esos mandan; si no, fallback al legacy
+  const logros = logrosModernos.length > 0 ? logrosModernos : logrosLegacy
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0
   const promedioLogro = avg(logros)
   const logrosRecientes = logros.slice(-5)
@@ -148,13 +154,22 @@ async function generarReportePadres(childId: string, userLocale = 'es'): Promise
   const promedioAtencion = avg(atenciones)
   const promedioTolerancia = avg(tolerancias)
 
-  const progDominados = progArr.filter((p: any) => p.estado === 'dominado')
-  const totalSesiones = sesArr.length
+  const progDominados = progArr.filter((p: any) =>
+    p.estado === 'dominado' || p.estado === 'logrado' || p.estado === 'criterio_alcanzado'
+  )
 
+  // FIX: total y fechas desde fuente que tenga más datos (modernas si las hay)
+  const fechasModernas = sesProgArr.map((s: any) => s.fecha).filter(Boolean).sort()
+  const fechasLegacy = (sesArr as any[]).map((s: any) => s.fecha_sesion).filter(Boolean).sort()
+  const fechasUnif = fechasModernas.length > 0 ? fechasModernas : fechasLegacy
+
+  const totalSesiones = fechasUnif.length
   const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
-  const fechaInicio = sesArr.length > 0 ? fmt(sesArr[0].fecha_sesion) : 'N/A'
-  const fechaFin = sesArr.length > 0 ? fmt(sesArr[sesArr.length-1].fecha_sesion) : fmt(new Date().toISOString())
-  const semanas = sesArr.length > 1 ? Math.round((new Date(sesArr[sesArr.length-1].fecha_sesion).getTime() - new Date(sesArr[0].fecha_sesion).getTime())/(7*24*60*60*1000)) : 0
+  const fechaInicio = fechasUnif.length > 0 ? fmt(fechasUnif[0]) : 'N/A'
+  const fechaFin = fechasUnif.length > 0 ? fmt(fechasUnif[fechasUnif.length-1]) : fmt(new Date().toISOString())
+  const semanas = fechasUnif.length > 1
+    ? Math.round((new Date(fechasUnif[fechasUnif.length-1]).getTime() - new Date(fechasUnif[0]).getTime())/(7*24*60*60*1000))
+    : 0
 
   // Logro emoji para padres
   const logroEmoji = promedioLogro >= 80 ? '🌟' : promedioLogro >= 65 ? '⭐' : promedioLogro >= 50 ? '📈' : '💪'
@@ -321,33 +336,96 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
 
 // ── Reporte Comparativo + Predicción ─────────────────────────────────────────
 async function generarReporteComparativo(childId: string, userLocale = 'es'): Promise<{ doc: Document; fileName: string }> {
-  const { data: child } = await supabaseAdmin.from('children').select('name, age, diagnosis').eq('id', childId).single()
+  const { data: child } = await supabaseAdmin.from('children').select('name, age, diagnosis, birth_date').eq('id', childId).single()
   const nombre = (child as any)?.name || 'Paciente'
   const nombreCap = nombre.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
   const edad = (child as any)?.age || 'N/A'
   const diagnostico = (child as any)?.diagnosis || 'TEA'
 
-  const [{ data: sesiones }, { data: programas }, { data: sesionesProg }] = await Promise.all([
+  // FIX: pull ALL data sources — patientes modernos viven en sesiones_datos_aba
+  //      registro_aba es legacy; programas_aba.id es CRUCIAL para joinear sesiones por programa.
+  //      También cargamos eval inicial, documentos extraídos, fichas clínicas y evaluaciones pro.
+  const [
+    { data: sesiones },           // registro_aba (legacy)
+    { data: programas },          // programas_aba (modernos)
+    { data: sesionesProg },       // sesiones_datos_aba (sesiones modernas)
+    { data: evalInicial },        // evaluaciones_iniciales
+    { data: docsExtraidos },      // patient_documents con texto extraído
+    { data: fichasClinicas },     // actas / templates clínicos
+  ] = await Promise.all([
     supabaseAdmin.from('registro_aba').select('datos, fecha_sesion').eq('child_id', childId).order('fecha_sesion', { ascending: true }).limit(50),
-    supabaseAdmin.from('programas_aba').select('titulo, area, fase_actual, criterio_dominio_pct, estado').eq('child_id', childId).limit(12),
-    supabaseAdmin.from('sesiones_datos_aba').select('fecha, porcentaje_exito, programa_id').eq('child_id', childId).order('fecha', { ascending: true }).limit(80),
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, criterio_dominio_pct, estado').eq('child_id', childId).limit(20),
+    supabaseAdmin.from('sesiones_datos_aba').select('id, fecha, porcentaje_exito, programa_id, nivel_ayuda, fase').eq('child_id', childId).order('fecha', { ascending: true }).limit(200),
+    (async () => { try { return await supabaseAdmin.from('evaluaciones_iniciales').select('estado, recomendacion, recomendacion_resumen, recomendacion_razon, anamnesis_completada_en').eq('child_id', childId).order('created_at', { ascending: false }).limit(1).maybeSingle() } catch { return { data: null } } })(),
+    (async () => { try { return await supabaseAdmin.from('patient_documents').select('file_name, category, extracted_text, created_at').eq('child_id', childId).eq('extraction_status', 'done').not('extracted_text', 'is', null).order('created_at', { ascending: false }).limit(10) } catch { return { data: [] } } })(),
+    (async () => { try { return await supabaseAdmin.from('clinical_template_responses').select('id, created_at, filler_name, filler_role, responses, notes, clinical_templates(name)').eq('child_id', childId).order('created_at', { ascending: false }).limit(8) } catch { return { data: [] } } })(),
   ])
 
   const sesArr = sesiones || []
-  const progArr = programas || []
-  const sesProgArr = sesionesProg || []
-  const total = sesArr.length
+  const progArr = (programas || []) as any[]
+  const sesProgArr = (sesionesProg || []) as any[]
 
-  const extraerLogro = (s: any) =>
+  // ── ESTRATEGIA UNIFICADA DE SESIONES ─────────────────────────────────
+  //   Si hay sesiones modernas (sesiones_datos_aba), usalas como fuente primaria.
+  //   Si NO hay modernas pero sí legacy (registro_aba), usar legacy.
+  //   El reporte se calcula sobre la fuente con datos.
+  const tieneModernas = sesProgArr.length > 0
+  const tieneLegacy = sesArr.length > 0
+
+  // Sesiones unificadas: { fecha, porcentaje, programa_id?, fuente }
+  type SesUnif = { fecha: string; porcentaje: number; programa_id?: string; fuente: 'moderna' | 'legacy' }
+  const extraerLogroLegacy = (s: any): number | null =>
     parseNivelLogro(s.datos?.nivel_logro_objetivos) ?? parseNivelLogro(s.datos?.porcentaje_logro) ??
     parseNivelLogro(s.datos?.porcentaje_exito) ?? parseNivelLogro(s.datos?.logro_objetivos)
 
-  const logros = sesArr.map(extraerLogro).filter((v: number | null): v is number => v !== null)
+  const sesionesUnif: SesUnif[] = []
+  if (tieneModernas) {
+    for (const s of sesProgArr) {
+      const p = parseNivelLogro(s.porcentaje_exito)
+      if (p !== null && s.fecha) {
+        sesionesUnif.push({ fecha: s.fecha, porcentaje: p, programa_id: s.programa_id, fuente: 'moderna' })
+      }
+    }
+  }
+  if (tieneLegacy) {
+    for (const s of sesArr as any[]) {
+      const p = extraerLogroLegacy(s)
+      if (p !== null && s.fecha_sesion) {
+        sesionesUnif.push({ fecha: s.fecha_sesion, porcentaje: p, fuente: 'legacy' })
+      }
+    }
+  }
+  sesionesUnif.sort((a, b) => a.fecha.localeCompare(b.fecha))
+
+  const total = sesionesUnif.length || sesArr.length
+  const logros = sesionesUnif.map(s => s.porcentaje)
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0
 
+  // ── ESTADO DE PROGRAMAS ─────────────────────────────────────────────
+  const progActivos = progArr.filter(p => p.estado === 'activo' || p.estado === 'intervencion' || !p.estado)
+  const progDominados = progArr.filter(p => p.estado === 'dominado' || p.estado === 'logrado' || p.estado === 'criterio_alcanzado')
+  const progEnLineaBase = progArr.filter(p => p.fase_actual === 'linea_base')
+
+  // Por programa: último % + tendencia
+  const programasConDatos = progArr.map((p: any) => {
+    const sesP = sesProgArr.filter((s: any) => s.programa_id === p.id).sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    const pcts = sesP.map((s: any) => parseNivelLogro(s.porcentaje_exito)).filter((v: number | null): v is number => v !== null)
+    return {
+      titulo: p.titulo || 'Sin nombre',
+      area: p.area || 'General',
+      fase: p.fase_actual || '—',
+      estado: p.estado || 'activo',
+      criterio: p.criterio_dominio_pct || 90,
+      ultimo_pct: pcts.length > 0 ? pcts[pcts.length - 1] : null,
+      promedio: pcts.length > 0 ? avg(pcts) : null,
+      n_sesiones: pcts.length,
+    }
+  })
+
   const mitad = Math.floor(total/2)
-  const periodo1 = sesArr.slice(0, mitad)
-  const periodo2 = sesArr.slice(mitad)
+  // FIX: usar sesionesUnif (fuente unificada) en vez de sesArr (solo legacy)
+  const periodo1 = sesionesUnif.slice(0, mitad)
+  const periodo2 = sesionesUnif.slice(mitad)
   const logros1 = logros.slice(0, mitad)
   const logros2 = logros.slice(mitad)
   const avg1 = avg(logros1), avg2 = avg(logros2)
@@ -370,7 +448,10 @@ async function generarReporteComparativo(childId: string, userLocale = 'es'): Pr
   }
 
   const pendiente = calcPendienteReal(logros)
-  const semanasTotal = sesArr.length>1?Math.round((new Date(sesArr[sesArr.length-1].fecha_sesion).getTime()-new Date(sesArr[0].fecha_sesion).getTime())/(7*24*60*60*1000)):0
+  // FIX: calcular semanas desde la fuente unificada (modernas + legacy)
+  const semanasTotal = sesionesUnif.length>1
+    ? Math.round((new Date(sesionesUnif[sesionesUnif.length-1].fecha).getTime() - new Date(sesionesUnif[0].fecha).getTime())/(7*24*60*60*1000))
+    : 0
   const sesXMes = semanasTotal > 4 ? (total / (semanasTotal / 4)) : 8
   const ses30d = Math.max(4, Math.round(sesXMes))
   const ses90d = Math.max(10, Math.round(sesXMes * 3))
@@ -398,7 +479,7 @@ async function generarReporteComparativo(childId: string, userLocale = 'es'): Pr
     confianzaNota = `Proyección basada en regresión lineal sobre ${logros.length} sesiones (confianza ${logros.length >= 12 ? 'alta' : 'moderada'}).`
   }
 
-  // Por área
+  // Por área — FIX: ahora con id correcto en programas, el filter funciona
   const areaMap: Record<string,{p1:number[],p2:number[]}> = {}
   for (const p of progArr) {
     const area = (p as any).area || 'General'
@@ -411,18 +492,17 @@ async function generarReporteComparativo(childId: string, userLocale = 'es'): Pr
     }
   }
 
-  // Atención y tolerancia para comparativo
-  const atArr = sesArr.map((s:any) => s.datos?.nivel_atencion ? Math.round((s.datos.nivel_atencion/5)*100) : null).filter((v:number|null):v is number=>v!==null)
-  const tolArr = sesArr.map((s:any) => s.datos?.tolerancia_frustracion ? Math.round((s.datos.tolerancia_frustracion/5)*100) : null).filter((v:number|null):v is number=>v!==null)
+  // Atención y tolerancia para comparativo — solo legacy las trae; si no hay, queda en 0
+  const atArr = (sesArr as any[]).map((s:any) => s.datos?.nivel_atencion ? Math.round((s.datos.nivel_atencion/5)*100) : null).filter((v:number|null):v is number=>v!==null)
+  const tolArr = (sesArr as any[]).map((s:any) => s.datos?.tolerancia_frustracion ? Math.round((s.datos.tolerancia_frustracion/5)*100) : null).filter((v:number|null):v is number=>v!==null)
   const at1=avg(atArr.slice(0,Math.floor(atArr.length/2))), at2=avg(atArr.slice(Math.floor(atArr.length/2)))
   const tol1=avg(tolArr.slice(0,Math.floor(tolArr.length/2))), tol2=avg(tolArr.slice(Math.floor(tolArr.length/2)))
 
   const fmt = (d:string) => new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})
-  const fechaInicio = sesArr.length>0?fmt(sesArr[0].fecha_sesion):'N/A'
-  const fechaFin = sesArr.length>0?fmt(sesArr[sesArr.length-1].fecha_sesion):fmt(new Date().toISOString())
-  const semanas = sesArr.length>1?Math.round((new Date(sesArr[sesArr.length-1].fecha_sesion).getTime()-new Date(sesArr[0].fecha_sesion).getTime())/(7*24*60*60*1000)):0
-  const progActivos = progArr.filter((p:any)=>p.estado==='activo'||p.estado==='intervencion')
-  const progDominados = progArr.filter((p:any)=>p.estado==='dominado')
+  // FIX: usar sesionesUnif para fechas
+  const fechaInicio = sesionesUnif.length>0?fmt(sesionesUnif[0].fecha):'N/A'
+  const fechaFin = sesionesUnif.length>0?fmt(sesionesUnif[sesionesUnif.length-1].fecha):fmt(new Date().toISOString())
+  const semanas = semanasTotal
 
   const hoy = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})
   const hoyISO = new Date().toISOString().slice(0,10)
@@ -438,11 +518,14 @@ Período 1 (${periodo1.length} sesiones): ${avg1}% promedio
 Período 2 (${periodo2.length} sesiones): ${avg2}% promedio
 Cambio: ${diferencia>0?'+':''}${diferencia}% (${tendenciaVerbal})
 Atención: ${at1>0?at1+'%'  :'N/R'} → ${at2>0?at2+'%':'N/R'} | Tolerancia: ${tol1>0?tol1+'%':'N/R'} → ${tol2>0?tol2+'%':'N/R'}
-Áreas trabajadas: ${progActivos.map((p:any)=>p.area).filter((v:string,i:number,a:string[])=>a.indexOf(v)===i).join(', ')||'comunicación'}
-Logros dominados: ${progDominados.length}
+Programas activos (${progActivos.length}): ${progActivos.map((p:any)=>p.titulo).join(', ').slice(0, 400)}
+Áreas trabajadas: ${progArr.map((p:any)=>p.area).filter((v:string,i:number,a:string[])=>a.indexOf(v)===i).join(', ')||'comunicación'}
+Programas con criterio alcanzado: ${progDominados.length} (${progDominados.map((p:any)=>p.titulo).join(', ').slice(0,200)})
+${evalInicial ? `\nEvaluación inicial: ${(evalInicial as any).recomendacion || '—'} · estado: ${(evalInicial as any).estado || '—'}` : ''}
+${docsExtraidos && (docsExtraidos as any[]).length > 0 ? `\nDocumentos en expediente: ${(docsExtraidos as any[]).length} con texto leído (${(docsExtraidos as any[]).slice(0,3).map((d:any) => d.file_name).join(', ')})` : ''}
 
-Explica clínicamente qué significa esta evolución, qué factores pueden contribuir, y qué implica para el desarrollo del niño.
-3 párrafos, máximo 200 palabras.`+getLangInstruction(userLocale),
+Explica clínicamente qué significa esta evolución, qué factores pueden contribuir, y qué implica para el desarrollo del niño. Si hay programas con criterio alcanzado, mencionálos por nombre.
+3 párrafos, máximo 220 palabras.`+getLangInstruction(userLocale),
       {model:GROQ_MODELS.SMART,temperature:0.3,maxTokens:400}),
 
     callGroqSimple('Eres neuropsicóloga ABA. Lenguaje técnico accesible. Párrafos fluidos.',
@@ -456,11 +539,16 @@ Interpreta las proyecciones: qué esperar, qué condiciones son necesarias para 
       {model:GROQ_MODELS.SMART,temperature:0.3,maxTokens:260}),
 
     callGroqSimple('Eres neuropsicóloga ABA. Lenguaje técnico accesible. Párrafos fluidos.',
-      `Escribe RECOMENDACIONES TERAPÉUTICAS para ${nombreCap} basadas en:
-Tendencia: ${tendenciaVerbal}, logro actual: ${avg2}%, áreas: ${progActivos.map((p:any)=>p.area).filter((v:string,i:number,a:string[])=>a.indexOf(v)===i).join(', ')||'en evaluación'}.
-Incluye: ajustes al plan actual, objetivos para el próximo período, frecuencia sugerida.
-2 párrafos, máximo 100 palabras.`+getLangInstruction(userLocale),
-      {model:GROQ_MODELS.SMART,temperature:0.3,maxTokens:200}),
+      `Escribe RECOMENDACIONES TERAPÉUTICAS para ${nombreCap} (${edad} años, ${diagnostico}) basadas en:
+- Tendencia: ${tendenciaVerbal}, logro actual: ${avg2}%
+- Programas activos (${progActivos.length}): ${progActivos.map((p:any)=>p.titulo).slice(0,8).join(', ')}
+- Programas con criterio alcanzado: ${progDominados.length}
+- Áreas trabajadas: ${progArr.map((p:any)=>p.area).filter((v:string,i:number,a:string[])=>a.indexOf(v)===i).join(', ')||'en evaluación'}
+${evalInicial ? `- Recomendación de eval inicial: ${(evalInicial as any).recomendacion_resumen || (evalInicial as any).recomendacion || '—'}` : ''}
+
+Incluye: (a) ajustes al plan actual de los programas más relevantes, (b) objetivos para el próximo período, (c) frecuencia sugerida, (d) si corresponde, programas que pueden avanzar de set o consolidarse.
+2-3 párrafos, máximo 160 palabras.`+getLangInstruction(userLocale),
+      {model:GROQ_MODELS.SMART,temperature:0.3,maxTokens:280}),
   ])
 
   const pColor = (v: number) => v>=75?'15803D':v>=50?'B45309':'BE123C'
