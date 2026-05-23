@@ -36,13 +36,16 @@ export async function POST(req: NextRequest) {
     const imagenes: { pagina: number; buffer: ArrayBuffer; mime: string }[] = []
     for (const [key, value] of fd.entries()) {
       if (!key.startsWith('page_')) continue
-      if (!(value instanceof File || value instanceof Blob)) continue
+      // En el runtime de Next.js (web standard), los File de FormData no son
+      // siempre `instanceof File` — usamos duck-typing por arrayBuffer + type.
+      const v: any = value
+      if (!v || typeof v.arrayBuffer !== 'function') continue
       const pagina = parseInt(key.replace('page_', ''), 10)
       if (isNaN(pagina)) continue
       imagenes.push({
         pagina,
-        buffer: await (value as Blob).arrayBuffer(),
-        mime: (value as Blob).type || 'image/jpeg',
+        buffer: await v.arrayBuffer(),
+        mime: v.type || 'image/jpeg',
       })
     }
     if (imagenes.length === 0) {

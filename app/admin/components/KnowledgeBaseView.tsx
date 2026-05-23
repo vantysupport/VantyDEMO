@@ -225,6 +225,79 @@ export default function KnowledgeBaseView() {
     return fullText
   }
 
+  // ── Renderizar páginas de un PDF como JPEGs (para OCR de PDFs escaneados) ──
+  //   Devuelve un array de Blobs (uno por página, comprimidos a JPEG 0.85)
+  const renderPdfPagesAsJpegs = async (
+    pdf: any,
+    fromPage: number,
+    toPage: number,
+    onProgress?: (msg: string) => void,
+  ): Promise<{ pagina: number; blob: Blob }[]> => {
+    const imgs: { pagina: number; blob: Blob }[] = []
+    for (let i = fromPage; i <= toPage; i++) {
+      try {
+        const page = await pdf.getPage(i)
+        // scale 1.5 = ~150 DPI — buena legibilidad sin archivos enormes
+        const viewport = page.getViewport({ scale: 1.5 })
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.ceil(viewport.width)
+        canvas.height = Math.ceil(viewport.height)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { page.cleanup(); continue }
+        await page.render({ canvasContext: ctx, viewport }).promise
+        const blob: Blob = await new Promise((resolve) =>
+          canvas.toBlob((b) => resolve(b as Blob), 'image/jpeg', 0.82)
+        )
+        if (blob) imgs.push({ pagina: i, blob })
+        page.cleanup()
+        // limpiar canvas
+        canvas.width = 0; canvas.height = 0
+        if (i % 3 === 0) {
+          await new Promise(r => setTimeout(r, 0))
+          if (onProgress) onProgress(`🖼️ Renderizando página ${i} para OCR…`)
+        }
+      } catch (e: any) {
+        console.warn(`render página ${i} falló:`, e?.message)
+      }
+    }
+    return imgs
+  }
+
+  // ── Enviar lote de imágenes al OCR del servidor (Gemini Vision) ────────
+  const ocrPaginasViaServidor = async (
+    imgs: { pagina: number; blob: Blob }[],
+    titulo: string,
+    tipo: string,
+    descripcion: string,
+  ): Promise<{ ok: boolean; chunks: number; texto_chars: number; error?: string }> => {
+    if (imgs.length === 0) return { ok: false, chunks: 0, texto_chars: 0, error: 'sin imágenes' }
+
+    // Vercel limit 4.5MB → mandamos máximo 6 imágenes por request
+    const MAX_POR_REQUEST = 6
+    let totalChunks = 0, totalChars = 0
+    for (let i = 0; i < imgs.length; i += MAX_POR_REQUEST) {
+      const sub = imgs.slice(i, i + MAX_POR_REQUEST)
+      const fd = new FormData()
+      const subTitulo = `${titulo} (págs ${sub[0].pagina}-${sub[sub.length - 1].pagina})`
+      fd.append('titulo', subTitulo)
+      fd.append('tipo', tipo)
+      fd.append('descripcion', descripcion)
+      fd.append('indexar', '1')
+      for (const it of sub) fd.append(`page_${it.pagina}`, it.blob, `page_${it.pagina}.jpg`)
+
+      try {
+        const res = await fetch('/api/knowledge/ocr-image', { method: 'POST', body: fd })
+        const json = await res.json()
+        if (!res.ok) return { ok: false, chunks: totalChunks, texto_chars: totalChars, error: json.error || `HTTP ${res.status}` }
+        totalChunks += json.chunks || 0
+        totalChars += json.texto_chars || 0
+      } catch (e: any) {
+        return { ok: false, chunks: totalChunks, texto_chars: totalChars, error: e?.message }
+      }
+    }
+    return { ok: true, chunks: totalChunks, texto_chars: totalChars }
+  }
+
   // ── Procesar PDF MUY grande en lotes de 50 páginas e indexar cada lote ──
   //   No retorna texto — manda directo a /api/knowledge/ingest cada lote.
   //   Así nunca se mantienen >50 páginas de texto en memoria.
@@ -293,12 +366,38 @@ export default function KnowledgeBaseView() {
       }
 
       const loteTexto = buffer.join('\n\n')
+
+      // ── FALLBACK AUTOMÁTICO: si pdfjs no extrajo texto, hacemos OCR ──
+      //   Esto cubre PDFs escaneados (imágenes con texto). Renderizamos
+      //   cada página como JPEG y la mandamos al servidor para Gemini Vision.
       if (loteTexto.trim().length < 50) {
         lotesVacios++
-        console.warn(`Lote ${lote} (págs ${start}-${end}) sin texto extraíble (${charsLote} chars)`)
-        onProgress(`Lote ${lote}/${totalLotes} sin texto — ${lotesVacios} vacíos hasta ahora`)
+        onProgress(`Lote ${lote}/${totalLotes} sin texto digital · iniciando OCR (Gemini Vision)…`)
+        try {
+          const imgs = await renderPdfPagesAsJpegs(pdf, start, end, (m) => onProgress(`${m} (Lote ${lote}/${totalLotes})`))
+          if (imgs.length === 0) {
+            console.warn(`Lote ${lote} sin imágenes renderizables`)
+            continue
+          }
+          onProgress(`Lote ${lote}/${totalLotes} · OCR de ${imgs.length} páginas con Gemini…`)
+          const ocrRes = await ocrPaginasViaServidor(
+            imgs, baseTitulo, baseTipo,
+            `${baseDescripcion || ''}\n[OCR auto para PDF escaneado]`.trim(),
+          )
+          if (ocrRes.ok && ocrRes.chunks > 0) {
+            totalChunks += ocrRes.chunks
+            totalChars += ocrRes.texto_chars
+            lotesProcesados++
+            onProgress(`Lote ${lote}/${totalLotes} OCR ✅ ${ocrRes.chunks} fragmentos · ${Math.round(ocrRes.texto_chars / 1000)}k chars`)
+          } else {
+            console.warn(`Lote ${lote} OCR no produjo chunks:`, ocrRes.error)
+          }
+        } catch (ocrErr: any) {
+          console.warn(`Lote ${lote} OCR falló:`, ocrErr?.message)
+        }
         continue
       }
+
       totalChars += loteTexto.length
       lotesProcesados++
 
@@ -347,15 +446,18 @@ export default function KnowledgeBaseView() {
     try { await pdf.cleanup() } catch {}
     try { await pdf.destroy() } catch {}
 
-    // Diagnóstico: si la mayoría de lotes vinieron vacíos, el PDF es escaneado
-    if (totalChars < 1000 || lotesProcesados === 0) {
+    // Diagnóstico: si después de pdfjs + OCR fallback NADA funcionó
+    if (totalChars < 500 && totalChunks === 0) {
       throw new Error(
-        `Este PDF parece ser ESCANEADO / basado en imágenes (extrajimos solo ${totalChars} caracteres de ${totalPages} páginas). pdfjs no puede leer texto en imágenes.\n\n` +
+        `No se pudo extraer texto del PDF ni con lectura digital ni con OCR (${totalPages} páginas, ${totalChars} chars).\n\n` +
+        `POSIBLES CAUSAS:\n` +
+        `  • GEMINI_API_KEY no configurada → el OCR no puede correr\n` +
+        `  • PDF protegido con contraseña o corrupto\n` +
+        `  • Calidad del escaneo muy baja (imágenes borrosas)\n\n` +
         `OPCIONES:\n` +
-        `  1) Abrí el PDF en un visor OCR (Adobe Pro, FineReader) → exportá como "PDF con texto seleccionable" → subí esa versión\n` +
-        `  2) Usá una herramienta online tipo ilovepdf.com/ocr o smallpdf.com/ocr para convertirlo y luego subí el resultado\n` +
-        `  3) Si tenés el texto en otro lado (Word, web, etc.) usá modo "📝 Pegar texto"\n` +
-        `  4) Si es un protocolo (ABLLS-R/AFLS) con tablas, usá el modo "📋 Protocolo tabular" copiando de Excel/Sheets`
+        `  1) Verificá que GEMINI_API_KEY esté en las variables de entorno\n` +
+        `  2) Si es un protocolo con tablas, usá el modo "📋 Protocolo tabular"\n` +
+        `  3) Si tenés el contenido en Word/web, usá modo "📝 Pegar texto"`
       )
     }
 
