@@ -170,7 +170,7 @@ async function extractPdfChunk(ai: GoogleGenAI, buffer: ArrayBuffer): Promise<st
   const base64 = Buffer.from(buffer).toString('base64')
 
   const response = await ai.models.generateContent({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-3.5-flash',
     contents: [{
       role: 'user',
       parts: [
@@ -196,7 +196,7 @@ Responde SOLO con el texto extraído, sin comentarios previos ni posteriores.`,
 
   // Fallback con prompt en inglés
   const r2 = await ai.models.generateContent({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-3.5-flash',
     contents: [{
       role: 'user',
       parts: [
