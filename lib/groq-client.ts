@@ -15,13 +15,15 @@ export const GROQ_MODELS = {
   WEB:   'groq/compound-mini',
 }
 
-// Orden de fallback cuando se alcanza el límite de tokens/día
-// Solo modelos activos en producción (abril 2026)
+// Orden de fallback cuando se alcanza el límite de tokens/día o el contexto es muy grande
+// Modelos ordenados por TPM (tokens-per-minute) DESCENDENTE — los grandes primero
+// para que el contexto largo no choque con límites de modelos chicos.
+// Solo modelos activos en producción (mayo 2026)
 const FALLBACK_CHAIN = [
-  'llama-3.3-70b-versatile',   // mejor calidad — modelo principal
-  'llama-3.1-8b-instant',      // rápido, menor consumo
-  'openai/gpt-oss-20b',        // fallback GPT-OSS ligero
-  'openai/gpt-oss-120b',       // máxima capacidad si todo falla
+  'llama-3.3-70b-versatile',   // 12000 TPM · mejor calidad — modelo principal
+  'openai/gpt-oss-120b',       // alto TPM · máxima capacidad de contexto
+  'openai/gpt-oss-20b',        // medio · GPT-OSS ligero
+  'llama-3.1-8b-instant',      // 6000 TPM · último recurso (puede fallar con contexto grande)
 ]
 
 export interface GroqMessage {
@@ -49,8 +51,16 @@ async function tryModel(
 
     if (res.status === 429) {
       const err = await res.json().catch(() => ({}))
-      console.warn(`[Groq] Límite alcanzado en ${model}: ${err?.error?.message || '429'}`)
+      console.warn(`[Groq] Rate limit en ${model}: ${err?.error?.message || '429'}`)
       return null // señal para probar el siguiente modelo
+    }
+
+    // 413 = Request too large — el modelo no acepta el tamaño del contexto.
+    //       Probamos con el siguiente (puede tener más TPM o contexto).
+    if (res.status === 413) {
+      const err = await res.json().catch(() => ({}))
+      console.warn(`[Groq] Payload too large en ${model}: ${err?.error?.message || '413'}`)
+      return null
     }
 
     if (!res.ok) {
@@ -61,9 +71,12 @@ async function tryModel(
     const data = await res.json()
     return data.choices?.[0]?.message?.content || ''
   } catch (err: any) {
-    // Si el error es de red/timeout (no 429), lo propagamos
-    if (!err.message?.includes('429') && !err.message?.includes('rate limit')) throw err
-    return null
+    // Errores recuperables (429 / 413) → null para probar siguiente modelo
+    const msg = String(err?.message || '')
+    if (msg.includes('429') || msg.includes('rate limit') || msg.includes('413') || msg.includes('too large')) {
+      return null
+    }
+    throw err
   }
 }
 

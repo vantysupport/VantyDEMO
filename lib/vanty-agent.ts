@@ -375,18 +375,17 @@ export class VantyAgent {
       const messages = conversacion.mensajes as any[]
       const historialReciente = messages.slice(-6)
 
-      // FIX: límites de contexto aumentados para que los programas ABA no sean truncados
-      // childCtx: 4000 → 8000 (child-history ya pone programas ABA primero)
-      // knowledgeCtx: 6000 → 5000 (cedemos espacio a datos del paciente)
-      // globalCtx: 3000 → 3000 (sin cambio)
+      // FIX: límites de contexto recortados para mantenerse bajo 6000 TPM del modelo fallback
+      // Total bruto target: ~9000 chars (~2200 tokens) + system prompt (~2000 tokens) = ~4200 tokens
+      // Eso deja margen para mensaje + respuesta sin chocar con el límite TPM
       const userLocale = (options as any).locale || 'es'
       const localeInstruction = userLocale !== 'es'
         ? `\n\n[IDIOMA OBLIGATORIO: Responde SIEMPRE en ${getLocaleLabel(userLocale)}. Nunca respondas en español si el idioma configurado es diferente.]`
         : ''
 
-      const knowledgeCtxTrimmed = knowledgeCtx.slice(0, 5000)
-      const childCtxTrimmed = childCtx ? childCtx.slice(0, 8000) : ''       // FIX: 4000 → 8000
-      const globalCtxTrimmed = globalCtx ? globalCtx.slice(0, 3000) : ''
+      const knowledgeCtxTrimmed = knowledgeCtx.slice(0, 2500)              // 5000 → 2500
+      const childCtxTrimmed = childCtx ? childCtx.slice(0, 4500) : ''      // 8000 → 4500
+      const globalCtxTrimmed = globalCtx ? globalCtx.slice(0, 1500) : ''   // 3000 → 1500
 
       let systemContext = SYSTEM_PROMPT_BASE + localeInstruction + '\n\n' + knowledgeCtxTrimmed
       if (childCtxTrimmed) systemContext += '\nPACIENTE ACTIVO:\n' + childCtxTrimmed
