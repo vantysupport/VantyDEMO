@@ -12,7 +12,7 @@ import {
 import { useToast } from '@/components/Toast'
 import { useTheme } from '@/components/ThemeContext'
 
-type InputMode = 'archivo' | 'url' | 'texto' | 'buscar'
+type InputMode = 'archivo' | 'url' | 'texto' | 'buscar' | 'protocolo'
 type Tab = 'aprender' | 'biblioteca' | 'diagnosticos'
 
 export default function KnowledgeBaseView() {
@@ -51,6 +51,10 @@ export default function KnowledgeBaseView() {
   const [showForm, setShowForm] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({ titulo: '', tipo: 'libro', descripcion: '', texto: '', url: '' })
+  // Estado para modo "Protocolo tabular"
+  const [protoTabla, setProtoTabla] = useState('')
+  const [protoFuente, setProtoFuente] = useState('ABLLS-R')
+  const [protoArea, setProtoArea] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState('')
   const [busqueda, setBusqueda] = useState('')
@@ -197,6 +201,40 @@ export default function KnowledgeBaseView() {
     if (inputMode === 'url' && !form.url.trim()) { toast.error('Ingresa una URL válida'); return }
     if (inputMode === 'texto' && !form.texto.trim()) { toast.error('Pega el contenido'); return }
     if (inputMode === 'buscar' && !libroSeleccionado) { toast.error('Selecciona un libro'); return }
+    if (inputMode === 'protocolo' && !protoTabla.trim()) { toast.error('Pega la tabla del protocolo'); return }
+
+    // ─── Modo Protocolo: usar endpoint estructurado ──────────────────────
+    if (inputMode === 'protocolo') {
+      setUploading(true)
+      setUploadProgress('Importando protocolo estructurado... (un chunk por ítem)')
+      try {
+        const res = await fetch('/api/knowledge/import-protocolo', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            titulo: form.titulo,
+            descripcion: form.descripcion,
+            fuente: protoFuente,
+            area: protoArea,
+            tabla: protoTabla,
+          }),
+        })
+        const json = await res.json()
+        if (!res.ok || !json.ok) throw new Error(json.error || 'Error en importación')
+        toast.success(`✅ Importado: ${json.chunks_indexados} ítems del protocolo (${json.con_embedding} con embeddings)`)
+        setProtoTabla('')
+        setProtoArea('')
+        setForm({ titulo: '', tipo: 'libro', descripcion: '', texto: '', url: '' })
+        setShowForm(false)
+        loadDocs()
+      } catch (e: any) {
+        toast.error('Error: ' + e.message)
+      } finally {
+        setUploading(false)
+        setUploadProgress('')
+      }
+      return
+    }
+
     setUploading(true)
     try {
       const body: Record<string, any> = { titulo: form.titulo, tipo: form.tipo, descripcion: form.descripcion }
@@ -605,10 +643,10 @@ export default function KnowledgeBaseView() {
           {showForm && (
             <div className={`rounded-2xl border shadow-sm p-5 space-y-4 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}`}>
               <p className={`font-black text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('ui.add_document')}</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {(['archivo', 'url', 'texto', 'buscar'] as const).map(m => {
-                  const icons: Record<string, string> = { archivo: '📎', url: '🔗', texto: '📝', buscar: '🔍' }
-                  const labels: Record<string, string> = { archivo: 'Archivo PDF/TXT', url: 'URL', texto: 'Pegar texto', buscar: 'Buscar libro' }
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {(['archivo', 'url', 'texto', 'buscar', 'protocolo'] as const).map(m => {
+                  const icons: Record<string, string> = { archivo: '📎', url: '🔗', texto: '📝', buscar: '🔍', protocolo: '📋' }
+                  const labels: Record<string, string> = { archivo: 'Archivo PDF/TXT', url: 'URL', texto: 'Pegar texto', buscar: 'Buscar libro', protocolo: 'Protocolo tabular' }
                   return (
                     <button key={m} onClick={() => { setInputMode(m); setLibroSeleccionado(null) }}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition text-center ${inputMode === m ? (isDark ? 'bg-violet-900/30 border-violet-700 text-violet-400' : 'bg-violet-100 border-violet-300 text-violet-700') : (isDark ? 'border-[#30363d] text-slate-500' : 'border-slate-200 text-slate-500 hover:border-violet-200')}`}>
@@ -617,6 +655,87 @@ export default function KnowledgeBaseView() {
                   )
                 })}
               </div>
+
+              {/* Modo: Protocolo tabular */}
+              {inputMode === 'protocolo' && (
+                <div className={`rounded-xl border-2 border-dashed p-4 space-y-3 ${isDark ? 'border-violet-700/40 bg-violet-900/10' : 'border-violet-300 bg-violet-50/30'}`}>
+                  <div className="flex items-start gap-2">
+                    <span className="text-xl">📋</span>
+                    <div className="flex-1 text-xs">
+                      <p className={`font-black mb-1 ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
+                        Pegado estructurado — un chunk por ítem
+                      </p>
+                      <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+                        Pega una tabla con columnas <strong>TAREA · NOMBRE · OBJETIVO · CRITERIOS</strong> (separadas por TAB, copiada de Excel/Sheets).
+                        Cada fila se indexará como un ítem independiente con su código (ej: D1, D5…), perfecto para que la IA recupere exactamente lo que pidas.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Botón one-click para importar protocolos preestablecidos */}
+                  <div className={`rounded-lg p-3 ${isDark ? 'bg-emerald-900/15 border border-emerald-800/40' : 'bg-emerald-50 border border-emerald-200'}`}>
+                    <p className={`text-[10px] font-black uppercase tracking-wider mb-2 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                      ⚡ Importación rápida — protocolos preestablecidos
+                    </p>
+                    <button
+                      type="button"
+                      disabled={uploading}
+                      onClick={async () => {
+                        if (!confirm('¿Importar la Sección D del ABLLS-R (Imitación motriz) — 27 ítems — al Cerebro IA? Si ya existe, se reemplazará.')) return
+                        setUploading(true)
+                        setUploadProgress('Importando ABLLS-R Sección D (27 ítems)…')
+                        try {
+                          const res = await fetch('/api/knowledge/seed-protocolos', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ preset: 'abllsr-d', force: true }),
+                          })
+                          const json = await res.json()
+                          if (!res.ok || !json.ok) throw new Error(json.error || json.mensaje || 'Error')
+                          toast.success(`✅ Importado: ${json.chunks_indexados} ítems (${json.con_embedding} con embeddings)`)
+                          loadDocs()
+                        } catch (e: any) {
+                          toast.error('Error: ' + e.message)
+                        } finally {
+                          setUploading(false)
+                          setUploadProgress('')
+                        }
+                      }}
+                      className={`text-xs font-bold px-3 py-2 rounded-lg ${isDark ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} disabled:opacity-50`}>
+                      📦 Importar ABLLS-R · Sección D (27 ítems)
+                    </button>
+                    <p className={`text-[10px] mt-2 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                      O pega tu propia tabla abajo para otras secciones / protocolos.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Protocolo / Fuente</label>
+                      <input value={protoFuente} onChange={e => setProtoFuente(e.target.value)}
+                        placeholder="ABLLS-R / AFLS / VB-MAPP"
+                        className={`w-full px-3 py-2 rounded-lg border text-sm ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`} />
+                    </div>
+                    <div>
+                      <label className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Área (opcional)</label>
+                      <input value={protoArea} onChange={e => setProtoArea(e.target.value)}
+                        placeholder="Imitación motriz, Manding…"
+                        className={`w-full px-3 py-2 rounded-lg border text-sm ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Tabla del protocolo</label>
+                    <textarea value={protoTabla} onChange={e => setProtoTabla(e.target.value)} rows={10}
+                      placeholder="TAREA	NOMBRE DE TAREA	OBJETIVO DE TAREA	CRITERIOS&#10;D1	Imitación motriz usando objetos.	A solicitud, el estudiante imitará una actividad motriz…	4= Por lo menos 10 acciones…&#10;D2	…	…	…"
+                      className={`w-full px-3 py-2 rounded-lg border text-xs font-mono resize-y ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`} />
+                    {protoTabla && (
+                      <p className={`text-[10px] mt-1.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {protoTabla.split('\n').filter(l => l.trim()).length - 1} filas detectadas (sin contar encabezado).
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <input className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
                 {...{placeholder: t('ui.document_title')}}

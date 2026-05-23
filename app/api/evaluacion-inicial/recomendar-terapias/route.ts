@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroq, GROQ_MODELS } from '@/lib/groq-client'
+import { buildClinicalContext } from '@/lib/ai-context-builder'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -97,6 +98,10 @@ export async function POST(req: NextRequest) {
 **Duración:** ${t.duracion || '—'}`)
       .join('\n\n')
 
+    // Cerebro IA: protocolos clínicos relevantes
+    const queryKB = `${(child as any).diagnosis || ''} ${recLabel} terapia indicaciones objetivos ABLLS AFLS habilidades funcionales`
+    const knowledgeCtx = await buildClinicalContext(queryKB, 8).catch(() => '')
+
     const userPrompt = `# CASO
 
 **Paciente:** ${child.name}, ${edad} años
@@ -119,7 +124,9 @@ ${terapiasTxt}
 
 ---
 
-Elige las 2-4 terapias del catálogo más adecuadas para este caso y devuelve el JSON solicitado. Usa los IDs EXACTOS de la lista de arriba.`
+${knowledgeCtx ? `\n# 📚 PROTOCOLOS Y GUÍAS CLÍNICAS DE REFERENCIA (Cerebro IA SANTI)\n${knowledgeCtx}\n` : ''}
+
+Elige las 2-4 terapias del catálogo más adecuadas para este caso y devuelve el JSON solicitado. Usa los IDs EXACTOS de la lista de arriba. Si los protocolos clínicos arriba son relevantes para el caso (ABLLS-R, AFLS, etc.), úsalos para fundamentar tu razonamiento con criterios profesionales específicos.`
 
     // 3. Llamar al LLM
     const raw = await callGroq(

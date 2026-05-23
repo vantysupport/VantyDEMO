@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroq, GROQ_MODELS } from '@/lib/groq-client'
+import { buildClinicalContext } from '@/lib/ai-context-builder'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -104,8 +105,15 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
     if (!child) return NextResponse.json({ error: 'Paciente no encontrado' }, { status: 404 })
 
-    // 2. Llamar al LLM
-    const userPrompt = buildUserPrompt(child, eval_.respuestas_intake)
+    // 2. Recuperar conocimiento clínico relevante del Cerebro IA
+    //    (ABLLS-R, AFLS, guías clínicas, etc. — lo que el admin haya subido)
+    const motivoConsulta = String(eval_.respuestas_intake?.motivo_principal || '')
+    const queryConocimiento = `${motivoConsulta} ${(child as any).diagnosis || ''} indicadores TEA TDAH neurodesarrollo evaluación`
+    const knowledgeCtx = await buildClinicalContext(queryConocimiento, 8).catch(() => '')
+
+    // 3. Llamar al LLM
+    const userPrompt = buildUserPrompt(child, eval_.respuestas_intake) +
+      (knowledgeCtx ? `\n\n# 📚 CONOCIMIENTO CLÍNICO RELEVANTE (ABLLS-R, AFLS, protocolos)\n${knowledgeCtx}\n\nUsa estos protocolos y guías para fundamentar tu recomendación con criterios clínicos específicos.` : '')
     const raw = await callGroq(
       [
         { role: 'system', content: SYSTEM_PROMPT },

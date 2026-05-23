@@ -15,24 +15,27 @@ function getAdmin() {
 }
 
 // ── Búsqueda en Cerebro IA ────────────────────────────────────────────────────
-// Estrategia dual: vector search (si hay embeddings) + keyword fallback
-async function searchCerebroIA(query: string, maxResults = 6): Promise<string> {
+// Estrategia: embeddings reales (HF/Gemini) → vector search → keyword fallback
+// FIX: antes llamaba al RPC con `query_text` (firma incorrecta) → caía al
+// fallback de keywords. Ahora usa el módulo unificado `searchKnowledge`
+// que genera el embedding y usa la firma correcta del RPC.
+async function searchCerebroIA(query: string, maxResults = 8): Promise<string> {
   if (!query?.trim()) return ''
   const db = getAdmin()
 
   try {
-    // 1. Intentar búsqueda vectorial con RPC
-    const { data: vectorResults, error: vectorError } = await db
-      .rpc('buscar_conocimiento', {
-        query_text:      query.slice(0, 500),
-        similarity_threshold: 0.3,
-        match_count:     maxResults,
-      })
-
-    if (!vectorError && vectorResults && vectorResults.length > 0) {
-      return formatKnowledgeResults(vectorResults, 'vector')
+    // 1. Búsqueda semántica con embeddings reales (vía módulo unificado)
+    const { searchKnowledge } = await import('@/lib/knowledge-base')
+    const resultados = await searchKnowledge(query, { maxResults, threshold: 0.5 })
+    if (resultados.length > 0) {
+      return formatKnowledgeResults(
+        resultados.map(r => ({ contenido: r.contenido, fuente: r.fuente, similitud: r.similitud })),
+        'vector'
+      )
     }
-  } catch {}
+  } catch (e) {
+    console.warn('[searchCerebroIA] vector falló, usando keywords:', (e as any)?.message)
+  }
 
   try {
     // 2. Fallback: búsqueda por keywords en knowledge_chunks
@@ -152,25 +155,41 @@ export async function buildAIContext(
 }
 
 // ── Conectar admin-chat al Cerebro IA ─────────────────────────────────────────
-// Esta función se usa en admin-chat para inyectar el conocimiento clínico
+// Para especialistas/admin: 8 chunks (más contexto técnico)
 export async function buildAdminChatContext(
   question: string,
   existingContext: string
 ): Promise<string> {
-  const knowledgeCtx = await searchCerebroIA(question)
+  const knowledgeCtx = await searchCerebroIA(question, 8)
   const centroCtx    = await getCentroContext()
   return [centroCtx, knowledgeCtx, existingContext].filter(Boolean).join('\n')
 }
 
 // ── Conectar parent-chat al Cerebro IA ────────────────────────────────────────
+// Para padres: 6 chunks orientados a consejos prácticos
 export async function buildParentChatContext(
   question: string,
   existingContext: string
 ): Promise<string> {
   // Para padres: búsqueda más orientada a consejos prácticos
   const query = `estrategias para padres ${question}`
-  const knowledgeCtx = await searchCerebroIA(query, 4)
+  const knowledgeCtx = await searchCerebroIA(query, 6)
   return [knowledgeCtx, existingContext].filter(Boolean).join('\n')
+}
+
+// ── Para endpoints clínicos (evaluación, recomendación, informes) ──────────
+// 10 chunks con threshold más bajo para captar más contexto técnico
+export async function buildClinicalContext(question: string, maxResults = 10): Promise<string> {
+  if (!question?.trim()) return ''
+  try {
+    const { searchKnowledge } = await import('@/lib/knowledge-base')
+    const resultados = await searchKnowledge(question, { maxResults, threshold: 0.45 })
+    if (resultados.length === 0) return ''
+    return formatKnowledgeResults(
+      resultados.map(r => ({ contenido: r.contenido, fuente: r.fuente, similitud: r.similitud })),
+      'vector'
+    )
+  } catch { return '' }
 }
 
 // ── callGeminiSafe (compatibilidad — ahora usa Groq) ─────────────────────────

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
+import { buildClinicalContext } from '@/lib/ai-context-builder'
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat,
@@ -240,6 +241,11 @@ export async function POST(req: NextRequest) {
     const intakeTxt = Object.entries(eval_.respuestas_intake || {})
       .map(([k, v]) => `- ${k.replace(/_/g, ' ')}: ${fmtRespuesta(v)}`).join('\n')
 
+    // Cerebro IA: protocolos clínicos relevantes para fundamentar el informe
+    const motivoConsulta = String(eval_.respuestas_intake?.motivo_principal || '')
+    const queryKB = `${motivoConsulta} ${(child as any).diagnosis || ''} ${tipoInforme} indicadores criterios DSM CIE-11 ABLLS AFLS hitos desarrollo`
+    const knowledgeCtx = await buildClinicalContext(queryKB, 10).catch(() => '')
+
     const analisisIA = await callGroqSimple(
       `Eres neuropsicóloga clínica senior de SANTI (Perú). Vas a redactar el INFORME PROFESIONAL de una anamnesis ${tipoInforme.toLowerCase()} para incluir en el historial clínico del paciente. Lenguaje técnico riguroso, párrafos fluidos, sin bullets. Cita observaciones concretas de los datos. Estructurado en 5 secciones cortas:
 
@@ -266,6 +272,15 @@ ${fmtPorSecciones()}
 # CONTEXTO CLÍNICO PREVIO (RECOMENDACIÓN IA)
 - Tipo de evaluación recomendada: ${tipoInforme}
 - Razonamiento previo: ${eval_.recomendacion_razon || '—'}
+
+${knowledgeCtx ? `# 📚 PROTOCOLOS CLÍNICOS Y GUÍAS DE REFERENCIA (Cerebro IA SANTI)
+${knowledgeCtx}
+
+INSTRUCCIONES ADICIONALES:
+- Cuando hagas afirmaciones clínicas, FUNDAMENTA con criterios de los protocolos arriba (ABLLS-R, AFLS, DSM-5, CIE-11, guías).
+- Cita áreas/hitos específicos (ej: "compatible con criterios del área de manding del ABLLS-R" o "indicadores funcionales por debajo del rango esperado según AFLS para su edad").
+- Sé técnico pero claro.
+` : ''}
 
 ---
 Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
