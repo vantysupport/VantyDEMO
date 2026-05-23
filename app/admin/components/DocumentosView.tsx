@@ -353,31 +353,6 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
               <FolderPlus size={14} /> Nueva carpeta
             </button>
           )}
-          {canUpload && !isPadre && (
-            <button
-              onClick={async () => {
-                if (!confirm('¿Procesar todos los documentos pendientes de este paciente para que la IA pueda leerlos? (puede tardar 30-60 seg)')) return
-                try {
-                  toast.success('⏳ Extrayendo texto en segundo plano…')
-                  const res = await fetch('/api/patient-documents/extract', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ child_id: childId, only_pending: true }),
-                  })
-                  const json = await res.json()
-                  if (!res.ok) throw new Error(json.error)
-                  const ok = json.resultados?.filter((r: any) => r.ok).length || 0
-                  toast.success(`✅ ${ok}/${json.procesados} documentos procesados`)
-                  loadDocs()
-                } catch (e: any) {
-                  toast.error('Error: ' + e.message)
-                }
-              }}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border
-                ${isDark ? 'bg-purple-900/30 border-purple-700/40 text-purple-300 hover:bg-purple-900/50' : 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'}`}
-              title="Hacer que la IA lea los documentos pendientes">
-              🧠 Procesar para IA
-            </button>
-          )}
           {canUpload && (
             <button onClick={() => setShowUpload(!showUpload)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-sm">
