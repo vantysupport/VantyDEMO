@@ -28,6 +28,7 @@ import ResourcesManagementView from './components/ResourcesManagementView'
 import MensajesPendientesPanel from './components/MensajesPendientesPanel'
 import AIReportView from './components/AIReportView'
 import StoreManagementView from './components/StoreManagementView'
+import CatalogoTerapiasView from './components/CatalogoTerapiasView'
 import KnowledgeBaseView from './components/KnowledgeBaseView'
 import ARIAAgentChat from './components/ARIAAgentChat'
 import ProgramasABAView from './components/ProgramasABAView'
@@ -77,13 +78,14 @@ function SidebarLink({ icon: Icon, label, active, onClick, small, badge }: any) 
 }
 
 function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
-  const [tab, setTab] = useState<'recursos' | 'tienda'>('recursos')
+  const [tab, setTab] = useState<'recursos' | 'tienda' | 'terapias'>('recursos')
   return (
     <div className="flex flex-col gap-4">
       <div className={`flex gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
         {([
           { id: 'recursos', icon: BookOpen, label: 'Recursos' },
           { id: 'tienda',   icon: ShoppingBag, label: 'Tienda' },
+          { id: 'terapias', icon: Sparkles,   label: 'Catálogo Terapias' },
         ] as const).map(t => (
           <button
             key={t.id}
@@ -101,6 +103,7 @@ function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
       </div>
       {tab === 'recursos' && <ResourcesManagementView />}
       {tab === 'tienda'   && <StoreManagementView />}
+      {tab === 'terapias' && <CatalogoTerapiasView />}
     </div>
   )
 }
@@ -526,6 +529,7 @@ export default function AdminDashboard() {
               {currentView === 'reportes'     && <AIReportView onChildSelect={setSelectedChildReport} />}
               {currentView === 'recursos'     && <ResourcesManagementView />}
               {currentView === 'tienda'       && <StoreManagementView />}
+              {currentView === 'terapias'     && <CatalogoTerapiasView />}
               {currentView === 'recursos-adicionales' && <RecursosAdicionalesView isDark={isDark} />}
               {currentView === 'config'       && (
                 <ConfiguracionView onAvatarUpdate={(url) => setUserProfile((p: any) => ({ ...p, avatar_url: url }))} />

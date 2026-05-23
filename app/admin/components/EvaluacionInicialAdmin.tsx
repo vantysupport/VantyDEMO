@@ -1,94 +1,106 @@
 'use client'
 
-// Panel de admin para gestionar la Evaluación Inicial de un paciente.
-// Se monta dentro de la ficha del paciente (PatientsView) en una tab nueva.
+// Panel de admin/especialista para gestionar la Evaluación Inicial de un paciente.
 //
-// Permite:
-//  • Ver el intake llenado por el padre
-//  • Ver / regenerar la recomendación de la IA
-//  • CRUD de servicios ofrecidos (con precios editables)
-//  • Marcar especialista asignado
-//  • Ver el documento generado tras la selección del padre
+// El admin ve:
+//  • Estado completo del flujo
+//  • Intake del padre + 2ª anamnesis
+//  • Análisis clínico completo de la IA (razonamiento, áreas, señales — uso interno)
+//  • Terapias que eligió la familia
+//  • Botón para ENVIAR RESPUESTA al padre
+//  • Descarga del documento clínico interno
 
 import { useEffect, useState } from 'react'
 import {
-  ClipboardCheck, Brain, Heart, Loader2, Plus, Trash2, Save, X,
-  Sparkles, FileText, RefreshCw, CheckCircle2, AlertCircle,
-  DollarSign, Clock, User, Edit3, Award
+  ClipboardCheck, Brain, Heart, Loader2, X, Sparkles, FileText, RefreshCw,
+  CheckCircle2, User, Send, Award, Clock, Download, MessageCircle, Edit3,
 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
-type Props = {
-  childId: string
-  childName: string
-}
+type Props = { childId: string; childName: string }
 
-const ESTADO_LABEL: Record<string, { label: string; color: string }> = {
-  pendiente_intake:   { label: 'Esperando intake del padre',  color: 'bg-slate-100 text-slate-700' },
-  analizando:         { label: 'Analizando con IA',           color: 'bg-blue-100 text-blue-700' },
-  recomendado:        { label: 'Recomendación lista',         color: 'bg-purple-100 text-purple-700' },
-  servicios_listos:   { label: 'Servicios configurados',      color: 'bg-indigo-100 text-indigo-700' },
-  seleccionado:       { label: 'Padre seleccionó servicio',   color: 'bg-green-100 text-green-700' },
-  completado:         { label: 'Evaluación completada',       color: 'bg-emerald-100 text-emerald-700' },
+const ESTADO_LABEL: Record<string, { label: string; color: string; pasos: number }> = {
+  pendiente_intake:       { label: '1/7 · Esperando intake del padre',         color: 'bg-slate-100 text-slate-700',    pasos: 1 },
+  analizando:             { label: '2/7 · IA analizando',                       color: 'bg-blue-100 text-blue-700',      pasos: 2 },
+  recomendado:            { label: '3/7 · Esperando que el padre confirme',     color: 'bg-purple-100 text-purple-700',  pasos: 3 },
+  confirmado:             { label: '4/7 · Padre llenando 2ª anamnesis',         color: 'bg-indigo-100 text-indigo-700',  pasos: 4 },
+  anamnesis_completa:     { label: '5/7 · Padre eligiendo terapias',            color: 'bg-violet-100 text-violet-700',  pasos: 5 },
+  terapia_seleccionada:   { label: '6/7 · 🔔 ESPERANDO TU RESPUESTA',           color: 'bg-amber-100 text-amber-700',    pasos: 6 },
+  revisado:               { label: '7/7 · Respuesta enviada',                   color: 'bg-green-100 text-green-700',    pasos: 7 },
+  completado:             { label: '✅ Completado',                              color: 'bg-emerald-100 text-emerald-700',pasos: 7 },
+  rechazado:              { label: '⚠️ Padre NO aceptó · contactar',             color: 'bg-red-100 text-red-700',        pasos: 3 },
 }
 
 export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
   const [loading, setLoading] = useState(true)
   const [evaluacion, setEvaluacion] = useState<any>(null)
-  const [servicios, setServicios] = useState<any[]>([])
+  const [terapias, setTerapias] = useState<any[]>([])  // catálogo completo
   const [reanalizando, setReanalizando] = useState(false)
-  const [showAddServicio, setShowAddServicio] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
   const [verDocumento, setVerDocumento] = useState(false)
+  const [showResponder, setShowResponder] = useState(false)
+  const [respuesta, setRespuesta] = useState('')
+  const [enviandoResp, setEnviandoResp] = useState(false)
+  const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => { if (childId) cargar() }, [childId])
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) {
+        supabase.from('profiles').select('*').eq('email', data.user.email).maybeSingle()
+          .then(({ data: p }) => setProfile(p))
+      }
+    })
+  }, [])
 
   const cargar = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/evaluacion-inicial?child_id=${childId}`)
-      const data = await res.json()
-      if (data.ok) {
-        setEvaluacion(data.evaluacion)
-        setServicios(data.servicios || [])
-      }
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
+      const [e1, e2] = await Promise.all([
+        fetch(`/api/evaluacion-inicial?child_id=${childId}`).then(r => r.json()),
+        fetch('/api/terapias-catalogo?all=1').then(r => r.json()),
+      ])
+      if (e1.ok) setEvaluacion(e1.evaluacion)
+      if (e2.ok) setTerapias(e2.terapias || [])
+    } finally { setLoading(false) }
   }
 
   const reanalizar = async () => {
     if (!evaluacion?.id) return
     setReanalizando(true)
     try {
-      const res = await fetch('/api/evaluacion-inicial/analizar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch('/api/evaluacion-inicial/analizar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: evaluacion.id }),
       })
-      const data = await res.json()
-      if (!data.ok) throw new Error(data.error)
       await cargar()
-    } catch (e: any) {
-      alert('Error al analizar: ' + e.message)
-    } finally {
-      setReanalizando(false)
-    }
+    } catch (e: any) { alert('Error: ' + e.message) }
+    finally { setReanalizando(false) }
   }
 
-  const eliminarServicio = async (id: string) => {
-    if (!confirm('¿Eliminar este servicio?')) return
-    await fetch(`/api/evaluacion-inicial/servicios?id=${id}&force=1`, { method: 'DELETE' })
-    cargar()
+  const enviarRespuesta = async () => {
+    if (!respuesta.trim()) { alert('Escribe una respuesta'); return }
+    setEnviandoResp(true)
+    try {
+      const r = await fetch('/api/evaluacion-inicial/responder', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          evaluacion_id: evaluacion.id,
+          respuesta,
+          respondido_por: profile?.id,
+        }),
+      })
+      const d = await r.json()
+      if (!d.ok) throw new Error(d.error)
+      setShowResponder(false)
+      setRespuesta('')
+      await cargar()
+    } catch (e: any) { alert('Error: ' + e.message) }
+    finally { setEnviandoResp(false) }
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="animate-spin text-blue-500" size={32} />
-      </div>
-    )
+    return <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-blue-500" size={32} /></div>
   }
 
   if (!evaluacion) {
@@ -96,20 +108,21 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       <div className="rounded-2xl p-8 text-center border-2 border-dashed" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
         <ClipboardCheck size={40} className="mx-auto mb-3 opacity-40" />
         <p className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Sin evaluación inicial</p>
-        <p className="text-sm">El padre aún no ha llenado la ficha intake. Aparecerá aquí en cuanto la complete.</p>
+        <p className="text-sm">El padre aún no ha llenado la ficha intake.</p>
       </div>
     )
   }
 
   const estadoInfo = ESTADO_LABEL[evaluacion.estado] || ESTADO_LABEL.pendiente_intake
   const areas = evaluacion.recomendacion_areas || {}
+  const terapiasElegidas = terapias.filter(t => (evaluacion.terapias_seleccionadas || []).includes(t.id))
 
   return (
     <div className="space-y-5">
-      {/* HEADER */}
+      {/* HEADER + acciones */}
       <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
+          <div className="flex-1 min-w-[200px]">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardCheck size={22} className="text-indigo-500" />
               <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>Evaluación Inicial — {childName}</h2>
@@ -117,62 +130,105 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${estadoInfo.color}`}>
               {estadoInfo.label}
             </span>
+
+            {/* Barra de progreso del flujo */}
+            <div className="mt-3 flex items-center gap-1">
+              {[1, 2, 3, 4, 5, 6, 7].map(p => (
+                <div key={p} className={`h-1.5 flex-1 rounded ${p <= estadoInfo.pasos ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+              ))}
+            </div>
+
             {evaluacion.intake_completado_en && (
-              <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-                Intake llenado: {new Date(evaluacion.intake_completado_en).toLocaleString('es-PE')}
+              <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
+                Intake: {new Date(evaluacion.intake_completado_en).toLocaleString('es-PE')}
+                {evaluacion.confirmado_en && ` · Confirmado: ${new Date(evaluacion.confirmado_en).toLocaleString('es-PE')}`}
+                {evaluacion.anamnesis_completada_en && ` · Anamnesis: ${new Date(evaluacion.anamnesis_completada_en).toLocaleString('es-PE')}`}
+                {evaluacion.seleccionado_en && ` · Terapias elegidas: ${new Date(evaluacion.seleccionado_en).toLocaleString('es-PE')}`}
               </p>
             )}
           </div>
 
           <div className="flex gap-2 flex-wrap">
             {evaluacion.respuestas_intake && (
-              <button
-                onClick={reanalizar}
-                disabled={reanalizando}
-                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
-              >
+              <button onClick={reanalizar} disabled={reanalizando}
+                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
                 {reanalizando ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                {evaluacion.recomendacion ? 'Re-analizar con IA' : 'Analizar con IA'}
+                {evaluacion.recomendacion ? 'Re-analizar IA' : 'Analizar con IA'}
+              </button>
+            )}
+            {evaluacion.estado === 'terapia_seleccionada' && (
+              <button onClick={() => setShowResponder(true)}
+                className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                <Send size={14} /> Responder al padre
+              </button>
+            )}
+            {(evaluacion.estado === 'revisado' || evaluacion.estado === 'completado') && (
+              <button onClick={() => setShowResponder(true)}
+                className="px-3 py-2 rounded-lg border-2 text-xs font-bold flex items-center gap-1.5"
+                style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
+                <Edit3 size={14} /> Editar respuesta
               </button>
             )}
             {evaluacion.documento_md && (
-              <button
-                onClick={() => setVerDocumento(true)}
+              <button onClick={() => setVerDocumento(true)}
                 className="px-3 py-2 rounded-lg border-2 text-xs font-bold flex items-center gap-1.5"
-                style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
-              >
-                <FileText size={14} /> Ver documento
+                style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
+                <FileText size={14} /> Doc. interno
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* RECOMENDACIÓN IA */}
+      {/* ALERTA si está esperando respuesta */}
+      {evaluacion.estado === 'terapia_seleccionada' && (
+        <div className="rounded-2xl p-4 border-2 border-amber-400 bg-amber-50 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 animate-pulse">
+            <Send size={18} />
+          </div>
+          <div className="flex-1">
+            <p className="font-black text-amber-900">El padre está esperando tu respuesta</p>
+            <p className="text-sm text-amber-800">
+              Eligió {terapiasElegidas.length} terapia{terapiasElegidas.length === 1 ? '' : 's'}. Revisa toda la información abajo y envía un mensaje personalizado.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* RECOMENDACIÓN IA (uso interno) */}
       {evaluacion.recomendacion && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-          <h3 className="text-sm font-black uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            {evaluacion.recomendacion === 'psicologica' ? <Heart size={16} className="text-pink-500" /> : <Brain size={16} className="text-indigo-500" />}
-            Recomendación IA
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              {evaluacion.recomendacion === 'psicologica' ? <Heart size={16} className="text-pink-500" /> : <Brain size={16} className="text-indigo-500" />}
+              Recomendación IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">USO INTERNO</span>
+            </h3>
+          </div>
+
           <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3"
             style={{
               background: evaluacion.recomendacion === 'psicologica' ? '#fce7f3' : '#e0e7ff',
               color: evaluacion.recomendacion === 'psicologica' ? '#be185d' : '#4338ca',
             }}>
-            {evaluacion.recomendacion === 'psicologica' ? 'Evaluación Psicológica Emocional' :
-             evaluacion.recomendacion === 'neuropsicologica' ? 'Evaluación Neuropsicológica' :
-             'Ambas evaluaciones'}
+            {evaluacion.recomendacion === 'psicologica' ? 'Evaluación Psicológica Emocional'
+            : evaluacion.recomendacion === 'neuropsicologica' ? 'Evaluación Neuropsicológica'
+            : 'Ambas evaluaciones'}
           </div>
-          {evaluacion.recomendacion_resumen && (
-            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-              {evaluacion.recomendacion_resumen}
-            </p>
+
+          {evaluacion.mensaje_amigable_padre && (
+            <details className="mb-3 rounded-lg p-3" style={{ background: 'rgba(99,102,241,0.06)' }}>
+              <summary className="cursor-pointer text-xs font-bold uppercase text-indigo-700">Mensaje que vio el padre</summary>
+              <p className="text-sm mt-2 whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>
+                {evaluacion.mensaje_amigable_padre}
+              </p>
+            </details>
           )}
+
           {evaluacion.recomendacion_razon && (
-            <details className="text-sm">
-              <summary className="cursor-pointer font-bold text-indigo-600 mb-2">Ver razonamiento clínico completo</summary>
-              <div className="mt-2 whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <details className="text-sm" open>
+              <summary className="cursor-pointer font-bold text-indigo-600 mb-2">Razonamiento clínico completo</summary>
+              <div className="mt-2 whitespace-pre-wrap leading-relaxed rounded-lg p-3"
+                style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)' }}>
                 {evaluacion.recomendacion_razon}
               </div>
             </details>
@@ -204,74 +260,77 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             <p className="mt-3 text-xs">
               <span className="font-bold" style={{ color: 'var(--text-muted)' }}>Urgencia: </span>
               <span className={`font-bold ${
-                areas.urgencia === 'alta' ? 'text-red-600' :
-                areas.urgencia === 'media' ? 'text-amber-600' : 'text-green-600'
+                areas.urgencia === 'alta' ? 'text-red-600' : areas.urgencia === 'media' ? 'text-amber-600' : 'text-green-600'
               }`}>{areas.urgencia.toUpperCase()}</span>
             </p>
           )}
         </div>
       )}
 
-      {/* SERVICIOS */}
-      <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Award size={16} className="text-amber-500" /> Servicios ofrecidos a la familia
+      {/* TERAPIAS SELECCIONADAS */}
+      {terapiasElegidas.length > 0 && (
+        <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+          <h3 className="text-sm font-black uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Award size={16} className="text-amber-500" /> Terapias elegidas por la familia
           </h3>
-          <button
-            onClick={() => setShowAddServicio(true)}
-            className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold flex items-center gap-1.5"
-          >
-            <Plus size={14} /> Agregar servicio
-          </button>
-        </div>
-
-        {servicios.length === 0 ? (
-          <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>
-            Aún no hay servicios configurados. Crea uno (o regenera la recomendación para que la IA proponga).
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {servicios.map(s => (
-              <ServicioCard
-                key={s.id}
-                servicio={s}
-                editing={editingId === s.id}
-                onEdit={() => setEditingId(s.id)}
-                onCancelEdit={() => setEditingId(null)}
-                onSave={async (patch) => {
-                  await fetch('/api/evaluacion-inicial/servicios', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: s.id, ...patch }),
-                  })
-                  setEditingId(null)
-                  cargar()
-                }}
-                onDelete={() => eliminarServicio(s.id)}
-                isSelected={evaluacion.servicio_seleccionado_id === s.id}
-              />
+          <div className="space-y-2">
+            {terapiasElegidas.map(t => (
+              <div key={t.id} className="rounded-lg p-3 border flex items-center gap-3" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
+                {t.imagen_url ? (
+                  <img src={t.imagen_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center">
+                    <CheckCircle2 className="text-indigo-500" size={20} />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t.nombre}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {t.categoria && `${t.categoria} · `}{t.duracion}
+                    {t.precio && ` · ${t.precio} ${t.moneda}`}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* INTAKE LLENADO POR EL PADRE */}
+      {/* RESPUESTA YA ENVIADA */}
+      {evaluacion.respuesta_especialista && (
+        <div className="rounded-2xl p-5 border-2 border-green-300 bg-green-50">
+          <h3 className="text-sm font-black uppercase tracking-wider mb-2 text-green-700 flex items-center gap-2">
+            <CheckCircle2 size={16} /> Respuesta enviada al padre
+          </h3>
+          <p className="text-xs mb-2 text-green-700">
+            Enviado: {new Date(evaluacion.respondido_en).toLocaleString('es-PE')}
+          </p>
+          <div className="whitespace-pre-wrap text-sm bg-white rounded-lg p-3 text-slate-700">
+            {evaluacion.respuesta_especialista}
+          </div>
+        </div>
+      )}
+
+      {/* MENSAJE DEL PADRE */}
+      {evaluacion.mensaje_al_especialista && (
+        <div className="rounded-2xl p-4 border-2 border-amber-300 bg-amber-50">
+          <p className="text-xs font-bold uppercase mb-1 text-amber-700">💬 Mensaje del padre</p>
+          <p className="text-sm text-amber-900 italic">"{evaluacion.mensaje_al_especialista}"</p>
+        </div>
+      )}
+
+      {/* INTAKE */}
       {evaluacion.respuestas_intake && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <details>
             <summary className="cursor-pointer text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <User size={16} /> Respuestas del intake ({Object.keys(evaluacion.respuestas_intake).length} campos)
+              <User size={16} /> Intake inicial ({Object.keys(evaluacion.respuestas_intake).length} respuestas)
             </summary>
             <div className="mt-4 space-y-3 text-sm">
               {Object.entries(evaluacion.respuestas_intake).map(([k, v]) => (
                 <div key={k}>
-                  <p className="text-xs font-bold uppercase mb-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {k.replace(/_/g, ' ')}
-                  </p>
-                  <p style={{ color: 'var(--text-primary)' }}>
-                    {Array.isArray(v) ? v.join(', ') : String(v ?? '—')}
-                  </p>
+                  <p className="text-xs font-bold uppercase mb-0.5" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                  <p style={{ color: 'var(--text-primary)' }}>{Array.isArray(v) ? v.join(', ') : String(v ?? '—')}</p>
                 </div>
               ))}
             </div>
@@ -279,37 +338,84 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
         </div>
       )}
 
-      {/* MENSAJE DEL PADRE */}
-      {evaluacion.mensaje_al_especialista && (
-        <div className="rounded-2xl p-5 border-2 border-amber-300 bg-amber-50">
-          <p className="text-xs font-bold uppercase tracking-wider mb-2 text-amber-700">💬 Mensaje del padre</p>
-          <p className="text-sm text-amber-900 italic">"{evaluacion.mensaje_al_especialista}"</p>
+      {/* 2ª ANAMNESIS */}
+      {evaluacion.anamnesis_especifica && (
+        <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+          <details>
+            <summary className="cursor-pointer text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <ClipboardCheck size={16} /> 2ª Anamnesis ({Object.keys(evaluacion.anamnesis_especifica).length} respuestas)
+            </summary>
+            <div className="mt-4 space-y-3 text-sm">
+              {Object.entries(evaluacion.anamnesis_especifica).map(([k, v]) => (
+                <div key={k}>
+                  <p className="text-xs font-bold uppercase mb-0.5" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                  <p style={{ color: 'var(--text-primary)' }}>{Array.isArray(v) ? v.join(', ') : String(v ?? '—')}</p>
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
       )}
 
-      {/* MODAL DOCUMENTO */}
+      {/* MODAL: Responder al padre */}
+      {showResponder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur" onClick={() => setShowResponder(false)}>
+          <div className="max-w-2xl w-full rounded-2xl shadow-2xl p-6" style={{ background: 'var(--card)' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-black text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <MessageCircle size={20} className="text-green-600" /> Responder al padre
+              </h3>
+              <button onClick={() => setShowResponder(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
+            </div>
+
+            <div className="rounded-lg p-3 mb-4 text-xs" style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)' }}>
+              <strong>Esta respuesta se enviará al padre por la plataforma</strong> (y por notificación). Sé cálido, claro y profesional.
+              Confirma terapias, propón horarios o pide info adicional.
+            </div>
+
+            <textarea
+              value={respuesta || evaluacion.respuesta_especialista || ''}
+              onChange={e => setRespuesta(e.target.value)}
+              rows={10}
+              placeholder={`Hola, soy [tu nombre], especialista de SANTI. He revisado el caso de ${childName} y…`}
+              className="w-full px-4 py-3 rounded-xl border outline-none focus:border-indigo-500 resize-none text-sm"
+              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
+            />
+
+            <div className="flex gap-2 mt-4">
+              <button onClick={enviarRespuesta} disabled={enviandoResp}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+                {enviandoResp ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                Enviar al padre
+              </button>
+              <button onClick={() => setShowResponder(false)} className="px-4 py-2.5 rounded-lg border-2 font-bold"
+                style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Documento clínico interno */}
       {verDocumento && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur" onClick={() => setVerDocumento(false)}>
           <div className="max-w-3xl w-full max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ background: 'var(--card)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--card-border)' }}>
               <h3 className="font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                <FileText size={18} /> Documento generado
+                <FileText size={18} /> Documento clínico interno
               </h3>
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
+                <button onClick={() => {
                     const blob = new Blob([evaluacion.documento_md || ''], { type: 'text/markdown' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `evaluacion-inicial-${childName}.md`
+                    a.download = `eval-inicial-${childName}.md`
                     a.click()
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold"
-                >Descargar .md</button>
-                <button onClick={() => setVerDocumento(false)} className="p-1.5 hover:bg-slate-100 rounded-lg">
-                  <X size={18} />
+                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1">
+                  <Download size={12} /> Descargar .md
                 </button>
+                <button onClick={() => setVerDocumento(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
               </div>
             </div>
             <pre className="overflow-y-auto p-5 text-xs whitespace-pre-wrap font-sans" style={{ color: 'var(--text-secondary)' }}>
@@ -318,299 +424,6 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
           </div>
         </div>
       )}
-
-      {/* MODAL AGREGAR SERVICIO */}
-      {showAddServicio && (
-        <AgregarServicioModal
-          evaluacionId={evaluacion.id}
-          onClose={() => setShowAddServicio(false)}
-          onSaved={() => { setShowAddServicio(false); cargar() }}
-        />
-      )}
-    </div>
-  )
-}
-
-// ─── Card editable de servicio ─────────────────────────────────────────────
-function ServicioCard({
-  servicio, editing, onEdit, onCancelEdit, onSave, onDelete, isSelected,
-}: {
-  servicio: any
-  editing: boolean
-  onEdit: () => void
-  onCancelEdit: () => void
-  onSave: (patch: any) => Promise<void>
-  onDelete: () => void
-  isSelected: boolean
-}) {
-  const [f, setF] = useState({ ...servicio })
-  useEffect(() => setF({ ...servicio }), [servicio.id, editing])
-
-  if (editing) {
-    const incluyeStr = Array.isArray(f.incluye) ? f.incluye.join('\n') : ''
-    return (
-      <div className="rounded-xl p-4 border-2 border-indigo-400" style={{ background: 'var(--card)' }}>
-        <div className="grid sm:grid-cols-2 gap-3 mb-3">
-          <div>
-            <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Tipo</label>
-            <select value={f.tipo || ''} onChange={e => setF({ ...f, tipo: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
-              <option value="psicologica">Psicológica</option>
-              <option value="neuropsicologica">Neuropsicológica</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Nombre</label>
-            <input value={f.nombre || ''} onChange={e => setF({ ...f, nombre: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-3 mb-3">
-          <div>
-            <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Precio (PEN)</label>
-            <input type="number" step="0.01" value={f.precio ?? ''} onChange={e => setF({ ...f, precio: e.target.value === '' ? null : Number(e.target.value) })}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Duración</label>
-            <input value={f.duracion || ''} onChange={e => setF({ ...f, duracion: e.target.value })}
-              placeholder="3 sesiones de 60 min"
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-        </div>
-        <div className="mb-3">
-          <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Descripción</label>
-          <textarea value={f.descripcion || ''} onChange={e => setF({ ...f, descripcion: e.target.value })} rows={2}
-            className="w-full px-3 py-2 rounded-lg border outline-none text-sm resize-none"
-            style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-        </div>
-        <div className="mb-3">
-          <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>¿Por qué para este caso?</label>
-          <textarea value={f.por_que || ''} onChange={e => setF({ ...f, por_que: e.target.value })} rows={2}
-            className="w-full px-3 py-2 rounded-lg border outline-none text-sm resize-none"
-            style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-        </div>
-        <div className="mb-3">
-          <label className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>Incluye (uno por línea)</label>
-          <textarea value={incluyeStr} onChange={e => setF({ ...f, incluye: e.target.value.split('\n').map((s: string) => s.trim()).filter(Boolean) })} rows={3}
-            className="w-full px-3 py-2 rounded-lg border outline-none text-sm resize-none"
-            style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => onSave({ tipo: f.tipo, nombre: f.nombre, precio: f.precio, duracion: f.duracion, descripcion: f.descripcion, por_que: f.por_que, incluye: f.incluye })}
-            className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold flex items-center gap-1.5">
-            <Save size={14} /> Guardar
-          </button>
-          <button onClick={onCancelEdit} className="px-3 py-1.5 rounded-lg text-xs font-bold border" style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
-            Cancelar
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className={`rounded-xl p-4 border ${isSelected ? 'border-green-500 ring-2 ring-green-200' : ''}`}
-      style={{ background: 'var(--card)', borderColor: isSelected ? '#22c55e' : 'var(--card-border)' }}>
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${servicio.tipo === 'psicologica' ? 'bg-pink-100 text-pink-700' : 'bg-indigo-100 text-indigo-700'}`}>
-              {servicio.tipo}
-            </span>
-            {isSelected && (
-              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-green-100 text-green-700 flex items-center gap-1">
-                <CheckCircle2 size={10} /> Elegido por la familia
-              </span>
-            )}
-          </div>
-          <h4 className="font-black text-base" style={{ color: 'var(--text-primary)' }}>{servicio.nombre}</h4>
-          {servicio.duracion && (
-            <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              <Clock size={11} /> {servicio.duracion}
-            </p>
-          )}
-        </div>
-        <div className="text-right shrink-0">
-          {servicio.precio != null && (
-            <p className="text-xl font-black text-indigo-600">
-              {Number(servicio.precio).toFixed(0)} <span className="text-xs">PEN</span>
-            </p>
-          )}
-          <div className="flex gap-1 mt-1 justify-end">
-            <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-slate-100" title="Editar">
-              <Edit3 size={14} className="text-blue-600" />
-            </button>
-            <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-50" title="Eliminar">
-              <Trash2 size={14} className="text-red-600" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {servicio.descripcion && (
-        <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{servicio.descripcion}</p>
-      )}
-      {servicio.por_que && (
-        <div className="rounded-lg p-2 text-xs mb-2" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--text-secondary)' }}>
-          <strong className="text-indigo-600">Justificación: </strong>{servicio.por_que}
-        </div>
-      )}
-      {Array.isArray(servicio.incluye) && servicio.incluye.length > 0 && (
-        <ul className="text-xs space-y-0.5" style={{ color: 'var(--text-secondary)' }}>
-          {servicio.incluye.map((i: string, idx: number) => (
-            <li key={idx} className="flex items-center gap-1.5">
-              <CheckCircle2 size={10} className="text-green-500" /> {i}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-// ─── Modal para agregar servicio ─────────────────────────────────────────
-function AgregarServicioModal({
-  evaluacionId, onClose, onSaved,
-}: { evaluacionId: string; onClose: () => void; onSaved: () => void }) {
-  const [catalogo, setCatalogo] = useState<any[]>([])
-  const [tipo, setTipo] = useState('psicologica')
-  const [nombre, setNombre] = useState('')
-  const [descripcion, setDescripcion] = useState('')
-  const [porQue, setPorQue] = useState('')
-  const [precio, setPrecio] = useState<string>('')
-  const [duracion, setDuracion] = useState('')
-  const [incluye, setIncluye] = useState('')
-  const [guardando, setGuardando] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/evaluacion-inicial/servicios?catalogo=1')
-      .then(r => r.json())
-      .then(d => setCatalogo(d.catalogo || []))
-  }, [])
-
-  const aplicarTemplate = (t: any) => {
-    setTipo(t.tipo)
-    setNombre(t.nombre)
-    setDescripcion(t.descripcion || '')
-    setDuracion(t.duracion || '')
-    setIncluye(Array.isArray(t.incluye) ? t.incluye.join('\n') : '')
-    if (t.precio_default) setPrecio(String(t.precio_default))
-  }
-
-  const guardar = async () => {
-    if (!nombre.trim()) { alert('El nombre es obligatorio'); return }
-    setGuardando(true)
-    try {
-      await fetch('/api/evaluacion-inicial/servicios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          evaluacion_id: evaluacionId,
-          tipo, nombre, descripcion, por_que: porQue,
-          precio: precio ? Number(precio) : null,
-          duracion,
-          incluye: incluye.split('\n').map(s => s.trim()).filter(Boolean),
-        }),
-      })
-      onSaved()
-    } catch (e: any) {
-      alert('Error: ' + e.message)
-    } finally {
-      setGuardando(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur" onClick={onClose}>
-      <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6" style={{ background: 'var(--card)' }} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-black text-lg" style={{ color: 'var(--text-primary)' }}>Agregar servicio</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
-        </div>
-
-        {catalogo.length > 0 && (
-          <div className="mb-4">
-            <p className="text-xs font-bold uppercase mb-2" style={{ color: 'var(--text-muted)' }}>Plantillas rápidas</p>
-            <div className="flex gap-2 flex-wrap">
-              {catalogo.map(t => (
-                <button key={t.id} onClick={() => aplicarTemplate(t)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
-                  + {t.nombre}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-3">
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Tipo</label>
-              <select value={tipo} onChange={e => setTipo(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-                style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
-                <option value="psicologica">Psicológica</option>
-                <option value="neuropsicologica">Neuropsicológica</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Precio (PEN)</label>
-              <input type="number" step="0.01" value={precio} onChange={e => setPrecio(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-                style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Nombre del servicio *</label>
-            <input value={nombre} onChange={e => setNombre(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Duración</label>
-            <input value={duracion} onChange={e => setDuracion(e.target.value)} placeholder="3 sesiones de 60 min"
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Descripción</label>
-            <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={2}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm resize-none"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>¿Por qué para este caso?</label>
-            <textarea value={porQue} onChange={e => setPorQue(e.target.value)} rows={2}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm resize-none"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Incluye (uno por línea)</label>
-            <textarea value={incluye} onChange={e => setIncluye(e.target.value)} rows={4}
-              className="w-full px-3 py-2 rounded-lg border outline-none text-sm resize-none"
-              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-5">
-          <button onClick={guardar} disabled={guardando}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50">
-            {guardando ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            Guardar servicio
-          </button>
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg border-2 font-bold"
-            style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
-            Cancelar
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

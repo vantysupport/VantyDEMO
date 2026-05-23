@@ -39,14 +39,13 @@ DEBES responder ÚNICAMENTE con un JSON válido (sin markdown, sin \`\`\`) con e
 
 {
   "recomendacion": "psicologica" | "neuropsicologica" | "ambas",
-  "resumen_ejecutivo": "Frase de 1-2 oraciones que el padre pueda leer y entender por qué se recomienda esto.",
-  "razonamiento_clinico": "Análisis detallado en markdown (3-6 párrafos). Cita observaciones concretas del intake. Explica qué áreas evaluar y por qué. Tono profesional, cálido, sin tecnicismos innecesarios.",
+  "mensaje_amigable_padre": "Mensaje CORTO (2-3 párrafos) dirigido DIRECTAMENTE al padre/madre en segunda persona ('Hola, hemos revisado lo que nos contaste sobre [hijo]…'). Lenguaje sencillo, cercano, SIN tecnicismos, SIN nombres de pruebas, SIN diagnósticos. Explica QUÉ tipo de evaluación recomendamos y POR QUÉ en términos cotidianos (ej: 'porque mencionaste que le cuesta concentrarse en clase'). Termina invitando a aceptar para continuar. NO menciones la palabra 'IA' ni 'algoritmo'.",
+  "razonamiento_clinico": "[USO INTERNO - SOLO PARA EL ESPECIALISTA] Análisis detallado en markdown (3-6 párrafos) con observaciones técnicas, hipótesis diagnósticas, áreas a evaluar a profundidad. Tono profesional clínico.",
   "areas_a_evaluar": ["Área 1", "Área 2", "..."],
   "señales_detectadas": [
     { "categoria": "Desarrollo / Académica / Emocional / Social / Médica", "descripcion": "Texto corto" }
   ],
-  "urgencia": "baja" | "media" | "alta",
-  "recomendaciones_adicionales": "Texto opcional con sugerencias para los padres mientras esperan la cita."
+  "urgencia": "baja" | "media" | "alta"
 }`
 
 function buildUserPrompt(child: any, respuestas: any) {
@@ -144,13 +143,13 @@ export async function POST(req: NextRequest) {
       .from('evaluaciones_iniciales')
       .update({
         recomendacion: rec,
-        recomendacion_resumen: parsed.resumen_ejecutivo || null,
+        mensaje_amigable_padre: parsed.mensaje_amigable_padre || null,
+        recomendacion_resumen: parsed.mensaje_amigable_padre || null,  // backward compat
         recomendacion_razon: parsed.razonamiento_clinico || null,
         recomendacion_areas: {
           areas_a_evaluar: parsed.areas_a_evaluar || [],
           señales_detectadas: parsed.señales_detectadas || [],
           urgencia: parsed.urgencia || 'media',
-          recomendaciones_adicionales: parsed.recomendaciones_adicionales || null,
         },
         recomendacion_generada_en: ahora,
         recomendacion_modelo: GROQ_MODELS.SMART,
@@ -161,36 +160,6 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
     if (upErr) throw upErr
-
-    // 5. Auto-crear servicios sugeridos a partir del catálogo (solo si no hay ninguno)
-    const { data: existentes } = await supabaseAdmin
-      .from('evaluacion_servicios')
-      .select('id')
-      .eq('evaluacion_id', id)
-
-    if (!existentes || existentes.length === 0) {
-      const tiposASugerir = rec === 'ambas' ? ['psicologica', 'neuropsicologica'] : [rec]
-      const { data: catalogo } = await supabaseAdmin
-        .from('evaluacion_servicios_catalogo')
-        .select('*')
-        .in('tipo', tiposASugerir)
-        .eq('activo', true)
-
-      if (catalogo && catalogo.length > 0) {
-        const inserts = catalogo.map((c, i) => ({
-          evaluacion_id: id,
-          tipo: c.tipo,
-          nombre: c.nombre,
-          descripcion: c.descripcion,
-          por_que: parsed.resumen_ejecutivo || null,
-          precio: c.precio_default,
-          duracion: c.duracion,
-          incluye: c.incluye,
-          orden: i,
-        }))
-        await supabaseAdmin.from('evaluacion_servicios').insert(inserts)
-      }
-    }
 
     return NextResponse.json({ ok: true, evaluacion: updated, parsed })
   } catch (e: any) {

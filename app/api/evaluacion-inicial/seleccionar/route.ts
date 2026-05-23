@@ -1,8 +1,9 @@
 // app/api/evaluacion-inicial/seleccionar/route.ts
 //
-// Cuando el padre elige uno de los servicios ofrecidos por el admin,
-// guardamos la selección, generamos el documento resumen (markdown),
-// notificamos al especialista correspondiente y cambiamos el estado.
+// El padre elige UNA o VARIAS terapias del catálogo global del centro
+// (terapias_catalogo). Se guarda la selección, se genera un documento
+// INTERNO para el especialista (NO visible al padre) y se notifica al equipo.
+// Estado pasa a 'terapia_seleccionada' (esperando respuesta del especialista).
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
@@ -10,50 +11,54 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-function generarDocumentoMarkdown(eval_: any, child: any, servicio: any) {
+function generarDocumentoInternoMD(eval_: any, child: any, terapias: any[]) {
   const fecha = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
   const areas = eval_.recomendacion_areas || {}
 
-  const respuestas = eval_.respuestas_intake || {}
-  const respuestasMd = Object.entries(respuestas)
-    .map(([k, v]) => {
-      const label = k.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
-      const val = Array.isArray(v) ? v.join(', ') : String(v ?? '—')
-      return `- **${label}:** ${val}`
-    })
+  const respIntake = eval_.respuestas_intake || {}
+  const respAnamnesis = eval_.anamnesis_especifica || {}
+
+  const fmtRespuestas = (obj: any) =>
+    Object.entries(obj || {})
+      .map(([k, v]) => {
+        const label = k.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+        const val = Array.isArray(v) ? v.join(', ') : String(v ?? '—')
+        return `- **${label}:** ${val}`
+      })
+      .join('\n') || '_(sin respuestas)_'
+
+  const terapiasMd = terapias
+    .map(t => `### ${t.nombre}\n${t.descripcion ? `${t.descripcion}\n` : ''}${
+      t.precio ? `**Precio referencial:** ${t.precio} ${t.moneda || 'PEN'}\n` : ''
+    }${t.duracion ? `**Duración:** ${t.duracion}\n` : ''}`)
     .join('\n')
 
-  return `# Documento de Evaluación Inicial
-**Centro:** Neuropsicología y Terapias SANTI
+  return `# 🩺 Documento Clínico Interno — Evaluación Inicial
+**⚠️ USO EXCLUSIVO DEL EQUIPO CLÍNICO — NO COMPARTIR CON PADRES**
 **Fecha:** ${fecha}
 
 ---
 
-## 👤 Datos del Paciente
+## 👤 Paciente
 - **Nombre:** ${child.name}
 - **Fecha de nacimiento:** ${child.birth_date || '—'}
 - **Diagnóstico previo:** ${child.diagnosis || 'Ninguno reportado'}
 
 ---
 
-## 📋 Resumen del Intake (llenado por el padre/madre)
+## 📋 1. Intake inicial (llenado por el padre)
 
-${respuestasMd}
+${fmtRespuestas(respIntake)}
 
 ---
 
-## 🧠 Recomendación Clínica
+## 🧠 2. Recomendación clínica de la IA
 
-**Tipo de evaluación recomendada:** ${
-    eval_.recomendacion === 'psicologica'
-      ? 'Evaluación Psicológica Emocional'
-      : eval_.recomendacion === 'neuropsicologica'
-      ? 'Evaluación Neuropsicológica'
-      : 'Evaluación Integral (Psicológica + Neuropsicológica)'
+**Tipo:** ${
+    eval_.recomendacion === 'psicologica' ? 'Evaluación Psicológica Emocional'
+    : eval_.recomendacion === 'neuropsicologica' ? 'Evaluación Neuropsicológica'
+    : 'Evaluación Integral'
   }
-
-### Resumen ejecutivo
-${eval_.recomendacion_resumen || '—'}
 
 ### Razonamiento clínico
 ${eval_.recomendacion_razon || '—'}
@@ -66,40 +71,33 @@ ${(areas.señales_detectadas || []).map((s: any) => `- **${s.categoria}:** ${s.d
 
 **Urgencia clínica:** ${areas.urgencia || 'media'}
 
-${areas.recomendaciones_adicionales ? `### Recomendaciones para los padres\n${areas.recomendaciones_adicionales}` : ''}
+---
+
+## 📝 3. Anamnesis específica (segunda ficha)
+
+${fmtRespuestas(respAnamnesis)}
 
 ---
 
-## ✅ Servicio Seleccionado por la Familia
+## 🎯 4. Terapias seleccionadas por la familia
 
-- **Servicio:** ${servicio.nombre}
-- **Tipo:** ${servicio.tipo}
-- **Duración estimada:** ${servicio.duracion || '—'}
-- **Inversión:** ${servicio.precio ? `${servicio.precio} ${servicio.moneda || 'PEN'}` : 'A coordinar'}
-
-${servicio.descripcion ? `### Qué incluye\n${servicio.descripcion}` : ''}
-
-${
-  Array.isArray(servicio.incluye) && servicio.incluye.length > 0
-    ? `### Detalle del servicio\n${servicio.incluye.map((i: string) => `- ${i}`).join('\n')}`
-    : ''
-}
+${terapiasMd || '_(ninguna)_'}
 
 ---
 
-*Documento generado automáticamente por SANTI · ${fecha}*
+*Documento generado automáticamente — SANTI · ${fecha}*
 `
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { evaluacion_id, servicio_id, mensaje_al_especialista } = await req.json()
+    const { evaluacion_id, terapia_ids, mensaje_al_especialista } = await req.json()
 
-    if (!evaluacion_id || !servicio_id) {
-      return NextResponse.json({ error: 'evaluacion_id y servicio_id son obligatorios' }, { status: 400 })
+    if (!evaluacion_id || !Array.isArray(terapia_ids) || terapia_ids.length === 0) {
+      return NextResponse.json({ error: 'evaluacion_id y terapia_ids (array) requeridos' }, { status: 400 })
     }
 
-    // 1. Cargar evaluación, paciente, servicio
+    // 1. Cargar evaluación + paciente + terapias seleccionadas
     const { data: eval_, error: e1 } = await supabaseAdmin
       .from('evaluaciones_iniciales')
       .select('*')
@@ -108,13 +106,13 @@ export async function POST(req: NextRequest) {
     if (e1) throw e1
     if (!eval_) return NextResponse.json({ error: 'Evaluación no encontrada' }, { status: 404 })
 
-    const { data: servicio, error: e2 } = await supabaseAdmin
-      .from('evaluacion_servicios')
+    const { data: terapias } = await supabaseAdmin
+      .from('terapias_catalogo')
       .select('*')
-      .eq('id', servicio_id)
-      .maybeSingle()
-    if (e2) throw e2
-    if (!servicio) return NextResponse.json({ error: 'Servicio no encontrado' }, { status: 404 })
+      .in('id', terapia_ids)
+    if (!terapias || terapias.length === 0) {
+      return NextResponse.json({ error: 'Terapias no encontradas' }, { status: 404 })
+    }
 
     const { data: child } = await supabaseAdmin
       .from('children')
@@ -123,19 +121,19 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
     if (!child) return NextResponse.json({ error: 'Paciente no encontrado' }, { status: 404 })
 
-    // 2. Generar documento markdown
-    const documentoMd = generarDocumentoMarkdown(eval_, child, servicio)
+    // 2. Generar documento INTERNO (solo para el especialista)
+    const documentoMd = generarDocumentoInternoMD(eval_, child, terapias)
 
     // 3. Actualizar evaluación
     const ahora = new Date().toISOString()
     const { data: updated, error: upErr } = await supabaseAdmin
       .from('evaluaciones_iniciales')
       .update({
-        servicio_seleccionado_id: servicio_id,
+        terapias_seleccionadas: terapia_ids,
         seleccionado_en: ahora,
         mensaje_al_especialista: mensaje_al_especialista || null,
         documento_md: documentoMd,
-        estado: 'seleccionado',
+        estado: 'terapia_seleccionada',
         updated_at: ahora,
       })
       .eq('id', evaluacion_id)
@@ -143,39 +141,33 @@ export async function POST(req: NextRequest) {
       .single()
     if (upErr) throw upErr
 
-    // 4. Notificar al admin/especialistas (insert en notifications)
+    // 4. Notificar al equipo
     try {
-      const { data: especialistas } = await supabaseAdmin
+      const { data: equipo } = await supabaseAdmin
         .from('profiles')
-        .select('id, role')
+        .select('id')
         .in('role', ['admin', 'jefe', 'especialista'])
 
-      const titulo = '🆕 Nueva selección de evaluación inicial'
-      const mensaje = `${child.name} eligió: ${servicio.nombre}${
-        mensaje_al_especialista ? `\nMensaje: "${mensaje_al_especialista}"` : ''
-      }`
-
-      const notis = (especialistas || []).map((e: any) => ({
+      const nombresTerapias = terapias.map(t => t.nombre).join(', ')
+      const notis = (equipo || []).map((e: any) => ({
         user_id: e.id,
-        title: titulo,
-        message: mensaje,
+        title: '🆕 Nueva solicitud de terapia para revisar',
+        message: `${child.name} eligió: ${nombresTerapias}${
+          mensaje_al_especialista ? `\nMensaje: "${mensaje_al_especialista}"` : ''
+        }`,
         type: 'evaluacion_inicial',
         is_read: false,
-        created_at: new Date().toISOString(),
+        created_at: ahora,
       }))
+      if (notis.length > 0) await supabaseAdmin.from('notifications').insert(notis)
+    } catch (e) { console.warn('[seleccionar] noti falló', e) }
 
-      if (notis.length > 0) {
-        await supabaseAdmin.from('notifications').insert(notis)
-      }
-    } catch (notiErr) {
-      console.warn('[seleccionar] No se pudo notificar:', notiErr)
-    }
-
+    // ⚠️ NO devolver documento_md al cliente del padre
     return NextResponse.json({
       ok: true,
-      evaluacion: updated,
-      documento_md: documentoMd,
-      mensaje: 'Información enviada al especialista. En breve se comunicarán contigo.',
+      evaluacion_id,
+      estado: 'terapia_seleccionada',
+      mensaje: 'Tu solicitud está siendo revisada por el especialista. Recibirás una respuesta pronto.',
     })
   } catch (e: any) {
     console.error('[evaluacion-inicial][seleccionar]', e)
