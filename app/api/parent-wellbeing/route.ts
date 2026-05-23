@@ -94,10 +94,18 @@ export async function GET(req: NextRequest) {
     if (parentId) query = query.eq('parent_id', parentId)
 
     const { data, error } = await query
-    if (error) throw error
+    if (error) {
+      // Si la tabla no existe (42P01) o cualquier otro error de schema → devolver vacío
+      // en lugar de 500, para que el dashboard del padre no se rompa.
+      if (error.code === '42P01' || /does not exist|relation/.test(String(error.message))) {
+        console.warn('[parent-wellbeing] tabla parent_wellbeing_checkins no existe, devolviendo vacío')
+        return NextResponse.json({ data: [], _warning: 'tabla no inicializada' })
+      }
+      throw error
+    }
 
     return NextResponse.json({ data: data || [] })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: e.message, data: [] }, { status: 500 })
   }
 }

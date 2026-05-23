@@ -334,13 +334,19 @@ export class VantyAgent {
     const startTime = Date.now()
 
     try {
-      // 1. Cargar o crear conversación
-      let conversacion = await this.loadOrCreateConversacion(
-        options.conversacionId,
-        options.userId,
-        options.childId,
-        options.contexto
-      )
+      // 1. Cargar o crear conversación (defensivo: si la BD falla, seguimos con temp)
+      let conversacion: any
+      try {
+        conversacion = await this.loadOrCreateConversacion(
+          options.conversacionId,
+          options.userId,
+          options.childId,
+          options.contexto
+        )
+      } catch (convErr: any) {
+        console.warn('[vanty-agent] loadOrCreateConversacion falló — usando conversación temporal:', convErr?.message)
+        conversacion = { id: `temp-${Date.now()}`, mensajes: [] }
+      }
 
       // 2. Construir contexto dinámico
       const preguntaSobrePacientes = /paciente|peor|mejor|progreso|todos|lista|quien|quién|comparar|estado|sesion|sesión|avance|regresion|regresión|alert/i.test(userMessage)
@@ -437,13 +443,22 @@ export class VantyAgent {
       }
     } catch (error: any) {
       console.error('Error agente:', error)
-      const esRateLimit = error.message?.includes('429') || error.message?.includes('rate')
-      const esContextoLargo = error.message?.includes('400') || error.message?.includes('context')
+      const errMsg = String(error?.message || error || 'sin detalle')
+      const esRateLimit = errMsg.includes('429') || errMsg.toLowerCase().includes('rate')
+      const esContextoLargo = errMsg.includes('400') || errMsg.toLowerCase().includes('context')
+      const esGroqKey = errMsg.includes('GROQ_API_KEY') || errMsg.toLowerCase().includes('api key')
+      const esQuota = errMsg.toLowerCase().includes('quota') || errMsg.includes('límite')
+
       const mensajeUsuario = esRateLimit
         ? '⏳ ARIA está procesando muchas consultas en este momento. Espera unos segundos e intenta de nuevo.'
         : esContextoLargo
         ? '📝 La consulta es muy extensa. Intenta reformularla de forma más concisa.'
-        : 'Lo siento, hubo un problema al procesar tu consulta. Por favor intenta de nuevo.'
+        : esGroqKey
+        ? '🔑 Falta configurar GROQ_API_KEY en las variables de entorno del servidor.'
+        : esQuota
+        ? '📊 Se agotó la cuota del modelo de IA por hoy. Intenta más tarde o contacta al admin.'
+        // En desarrollo o si el error es claro, lo mostramos para diagnóstico
+        : `⚠️ Error al procesar la consulta: ${errMsg.slice(0, 250)}`
       return {
         respuesta: mensajeUsuario,
         conversacionId: options.conversacionId || null,
