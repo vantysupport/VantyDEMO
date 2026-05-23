@@ -13,6 +13,8 @@ import {
   AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat,
   HeadingLevel, PageNumber, Footer, Header
 } from 'docx'
+import * as tpl from '@/lib/santi-report-template'
+import type { HabilidadFila, RecomendacionesBloque } from '@/lib/santi-report-template'
 
 // ── FIX: Helper universal para parsear nivel_logro_objetivos ─────────────────
 // Maneja: número, "75", "75%", "51-75%", "mayormente logrado", "alto", etc.
@@ -1016,6 +1018,329 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
   return { doc: makeDoc(sections, fileName), fileName }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ── INFORME CLÍNICO SANTI (estilo LuTr — formato oficial del centro) ───────
+// ═══════════════════════════════════════════════════════════════════════════
+// Estructura inspirada en el modelo "LuTr. Inf Tx 04 - 2025":
+//   1. Encabezado + Alumno(a): XxXx
+//   2. Datos Generales (tabla)
+//   3. Observaciones generales y de conducta (prosa)
+//   4. Habilidades y Logros (tabla ÁREA / SUBÁREA / OBJETIVO / SET / LOGROS)
+//   5. Glosario de niveles de ayuda
+//   6. Limitaciones
+//   7. Recomendaciones (menor / familia / escuela)
+async function generarInformeClinicoSanti(
+  childId: string,
+  userLocale = 'es',
+): Promise<{ doc: Document; fileName: string }> {
+  // Template profesional importado al inicio del archivo
+
+  // ─── 1. Cargar todos los datos del paciente ──────────────────────────
+  const { data: child } = await supabaseAdmin
+    .from('children')
+    .select('name, age, birth_date, diagnosis, parent_id')
+    .eq('id', childId)
+    .single()
+  const nombre = (child as any)?.name || 'Paciente'
+  const nombreCap = nombre.split(' ')
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+
+  // Calcular edad
+  let edadTexto = 'edad no registrada'
+  if ((child as any)?.birth_date) {
+    const nac = new Date((child as any).birth_date)
+    const ahora = new Date()
+    const años = ahora.getFullYear() - nac.getFullYear()
+    const meses = ahora.getMonth() - nac.getMonth()
+    const edad = (meses < 0 || (meses === 0 && ahora.getDate() < nac.getDate())) ? años - 1 : años
+    const mesesAdj = meses < 0 ? meses + 12 : meses
+    edadTexto = `${edad} años ${mesesAdj > 0 ? `${mesesAdj} meses` : ''}`.trim()
+  } else if ((child as any)?.age) {
+    edadTexto = `${(child as any).age} años`
+  }
+
+  // Programas + sesiones (defensivo). objetivos_cp se carga después con los IDs reales.
+  const [{ data: programas }, { data: sesionesProg }, evalIniRes, docsRes] = await Promise.all([
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, criterio_dominio_pct, estado, objetivo_lp').eq('child_id', childId).limit(30),
+    supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito, fase, nivel_ayuda').eq('child_id', childId).order('fecha', { ascending: true }).limit(300),
+    (async () => { try { return await supabaseAdmin.from('evaluaciones_iniciales').select('estado, recomendacion, recomendacion_resumen, anamnesis_completada_en').eq('child_id', childId).order('created_at', { ascending: false }).limit(1).maybeSingle() } catch { return { data: null } } })(),
+    (async () => { try { return await supabaseAdmin.from('patient_documents').select('file_name, category').eq('child_id', childId).limit(20) } catch { return { data: [] } } })(),
+  ])
+
+  const progArr = (programas || []) as any[]
+  const sesProgArr = (sesionesProg || []) as any[]
+
+  // Cargar objetivos_cp ahora con los IDs de programas
+  let objetivosArr: any[] = []
+  if (progArr.length > 0) {
+    try {
+      const progIds = progArr.map(p => p.id)
+      const { data } = await supabaseAdmin
+        .from('objetivos_cp')
+        .select('id, programa_id, numero_set, descripcion, estado')
+        .in('programa_id', progIds)
+        .order('numero_set', { ascending: true })
+      objetivosArr = data || []
+    } catch (e: any) {
+      console.warn('[reporte-clinico] objetivos_cp falló:', e?.message)
+    }
+  }
+
+  // Calcular n° de sesiones totales (por programa o todas)
+  const totalSesiones = sesProgArr.length
+  const fechasUnif = sesProgArr.map((s: any) => s.fecha).filter(Boolean).sort()
+  const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const fechaInicio = fechasUnif.length > 0 ? fmt(fechasUnif[0]) : '—'
+  const fechaFin = fechasUnif.length > 0 ? fmt(fechasUnif[fechasUnif.length - 1]) : fmt(new Date().toISOString())
+
+  const hoy = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const hoyISO = new Date().toISOString().slice(0, 10)
+  const iniciales = tpl.generarIniciales(nombre)
+  const fileName = `Informe_Clinico_${nombreCap.replace(/\s+/g, '_')}_${hoyISO}.docx`
+
+  // ─── 2. Construir filas de Habilidades y Logros (estilo LuTr) ────────
+  // Agrupar programas por área; por programa, mostrar SET-by-SET con %
+  const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+
+  const habilidades: HabilidadFila[] = []
+  // Agrupamos por area para que la columna ÁREA solo aparezca en la primera fila del grupo
+  const programasPorArea: Record<string, any[]> = {}
+  for (const p of progArr) {
+    const a = (p.area || 'General').toUpperCase()
+    if (!programasPorArea[a]) programasPorArea[a] = []
+    programasPorArea[a].push(p)
+  }
+
+  for (const [area, progsArea] of Object.entries(programasPorArea)) {
+    let areaMostrada = false
+    for (const p of progsArea) {
+      const sesP = sesProgArr.filter((s: any) => s.programa_id === p.id)
+      const pctsTodos = sesP.map((s: any) => Number(s.porcentaje_exito) || 0).filter(v => v > 0)
+      const promedioProg = pctsTodos.length > 0 ? avg(pctsTodos) : null
+
+      const setsDelProg = objetivosArr.filter((o: any) => o.programa_id === p.id)
+        .sort((a: any, b: any) => (a.numero_set || 0) - (b.numero_set || 0))
+
+      // Fila principal (objetivo del programa, sin set específico)
+      habilidades.push({
+        area: areaMostrada ? '' : area,
+        subarea: p.titulo || 'Sin nombre',
+        objetivo: p.objetivo_lp || `Criterio de éxito de ${p.criterio_dominio_pct || 90}% en dos sesiones consecutivas.`,
+        estado: promedioProg !== null
+          ? (promedioProg >= (p.criterio_dominio_pct || 90) ? 'logrado'
+            : promedioProg >= 80 ? 'casi_logrado'
+            : promedioProg > 0 ? 'en_proceso'
+            : 'no_iniciado')
+          : 'no_iniciado',
+        porcentaje: promedioProg ?? undefined,
+      })
+      areaMostrada = true
+
+      // Filas por SET si hay objetivos_cp
+      for (const obj of setsDelProg) {
+        // Filtrar sesiones del set (si fase coincide con numero_set)
+        const sesSet = sesP.filter((s: any) => {
+          const fase = String(s.fase || '').toLowerCase()
+          return fase.includes(`set ${obj.numero_set}`) || fase.includes(`set${obj.numero_set}`) || fase === String(obj.numero_set)
+        })
+        const pctsSet = sesSet.map((s: any) => Number(s.porcentaje_exito) || 0).filter(v => v > 0)
+        const promSet = pctsSet.length > 0 ? avg(pctsSet) : null
+
+        const estadoObj = (obj.estado || '').toLowerCase()
+        let estadoSet: HabilidadFila['estado'] = 'en_proceso'
+        if (estadoObj === 'dominado' || estadoObj === 'logrado' || estadoObj === 'criterio_alcanzado') estadoSet = 'logrado'
+        else if (estadoObj === 'casi_logrado') estadoSet = 'casi_logrado'
+        else if (estadoObj === 'no_iniciado' || estadoObj === 'pendiente') estadoSet = 'no_iniciado'
+        else if (promSet !== null) {
+          estadoSet = promSet >= (p.criterio_dominio_pct || 90) ? 'logrado'
+            : promSet >= 80 ? 'casi_logrado'
+            : promSet > 0 ? 'en_proceso'
+            : 'no_iniciado'
+        }
+
+        habilidades.push({
+          area: '',
+          subarea: '',
+          objetivo: '',
+          set: `SET ${obj.numero_set}: ${obj.descripcion || '—'}`,
+          estado: estadoSet,
+          porcentaje: promSet ?? undefined,
+        })
+      }
+    }
+  }
+
+  // ─── 3. Generar prosa de observaciones + recomendaciones via IA ─────
+  const programasConDatos = progArr.map((p: any) => {
+    const sesP = sesProgArr.filter((s: any) => s.programa_id === p.id)
+    const pcts = sesP.map((s: any) => Number(s.porcentaje_exito) || 0).filter(v => v > 0)
+    const ultimoPct = pcts.length > 0 ? pcts[pcts.length - 1] : null
+    const promedio = pcts.length > 0 ? avg(pcts) : null
+    return {
+      titulo: p.titulo, area: p.area, estado: p.estado,
+      n_sesiones: pcts.length, ultimo_pct: ultimoPct, promedio,
+    }
+  })
+
+  const resumenDatos = programasConDatos
+    .map(p => `· ${p.titulo} (${p.area || 'General'}): ${p.n_sesiones} sesiones, último ${p.ultimo_pct ?? 'N/D'}%, promedio ${p.promedio ?? 'N/D'}%, estado ${p.estado || 'activo'}`)
+    .join('\n')
+
+  const [textoObservaciones, textoLimitaciones, textoRecomendacionesIA] = await Promise.all([
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Escribe en prosa formal, sin emojis, sin tablas.',
+      `Redacta la sección "OBSERVACIONES GENERALES Y DE CONDUCTA" del informe clínico de ${nombreCap} (${edadTexto}, ${(child as any)?.diagnosis || 'en evaluación'}). Estructúrala en 3-4 subsecciones cortas con label en negrita seguido de dos puntos y prosa:
+
+**Salud y apariencia física durante las sesiones:** (1-2 oraciones tipo "El menor asistió a las sesiones acompañado por su familia, en buenas condiciones de higiene y vestimenta adecuada a la estación")
+
+**Seguimiento de instrucciones y unidades de aprendizaje:** (basado en los datos: ${programasConDatos.filter(p => p.estado === 'criterio_alcanzado' || p.estado === 'dominado').length} programas con criterio alcanzado, evolución de los activos. 2-3 oraciones).
+
+**Presencia de conductas interferentes:** (especular brevemente sobre base de los datos. 1-2 oraciones).
+
+**Disposición durante la intervención:** (1-2 oraciones sobre el compromiso terapéutico).
+
+Datos disponibles:
+${resumenDatos}
+
+NO uses emojis. NO uses bullets. Cada subsección máximo 3 oraciones.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 700 },
+    ),
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis.',
+      `Redacta la sección "LIMITACIONES" del informe clínico de ${nombreCap}. 1 párrafo de 2-3 oraciones describiendo factores que pudieron limitar el avance (asistencia, salud, contexto). Si los datos no indican limitaciones específicas, redacta una nota general sobre la necesidad de regularidad terapéutica.`,
+      { model: GROQ_MODELS.SMART, temperature: 0.3, maxTokens: 200 },
+    ),
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis.',
+      `Redacta las RECOMENDACIONES del informe clínico de ${nombreCap} (${edadTexto}). Devuelve JSON ESTRICTO con tres arrays de strings (sin emojis), uno por destinatario:
+
+{
+  "menor": [
+    "Continuar con [terapia X] durante N meses, Y horas por semana, con el objetivo de…",
+    "..."
+  ],
+  "familia": [
+    "Acción concreta práctica…",
+    "..."
+  ],
+  "escuela": [
+    "Mantener comunicación fluida con el equipo terapéutico mediante…",
+    "..."
+  ]
+}
+
+Datos:
+${resumenDatos}
+
+Áreas que están dominadas: ${programasConDatos.filter(p => p.estado === 'criterio_alcanzado' || p.estado === 'dominado').map(p => p.titulo).join(', ') || 'ninguna aún'}.
+Áreas en intervención activa: ${programasConDatos.filter(p => p.estado === 'intervencion' || p.estado === 'activo').map(p => p.titulo).join(', ')}.
+
+Genera 3-5 recomendaciones por destinatario, específicas y accionables. Sin emojis. Respuesta SOLO el JSON.`,
+      { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 900 },
+    ),
+  ])
+
+  // Parsear recomendaciones JSON con fallback robusto
+  let recomendacionesObj: RecomendacionesBloque = { menor: [], familia: [], escuela: [] }
+  try {
+    const match = textoRecomendacionesIA.match(/\{[\s\S]*\}/)
+    if (match) {
+      const parsed = JSON.parse(match[0])
+      recomendacionesObj = {
+        menor: Array.isArray(parsed.menor) ? parsed.menor : [],
+        familia: Array.isArray(parsed.familia) ? parsed.familia : [],
+        escuela: Array.isArray(parsed.escuela) ? parsed.escuela : [],
+      }
+    }
+  } catch (e) {
+    console.warn('[reporte-clinico] no se pudo parsear recomendaciones JSON, usando fallback')
+    recomendacionesObj = {
+      menor: ['Continuar con el plan terapéutico actual según indicación del equipo clínico.'],
+      familia: ['Mantener la asistencia regular a las sesiones programadas.', 'Practicar en casa las actividades sugeridas por el terapeuta.'],
+      escuela: ['Mantener comunicación fluida con el equipo terapéutico para alinear estrategias.'],
+    }
+  }
+
+  // Parsear observaciones (separar subsecciones en negrita)
+  const observacionesBloques: Paragraph[] = []
+  const lineasObs = textoObservaciones.split('\n').map(l => l.trim()).filter(Boolean)
+  for (const l of lineasObs) {
+    const m = l.match(/^\*\*(.+?):?\*\*:?\s*(.*)$/)
+    if (m) {
+      observacionesBloques.push(...tpl.subseccion(m[1].trim(), m[2].trim()))
+    } else {
+      observacionesBloques.push(tpl.parrafo(l.replace(/\*\*/g, '')))
+    }
+  }
+
+  // ─── 4. Construir documento ──────────────────────────────────────────
+  const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
+
+  const seccionesDocx: (Paragraph | Table)[] = [
+    // Encabezado
+    ...tpl.encabezado('Informe Clínico de Tratamiento', iniciales),
+
+    // Datos Generales
+    tpl.tituloSeccion('Datos Generales'),
+    tpl.tablaDatosGenerales([
+      ['Apellidos y nombres', nombre],
+      ['Fecha de nacimiento', (child as any)?.birth_date
+        ? new Date((child as any).birth_date).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
+        : '—'],
+      ['Edad', edadTexto],
+      ['Diagnóstico', (child as any)?.diagnosis || 'En evaluación'],
+      ['Período de trabajo', periodoTexto],
+      ['N° de sesiones', String(totalSesiones)],
+      ['Programas activos', String(progArr.length)],
+      ['Programas con criterio alcanzado', String(programasConDatos.filter(p => p.estado === 'criterio_alcanzado' || p.estado === 'dominado').length)],
+      ['Fecha de entrega del informe', hoy],
+    ]),
+
+    // Observaciones
+    tpl.tituloSeccion('Observaciones generales y de conducta'),
+    ...observacionesBloques,
+
+    // Habilidades y Logros
+    tpl.tituloSeccion('Habilidades y logros'),
+    new Paragraph({
+      spacing: { before: 100, after: 100 },
+      children: [new TextRun({ text: 'Intervención con el menor', italics: true, bold: true, size: 19, font: 'Arial', color: '1E293B' })],
+    }),
+    tpl.tablaHabilidades(habilidades),
+    ...tpl.glosarioAyudas(),
+
+    // Limitaciones
+    tpl.tituloSeccion('Limitaciones'),
+    tpl.parrafo(textoLimitaciones.replace(/\*\*/g, '').trim()),
+
+    // Recomendaciones
+    ...tpl.recomendaciones(recomendacionesObj),
+
+    // Cierre profesional
+    new Paragraph({
+      spacing: { before: 480, after: 0 },
+      children: [new TextRun({ text: 'Equipo Clínico', bold: true, size: 20, font: 'Arial', color: '1E3A8A' })],
+    }),
+    new Paragraph({
+      spacing: { before: 0, after: 0 },
+      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 18, font: 'Arial', color: '475569' })],
+    }),
+  ]
+
+  const doc = new Document({
+    numbering: tpl.DOC_NUMBERING,
+    styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+    sections: [{
+      properties: tpl.DOC_PAGE_PROPS,
+      footers: { default: tpl.piePaginaOficial() },
+      children: seccionesDocx,
+    }],
+  })
+
+  return { doc, fileName }
+}
+
 // ── Handler principal ──────────────────────────────────────────────────────────
 
 // i18n: responder en el idioma del usuario
@@ -1031,6 +1356,7 @@ export async function POST(req: NextRequest) {
     let result: { doc: Document; fileName: string }
     if (tipo === 'seguro') result = await generarReporteSeguro(childId, userLocale)
     else if (tipo === 'comparativo') result = await generarReporteComparativo(childId, userLocale)
+    else if (tipo === 'clinico' || tipo === 'tratamiento') result = await generarInformeClinicoSanti(childId, userLocale)
     else result = await generarReportePadres(childId, userLocale)
 
     const buffer = await Packer.toBuffer(result.doc)
