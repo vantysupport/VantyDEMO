@@ -614,7 +614,11 @@ Usa **negrita** para resaltar diagnósticos, puntajes clave y conclusiones impor
   return contenido
 }
 
-// ── Generar DOCX en base64 ───────────────────────────────────────────────────
+// ── Generar DOCX en base64 — v2 (diseño SANTI profesional) ──────────────────
+//
+// Usa santi-report-template para producir documentos que superan el estilo
+// CentralReach: header institucional, títulos con fondo azul, tabla de datos
+// con franjas alternas, badges semánticos de logro y pie paginado completo.
 async function generarDocx(
   tipo: string,
   childName: string,
@@ -624,378 +628,156 @@ async function generarDocx(
 ): Promise<string> {
   const config = REPORTE_CONFIG[tipo] || REPORTE_CONFIG.aba
   const fechaHoy = formatearFechaHoy()
-  const labels = getDocLabels('es')
 
-  // Importar docx dinámicamente
+  // Importar docx + plantilla SANTI v2
   const docx = await import('docx')
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
-    BorderStyle, TableRow, TableCell, Table, WidthType, ShadingType,
-    PageBreak, Header, Footer, PageNumber, NumberFormat, ExternalHyperlink } = docx
+  const {
+    Document, Packer, Paragraph, TextRun, AlignmentType,
+    BorderStyle, WidthType, ShadingType, PageBreak,
+    Header, Footer, PageNumber, NumberFormat,
+  } = docx
 
-  // ── Estilos de colores clínicos ──
-  const COLOR_PRIMARIO   = '1B3A6B'  // Azul marino profesional
-  const COLOR_SECUNDARIO = '2E86AB'  // Azul medio
-  const COLOR_ACENTO     = '0D7377'  // Verde teal
-  const COLOR_GRIS       = '6B7280'  // Gris texto
-  const COLOR_FONDO      = 'EEF2FF'  // Fondo sección
+  // ── Importar helpers de plantilla ──────────────────────────────────────────
+  const tmpl = await import('@/lib/santi-report-template')
+  const {
+    COLOR, FONT, BDR, DOC_PAGE_PROPS, DOC_STYLES,
+    tituloSeccion, subseccion, parrafo, items,
+    tablaDatosGenerales, tablaHabilidades,
+    headerInstitucional, piePaginaOficial,
+    firmaEquipo,
+  } = tmpl
 
-  // ── Parsear el contenido generado por IA ──
-  const lineas = contenidoReporte.split('\n').filter(l => l.trim())
+  // ── Parser inline: convierte **negrita** e *cursiva* ─────────────────────
+  function parseInline(text: string, size = 20, color = COLOR.grisMed): any[] {
+    const runs: any[] = []
+    const clean = text.replace(/^#{1,6}\s*/, '').trim()
+    const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|_(.+?)_/g
+    let last = 0; let m: RegExpExecArray | null
+    while ((m = regex.exec(clean)) !== null) {
+      if (m.index > last) runs.push(new TextRun({ text: clean.slice(last, m.index), size, font: FONT, color }))
+      if (m[1]) runs.push(new TextRun({ text: m[1], bold: true, italics: true, size, font: FONT, color }))
+      else if (m[2]) runs.push(new TextRun({ text: m[2], bold: true, size, font: FONT, color }))
+      else runs.push(new TextRun({ text: m[3] || m[4], italics: true, size, font: FONT, color }))
+      last = m.index + m[0].length
+    }
+    if (last < clean.length) runs.push(new TextRun({ text: clean.slice(last), size, font: FONT, color }))
+    return runs.length ? runs : [new TextRun({ text: clean, size, font: FONT, color })]
+  }
 
+  // ── Cabecera del documento (antes del contenido IA) ─────────────────────
   const children: any[] = []
 
-  // ── PORTADA ──────────────────────────────────────────────────────────────
-  // Logo/Cabecera institucional
+  // Título principal estilo SANTI
   children.push(
     new Paragraph({
-      children: [
-        new TextRun({
-          text: '▮ SANTI',
-          bold: true,
-          size: 28,
-          color: COLOR_PRIMARIO,
-          font: 'Calibri',
-        }),
-        new TextRun({
-          text: '  |  Centro de Neuropsicología Infantil',
-          size: 20,
-          color: COLOR_GRIS,
-          font: 'Calibri',
-        }),
-      ],
-      spacing: { after: 200 },
-    }),
-    // Línea divisoria
-    new Paragraph({
-      border: { bottom: { style: BorderStyle.THICK, size: 6, color: COLOR_PRIMARIO } },
-      spacing: { after: 400 },
-    }),
-    // Título principal
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: config.titulo,
-          bold: true,
-          size: 40,
-          color: COLOR_PRIMARIO,
-          font: 'Calibri',
-        }),
-      ],
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 600, after: 200 },
+      spacing: { before: 0, after: 60 }, alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: config.titulo, bold: true, size: 40, font: FONT, color: COLOR.azulDark })],
     }),
     new Paragraph({
+      spacing: { before: 0, after: 60 }, alignment: AlignmentType.CENTER,
       children: [
-        new TextRun({
-          text: config.subtitulo,
-          size: 24,
-          color: COLOR_SECUNDARIO,
-          italics: true,
-          font: 'Calibri',
-        }),
-      ],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 600 },
-    }),
-    // Datos del paciente en tabla
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: {
-        top:    { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
-        bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
-        left:   { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
-        right:  { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
-      },
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({
-              shading: { type: ShadingType.SOLID, color: COLOR_FONDO },
-              children: [new Paragraph({
-                children: [new TextRun({ text: labels.patient, bold: true, size: 18, color: COLOR_PRIMARIO, font: 'Calibri' })],
-              })],
-              width: { size: 30, type: WidthType.PERCENTAGE },
-            }),
-            new TableCell({
-              children: [new Paragraph({
-                children: [new TextRun({ text: childName, bold: true, size: 20, font: 'Calibri' })],
-              })],
-            }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({
-              shading: { type: ShadingType.SOLID, color: COLOR_FONDO },
-              children: [new Paragraph({
-                children: [new TextRun({ text: labels.age, bold: true, size: 18, color: COLOR_PRIMARIO, font: 'Calibri' })],
-              })],
-            }),
-            new TableCell({
-              children: [new Paragraph({
-                children: [new TextRun({ text: childAge ? `${childAge} ${labels.ageUnit}` : labels.notSpecified, size: 18, font: 'Calibri' })],
-              })],
-            }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({
-              shading: { type: ShadingType.SOLID, color: COLOR_FONDO },
-              children: [new Paragraph({
-                children: [new TextRun({ text: labels.reportDate, bold: true, size: 18, color: COLOR_PRIMARIO, font: 'Calibri' })],
-              })],
-            }),
-            new TableCell({
-              children: [new Paragraph({
-                children: [new TextRun({ text: fechaHoy, size: 18, font: 'Calibri' })],
-              })],
-            }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({
-              shading: { type: ShadingType.SOLID, color: COLOR_FONDO },
-              children: [new Paragraph({
-                children: [new TextRun({ text: labels.evaluationType, bold: true, size: 18, color: COLOR_PRIMARIO, font: 'Calibri' })],
-              })],
-            }),
-            new TableCell({
-              children: [new Paragraph({
-                children: [new TextRun({ text: config.subtitulo, size: 18, font: 'Calibri' })],
-              })],
-            }),
-          ],
-        }),
+        new TextRun({ text: 'Paciente: ', size: 22, font: FONT, color: COLOR.grisMed }),
+        new TextRun({ text: childName, bold: true, size: 22, font: FONT, color: COLOR.azulDark }),
       ],
     }),
-    // Salto de página tras portada
+    // Línea decorativa de separación
+    new Paragraph({
+      spacing: { before: 0, after: 320 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: COLOR.azulMed, space: 0 } },
+      children: [new TextRun({ text: '' })],
+    }),
+    // Tabla datos básicos
+    tablaDatosGenerales([
+      ['Nombre', childName],
+      ['Edad', childAge ? `${childAge} años` : 'No especificada'],
+      ['Tipo de evaluación', config.subtitulo],
+      ['Fecha del informe', fechaHoy],
+      ['Centro', 'Neuropsicología y Terapias SANTI'],
+    ]),
+    new Paragraph({ spacing: { before: 0, after: 200 }, children: [new TextRun({ text: '' })] }),
     new Paragraph({ children: [new PageBreak()], spacing: { after: 0 } })
   )
 
-  // ── PARSER INLINE: convierte **negrita** e *cursiva* en TextRun array ───────
-  function parseInline(text: string, baseSize = 20, baseColor = '374151'): any[] {
-    const runs: any[] = []
-    // Eliminar markdown restante que no queremos mostrar (###, ##, #)
-    const clean = text.replace(/^#{1,6}\s*/, '').trim()
-    const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|_(.+?)_/g
-    let last = 0
-    let match: RegExpExecArray | null
-    while ((match = regex.exec(clean)) !== null) {
-      if (match.index > last) {
-        runs.push(new TextRun({ text: clean.slice(last, match.index), size: baseSize, font: 'Calibri', color: baseColor }))
-      }
-      if (match[1]) {
-        // ***bold+italic***
-        runs.push(new TextRun({ text: match[1], bold: true, italics: true, size: baseSize, font: 'Calibri', color: baseColor }))
-      } else if (match[2]) {
-        // **bold**
-        runs.push(new TextRun({ text: match[2], bold: true, size: baseSize, font: 'Calibri', color: baseColor }))
-      } else if (match[3] || match[4]) {
-        // *italic* or _italic_
-        runs.push(new TextRun({ text: match[3] || match[4], italics: true, size: baseSize, font: 'Calibri', color: baseColor }))
-      }
-      last = match.index + match[0].length
-    }
-    if (last < clean.length) {
-      runs.push(new TextRun({ text: clean.slice(last), size: baseSize, font: 'Calibri', color: baseColor }))
-    }
-    return runs.length > 0 ? runs : [new TextRun({ text: clean, size: baseSize, font: 'Calibri', color: baseColor })]
-  }
+  // ── Parsear y volcar el contenido generado por IA ────────────────────────
+  const lineas = contenidoReporte.split('\n').filter(l => l.trim())
 
-  // ── CUERPO DEL REPORTE ───────────────────────────────────────────────────
   for (const linea of lineas) {
-    const trimmed = linea.trim()
-    if (!trimmed) {
-      children.push(new Paragraph({ spacing: { after: 80 } }))
-      continue
-    }
+    const t = linea.trim()
+    if (!t) { children.push(new Paragraph({ spacing: { after: 80 } })); continue }
 
-    // ── 1. Títulos markdown: ###, ##, # → encabezado de sección
-    const mdHeading = trimmed.match(/^(#{1,6})\s+(.+)/)
-    // ── 2. Encabezados clásicos tipo "I. NOMBRE", "1. NOMBRE", "SECCIÓN: X"
+    const mdHeading = t.match(/^(#{1,6})\s+(.+)/)
     const esSeccionNumerada =
-      /^(I{1,3}V?|VI{0,3}|IX|X{1,3}|[0-9]+)\.\s+[A-ZÁÉÍÓÚÑ\*]/.test(trimmed) ||
-      /^SECCIÓN\s*[:.]?\s*\d*\s*[-.]?\s*[A-ZÁÉÍÓÚÑ]/i.test(trimmed) ||
-      /^[IVX]+\.\s+[A-ZÁÉÍÓÚÑ\*]/.test(trimmed)
-    // ── 3. Línea en MAYÚSCULAS completa (no muy larga) → subtítulo
-    const esTodoMayusculas = trimmed === trimmed.toUpperCase() && trimmed.length > 4 && trimmed.length < 120 && /[A-ZÁÉÍÓÚÑ]{3,}/.test(trimmed) && !trimmed.match(/^\d/)
+      /^(I{1,3}V?|VI{0,3}|IX|X{1,3}|[0-9]+)\.\s+[A-ZÁÉÍÓÚÑ\*]/.test(t) ||
+      /^[IVX]+\.\s+[A-ZÁÉÍÓÚÑ\*]/.test(t)
+    const esMayusculas = t === t.toUpperCase() && t.length > 4 && t.length < 120 && /[A-ZÁÉÍÓÚÑ]{3,}/.test(t) && !t.match(/^\d/)
 
     if (mdHeading || esSeccionNumerada) {
-      const rawText = mdHeading ? mdHeading[2] : trimmed
-      // Limpiar posibles ** del texto del título
-      const cleanTitle = rawText.replace(/\*\*/g, '').trim().toUpperCase()
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: cleanTitle, bold: true, size: 24, color: COLOR_PRIMARIO, font: 'Calibri' }),
-          ],
-          heading: HeadingLevel.HEADING_2,
-          border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: COLOR_SECUNDARIO } },
-          spacing: { before: 480, after: 200 },
-        })
-      )
-    } else if (esTodoMayusculas && !trimmed.startsWith('•') && !trimmed.startsWith('-')) {
+      // ── Título de sección con fondo azul (estilo SANTI) ──────────────────
+      const rawTxt = mdHeading ? mdHeading[2] : t
+      children.push(tituloSeccion(rawTxt.replace(/\*\*/g, '')))
+
+    } else if (esMayusculas && !t.startsWith('•') && !t.startsWith('-')) {
       // Sub-encabezado en mayúsculas
-      children.push(
-        new Paragraph({
-          children: [new TextRun({ text: trimmed.replace(/\*\*/g, ''), bold: true, size: 22, color: COLOR_ACENTO, font: 'Calibri' })],
-          spacing: { before: 300, after: 120 },
-        })
-      )
-    } else if (trimmed.startsWith('•') || trimmed.startsWith('–') || (trimmed.startsWith('-') && !trimmed.startsWith('---'))) {
-      // Bullet list
-      const bulletText = trimmed.replace(/^[•\-–]\s*/, '')
-      children.push(
-        new Paragraph({
-          children: parseInline(bulletText),
-          bullet: { level: 0 },
-          spacing: { after: 100 },
-        })
-      )
-    } else if (trimmed.match(/^\d+\.\s+\S/) && trimmed.length < 300 && !esSeccionNumerada) {
-      // Lista numerada (línea corta que empieza con "1. texto")
-      children.push(
-        new Paragraph({
-          children: parseInline(trimmed),
-          numbering: { reference: 'default-numbering', level: 0 },
-          spacing: { after: 100 },
-        })
-      )
-    } else if (trimmed.endsWith(':') && trimmed.length < 100 && !trimmed.includes('**')) {
-      // Sub-label (ej: "Recomendaciones:")
-      children.push(
-        new Paragraph({
-          children: [new TextRun({ text: trimmed, bold: true, size: 21, color: COLOR_ACENTO, font: 'Calibri' })],
-          spacing: { before: 240, after: 100 },
-        })
-      )
-    } else if (trimmed.startsWith('---') || trimmed.startsWith('___')) {
-      // Separador horizontal → línea
-      children.push(
-        new Paragraph({
-          border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: 'DDDDDD' } },
-          spacing: { before: 160, after: 160 },
-        })
-      )
+      children.push(new Paragraph({
+        spacing: { before: 300, after: 120 },
+        children: [new TextRun({ text: t.replace(/\*\*/g, ''), bold: true, size: 22, font: FONT, color: COLOR.azulMed })],
+      }))
+
+    } else if (t.startsWith('•') || t.startsWith('–') || (t.startsWith('-') && !t.startsWith('---'))) {
+      // Viñeta con guion azul
+      const txt = t.replace(/^[•\-–]\s*/, '')
+      children.push(new Paragraph({
+        spacing: { before: 40, after: 40 },
+        indent: { left: 400, hanging: 220 },
+        children: [
+          new TextRun({ text: '–  ', size: 19, font: FONT, color: COLOR.azulMed, bold: true }),
+          ...parseInline(txt, 19),
+        ],
+      }))
+
+    } else if (t.endsWith(':') && t.length < 100 && !t.includes('**')) {
+      // Sub-etiqueta
+      children.push(new Paragraph({
+        spacing: { before: 240, after: 80 },
+        children: [new TextRun({ text: t, bold: true, size: 20, font: FONT, color: COLOR.azulDark })],
+      }))
+
+    } else if (t.startsWith('---') || t.startsWith('___')) {
+      // Separador
+      children.push(new Paragraph({
+        border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: 'DDDDDD' } },
+        spacing: { before: 160, after: 160 },
+      }))
+
     } else {
-      // Párrafo de texto normal — con soporte **bold** inline
-      children.push(
-        new Paragraph({
-          children: parseInline(trimmed),
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 160 },
-        })
-      )
+      // Párrafo de texto justificado con soporte **bold**
+      children.push(new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 140 },
+        children: parseInline(t, 19),
+      }))
     }
   }
 
-  // ── PIE DEL DOCUMENTO ────────────────────────────────────────────────────
-  children.push(
-    new Paragraph({ spacing: { before: 800 }, border: { top: { style: BorderStyle.SINGLE, size: 2, color: COLOR_PRIMARIO } } }),
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: labels.footer,
-          size: 16,
-          italics: true,
-          color: COLOR_GRIS,
-          font: 'Calibri',
-        }),
-      ],
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 200 },
-    }),
-    new Paragraph({
-      children: [
-        new TextRun({
-          text: `_________________________________\n${childName} — ${fechaHoy}`,
-          size: 18,
-          font: 'Calibri',
-          color: COLOR_PRIMARIO,
-        }),
-      ],
-      alignment: AlignmentType.CENTER,
-    })
-  )
+  // ── Firma final ───────────────────────────────────────────────────────────
+  children.push(...firmaEquipo())
 
-  // ── Crear documento ──────────────────────────────────────────────────────
+  // ── Construir documento ───────────────────────────────────────────────────
   const doc = new Document({
     creator: 'SANTI — Plataforma de Neuropsicología Infantil',
     title: `${config.titulo} — ${childName}`,
-    description: `Informe clínico generado por SANTI. Paciente: ${childName}. Fecha: ${fechaHoy}`,
-    styles: {
-      default: {
-        document: {
-          run: { font: 'Calibri', size: 22 },
-        },
-      },
-    },
+    description: `Informe clínico SANTI. Paciente: ${childName}. Fecha: ${fechaHoy}`,
+    styles: DOC_STYLES as any,
     numbering: {
       config: [{
         reference: 'default-numbering',
-        levels: [{
-          level: 0,
-          format: NumberFormat.DECIMAL,
-          text: '%1.',
-          alignment: AlignmentType.LEFT,
-        }],
+        levels: [{ level: 0, format: NumberFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT }],
       }],
     },
     sections: [{
-      properties: {
-        page: {
-          margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
-        },
-      },
-      headers: {
-        default: new Header({
-          children: [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `SANTI — ${config.titulo.substring(0, 60)}`,
-                  size: 16,
-                  color: COLOR_GRIS,
-                  font: 'Calibri',
-                }),
-                new TextRun({
-                  text: `\t${childName}`,
-                  size: 16,
-                  bold: true,
-                  color: COLOR_GRIS,
-                  font: 'Calibri',
-                }),
-              ],
-              border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' } },
-            }),
-          ],
-        }),
-      },
-      footers: {
-        default: new Footer({
-          children: [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  children: [
-                    labels.generated,
-                    PageNumber.CURRENT,
-                    labels.of,
-                    PageNumber.TOTAL_PAGES,
-                  ],
-                  size: 16,
-                  color: COLOR_GRIS,
-                  font: 'Calibri',
-                }),
-              ],
-              alignment: AlignmentType.CENTER,
-              border: { top: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' } },
-            }),
-          ],
-        }),
-      },
+      properties: DOC_PAGE_PROPS as any,
+      headers: { default: headerInstitucional(config.titulo) },
+      footers: { default: piePaginaOficial() },
       children,
     }],
   })
@@ -1003,6 +785,7 @@ async function generarDocx(
   const buffer = await Packer.toBuffer(doc)
   return Buffer.from(buffer).toString('base64')
 }
+
 
 // ============================================================================
 // HANDLER PRINCIPAL
