@@ -515,8 +515,11 @@ export default function KnowledgeBaseView() {
 
       if (inputMode === 'archivo' && selectedFile) {
         const isPdf = selectedFile.name.toLowerCase().endsWith('.pdf')
-        const isBig = selectedFile.size > 10 * 1024 * 1024 // >10MB
-        const isHuge = selectedFile.size > 40 * 1024 * 1024 // >40MB → modo lotes
+        // UMBRAL ÚNICO: cualquier PDF >5MB usa el pipeline batched
+        // (procesa por lotes, OCR automático si el PDF es escaneado).
+        // PDFs <=5MB van por el camino simple (Storage → server con pdf-parse).
+        const isBig = selectedFile.size > 5 * 1024 * 1024
+        const isHuge = selectedFile.size > 5 * 1024 * 1024
 
         // ── PDFs MUY grandes (>40MB): procesar por lotes de 50 páginas e ingerir cada lote ─
         if (isPdf && isHuge) {
