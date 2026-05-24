@@ -2075,7 +2075,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
       ['Sesiones realizadas', `${totalSesiones} en ${semanas} semanas`],
       ['Promedio general de logro', `${promedioGlobal}%`],
       ['Programas en los que está trabajando', `${progArr.length}`],
-      ['Programas dominados', `${programasDominados.length}`],
+      ['Programas con criterio alcanzado', `${programasDominados.length}`],
     ]),
 
     // III. Celebración de logros

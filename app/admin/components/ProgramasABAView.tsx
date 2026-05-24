@@ -506,7 +506,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
                 <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
                 <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5"
                   style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
-                  🏆 Programas logrados · {programasLogrados.length}
+                  🏆 Criterio alcanzado · {programasLogrados.length}
                   <span className="text-[10px]">{verLogrados ? '▲' : '▼'}</span>
                 </span>
                 <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
@@ -1044,7 +1044,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       { key: 'linea_base', label: 'Baseline' },
                       { key: 'intervencion', label: 'Intervención' },
                       { key: 'mantenimiento', label: 'Mantenimiento' },
-                      { key: 'dominado', label: 'Dominado' },
+                      { key: 'dominado', label: 'Criterio alcanzado' },
                     ].map(({ key, label }) => (
                       <button key={key}
                         onClick={() => {
@@ -1810,7 +1810,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             linea_base: 'Baseline',
                             intervencion: 'Intervención',
                             mantenimiento: 'Mantenimiento',
-                            dominado: 'Dominado',
+                            dominado: 'Criterio alcanzado',
                           }
                           toast.success(`🔄 Fase cambiada a ${labelMap[nuevaFase] || nuevaFase}`)
                           setDetalle((prev: any) => {
@@ -1999,7 +1999,7 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
     { value: 'linea_base',    label: 'Baseline' },
     { value: 'intervencion',  label: 'Intervención' },
     { value: 'mantenimiento', label: 'Mantenimiento' },
-    { value: 'dominado',      label: 'Dominado' },
+    { value: 'dominado',      label: 'Criterio alcanzado' },
   ]
   const availableSets: string[] = [...(programa.objetivos_cp || [])].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((o: any) =>
     o.numero_set ? `Set ${o.numero_set}` : o.descripcion
@@ -2150,7 +2150,7 @@ function FaseTag({ fase, small }: { fase: string; small?: boolean }) {
     linea_base:    { label: 'Baseline',                         border: '#94a3b8', color: '#64748b' },
     intervencion:  { label: 'Intervención',                     border: '#4a6eaa', color: '#4a6eaa' },
     mantenimiento: { label: t('programas.mantenimiento'),       border: '#3a8a60', color: '#3a8a60' },
-    dominado:      { label: t('programas.dominado'),            border: '#3a8a60', color: '#3a8a60' },
+    dominado:      { label: 'Criterio alcanzado',               border: '#3a8a60', color: '#3a8a60' },
   }
   const cfg = labels[fase] || { label: fase, border: '#94a3b8', color: '#64748b' }
   return (

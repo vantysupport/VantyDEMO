@@ -796,8 +796,8 @@ export type HabilidadFila = {
 function estadoTexto(f: HabilidadFila): string {
   const pct = f.porcentaje != null ? ` (${f.porcentaje}%)` : ''
   switch (f.estado) {
-    case 'logrado':      return 'Logrado' + pct
-    case 'casi_logrado': return 'Casi logrado' + pct
+    case 'logrado':      return 'Criterio alcanzado' + pct
+    case 'casi_logrado': return 'Casi alcanzado' + pct
     case 'en_proceso':   return 'En proceso' + pct
     case 'no_iniciado':  return 'No iniciado'
     default:             return ''
