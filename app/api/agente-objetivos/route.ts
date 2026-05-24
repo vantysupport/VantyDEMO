@@ -258,13 +258,22 @@ REGLAS NO NEGOCIABLES:
       { model: GROQ_MODELS.SMART, temperature: 0.3, maxTokens: 2000 }
     )
 
-    // Parsear JSON de la respuesta
+    // Parsear JSON de la respuesta — robusto contra prefijos/sufijos extra del modelo
     let resultado: any = null
-    try {
-      const clean = respuestaRaw.replace(/```json\n?|\n?```/g, '').trim()
-      resultado = JSON.parse(clean)
-    } catch {
-      // Si no parsea, devolver texto
+    const intentarParsear = (txt: string): any | null => {
+      try { return JSON.parse(txt) } catch { return null }
+    }
+    // 1) Limpiar code fences ```json
+    const sinFences = respuestaRaw.replace(/```json\n?|\n?```/g, '').trim()
+    resultado = intentarParsear(sinFences)
+    // 2) Extraer primer bloque { ... } completo (greedy hasta el último '}')
+    if (!resultado) {
+      const m = sinFences.match(/\{[\s\S]*\}/)
+      if (m) resultado = intentarParsear(m[0])
+    }
+    // 3) Último recurso: devolver texto plano
+    if (!resultado) {
+      console.warn('[agente-objetivos] no se pudo parsear JSON, devolviendo texto plano. Respuesta:', respuestaRaw.slice(0, 200))
       resultado = { texto_libre: respuestaRaw }
     }
 

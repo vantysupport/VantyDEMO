@@ -1412,9 +1412,9 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
               : obj.protocolo_referencia === 'AFLS' ? 'bg-blue-100 text-blue-700'
               : 'bg-slate-100 text-slate-600'
             return (
-            <div key={i} className=" rounded-xl border border-amber-100 p-4" style={{ background: "var(--card)" }}>
+            <div key={i} className="rounded-xl border border-amber-100 p-4 overflow-hidden" style={{ background: "var(--card)" }}>
               <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
-                <p className="font-bold text-sm text-slate-800 flex-1" style={{ color: "var(--text-primary)" }}>{obj.titulo}</p>
+                <p className="font-bold text-sm text-slate-800 flex-1 min-w-0 break-words" style={{ color: "var(--text-primary)" }}>{obj.titulo}</p>
                 <div className="flex gap-1 flex-wrap">
                   {obj.protocolo_referencia && (
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${protoColor}`}>
@@ -1425,10 +1425,10 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
                   {obj.prioridad && <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${obj.prioridad === 'alta' ? 'bg-red-100 text-red-600' : obj.prioridad === 'media' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>{obj.prioridad}</span>}
                 </div>
               </div>
-              <p className="text-xs text-slate-500">{obj.descripcion}</p>
-              {obj.criterio_dominio && <p className="text-xs font-semibold text-slate-600 mt-1">✓ Criterio: {obj.criterio_dominio}</p>}
-              {obj.metodologia && <p className="text-xs text-slate-500 mt-1">⚙ Método: {obj.metodologia}</p>}
-              {obj.justificacion_clinica && <p className="text-xs text-amber-700 mt-2 bg-amber-50 px-3 py-2 rounded-lg">{obj.justificacion_clinica}</p>}
+              <p className="text-xs text-slate-500 break-words">{obj.descripcion}</p>
+              {obj.criterio_dominio && <p className="text-xs font-semibold text-slate-600 mt-1 break-words">✓ Criterio: {obj.criterio_dominio}</p>}
+              {obj.metodologia && <p className="text-xs text-slate-500 mt-1 break-words">⚙ Método: {obj.metodologia}</p>}
+              {obj.justificacion_clinica && <p className="text-xs text-amber-700 mt-2 bg-amber-50 px-3 py-2 rounded-lg break-words">{obj.justificacion_clinica}</p>}
             </div>
             )
           })}
@@ -1467,10 +1467,11 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
               {obj.siguiente_paso && <p className="text-xs text-blue-700 mt-2 bg-blue-50 px-3 py-2 rounded-lg">→ {obj.siguiente_paso}</p>}
             </div>
           ))}
-          {/* texto_libre fallback */}
+          {/* texto_libre fallback — el JSON no se pudo parsear, mostramos crudo en bloque scrolleable */}
           {resultado.resultado?.texto_libre && (
-            <div className="bg-amber-50 rounded-xl border border-amber-100 p-4">
-              <p className="text-sm text-amber-800 whitespace-pre-wrap">{resultado.resultado.texto_libre}</p>
+            <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 overflow-hidden max-w-full">
+              <p className="text-[11px] font-bold text-amber-700 mb-2">⚠ Respuesta sin formato (el modelo no devolvió JSON válido):</p>
+              <pre className="text-xs text-amber-800 whitespace-pre-wrap break-words overflow-x-auto max-h-96 overflow-y-auto bg-white/50 rounded p-2 border border-amber-200">{resultado.resultado.texto_libre}</pre>
             </div>
           )}
           <p className="text-xs text-slate-400">Programas analizados: {resultado.programas_analizados || 0} · Patrones considerados: {resultado.patrones_considerados || 0}</p>
