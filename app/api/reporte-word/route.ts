@@ -1321,9 +1321,10 @@ async function generarInformeClinicoSanti(
   const fechasDistintas = new Set(sesProgArr.map((s: any) => s.fecha).filter(Boolean))
   const totalSesiones = fechasDistintas.size
 
-  // Helper: MISMA lógica del UI (ProgramasABAView.programaCriterioAlcanzado)
-  // Un programa cumple criterio si en el SET ACTIVO (último set con sesiones),
-  // las últimas N sesiones consecutivas están todas >= criterio_dominio_pct.
+  // Helper: REPLICA EXACTA del UI (ProgramasABAView.programaCriterioAlcanzado).
+  // El endpoint /api/programas-aba que usa el UI NO devuelve el campo `set`,
+  // por lo que la función del UI termina evaluando las últimas N sesiones del programa
+  // ordenadas por fecha (ignorando sets). Hacemos lo mismo aquí para que coincida.
   const programaCumpleCriterio = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
@@ -1331,16 +1332,12 @@ async function generarInformeClinicoSanti(
     const critSes = Number(p.criterio_sesiones_consecutivas) || 2
     const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
       .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
-    if (todas.length === 0) return false
-    const setsConSes = Array.from(new Set(todas.map((s: any) => s.set ?? '__none__')))
-    const setActivo = setsConSes[setsConSes.length - 1] ?? '__none__'
-    const sesActivo = todas.filter((s: any) => (s.set ?? '__none__') === setActivo)
-    if (sesActivo.length < critSes) return false
-    const ultimas = sesActivo.slice(-critSes)
+    if (todas.length < critSes) return false
+    const ultimas = todas.slice(-critSes)
     return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
   }
 
-  // "Programas con criterio alcanzado" = estado dominado OR criterio en set activo
+  // "Programas con criterio alcanzado" = estado dominado OR últimas N sesiones >= criterio
   const programasDominados = programasConDatos.filter(p =>
     ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
     programaCumpleCriterio(p.id)
@@ -1818,7 +1815,8 @@ async function generarReportePadresPro(
   const sesProgArr = (sesionesProg || []) as any[]
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
 
-  // Helper: MISMA lógica del UI (criterio alcanzado en set activo)
+  // Helper: REPLICA EXACTA del UI. El UI evalúa las últimas N sesiones del
+  // programa ordenadas por fecha (su endpoint no retorna `set`, todo cae a '__none__').
   const programaCumpleCriterio = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
@@ -1826,12 +1824,8 @@ async function generarReportePadresPro(
     const critSes = Number(p.criterio_sesiones_consecutivas) || 2
     const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
       .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
-    if (todas.length === 0) return false
-    const setsConSes = Array.from(new Set(todas.map((s: any) => s.set ?? '__none__')))
-    const setActivo = setsConSes[setsConSes.length - 1] ?? '__none__'
-    const sesActivo = todas.filter((s: any) => (s.set ?? '__none__') === setActivo)
-    if (sesActivo.length < critSes) return false
-    const ultimas = sesActivo.slice(-critSes)
+    if (todas.length < critSes) return false
+    const ultimas = todas.slice(-critSes)
     return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
   }
 
