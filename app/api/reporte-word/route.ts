@@ -1347,22 +1347,24 @@ async function generarInformeClinicoSanti(
     return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
   }
 
-  // Helper: el especialista marcó al menos un SET como "dominado" en este programa.
-  // Cuenta como criterio alcanzado porque la decisión clínica del terapeuta es la fuente de verdad.
-  const programaTieneSetDominado = (programaId: string): boolean => {
-    return objetivosArr.some((o: any) => o.programa_id === programaId && o.estado === 'dominado')
+  // Helper: TODOS los SETs del programa están marcados como "dominado" por el especialista.
+  // Un solo set dominado no basta — significaría que el programa todavía tiene otros sets pendientes.
+  const programaTodosSetsDominados = (programaId: string): boolean => {
+    const sets = objetivosArr.filter((o: any) => o.programa_id === programaId)
+    if (sets.length === 0) return false  // sin sets definidos, esta vía no aplica
+    return sets.every((o: any) => o.estado === 'dominado')
   }
 
   // Unificado: criterio alcanzado si CUALQUIERA de estas condiciones se cumple:
   //   1) Estado oficial del programa = dominado/logrado/criterio_alcanzado
   //   2) Últimas N sesiones consecutivas >= criterio (cálculo automático)
-  //   3) Al menos un SET marcado manualmente como "dominado" por la especialista
+  //   3) TODOS los SETs del programa marcados como "dominado" por la especialista
   const programaCumpleCriterio = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
     if (['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado)) return true
     if (programaCumpleCriterioAuto(programaId)) return true
-    if (programaTieneSetDominado(programaId)) return true
+    if (programaTodosSetsDominados(programaId)) return true
     return false
   }
 
@@ -1905,7 +1907,7 @@ async function generarReportePadresPro(
   // Helper: criterio alcanzado considerando 3 vías:
   //   1) Estado oficial del programa (dominado/logrado/criterio_alcanzado)
   //   2) Cálculo automático (últimas N sesiones >= criterio)
-  //   3) SET marcado manualmente como dominado por el especialista
+  //   3) TODOS los SETs del programa marcados como dominado por el especialista
   const programaCumpleCriterio = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
@@ -1920,8 +1922,9 @@ async function generarReportePadresPro(
       const ultimas = todas.slice(-critSes)
       if (ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)) return true
     }
-    // 3) SET marcado manualmente como dominado
-    if (objetivosArr.some((o: any) => o.programa_id === programaId && o.estado === 'dominado')) return true
+    // 3) TODOS los SETs marcados como dominado (no basta con uno)
+    const setsProg = objetivosArr.filter((o: any) => o.programa_id === programaId)
+    if (setsProg.length > 0 && setsProg.every((o: any) => o.estado === 'dominado')) return true
     return false
   }
 

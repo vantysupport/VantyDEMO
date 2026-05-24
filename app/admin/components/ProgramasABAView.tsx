@@ -192,10 +192,12 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 
   // Helper: criterio alcanzado por 2 vías
   //   1) Cálculo automático: las últimas N sesiones del set activo >= criterio
-  //   2) Decisión del especialista: al menos un SET marcado manualmente como 'dominado'
+  //   2) Decisión del especialista: TODOS los SETs del programa marcados como 'dominado'
+  //      (si hay sets definidos; un solo set dominado no basta si quedan otros pendientes)
   const programaCriterioAlcanzado = (p: any) => {
-    // Vía 2: SET marcado como dominado por la especialista
-    if (Array.isArray(p.objetivos_cp) && p.objetivos_cp.some((o: any) => o.estado === 'dominado')) {
+    // Vía 2: TODOS los SETs marcados como dominado por la especialista
+    const sets = Array.isArray(p.objetivos_cp) ? p.objetivos_cp : []
+    if (sets.length > 0 && sets.every((o: any) => o.estado === 'dominado')) {
       return true
     }
     // Vía 1: cálculo automático
@@ -878,14 +880,14 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     ? ultimoPct > anterior + 3 ? 'up' : ultimoPct < anterior - 3 ? 'down' : 'stable'
     : 'stable'
 
-  // ── Check for criterion: 2 vías (set dominado manual O sesiones consecutivas) ──
+  // ── Check for criterion: 2 vías ──
+  //   1) TODOS los sets del programa marcados como 'dominado' (decisión clínica completa)
+  //   2) Cálculo automático sobre sesiones del set activo
   const crit = programa.criterio_dominio_pct || 90
   const critSesiones = programa.criterio_sesiones_consecutivas || 2
-  // Vía 1: la especialista marcó al menos un SET como dominado
-  const algunSetDominadoManual = Array.isArray(programa.objetivos_cp) &&
-    programa.objetivos_cp.some((o: any) => o.estado === 'dominado')
-  // Vía 2: cálculo automático sobre sesiones del set activo
-  const criterioAlcanzado = algunSetDominadoManual || (() => {
+  const setsArr = Array.isArray(programa.objetivos_cp) ? programa.objetivos_cp : []
+  const todosSetsDominados = setsArr.length > 0 && setsArr.every((o: any) => o.estado === 'dominado')
+  const criterioAlcanzado = todosSetsDominados || (() => {
     if (sesionesSetActivo.length < critSesiones) return false
     const last = sesionesSetActivo.slice(-critSesiones)
     return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
