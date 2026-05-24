@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Invalidar un documento (admin)
+// Invalidar un documento (admin) — soft delete (queda en BD pero marcado como inválido)
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json()
@@ -78,6 +78,27 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'codigo_doc requerido' }, { status: 400 })
     }
     await invalidarDocumento(codigo_doc, motivo)
+    return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
+
+// Eliminar definitivamente un documento del historial (hard delete)
+//   El QR del .docx ya impreso seguirá apuntando a /verificar/<codigo> pero
+//   la página mostrará "Código no encontrado" porque ya no existe en BD.
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const codigo = searchParams.get('codigo_doc')
+    if (!codigo) {
+      return NextResponse.json({ error: 'codigo_doc requerido' }, { status: 400 })
+    }
+    const { error } = await supabaseAdmin
+      .from('documentos_emitidos')
+      .delete()
+      .eq('codigo_doc', codigo)
+    if (error) throw error
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })

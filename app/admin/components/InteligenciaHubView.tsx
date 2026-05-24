@@ -1621,6 +1621,29 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
     }
   }
 
+  const eliminar = async (codigoDoc: string) => {
+    const ok = window.confirm(
+      `¿Eliminar PERMANENTEMENTE el documento ${codigoDoc}?\n\n` +
+      `· El registro se borra de la base de datos.\n` +
+      `· El QR del .docx ya impreso seguirá llevando a /verificar/<código>, pero la página mostrará "Código no válido".\n` +
+      `· Esta acción NO se puede deshacer.\n\n` +
+      `Si solo querés marcarlo como obsoleto, usá "Invalidar" en su lugar.`,
+    )
+    if (!ok) return
+    try {
+      const res = await fetch(`/api/admin/documentos-emitidos?codigo_doc=${encodeURIComponent(codigoDoc)}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const j = await res.json()
+        throw new Error(j.error || 'Error al eliminar')
+      }
+      await cargarDocs()
+    } catch (e: any) {
+      alert('Error: ' + e.message)
+    }
+  }
+
   const generar = async () => {
     if (!selected) return
     setLoading(true); setError(''); setSuccess('')
@@ -1819,12 +1842,12 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
                         )}
                       </td>
                       <td className="px-3 py-2 text-center">
-                        <div className="flex gap-1 justify-center">
+                        <div className="flex gap-1 justify-center flex-wrap">
                           <a
                             href={verifUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title="Abrir página de verificación"
+                            title="Abrir página de verificación pública"
                             className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-[10px] font-bold"
                           >
                             🔗 Ver
@@ -1832,12 +1855,19 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
                           {d.valido && (
                             <button
                               onClick={() => invalidar(d.codigo_doc)}
-                              title="Invalidar este documento"
+                              title="Marcar como obsoleto (queda en historial)"
                               className="px-2 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-[10px] font-bold"
                             >
                               ⚠ Invalidar
                             </button>
                           )}
+                          <button
+                            onClick={() => eliminar(d.codigo_doc)}
+                            title="Eliminar permanentemente del historial"
+                            className="px-2 py-1 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-[10px] font-bold"
+                          >
+                            🗑 Eliminar
+                          </button>
                         </div>
                       </td>
                     </tr>
