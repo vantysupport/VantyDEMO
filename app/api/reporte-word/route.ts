@@ -1203,8 +1203,8 @@ async function generarInformeClinicoSanti(
     docsRes,
     fichasRes,
   ] = await Promise.all([
-    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, criterio_dominio_pct, estado, objetivo_lp').eq('child_id', childId).limit(30),
-    supabaseAdmin.from('sesiones_datos_aba').select('id, programa_id, fecha, porcentaje_exito, fase, nivel_ayuda, notas').eq('child_id', childId).order('fecha', { ascending: true }).limit(400),
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, criterio_dominio_pct, criterio_sesiones_consecutivas, estado, objetivo_lp').eq('child_id', childId).limit(30),
+    supabaseAdmin.from('sesiones_datos_aba').select('id, programa_id, fecha, porcentaje_exito, fase, set, nivel_ayuda, notas').eq('child_id', childId).order('fecha', { ascending: true }).limit(400),
     (async () => { try { return await supabaseAdmin.from('evaluaciones_iniciales').select('estado, recomendacion, recomendacion_resumen, recomendacion_razon, anamnesis_completada_en').eq('child_id', childId).order('created_at', { ascending: false }).limit(1).maybeSingle() } catch { return { data: null } } })(),
     (async () => { try { return await supabaseAdmin.from('patient_documents').select('file_name, category, extracted_text, created_at').eq('child_id', childId).eq('extraction_status', 'done').not('extracted_text', 'is', null).order('created_at', { ascending: false }).limit(8) } catch { return { data: [] as any[] } } })(),
     (async () => { try { return await supabaseAdmin.from('clinical_template_responses').select('id, created_at, filler_name, filler_role, responses, notes, clinical_templates(name)').eq('child_id', childId).order('created_at', { ascending: false }).limit(6) } catch { return { data: [] as any[] } } })(),
@@ -1320,13 +1320,30 @@ async function generarInformeClinicoSanti(
   //      Para contar sesiones reales, deduplicar por fecha.
   const fechasDistintas = new Set(sesProgArr.map((s: any) => s.fecha).filter(Boolean))
   const totalSesiones = fechasDistintas.size
-  // Unificado con la lógica de la tabla de habilidades (estadoProgr):
-  // Un programa está "dominado/logrado" si:
-  //   1) Su estado oficial es dominado/logrado/criterio_alcanzado, O
-  //   2) Su promedio reciente alcanza/supera el criterio de dominio definido
+
+  // Helper: MISMA lógica del UI (ProgramasABAView.programaCriterioAlcanzado)
+  // Un programa cumple criterio si en el SET ACTIVO (último set con sesiones),
+  // las últimas N sesiones consecutivas están todas >= criterio_dominio_pct.
+  const programaCumpleCriterio = (programaId: string): boolean => {
+    const p = progArr.find(x => x.id === programaId)
+    if (!p) return false
+    const crit = Number(p.criterio_dominio_pct) || 90
+    const critSes = Number(p.criterio_sesiones_consecutivas) || 2
+    const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    if (todas.length === 0) return false
+    const setsConSes = Array.from(new Set(todas.map((s: any) => s.set ?? '__none__')))
+    const setActivo = setsConSes[setsConSes.length - 1] ?? '__none__'
+    const sesActivo = todas.filter((s: any) => (s.set ?? '__none__') === setActivo)
+    if (sesActivo.length < critSes) return false
+    const ultimas = sesActivo.slice(-critSes)
+    return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
+  }
+
+  // "Programas con criterio alcanzado" = estado dominado OR criterio en set activo
   const programasDominados = programasConDatos.filter(p =>
     ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
-    (p.promedio_reciente != null && p.criterio != null && p.promedio_reciente >= p.criterio)
+    programaCumpleCriterio(p.id)
   )
   const programasIntervencion = programasConDatos.filter(p =>
     ['activo', 'intervencion', 'en_intervencion'].includes(p.estado) || (!p.estado && p.fase !== 'linea_base')
@@ -1379,9 +1396,11 @@ async function generarInformeClinicoSanti(
       }
 
       // Fila HEADER del programa (objetivo general, sin set)
+      // MISMA lógica que el UI (criterio alcanzado en set activo)
+      const cumpleCriterio = programaCumpleCriterio(p.id)
       const estadoProgr: any =
         p.estado === 'dominado' || p.estado === 'logrado' || p.estado === 'criterio_alcanzado' ? 'logrado'
-        : (p.promedio_reciente != null && p.promedio_reciente >= p.criterio) ? 'logrado'
+        : cumpleCriterio ? 'logrado'
         : (p.promedio_reciente != null && p.promedio_reciente >= 80) ? 'casi_logrado'
         : (p.promedio_reciente != null && p.promedio_reciente > 0) ? 'en_proceso'
         : 'no_iniciado'
@@ -1792,12 +1811,29 @@ async function generarReportePadresPro(
   }
 
   const [{ data: programas }, { data: sesionesProg }] = await Promise.all([
-    supabaseAdmin.from('programas_aba').select('id, titulo, area, estado, fase_actual, criterio_dominio_pct, objetivo_lp').eq('child_id', childId).limit(30),
-    supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito').eq('child_id', childId).order('fecha', { ascending: true }).limit(300),
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, estado, fase_actual, criterio_dominio_pct, criterio_sesiones_consecutivas, objetivo_lp').eq('child_id', childId).limit(30),
+    supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito, set').eq('child_id', childId).order('fecha', { ascending: true }).limit(300),
   ])
   const progArr = (programas || []) as any[]
   const sesProgArr = (sesionesProg || []) as any[]
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+
+  // Helper: MISMA lógica del UI (criterio alcanzado en set activo)
+  const programaCumpleCriterio = (programaId: string): boolean => {
+    const p = progArr.find(x => x.id === programaId)
+    if (!p) return false
+    const crit = Number(p.criterio_dominio_pct) || 90
+    const critSes = Number(p.criterio_sesiones_consecutivas) || 2
+    const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    if (todas.length === 0) return false
+    const setsConSes = Array.from(new Set(todas.map((s: any) => s.set ?? '__none__')))
+    const setActivo = setsConSes[setsConSes.length - 1] ?? '__none__'
+    const sesActivo = todas.filter((s: any) => (s.set ?? '__none__') === setActivo)
+    if (sesActivo.length < critSes) return false
+    const ultimas = sesActivo.slice(-critSes)
+    return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
+  }
 
   // Stats globales
   const promediosTodos: number[] = []
@@ -1811,8 +1847,10 @@ async function generarReportePadresPro(
     const promInicial = iniciales.length > 0 ? avg(iniciales) : null
     if (promReciente != null) promediosTodos.push(promReciente)
     return {
+      id: p.id,
       titulo: p.titulo, area: p.area || 'General', estado: p.estado || 'activo',
       criterio: Number(p.criterio_dominio_pct) || 90,
+      cumple_criterio: programaCumpleCriterio(p.id),
       n_sesiones: pcts.length,
       promedio_reciente: promReciente,
       promedio_inicial: promInicial,
@@ -1820,13 +1858,13 @@ async function generarReportePadresPro(
     }
   })
 
-  // Unificado con la lógica de la tabla de habilidades:
+  // Unificado con la lógica del UI (criterio alcanzado en set activo):
   // Un programa cuenta como "criterio alcanzado" si:
   //   1) Su estado oficial es dominado/logrado/criterio_alcanzado, O
-  //   2) Su promedio reciente alcanza/supera el criterio de dominio
+  //   2) Cumple criterio en el set activo (últimas N sesiones del set actual >= criterio)
   const programasDominados = programasInfo.filter(p =>
     ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
-    (p.promedio_reciente != null && p.criterio != null && p.promedio_reciente >= p.criterio)
+    p.cumple_criterio
   )
   const promedioGlobal = avg(promediosTodos)
   // FIX: sesiones_datos_aba tiene 1 fila POR PROGRAMA por sesión.
