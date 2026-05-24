@@ -324,7 +324,7 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
       <input ref={fileInputRef} type="file" style={{ display:'none' }} accept="image/*,application/pdf,.doc,.docx,.txt"
         onChange={e => { const f = e.target.files?.[0]; if (f) setAttachFile(f); e.target.value = '' }}/>
 
-      <div style={{ padding: '10px 14px max(12px, env(safe-area-inset-bottom, 12px))', borderTop: '1px solid var(--c-border)', background: 'var(--c-card)', flexShrink: 0 }}>
+      <div style={{ padding: '10px 14px 12px', borderTop: '1px solid var(--c-border)', background: 'var(--c-card)', flexShrink: 0 }}>
 
         {/* Preview: audio or file */}
         {(audioBlob || attachFile) && (

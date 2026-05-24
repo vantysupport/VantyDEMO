@@ -654,7 +654,7 @@ export default function ParentDashboard() {
                 </button>
             </div>
 
-            <main className={`flex-1 ${activeView === 'chat' || activeView === 'chat-familias' ? 'overflow-hidden p-0 lg:p-4 lg:p-6 pb-0 lg:pb-6 flex flex-col' : 'overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-20 lg:pb-6'}`} style={{ minHeight: 0, background: "var(--background)" }}>
+            <main className={`flex-1 ${activeView === 'chat' || activeView === 'chat-familias' ? 'overflow-hidden p-0 lg:p-4 lg:p-6 flex flex-col chat-main-mobile' : 'overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-20 lg:pb-6'}`} style={{ minHeight: 0, background: "var(--background)" }}>
                 <div className={`w-full ${activeView === 'chat' || activeView === 'chat-familias' ? 'flex-1 flex flex-col min-h-0' : 'min-h-full'}`}>
                     {activeView === 'home' && (
                         <HomeViewInnovative

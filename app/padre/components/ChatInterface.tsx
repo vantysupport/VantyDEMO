@@ -757,7 +757,7 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
         )}
 
         {/* ── Input con voz ── */}
-        <div className="shrink-0 px-3 py-3 border-t" style={{ background: "var(--card)", borderColor: "var(--card-border)", paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))' }}>
+        <div className="shrink-0 px-3 py-3 border-t" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
           <div className="flex gap-2 items-end">
             <div className="flex-1 relative">
               <input

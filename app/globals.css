@@ -511,14 +511,19 @@ nav.fixed.bottom-0 {
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Chat (ARIA / familias) en móvil: ocupa exactamente el espacio
-     entre el header superior y la barra de navegación inferior.
-     Usa 100dvh (dynamic viewport) que se adapta al teclado abierto/cerrado. */
+  /* Chat (ARIA / familias) en móvil:
+     - El bottom nav tiene un botón flotante "Asistente" que sobresale ~28px hacia arriba.
+     - Reservamos padding-bottom en <main> para que el contenido del chat no quede tapado.
+     El input del chat se queda visible justo arriba del bottom nav. */
+  .chat-main-mobile {
+    /* Espacio reservado debajo = altura visual del bottom nav + safe area + botón flotante */
+    padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
   .chat-mobile-fix {
-    /* viewport visible - header (56px) - barra bottom (~76px con safe area) */
-    height: calc(100dvh - 132px - env(safe-area-inset-bottom, 0px));
-    max-height: calc(100dvh - 132px - env(safe-area-inset-bottom, 0px));
+    flex: 1 1 auto;
     min-height: 0;
+    height: 100%;
     border-radius: 0 !important;
     box-shadow: none !important;
     border: none !important;
