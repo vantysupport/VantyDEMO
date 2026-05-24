@@ -42,71 +42,130 @@ async function analizarPaciente(childId: string, childName: string): Promise<Sug
 
   const hace8semanas = new Date(); hace8semanas.setDate(hace8semanas.getDate() - 56)
   const hace4semanas = new Date(); hace4semanas.setDate(hace4semanas.getDate() - 28)
+  const fechaCorte8 = hace8semanas.toISOString().split('T')[0]
+  const fechaCorte4 = hace4semanas.toISOString().split('T')[0]
 
-  const [sesionesRes, programasRes] = await Promise.all([
+  // FIX: leemos AMBAS fuentes (registro_aba clásico + sesiones_datos_aba modernas)
+  // FIX: objetivos_cp tiene campo `descripcion`, no `nombre` → antes la query fallaba silenciosa
+  // FIX: filtramos estados archivados localmente (más robusto que .not('estado','in',...))
+  const [sesionesRes, programasRes, sesProgRes] = await Promise.all([
     supabaseAdmin.from('registro_aba').select('fecha_sesion, datos')
       .eq('child_id', childId)
-      .gte('fecha_sesion', hace8semanas.toISOString().split('T')[0])
+      .gte('fecha_sesion', fechaCorte8)
       .order('fecha_sesion', { ascending: true }),
-    supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, estado, criterio_dominio_pct, objetivos_cp(nombre, estado)')
-      .eq('child_id', childId).not('estado', 'in', '("archivado","alta","dado_de_alta","inactivo","cancelado")')
+    supabaseAdmin.from('programas_aba')
+      .select('id, titulo, area, fase_actual, estado, criterio_dominio_pct, criterio_sesiones_consecutivas, objetivos_cp(id, descripcion, estado, numero_set)')
+      .eq('child_id', childId),
+    supabaseAdmin.from('sesiones_datos_aba')
+      .select('programa_id, fecha, porcentaje_exito')
+      .eq('child_id', childId)
+      .gte('fecha', fechaCorte8)
+      .order('fecha', { ascending: true }),
   ])
 
   const sesiones = sesionesRes.data || []
-  const programas = programasRes.data || []
+  const programasRaw = (programasRes.data || []) as any[]
+  const programas = programasRaw.filter((p: any) =>
+    !['archivado', 'alta', 'dado_de_alta', 'inactivo', 'cancelado'].includes(String(p.estado || '').toLowerCase())
+  )
+  const sesProg = sesProgRes.data || []
 
-  // ── REGLA 1: Objetivo estancado > 4 semanas ──────────────────────────────
-  const sesiones4sem = sesiones.filter(s => s.fecha_sesion >= hace4semanas.toISOString().split('T')[0])
+  // ── REGLA 1: Objetivo estancado > 4 semanas (basado en registro_aba) ─────
+  const sesiones4sem = sesiones.filter(s => s.fecha_sesion >= fechaCorte4)
   if (sesiones4sem.length >= 4) {
     const logros4sem = sesiones4sem.map(s => parseLogro(s.datos?.nivel_logro_objetivos)).filter((v): v is number => v !== null)
-    if (logros4sem.length === 0) { /* no hay datos suficientes */ } else {
-    const prom4sem = logros4sem.reduce((a, b) => a + b, 0) / logros4sem.length
-    const max4sem = Math.max(...logros4sem)
-    const min4sem = Math.min(...logros4sem)
+    if (logros4sem.length > 0) {
+      const prom4sem = logros4sem.reduce((a, b) => a + b, 0) / logros4sem.length
+      const max4sem = Math.max(...logros4sem)
+      const min4sem = Math.min(...logros4sem)
 
-    if (prom4sem < 60 && (max4sem - min4sem) < 10) {
-      const objetivoActual = sesiones4sem[sesiones4sem.length - 1]?.datos?.objetivo_principal || 'objetivo actual'
-      sugerencias.push({
-        tipo: 'objetivo_estancado',
-        prioridad: 'alta',
-        titulo: `${childName}: Objetivo sin avance por 4+ semanas`,
-        descripcion: `"${objetivoActual}" muestra estancamiento. Promedio de logro: ${Math.round(prom4sem)}% con variación mínima (${Math.round(min4sem)}-${Math.round(max4sem)}%).`,
-        accion_concreta: 'Considera dividir el objetivo en pasos más pequeños, cambiar el reforzador o revisar si hay factores ambientales nuevos.',
-        child_id: childId,
-        child_name: childName,
-        semanas_detectado: 4,
-        dato_clave: `Logro promedio: ${Math.round(prom4sem)}%`
-      })
+      if (prom4sem < 60 && (max4sem - min4sem) < 10) {
+        const objetivoActual = sesiones4sem[sesiones4sem.length - 1]?.datos?.objetivo_principal || 'objetivo actual'
+        sugerencias.push({
+          tipo: 'objetivo_estancado',
+          prioridad: 'alta',
+          titulo: `${childName}: Objetivo sin avance por 4+ semanas`,
+          descripcion: `"${objetivoActual}" muestra estancamiento. Promedio de logro: ${Math.round(prom4sem)}% con variación mínima (${Math.round(min4sem)}-${Math.round(max4sem)}%).`,
+          accion_concreta: 'Considera dividir el objetivo en pasos más pequeños, cambiar el reforzador o revisar si hay factores ambientales nuevos.',
+          child_id: childId,
+          child_name: childName,
+          semanas_detectado: 4,
+          dato_clave: `Logro promedio: ${Math.round(prom4sem)}%`
+        })
+      }
     }
-    } // end logros4sem.length check
   }
 
-  // ── REGLA 2: Objetivos listos para subir de fase ────────────────────────
+  // ── REGLA 2: Programas que ALCANZAN criterio (avisar al especialista) ────
+  // Usa la MISMA lógica del UI: últimas N sesiones consecutivas >= criterio OR todos los sets dominados
   for (const prog of programas) {
     const objetivos = (prog as any).objetivos_cp || []
-    const dominados = objetivos.filter((o: any) => o.estado === 'dominado').length
-    const total = objetivos.length
-    const pct = total > 0 ? (dominados / total) * 100 : 0
-    const criterio = prog.criterio_dominio_pct || 80
+    const crit = Number(prog.criterio_dominio_pct) || 90
+    const critSes = Number(prog.criterio_sesiones_consecutivas) || 2
 
-    if (pct >= criterio && total > 0) {
+    // a) ¿Todos los sets marcados manualmente como dominado?
+    const todosSetsDominados = objetivos.length > 0 && objetivos.every((o: any) => o.estado === 'dominado')
+
+    // b) ¿Las últimas N sesiones del programa están todas >= criterio?
+    const sesEsteProg = sesProg.filter((s: any) => s.programa_id === prog.id)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    let cumplePorSesiones = false
+    if (sesEsteProg.length >= critSes) {
+      const ultimas = sesEsteProg.slice(-critSes)
+      cumplePorSesiones = ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
+    }
+
+    // Si cumple criterio y NO está ya marcado como 'dominado' formalmente, avisar
+    const yaCerrado = ['dominado', 'logrado', 'criterio_alcanzado'].includes(String(prog.estado || '').toLowerCase())
+    if (!yaCerrado && (todosSetsDominados || cumplePorSesiones)) {
+      const dominados = objetivos.filter((o: any) => o.estado === 'dominado').length
+      const total = objetivos.length
+      const razon = todosSetsDominados
+        ? `Todos los sets (${dominados}/${total}) marcados como dominados`
+        : `Últimas ${critSes} sesiones ≥ ${crit}% (criterio automático)`
       sugerencias.push({
         tipo: 'cambio_fase',
         prioridad: 'media',
-        titulo: `${childName}: "${prog.titulo}" listo para avanzar de fase`,
-        descripcion: `${Math.round(pct)}% de los objetivos dominados (${dominados}/${total}). Supera el criterio de ${criterio}% establecido.`,
-        accion_concreta: `Evalúa avanzar de "${prog.fase_actual}" a la siguiente fase o iniciar generalización.`,
+        titulo: `${childName}: "${prog.titulo}" listo para avanzar`,
+        descripcion: `${razon}. Programa actualmente en fase "${prog.fase_actual || '—'}".`,
+        accion_concreta: `Marcá el programa como "Criterio alcanzado" o avanzá a generalización con 2do terapeuta / entorno distinto.`,
         child_id: childId,
         child_name: childName,
         semanas_detectado: 0,
-        dato_clave: `${dominados}/${total} objetivos dominados`
+        dato_clave: todosSetsDominados ? `${dominados}/${total} sets dominados` : `Últimas ${critSes} sesiones ≥ ${crit}%`
+      })
+    }
+  }
+
+  // ── REGLA 2b: REGRESIÓN — caída ≥ 15% en sesiones recientes vs anteriores ─
+  for (const prog of programas) {
+    const sesEsteProg = sesProg.filter((s: any) => s.programa_id === prog.id)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    if (sesEsteProg.length < 4) continue
+    const pcts = sesEsteProg.map((s: any) => Number(s.porcentaje_exito) || 0).filter((v: number) => v > 0)
+    if (pcts.length < 4) continue
+    const mitad = Math.floor(pcts.length / 2)
+    const promViejo = pcts.slice(0, mitad).reduce((a, b) => a + b, 0) / mitad
+    const promReciente = pcts.slice(-mitad).reduce((a, b) => a + b, 0) / mitad
+    const delta = Math.round(promReciente - promViejo)
+    if (delta <= -15) {
+      sugerencias.push({
+        tipo: 'objetivo_estancado',
+        prioridad: 'alta',
+        titulo: `${childName}: Regresión en "${prog.titulo}"`,
+        descripcion: `Caída de ${Math.round(promViejo)}% → ${Math.round(promReciente)}% (${delta}%) en las últimas sesiones del programa.`,
+        accion_concreta: 'Revisar reforzadores, SD y posibles factores ambientales. Considerá volver a la fase de adquisición o reforzar prompts.',
+        child_id: childId,
+        child_name: childName,
+        semanas_detectado: 4,
+        dato_clave: `${Math.round(promViejo)}% → ${Math.round(promReciente)}%`
       })
     }
   }
 
   // ── REGLA 3: Conductas desafiantes frecuentes ────────────────────────────
   const sesionesConConducas = sesiones.filter(s => s.datos?.conductas_desafiantes && String(s.datos.conductas_desafiantes).length > 5)
-  if (sesionesConConducas.length >= 3) {
+  if (sesionesConConducas.length >= 3 && sesiones.length > 0) {
     const pct = Math.round((sesionesConConducas.length / sesiones.length) * 100)
     sugerencias.push({
       tipo: 'conducta_desafiante',
@@ -121,43 +180,41 @@ async function analizarPaciente(childId: string, childName: string): Promise<Sug
     })
   }
 
-  // ── REGLA 4: Progreso excelente — celebrar y capitalizar ─────────────────
-  if (sesiones4sem.length >= 3) {
-    const logros = sesiones4sem.map(s => parseLogro(s.datos?.nivel_logro_objetivos)).filter((v): v is number => v !== null)
-    if (logros.length > 0) {
-    const prom = logros.reduce((a, b) => a + b, 0) / logros.length
-    if (prom >= 80) {
+  // ── REGLA 4: Progreso excelente — logros por programa (sesiones_datos_aba) ─
+  for (const prog of programas) {
+    const yaCerrado = ['dominado', 'logrado', 'criterio_alcanzado'].includes(String(prog.estado || '').toLowerCase())
+    if (yaCerrado) {
       sugerencias.push({
         tipo: 'logro_celebrar',
         prioridad: 'baja',
-        titulo: `${childName}: ¡Excelente progreso! ${Math.round(prom)}% de logro`,
-        descripcion: `Las últimas ${sesiones4sem.length} sesiones muestran un promedio del ${Math.round(prom)}%. Momento ideal para subir la complejidad.`,
-        accion_concreta: 'Comunica este logro a la familia en el próximo mensaje. Considera incrementar la complejidad del objetivo o iniciar generalización.',
+        titulo: `${childName}: ${prog.titulo} consolidado`,
+        descripcion: `Este programa ya alcanzó el criterio de dominio en ${prog.area || 'su área'}.`,
+        accion_concreta: 'Compartí este logro con la familia. Considerá iniciar generalización en nuevos entornos o subir complejidad.',
         child_id: childId,
         child_name: childName,
-        semanas_detectado: 4,
-        dato_clave: `Promedio: ${Math.round(prom)}%`
+        semanas_detectado: 0,
+        dato_clave: 'Criterio alcanzado',
       })
     }
-    } // end if(logros.length > 0)
-  } // end if(sesiones4sem.length >= 3)
+  }
 
   // ── REGLA 5: Pocas sesiones recientes (baja frecuencia) ─────────────────
-  if (sesiones.length > 0) {
-    const ultimas4Semanas = sesiones.filter(s => s.fecha_sesion >= hace4semanas.toISOString().split('T')[0]).length
-    if (ultimas4Semanas < 4 && sesiones.length > 4) {
-      sugerencias.push({
-        tipo: 'carga_sesiones',
-        prioridad: 'media',
-        titulo: `${childName}: Baja frecuencia de sesiones`,
-        descripcion: `Solo ${ultimas4Semanas} sesiones en las últimas 4 semanas. La frecuencia recomendada es 2-4/semana.`,
-        accion_concreta: 'Revisar agenda con la familia. Alta frecuencia en fase inicial es crítica para el progreso.',
-        child_id: childId,
-        child_name: childName,
-        semanas_detectado: 4,
-        dato_clave: `${ultimas4Semanas} sesiones/4 semanas`
-      })
-    }
+  // Usa sesiones_datos_aba que es la fuente activa
+  const fechasUltimas4 = new Set(sesProg.filter((s: any) => s.fecha && s.fecha >= fechaCorte4).map((s: any) => s.fecha))
+  const sesionesUltimas4 = fechasUltimas4.size
+  const fechasTotalesSet = new Set(sesProg.map((s: any) => s.fecha).filter(Boolean))
+  if (fechasTotalesSet.size > 4 && sesionesUltimas4 < 4) {
+    sugerencias.push({
+      tipo: 'carga_sesiones',
+      prioridad: 'media',
+      titulo: `${childName}: Baja frecuencia de sesiones`,
+      descripcion: `Solo ${sesionesUltimas4} sesión${sesionesUltimas4 === 1 ? '' : 'es'} en las últimas 4 semanas. La frecuencia recomendada es 2-4/semana.`,
+      accion_concreta: 'Revisar agenda con la familia. Alta frecuencia en fase inicial es crítica para el progreso.',
+      child_id: childId,
+      child_name: childName,
+      semanas_detectado: 4,
+      dato_clave: `${sesionesUltimas4} sesiones/4 semanas`
+    })
   }
 
   return sugerencias
@@ -207,10 +264,14 @@ export async function GET(req: NextRequest) {
     for (let i = 0; i < pacientes.length; i += BATCH) {
       const batch = pacientes.slice(i, i + BATCH)
       const resultados = await Promise.all(
-        batch.map(p => analizarPaciente(p.id, p.name).catch(() => []))
+        batch.map(p => analizarPaciente(p.id, p.name).catch(err => {
+          console.warn(`[agente-sugerencias] falló análisis de ${p.name}:`, err?.message || err)
+          return []
+        }))
       )
       todasSugerencias.push(...resultados.flat())
     }
+    console.log(`[agente-sugerencias] ${todasSugerencias.length} alertas generadas para ${pacientes.length} pacientes`)
 
     // Ordenar: alta → media → baja, luego por tipo
     const orden = { alta: 0, media: 1, baja: 2 }
