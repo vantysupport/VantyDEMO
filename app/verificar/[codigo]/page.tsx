@@ -10,9 +10,11 @@ import Link from 'next/link'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function VerificarDocumento({ params }: { params: { codigo: string } }) {
-  const codigo = decodeURIComponent(params.codigo)
-  const doc = await obtenerDocumentoEmitido(codigo)
+// Next.js 16: params es un Promise — hay que awaitearlo
+export default async function VerificarDocumento({ params }: { params: Promise<{ codigo: string }> }) {
+  const { codigo: codigoRaw } = await params
+  const codigo = codigoRaw ? decodeURIComponent(codigoRaw) : ''
+  const doc = codigo ? await obtenerDocumentoEmitido(codigo) : null
 
   const esValido = !!doc && doc.valido
 
