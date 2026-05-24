@@ -97,8 +97,47 @@ export async function POST(req: NextRequest) {
     // Prompt según acción
     let promptBase = ''
 
+    // Sugerencia de protocolo según edad/diagnóstico
+    const edadNum = Number(edad)
+    let protocoloSugerido = 'ABLLS-R'
+    if (!isNaN(edadNum)) {
+      if (edadNum < 4) protocoloSugerido = 'VB-MAPP'  // 0-48 meses
+      else if (edadNum <= 12) protocoloSugerido = 'ABLLS-R'  // hasta 12 años
+      else protocoloSugerido = 'AFLS'  // adolescentes/adultos: habilidades funcionales
+    }
+
+    const protocolosGuia = `MARCO DE TRABAJO OBLIGATORIO (no inventes objetivos genéricos):
+
+📘 VB-MAPP (Verbal Behavior Milestones Assessment and Placement Program):
+   - 16 áreas operantes verbales: Mand, Tact, Echoic, Listener Responding, Visual Performance, etc.
+   - Niveles: 0-18m / 18-30m / 30-48m
+   - Usar para: niños 0-48 meses, especialmente con foco en conducta verbal.
+
+📗 ABLLS-R (Assessment of Basic Language and Learning Skills - Revised):
+   - 25 áreas (A-Z): A=Cooperación, B=Petición/Mand, C=Identificación visual, D=Imitación motora,
+     F=Repertorio receptivo, G=Mando, H=Tacto, K=Conversación, L=Habilidades sociales, etc.
+   - Cada ítem tiene código (ej: B12, H21, K6) y criterio observable.
+   - Usar para: niños 2-12 años con TEA/TDAH/dificultades cognitivas.
+
+📕 AFLS (Assessment of Functional Living Skills):
+   - 6 módulos: Basic Living, Home, Community, School, Vocational, Independent Living.
+   - Usar para: adolescentes/adultos o niños mayores con foco en autonomía funcional.
+
+PROTOCOLO RECOMENDADO PARA ESTE CASO (basado en edad/diagnóstico): ${protocoloSugerido}
+Podés combinar con otros si corresponde clínicamente.
+
+🚫 PROHIBIDO devolver objetivos genéricos como "Mejorar la atención" o "Desarrollar la comunicación".
+✅ OBLIGATORIO citar:
+   - Protocolo de origen (VB-MAPP / ABLLS-R / AFLS)
+   - Código exacto del ítem cuando aplique (ej: "ABLLS-R B12", "VB-MAPP Mand Nivel 2", "AFLS Basic 3.4")
+   - Conducta operacionalizada (qué se ve, en qué contexto, bajo qué SD)
+   - Criterio de dominio numérico (ej: 80% en 3 sesiones consecutivas con 2 terapeutas distintos)
+   - Procedimiento de enseñanza específico (DTT, NET, ITT, BST, video modeling, errorless teaching, etc.)`
+
     if (accion === 'evaluar_dominio') {
-      promptBase = `Evalúa si los siguientes programas ABA están listos para avanzar de fase o cerrar por dominio.
+      promptBase = `${protocolosGuia}
+
+TAREA: Evaluar si los siguientes programas están listos para avanzar de fase o cerrar por dominio, según los estándares de ABLLS-R / VB-MAPP / AFLS.
 
 PACIENTE: ${nombre} | Edad: ${edad} | Diagnóstico: ${diagnostico}
 
@@ -110,15 +149,17 @@ ${resumenSesiones.map(s => `- ${s.fecha}: objetivo="${s.objetivo}", logro=${s.lo
 
 Para cada programa, indica:
 1. ESTADO: listo_para_avanzar / mantener / necesita_ajuste
-2. ACCIÓN: qué hacer específicamente (avanzar fase, cerrar, ajustar criterio)
-3. JUSTIFICACIÓN: 1 oración clínica
-4. SIGUIENTE PASO: objetivo concreto del siguiente nivel
+2. ACCIÓN: qué hacer específicamente (avanzar al siguiente ítem del protocolo, cerrar el programa, ajustar criterio, agregar generalización con 2do terapeuta, etc.)
+3. JUSTIFICACIÓN: 1 oración clínica que cite el protocolo (ej: "Cumple criterio ABLLS-R B12; corresponde avanzar a B13 (petición con 2 palabras)")
+4. SIGUIENTE PASO: objetivo concreto del siguiente nivel del protocolo, con código exacto
 
-Responde en JSON con array "evaluaciones": [{programa, estado, accion, justificacion, siguiente_paso}]
+Responde en JSON con array "evaluaciones": [{programa, protocolo_referencia, codigo_item, estado, accion, justificacion, siguiente_paso}]
 SOLO JSON, sin markdown.`
 
     } else if (accion === 'ajustar') {
-      promptBase = `Ajusta los objetivos terapéuticos actuales basándote en los patrones detectados.
+      promptBase = `${protocolosGuia}
+
+TAREA: Ajustar los objetivos terapéuticos actuales aplicando técnicas ABA fundamentadas en ABLLS-R / VB-MAPP / AFLS.
 
 PACIENTE: ${nombre} | Edad: ${edad} | Diagnóstico: ${diagnostico}
 
@@ -128,17 +169,20 @@ ${patronesUrgentes.map((p: any) => `- [${p.tipo}] ${p.area}: ${p.descripcion}`).
 PROGRAMAS ACTIVOS:
 ${resumenProgramas.map(p => `- "${p.titulo}" (${p.area}): fase ${p.fase}, ${p.pct_dominio}% dominio`).join('\n')}
 
-Genera ajustes específicos para cada área problemática:
-1. QUÉ AJUSTAR: el objetivo o estrategia exacta a modificar
-2. CÓMO AJUSTAR: instrucción técnica ABA (aumentar/reducir ayudas, cambiar reforzador, dividir objetivo)
-3. META A 4 SEMANAS: resultado esperado tras el ajuste
+Genera ajustes específicos para cada área problemática. Para cada ajuste:
+1. PROTOCOLO_REFERENCIA: VB-MAPP / ABLLS-R / AFLS + código del ítem
+2. QUÉ AJUSTAR: el objetivo o estrategia exacta a modificar
+3. CÓMO AJUSTAR: técnica ABA específica del protocolo (ej: "aplicar errorless teaching con prompt graduado de física total → física parcial → gestual → independiente", "fragmentar B12 en 3 sub-pasos siguiendo task analysis", "introducir contraprueba con 2do terapeuta")
+4. META 4 SEMANAS: resultado observable y medible
 
-Responde en JSON: {"ajustes": [{area, que_ajustar, como_ajustar, meta_4_semanas}]}
+Responde en JSON: {"ajustes": [{area, protocolo_referencia, codigo_item, que_ajustar, como_ajustar, meta_4_semanas}]}
 SOLO JSON.`
 
     } else {
       // accion === 'generar' (default)
-      promptBase = `Genera nuevos objetivos terapéuticos ABA adaptados al nivel actual del paciente.
+      promptBase = `${protocolosGuia}
+
+TAREA: Generar 3-5 nuevos objetivos terapéuticos fundamentados en ABLLS-R / VB-MAPP / AFLS, apropiados para el nivel actual del paciente (zona de desarrollo próximo).
 
 PACIENTE: ${nombre} | Edad: ${edad} | Diagnóstico: ${diagnostico}
 
@@ -151,43 +195,57 @@ ${resumenSesiones.map(s => `- ${s.avances}`).filter(Boolean).join('\n') || 'Sin 
 PATRONES DETECTADOS:
 ${patrones.slice(0, 3).map((p: any) => `- [${p.tipo}] ${p.area}: ${p.descripcion}`).join('\n') || 'Sin patrones problemáticos'}
 
-Genera 3-5 objetivos nuevos o de siguiente nivel apropiados para este paciente:
-- Basados en el perfil ABA actual (zona de desarrollo proximal)
-- Ordenados de menor a mayor complejidad
-- Con criterio de dominio específico y metodología
+Para CADA objetivo nuevo devolvé:
+- titulo: conducta operacionalizada (ej: "Petición de 5 ítems preferidos usando 2 palabras")
+- protocolo_referencia: "ABLLS-R" / "VB-MAPP" / "AFLS"
+- codigo_item: código exacto del protocolo (ej: "B12", "Mand Nivel 2", "Basic Living 3.4") — NUNCA dejes vacío este campo
+- area: dominio funcional (Conducta Verbal / Habilidades académicas / Autonomía / Habilidades sociales / etc.)
+- descripcion: SD + R + consecuencia operacionalizadas
+- criterio_dominio: numérico observable (ej: "80% en 3 sesiones consecutivas con 2 terapeutas distintos en 2 entornos diferentes")
+- metodologia: técnica de enseñanza específica (DTT / NET / ITT / video modeling / BST / cadenas de tareas con prompt graduado / etc.)
+- justificacion_clinica: 1-2 oraciones citando el protocolo + el progreso actual
+- prioridad: "alta" | "media" | "baja"
 
-Responde en JSON: {"objetivos_sugeridos": [{titulo, area, descripcion, criterio_dominio, metodologia, justificacion_clinica, prioridad: "alta"|"media"|"baja"}]}
+🚫 NUNCA devuelvas títulos genéricos como "Mejorar atención" o "Desarrollar lenguaje". Tiene que estar anclado a un ítem específico del protocolo.
+
+Responde en JSON: {"objetivos_sugeridos": [{titulo, protocolo_referencia, codigo_item, area, descripcion, criterio_dominio, metodologia, justificacion_clinica, prioridad}]}
 SOLO JSON.`
     }
 
 
-    // ━━━ CEREBRO IA: buscar conocimiento clínico relevante ━━━
-
-
+    // ━━━ CEREBRO IA: buscar contenido específico de los protocolos ABA ━━━
     let _cerebroCtx = ''
-
-
     try {
-
-
-      const _query = 'objetivos ABA habilidades metas conducta'
-
-
+      // Querys orientadas a los 3 protocolos + las áreas activas del paciente
+      const areasPaciente = [...new Set(resumenProgramas.map(p => p.area).filter(Boolean))].join(' ')
+      const _query = `ABLLS-R VB-MAPP AFLS ${protocoloSugerido} ítems criterios dominio ${areasPaciente} ${diagnostico}`
       const _kb = await buildAIContext(undefined, undefined, undefined, _query)
-
-
       _cerebroCtx = _kb.knowledgeContext
-
-
     } catch { /* Cerebro IA no disponible */ }
-
-
     // ━━━ FIN CEREBRO IA ━━━
 
+    const promptConCerebro = _cerebroCtx
+      ? `${promptBase}\n\n📚 CONTENIDO DE LOS PROTOCOLOS (Cerebro IA — usá esto como fuente de verdad para los códigos y criterios):\n${_cerebroCtx}`
+      : promptBase
 
-    const respuestaRaw = await callGroqSimple('Eres un psicólogo conductual certificado BCBA especializado en diseño de programas ABA para niños con TEA y TDAH. Siempre respondes con JSON válido y sin texto adicional. Fundamenta tus respuestas con los libros del Cerebro IA cuando estén disponibles.',
-      promptBase,
-      { model: GROQ_MODELS.SMART, temperature: 0.3, maxTokens: 1500 }
+    const sistemaPrompt = `Eres un psicólogo conductual certificado BCBA especializado en diseño de programas ABA para niños con TEA y TDAH.
+
+TU CONOCIMIENTO BASE:
+- ABLLS-R (Partington, 2006): 25 áreas A-Z, ~544 ítems con códigos específicos.
+- VB-MAPP (Sundberg, 2008): 16 áreas operantes verbales, 3 niveles (0-18m, 18-30m, 30-48m).
+- AFLS (Partington & Mueller, 2012): 6 módulos de habilidades funcionales para la vida.
+
+REGLAS NO NEGOCIABLES:
+1. NUNCA generes objetivos genéricos. Siempre cita protocolo + código del ítem.
+2. Si no estás seguro del código exacto, usá uno PLAUSIBLE del protocolo correcto y marcalo claramente.
+3. Operacionalizá cada conducta con SD (antecedente), R (respuesta esperada), criterio numérico.
+4. Métodos de enseñanza deben ser técnicas ABA reconocidas (DTT, NET, ITT, errorless, prompt fading, etc.).
+5. Si el Cerebro IA tiene contenido de los protocolos, USALO como fuente prioritaria para los códigos.
+6. Respondés SIEMPRE con JSON válido sin texto adicional.`
+
+    const respuestaRaw = await callGroqSimple(sistemaPrompt,
+      promptConCerebro,
+      { model: GROQ_MODELS.SMART, temperature: 0.3, maxTokens: 2000 }
     )
 
     // Parsear JSON de la respuesta
