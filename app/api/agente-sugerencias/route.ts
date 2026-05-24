@@ -57,7 +57,7 @@ async function analizarPaciente(childId: string, childName: string): Promise<Sug
       .select('id, titulo, area, fase_actual, estado, criterio_dominio_pct, criterio_sesiones_consecutivas, objetivos_cp(id, descripcion, estado, numero_set)')
       .eq('child_id', childId),
     supabaseAdmin.from('sesiones_datos_aba')
-      .select('programa_id, fecha, porcentaje_exito')
+      .select('programa_id, fecha, porcentaje_exito, set')
       .eq('child_id', childId)
       .gte('fecha', fechaCorte8)
       .order('fecha', { ascending: true }),
@@ -137,28 +137,41 @@ async function analizarPaciente(childId: string, childName: string): Promise<Sug
     }
   }
 
-  // ── REGLA 2b: REGRESIÓN — caída ≥ 15% en sesiones recientes vs anteriores ─
+  // ── REGLA 2b: REGRESIÓN dentro del SET ACTIVO (no entre sets distintos) ──
+  // Si comparáramos sesiones de set 1 vs set 2, un cambio normal de set (donde el
+  // siguiente empieza más bajo por ser más difícil) se vería como "regresión" falsa.
+  // Por eso evaluamos SOLO las sesiones del set activo (el más reciente).
   for (const prog of programas) {
     const sesEsteProg = sesProg.filter((s: any) => s.programa_id === prog.id)
       .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
     if (sesEsteProg.length < 4) continue
-    const pcts = sesEsteProg.map((s: any) => Number(s.porcentaje_exito) || 0).filter((v: number) => v > 0)
+
+    // Identificar el SET ACTIVO = el último set con sesiones registradas
+    const setsConSes = Array.from(new Set(sesEsteProg.map((s: any) => s.set ?? '__none__')))
+    const setActivo = setsConSes[setsConSes.length - 1] ?? '__none__'
+    const sesSetActivo = sesEsteProg.filter((s: any) => (s.set ?? '__none__') === setActivo)
+
+    // Necesitamos al menos 4 sesiones DEL SET ACTIVO para comparar 2 mitades
+    if (sesSetActivo.length < 4) continue
+    const pcts = sesSetActivo.map((s: any) => Number(s.porcentaje_exito) || 0).filter((v: number) => v > 0)
     if (pcts.length < 4) continue
+
     const mitad = Math.floor(pcts.length / 2)
     const promViejo = pcts.slice(0, mitad).reduce((a, b) => a + b, 0) / mitad
     const promReciente = pcts.slice(-mitad).reduce((a, b) => a + b, 0) / mitad
     const delta = Math.round(promReciente - promViejo)
     if (delta <= -15) {
+      const setLabel = setActivo === '__none__' ? '' : ` (Set ${setActivo})`
       sugerencias.push({
         tipo: 'objetivo_estancado',
         prioridad: 'alta',
-        titulo: `${childName}: Regresión en "${prog.titulo}"`,
-        descripcion: `Caída de ${Math.round(promViejo)}% → ${Math.round(promReciente)}% (${delta}%) en las últimas sesiones del programa.`,
-        accion_concreta: 'Revisar reforzadores, SD y posibles factores ambientales. Considerá volver a la fase de adquisición o reforzar prompts.',
+        titulo: `${childName}: Regresión en "${prog.titulo}"${setLabel}`,
+        descripcion: `Caída de ${Math.round(promViejo)}% → ${Math.round(promReciente)}% (${delta}%) dentro del set activo${setLabel}. Comparado con las primeras sesiones del mismo set.`,
+        accion_concreta: 'Revisar reforzadores, SD y posibles factores ambientales del set actual. Considerá volver a la fase de adquisición o reforzar prompts antes de continuar.',
         child_id: childId,
         child_name: childName,
         semanas_detectado: 4,
-        dato_clave: `${Math.round(promViejo)}% → ${Math.round(promReciente)}%`
+        dato_clave: `${Math.round(promViejo)}% → ${Math.round(promReciente)}% en set activo`
       })
     }
   }
