@@ -957,69 +957,83 @@ const PATRON_CONFIG: Record<string, {
   dominio:       { label: 'Criterio de Dominio',    icon: '★', accent: '#3a68a0', lightBg: '#f3f7fc', lightBorder: '#a8c4e0', lightText: '#1e4878', darkBg: 'rgba(58,104,160,0.12)',  darkBorder: 'rgba(58,104,160,0.3)',  darkText: '#90b8d8' },
 }
 
-function PatronCard({ p, index }: { p: any; index: number; key?: any }) {
+function PatronCard({ p, index, defaultOpen = false }: { p: any; index: number; defaultOpen?: boolean; key?: any }) {
   const cfg = PATRON_CONFIG[p.tipo] || PATRON_CONFIG.estancamiento
   const delta = p.valor_actual - p.valor_anterior
-  // Detect dark mode via CSS variable (--card is dark in dark mode)
+  const [open, setOpen] = useState<boolean>(defaultOpen)
+  const deltaColor = delta < 0 ? '#c0524a' : delta > 0 ? '#2e7a56' : 'var(--text-muted)'
   return (
     <div className="rounded-xl border transition-all overflow-hidden">
       {/* Accent bar top */}
       <div className="h-0.5" style={{ background: cfg.accent }} />
-      <div className="p-5" style={{ background: 'var(--card)', borderTop: 'none' }}>
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-black flex-shrink-0"
-              style={{ background: `${cfg.accent}15`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
-              {cfg.icon}
-            </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded"
-                style={{ background: `${cfg.accent}12`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
-                {cfg.label}
-              </span>
-              <p className="font-bold text-sm mt-1.5 leading-tight" style={{ color: 'var(--text-primary)' }}>{p.area}</p>
-            </div>
-          </div>
-          <div className="text-right flex-shrink-0">
-            <p className="text-[10px] uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-muted)' }}>Confianza</p>
-            <div className="flex items-center gap-1.5 justify-end">
-              <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
-                <div className="h-full rounded-full" style={{ width: `${p.confianza}%`, background: cfg.accent }} />
+      <div style={{ background: 'var(--card)', borderTop: 'none' }}>
+        {/* Header colapsable: click para abrir/cerrar */}
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="w-full p-4 text-left transition-colors hover:opacity-95"
+          style={{ background: 'transparent' }}
+        >
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-black flex-shrink-0"
+                style={{ background: `${cfg.accent}15`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
+                {cfg.icon}
               </div>
-              <span className="text-sm font-black" style={{ color: cfg.accent }}>{p.confianza}%</span>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block"
+                  style={{ background: `${cfg.accent}12`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
+                  {cfg.label}
+                </span>
+                <p className="font-bold text-sm mt-1 leading-tight truncate" style={{ color: 'var(--text-primary)' }}>{p.area}</p>
+              </div>
+            </div>
+            {/* Resumen compacto: Δ + confianza + flecha */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <span className="text-xs font-black" style={{ color: deltaColor }}>
+                {delta >= 0 ? '+' : ''}{delta}%
+              </span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-10 h-1 rounded-full overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${p.confianza}%`, background: cfg.accent }} />
+                </div>
+                <span className="text-xs font-bold" style={{ color: cfg.accent }}>{Math.round(p.confianza)}%</span>
+              </div>
+              <span className="text-xs select-none" style={{ color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
             </div>
           </div>
-        </div>
+        </button>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {[
-            { label: 'Valor anterior', val: `${p.valor_anterior}%`, hi: false },
-            { label: 'Valor actual',   val: `${p.valor_actual}%`,   hi: true  },
-            { label: 'Δ Cambio',       val: `${delta >= 0 ? '+' : ''}${delta}%`, hi: false },
-          ].map(m => (
-            <div key={m.label} className="rounded-lg p-3 text-center"
-              style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
-              <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
-              <p className="text-base font-black" style={{ color: m.hi ? cfg.accent : 'var(--text-primary)' }}>{m.val}</p>
+        {/* Detalle expandible */}
+        {open && (
+          <div className="px-4 pb-4 pt-1 border-t" style={{ borderColor: 'var(--card-border)' }}>
+            {/* Metrics */}
+            <div className="grid grid-cols-3 gap-2 my-3">
+              {[
+                { label: 'Valor anterior', val: `${p.valor_anterior}%`, hi: false },
+                { label: 'Valor actual',   val: `${p.valor_actual}%`,   hi: true  },
+                { label: 'Δ Cambio',       val: `${delta >= 0 ? '+' : ''}${delta}%`, hi: false },
+              ].map(m => (
+                <div key={m.label} className="rounded-lg p-2.5 text-center"
+                  style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
+                  <p className="text-sm font-black" style={{ color: m.hi ? cfg.accent : 'var(--text-primary)' }}>{m.val}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Description */}
-        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>{p.descripcion}</p>
+            <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>{p.descripcion}</p>
 
-        {/* Action */}
-        <div className="rounded-lg px-4 py-3 flex items-start gap-2.5"
-          style={{ background: `${cfg.accent}08`, border: `1px solid ${cfg.accent}25` }}>
-          <span className="text-sm mt-0.5 flex-shrink-0" style={{ color: cfg.accent }}>💡</span>
-          <p className="text-xs leading-relaxed font-medium" style={{ color: 'var(--text-primary)' }}>{p.accion_sugerida}</p>
-        </div>
+            <div className="rounded-lg px-3 py-2.5 flex items-start gap-2"
+              style={{ background: `${cfg.accent}08`, border: `1px solid ${cfg.accent}25` }}>
+              <span className="text-sm mt-0.5 flex-shrink-0" style={{ color: cfg.accent }}>💡</span>
+              <p className="text-xs leading-relaxed font-medium" style={{ color: 'var(--text-primary)' }}>{p.accion_sugerida}</p>
+            </div>
 
-        <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
-          Basado en <strong style={{ color: 'var(--text-secondary)' }}>{p.sesiones_involucradas} sesiones</strong> · {p.semanas_detectado} sem. de monitoreo
-        </p>
+            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+              Basado en <strong style={{ color: 'var(--text-secondary)' }}>{p.sesiones_involucradas} sesiones</strong> · {p.semanas_detectado} sem. de monitoreo
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1297,42 +1311,42 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             </div>
           )}
 
-          {/* Patrones urgentes */}
+          {/* Patrones urgentes — primero abierto, resto colapsado */}
           {urgentes.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#c47070' }} />
                 <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#c0524a' }}>
                   Requieren Atención Inmediata ({urgentes.length})
                 </p>
               </div>
-              {urgentes.map((p: any, i: number) => <PatronCard key={i} p={p} index={i} />)}
+              {urgentes.map((p: any, i: number) => <PatronCard key={i} p={p} index={i} defaultOpen={i === 0} />)}
             </div>
           )}
 
-          {/* Patrones positivos */}
+          {/* Patrones positivos — todos colapsados (info celebratoria, no urgente) */}
           {positivos.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#5a9e7a' }} />
                 <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#2e7a56' }}>
                   Logros Clínicos ({positivos.length})
                 </p>
               </div>
-              {positivos.map((p: any, i: number) => <PatronCard key={i} p={p} index={i} />)}
+              {positivos.map((p: any, i: number) => <PatronCard key={i} p={p} index={i} defaultOpen={false} />)}
             </div>
           )}
 
-          {/* Otros */}
+          {/* Otros — todos colapsados */}
           {otros.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#7b6bbf' }} />
                 <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#6355a0' }}>
                   Otras Observaciones ({otros.length})
                 </p>
               </div>
-              {otros.map((p: any, i: number) => <PatronCard key={i} p={p} index={i} />)}
+              {otros.map((p: any, i: number) => <PatronCard key={i} p={p} index={i} defaultOpen={false} />)}
             </div>
           )}
 
