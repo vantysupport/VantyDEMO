@@ -1333,11 +1333,9 @@ async function generarInformeClinicoSanti(
   const fechasDistintas = new Set(sesProgArr.map((s: any) => s.fecha).filter(Boolean))
   const totalSesiones = fechasDistintas.size
 
-  // Helper: REPLICA EXACTA del UI (ProgramasABAView.programaCriterioAlcanzado).
-  // El endpoint /api/programas-aba que usa el UI NO devuelve el campo `set`,
-  // por lo que la función del UI termina evaluando las últimas N sesiones del programa
-  // ordenadas por fecha (ignorando sets). Hacemos lo mismo aquí para que coincida.
-  const programaCumpleCriterio = (programaId: string): boolean => {
+  // Helper: criterio alcanzado por desempeño (últimas N sesiones >= criterio).
+  // Replica el comportamiento del UI cuando no hay set explícito (ignora sets).
+  const programaCumpleCriterioAuto = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
     const crit = Number(p.criterio_dominio_pct) || 90
@@ -1349,11 +1347,26 @@ async function generarInformeClinicoSanti(
     return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
   }
 
-  // "Programas con criterio alcanzado" = estado dominado OR últimas N sesiones >= criterio
-  const programasDominados = programasConDatos.filter(p =>
-    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
-    programaCumpleCriterio(p.id)
-  )
+  // Helper: el especialista marcó al menos un SET como "dominado" en este programa.
+  // Cuenta como criterio alcanzado porque la decisión clínica del terapeuta es la fuente de verdad.
+  const programaTieneSetDominado = (programaId: string): boolean => {
+    return objetivosArr.some((o: any) => o.programa_id === programaId && o.estado === 'dominado')
+  }
+
+  // Unificado: criterio alcanzado si CUALQUIERA de estas condiciones se cumple:
+  //   1) Estado oficial del programa = dominado/logrado/criterio_alcanzado
+  //   2) Últimas N sesiones consecutivas >= criterio (cálculo automático)
+  //   3) Al menos un SET marcado manualmente como "dominado" por la especialista
+  const programaCumpleCriterio = (programaId: string): boolean => {
+    const p = progArr.find(x => x.id === programaId)
+    if (!p) return false
+    if (['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado)) return true
+    if (programaCumpleCriterioAuto(programaId)) return true
+    if (programaTieneSetDominado(programaId)) return true
+    return false
+  }
+
+  const programasDominados = programasConDatos.filter(p => programaCumpleCriterio(p.id))
   const programasIntervencion = programasConDatos.filter(p =>
     ['activo', 'intervencion', 'en_intervencion'].includes(p.estado) || (!p.estado && p.fase !== 'linea_base')
   )
@@ -1405,11 +1418,10 @@ async function generarInformeClinicoSanti(
       }
 
       // Fila HEADER del programa (objetivo general, sin set)
-      // MISMA lógica que el UI (criterio alcanzado en set activo)
+      // Considera: estado oficial, criterio automático, O sets dominados manualmente
       const cumpleCriterio = programaCumpleCriterio(p.id)
       const estadoProgr: any =
-        p.estado === 'dominado' || p.estado === 'logrado' || p.estado === 'criterio_alcanzado' ? 'logrado'
-        : cumpleCriterio ? 'logrado'
+        cumpleCriterio ? 'logrado'
         : (p.promedio_reciente != null && p.promedio_reciente >= 80) ? 'casi_logrado'
         : (p.promedio_reciente != null && p.promedio_reciente > 0) ? 'en_proceso'
         : 'no_iniciado'
@@ -1871,22 +1883,46 @@ async function generarReportePadresPro(
   const registroAbaArr = ((registroAbaRes as any)?.data || []) as any[]
   const entornoHogarArr = ((entornoHogarRes as any)?.data || []) as any[]
   const formResponsesArr = ((formResponsesRes as any)?.data || []) as any[]
+
+  // Cargar objetivos_cp (sets) para contar los que el especialista marcó como dominados manualmente
+  let objetivosArr: any[] = []
+  if ((programas || []).length > 0) {
+    try {
+      const progIds = (programas as any[]).map(p => p.id)
+      const { data } = await supabaseAdmin
+        .from('objetivos_cp')
+        .select('programa_id, estado')
+        .in('programa_id', progIds)
+      objetivosArr = data || []
+    } catch (e: any) {
+      console.warn('[padres-pro] objetivos_cp falló:', e?.message)
+    }
+  }
   const progArr = (programas || []) as any[]
   const sesProgArr = (sesionesProg || []) as any[]
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
 
-  // Helper: REPLICA EXACTA del UI. El UI evalúa las últimas N sesiones del
-  // programa ordenadas por fecha (su endpoint no retorna `set`, todo cae a '__none__').
+  // Helper: criterio alcanzado considerando 3 vías:
+  //   1) Estado oficial del programa (dominado/logrado/criterio_alcanzado)
+  //   2) Cálculo automático (últimas N sesiones >= criterio)
+  //   3) SET marcado manualmente como dominado por el especialista
   const programaCumpleCriterio = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
+    // 1) Estado oficial
+    if (['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado)) return true
+    // 2) Automático
     const crit = Number(p.criterio_dominio_pct) || 90
     const critSes = Number(p.criterio_sesiones_consecutivas) || 2
     const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
       .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
-    if (todas.length < critSes) return false
-    const ultimas = todas.slice(-critSes)
-    return ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)
+    if (todas.length >= critSes) {
+      const ultimas = todas.slice(-critSes)
+      if (ultimas.every((s: any) => (Number(s.porcentaje_exito) || 0) >= crit)) return true
+    }
+    // 3) SET marcado manualmente como dominado
+    if (objetivosArr.some((o: any) => o.programa_id === programaId && o.estado === 'dominado')) return true
+    return false
   }
 
   // Stats globales
@@ -1912,14 +1948,8 @@ async function generarReportePadresPro(
     }
   })
 
-  // Unificado con la lógica del UI (criterio alcanzado en set activo):
-  // Un programa cuenta como "criterio alcanzado" si:
-  //   1) Su estado oficial es dominado/logrado/criterio_alcanzado, O
-  //   2) Cumple criterio en el set activo (últimas N sesiones del set actual >= criterio)
-  const programasDominados = programasInfo.filter(p =>
-    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
-    p.cumple_criterio
-  )
+  // programasInfo.cumple_criterio ya considera las 3 vías (estado, automático, SET manual).
+  const programasDominados = programasInfo.filter(p => p.cumple_criterio)
   const promedioGlobal = avg(promediosTodos)
   // FIX: sesiones_datos_aba tiene 1 fila POR PROGRAMA por sesión.
   //      Para contar sesiones reales, deduplicar por fecha.
