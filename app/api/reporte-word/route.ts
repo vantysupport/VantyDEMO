@@ -1316,9 +1316,17 @@ async function generarInformeClinicoSanti(
   })
 
   // Stats globales
-  const totalSesiones = sesProgArr.length
+  // FIX: sesiones_datos_aba tiene 1 fila POR PROGRAMA por sesión.
+  //      Para contar sesiones reales, deduplicar por fecha.
+  const fechasDistintas = new Set(sesProgArr.map((s: any) => s.fecha).filter(Boolean))
+  const totalSesiones = fechasDistintas.size
+  // Unificado con la lógica de la tabla de habilidades (estadoProgr):
+  // Un programa está "dominado/logrado" si:
+  //   1) Su estado oficial es dominado/logrado/criterio_alcanzado, O
+  //   2) Su promedio reciente alcanza/supera el criterio de dominio definido
   const programasDominados = programasConDatos.filter(p =>
-    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado)
+    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
+    (p.promedio_reciente != null && p.criterio != null && p.promedio_reciente >= p.criterio)
   )
   const programasIntervencion = programasConDatos.filter(p =>
     ['activo', 'intervencion', 'en_intervencion'].includes(p.estado) || (!p.estado && p.fase !== 'linea_base')
@@ -1804,6 +1812,7 @@ async function generarReportePadresPro(
     if (promReciente != null) promediosTodos.push(promReciente)
     return {
       titulo: p.titulo, area: p.area || 'General', estado: p.estado || 'activo',
+      criterio: Number(p.criterio_dominio_pct) || 90,
       n_sesiones: pcts.length,
       promedio_reciente: promReciente,
       promedio_inicial: promInicial,
@@ -1811,11 +1820,19 @@ async function generarReportePadresPro(
     }
   })
 
+  // Unificado con la lógica de la tabla de habilidades:
+  // Un programa cuenta como "criterio alcanzado" si:
+  //   1) Su estado oficial es dominado/logrado/criterio_alcanzado, O
+  //   2) Su promedio reciente alcanza/supera el criterio de dominio
   const programasDominados = programasInfo.filter(p =>
-    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado)
+    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado) ||
+    (p.promedio_reciente != null && p.criterio != null && p.promedio_reciente >= p.criterio)
   )
   const promedioGlobal = avg(promediosTodos)
-  const totalSesiones = sesProgArr.length
+  // FIX: sesiones_datos_aba tiene 1 fila POR PROGRAMA por sesión.
+  //      Para contar sesiones reales, deduplicar por fecha.
+  const fechasDistintas = new Set(sesProgArr.map((s: any) => s.fecha).filter(Boolean))
+  const totalSesiones = fechasDistintas.size
 
   const fechasUnif = sesProgArr.map((s: any) => s.fecha).filter(Boolean).sort()
   const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -2012,13 +2029,16 @@ async function generarReporteComparativoPro(
   const sesProgArr = (sesionesProg || []) as any[]
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
 
-  // Unificar todas las sesiones en lista cronológica
+  // Unificar todas las sesiones en lista cronológica (datapoints = filas con %)
   const sesionesUnif = sesProgArr
     .map((s: any) => ({ fecha: s.fecha, porcentaje: Number(s.porcentaje_exito) || 0 }))
     .filter(s => s.porcentaje > 0 && s.fecha)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
 
-  const total = sesionesUnif.length
+  const total = sesionesUnif.length // # de datapoints (filas) para análisis estadístico
+  // FIX: sesiones_datos_aba tiene 1 fila POR PROGRAMA por sesión.
+  //      Para mostrar al usuario "Total de sesiones" hay que contar fechas únicas.
+  const totalSesionesReales = new Set(sesionesUnif.map(s => s.fecha)).size
   const logros = sesionesUnif.map(s => s.porcentaje)
 
   // Período 1 (primera mitad) vs Período 2 (segunda mitad)
@@ -2111,8 +2131,8 @@ async function generarReporteComparativoPro(
       `Redactá el "ANÁLISIS COMPARATIVO DE PERÍODOS" para ${nombreCap} (${edadTexto}, ${diagnostico}):
 
 Datos:
-- Período 1 (${p1.length} sesiones): promedio ${avg1}%
-- Período 2 (${p2.length} sesiones): promedio ${avg2}%
+- Período 1 (${p1.length} registros): promedio ${avg1}%
+- Período 2 (${p2.length} registros): promedio ${avg2}%
 - Diferencia: ${diferencia > 0 ? '+' : ''}${diferencia}% (${tendencia})
 - Distribución por fases del tratamiento: Fase 1 ${q1}% · Fase 2 ${q2}% · Fase 3 ${q3}% · Fase 4 ${q4}%
 - Programas trabajados: ${progArr.length} (${progArr.filter((p: any) => ['dominado','logrado','criterio_alcanzado'].includes(p.estado)).length} con criterio alcanzado)
@@ -2194,7 +2214,7 @@ Datos:
       ['Diagnóstico', diagnostico],
       ['Período analizado', periodoTexto],
       ['Semanas de tratamiento', String(semanas)],
-      ['Total de sesiones', String(total)],
+      ['Total de sesiones', String(totalSesionesReales)],
       ['Tendencia clínica', tendencia],
       ['Documento N°', codigoDoc],
     ]),
@@ -2202,8 +2222,8 @@ Datos:
     // II. Comparación P1 vs P2
     tpl.tituloSeccion('II.  Comparación Directa de Períodos'),
     tpl.tablaDatosGenerales([
-      [`Período 1 (${p1.length} sesiones)`, `${avg1}% promedio`],
-      [`Período 2 (${p2.length} sesiones)`, `${avg2}% promedio`],
+      [`Período 1 (${p1.length} registros)`, `${avg1}% promedio`],
+      [`Período 2 (${p2.length} registros)`, `${avg2}% promedio`],
       ['Variación', `${diferencia > 0 ? '+' : ''}${diferencia}%`],
       ['Lectura clínica', tendencia],
     ]),
@@ -2300,7 +2320,7 @@ Datos:
   await registrarDocumentoEmitido({
     codigoDoc, childId, tipo: 'reporte_comparativo',
     pacienteNombre: nombreCap, pacienteIniciales: iniciales,
-    fileName, metadata: { periodo: periodoTexto, total_sesiones: total, tendencia, pred30, pred90, pred180 },
+    fileName, metadata: { periodo: periodoTexto, total_sesiones: totalSesionesReales, datapoints: total, tendencia, pred30, pred90, pred180 },
   })
 
   return { doc, fileName }
