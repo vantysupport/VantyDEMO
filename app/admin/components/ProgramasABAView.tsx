@@ -116,7 +116,6 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   }
   const [filtroArea, setFiltroArea] = useState<string>('todos')
   const [busqueda, setBusqueda] = useState<string>('')
-  const [verLogrados, setVerLogrados] = useState<boolean>(false)
   const [customAreaLabels, setCustomAreaLabels] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('aba_custom_area_labels') || '{}') } catch { return {} }
   })
@@ -212,10 +211,13 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
     return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   }
 
-  const programasActivos = programasFiltrados.filter((p: any) => p.estado !== 'dominado')
-  const programasLogrados = programasFiltrados.filter((p: any) => p.estado === 'dominado')
-  const programasCriterioAuto = programasActivos.filter((p: any) => programaCriterioAlcanzado(p))
-  const programasEnCurso = programasActivos.filter((p: any) => !programaCriterioAlcanzado(p))
+  // Un programa cuenta como "Criterio alcanzado" si:
+  //   - su estado oficial es 'dominado', O
+  //   - cumple la lógica automática (sesiones o sets manuales)
+  // "En curso" = el resto.
+  const esCriterioAlcanzado = (p: any) => p.estado === 'dominado' || programaCriterioAlcanzado(p)
+  const programasCriterioAuto = programasFiltrados.filter(esCriterioAlcanzado)
+  const programasEnCurso = programasFiltrados.filter((p: any) => !esCriterioAlcanzado(p))
 
   const stats = {
     activos: programas.filter(p => p.estado === 'activo').length,
@@ -462,7 +464,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
                 <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
               </div>
               <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
-                El set activo cumple el criterio. El terapeuta decide si marcar el programa como logrado.
+                Estos programas cumplen el criterio de dominio (por sesiones consecutivas o por decisión del especialista).
               </p>
               <div className="space-y-4 opacity-75">
                 {programasCriterioAuto.map((prog: any) => (
@@ -499,54 +501,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             </div>
           )}
 
-          {/* Programas logrados */}
-          {programasLogrados.length > 0 && (
-            <div className="space-y-3">
-              <button onClick={() => setVerLogrados(v => !v)} className="w-full flex items-center gap-2">
-                <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
-                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5"
-                  style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
-                  🏆 Criterio alcanzado · {programasLogrados.length}
-                  <span className="text-[10px]">{verLogrados ? '▲' : '▼'}</span>
-                </span>
-                <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
-              </button>
-              {verLogrados && (
-                <div className="space-y-4 opacity-50">
-                  {programasLogrados.map((prog: any) => (
-            <ProgramaCard
-              key={prog.id}
-              programa={prog}
-              loadingModal={loadingModal}
-              onRegistrarSesion={async () => {
-                setLoadingModal(true)
-                try {
-                  const res = await fetch(`/api/programas-aba?child_id=${childId}&t=${Date.now()}`, { cache: 'no-store' })
-                  const json = await res.json()
-                  const fresh = (json.data || []).find((p: any) => p.id === prog.id) || prog
-                  setProgramaActivo(fresh)
-                } catch {
-                  setProgramaActivo(prog)
-                } finally {
-                  setLoadingModal(false)
-                  setShowRegistrarSesion(true)
-                }
-              }}
-              onReload={loadProgramas}
-              onDeleteSesion={(sesionId: string) => {
-                setProgramas(prev => prev.map(p => p.id !== prog.id ? p : {
-                  ...p,
-                  sesiones_datos_aba: (p.sesiones_datos_aba || []).filter((s: any) => s.id !== sesionId)
-                }))
-              }}
-              tipoGrafico={tiposGrafico[prog.id] || 'lineas'}
-              onChangeTipoGrafico={(tipo: TipoGrafico) => setTipoGrafico(prog.id, tipo)}
-            />
-          ))}
-                </div>
-              )}
-            </div>
-          )}
+          {/* Sección "Programas logrados" fusionada en "Criterio alcanzado" arriba */}
 
         </div>
       )}
