@@ -654,17 +654,17 @@ export default function ParentDashboard() {
                 </button>
             </div>
 
-            <main className={`flex-1 ${activeView === 'chat' ? 'overflow-y-auto p-0 lg:p-4 lg:p-6 pb-16 lg:pb-6' : activeView === 'chat-familias' ? 'overflow-hidden p-3 lg:p-5' : 'overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-20 lg:pb-6'}`} style={{ minHeight: 0, background: "var(--background)" }}>
-                <div className="w-full min-h-full">
+            <main className={`flex-1 ${activeView === 'chat' || activeView === 'chat-familias' ? 'overflow-hidden p-0 lg:p-4 lg:p-6 pb-0 lg:pb-6 flex flex-col' : 'overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-20 lg:pb-6'}`} style={{ minHeight: 0, background: "var(--background)" }}>
+                <div className={`w-full ${activeView === 'chat' || activeView === 'chat-familias' ? 'flex-1 flex flex-col min-h-0' : 'min-h-full'}`}>
                     {activeView === 'home' && (
-                        <HomeViewInnovative 
-                            child={selectedChild} 
-                            onChangeView={setActiveView} 
+                        <HomeViewInnovative
+                            child={selectedChild}
+                            onChangeView={setActiveView}
                             refreshTrigger={refreshTrigger}
-                            onCancelAppointment={handleCancelAppointment} 
+                            onCancelAppointment={handleCancelAppointment}
                         />
                     )}
-                    
+
                     {(activeView === 'agenda' || activeView === 'miscitas') && (
                         <div className="animate-fade-in">
                           <MisCitasView
@@ -677,9 +677,7 @@ export default function ParentDashboard() {
                     )}
 
                     {activeView === 'chat' && (
-                          <div className="lg:rounded-3xl lg:shadow-xl lg:border lg:border-slate-200/60 overflow-hidden flex flex-col animate-fade-in"
-                            style={{ height: 'calc(100svh - 144px)' }}
-                            >
+                          <div className="lg:rounded-3xl lg:shadow-xl lg:border lg:border-slate-200/60 overflow-hidden flex flex-col flex-1 min-h-0 animate-fade-in chat-mobile-fix">
                             <ChatInterface childId={selectedChild?.id} childName={selectedChild?.name} onNavigateToStore={() => setActiveView('tienda')} parentId={profile?.id} />
                         </div>
                     )}
@@ -687,7 +685,7 @@ export default function ParentDashboard() {
                     {(activeView === 'misformularios' || activeView === 'tienda' || activeView === 'documentos') && <ParentFormsView profile={profile} selectedChild={selectedChild} onFormsLoaded={(count: number) => setPendingFormsCount(count)} initialTab={activeView === 'tienda' ? 'store' : activeView === 'documentos' ? 'documentos' : 'forms'} />}
                     {activeView === 'programas' && selectedChild && <ProgramasABAView childId={selectedChild.id} childName={selectedChild.name} />}
                     {activeView === 'chat-familias' && selectedChild && (
-                      <div className="overflow-hidden flex flex-col rounded-2xl lg:rounded-3xl" style={{ height: "calc(100svh - 200px)", border: "1px solid var(--card-border)", background: "var(--card)" }}>
+                      <div className="overflow-hidden flex flex-col flex-1 min-h-0 rounded-none lg:rounded-3xl chat-mobile-fix" style={{ border: "1px solid var(--card-border)", background: "var(--card)" }}>
                         <ChatFamilias childId={selectedChild.id} childName={selectedChild.name} profile={profile} />
                       </div>
                     )}
