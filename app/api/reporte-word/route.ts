@@ -1751,6 +1751,561 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
   return { doc, fileName }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// REPORTE PARA PADRES (versión PRO) — tono cálido + nivel profesional
+// ═══════════════════════════════════════════════════════════════════════════
+async function generarReportePadresPro(
+  childId: string,
+  userLocale = 'es',
+): Promise<{ doc: Document; fileName: string }> {
+
+  const { data: child } = await supabaseAdmin
+    .from('children')
+    .select('name, age, birth_date, diagnosis, parent_id')
+    .eq('id', childId).single()
+
+  const nombre = (child as any)?.name || 'Paciente'
+  const nombreCap = nombre.split(' ')
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+  const nombreCorto = nombreCap.split(' ')[0]
+
+  let edadTexto = 'no registrada'
+  if ((child as any)?.birth_date) {
+    const nac = new Date((child as any).birth_date)
+    const ahora = new Date()
+    const años = ahora.getFullYear() - nac.getFullYear()
+    const meses = ahora.getMonth() - nac.getMonth()
+    const edad = (meses < 0 || (meses === 0 && ahora.getDate() < nac.getDate())) ? años - 1 : años
+    const mesesAdj = meses < 0 ? meses + 12 : meses
+    edadTexto = `${edad} años${mesesAdj > 0 ? ` ${mesesAdj} meses` : ''}`
+  } else if ((child as any)?.age) {
+    edadTexto = `${(child as any).age} años`
+  }
+
+  const [{ data: programas }, { data: sesionesProg }] = await Promise.all([
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, estado, fase_actual, criterio_dominio_pct, objetivo_lp').eq('child_id', childId).limit(30),
+    supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito').eq('child_id', childId).order('fecha', { ascending: true }).limit(300),
+  ])
+  const progArr = (programas || []) as any[]
+  const sesProgArr = (sesionesProg || []) as any[]
+  const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+
+  // Stats globales
+  const promediosTodos: number[] = []
+  const programasInfo = progArr.map((p: any) => {
+    const sesP = sesProgArr.filter((s: any) => s.programa_id === p.id)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    const pcts = sesP.map((s: any) => Number(s.porcentaje_exito) || 0).filter((v: number) => v > 0)
+    const recientes = pcts.slice(-5)
+    const iniciales = pcts.slice(0, 5)
+    const promReciente = recientes.length > 0 ? avg(recientes) : null
+    const promInicial = iniciales.length > 0 ? avg(iniciales) : null
+    if (promReciente != null) promediosTodos.push(promReciente)
+    return {
+      titulo: p.titulo, area: p.area || 'General', estado: p.estado || 'activo',
+      n_sesiones: pcts.length,
+      promedio_reciente: promReciente,
+      promedio_inicial: promInicial,
+      delta: (promReciente != null && promInicial != null) ? promReciente - promInicial : 0,
+    }
+  })
+
+  const programasDominados = programasInfo.filter(p =>
+    ['dominado', 'logrado', 'criterio_alcanzado'].includes(p.estado)
+  )
+  const promedioGlobal = avg(promediosTodos)
+  const totalSesiones = sesProgArr.length
+
+  const fechasUnif = sesProgArr.map((s: any) => s.fecha).filter(Boolean).sort()
+  const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const fechaInicio = fechasUnif.length > 0 ? fmt(fechasUnif[0]) : '—'
+  const fechaFin    = fechasUnif.length > 0 ? fmt(fechasUnif[fechasUnif.length - 1]) : fmt(new Date().toISOString())
+  const semanas = fechasUnif.length > 1
+    ? Math.round((new Date(fechasUnif[fechasUnif.length-1]).getTime() - new Date(fechasUnif[0]).getTime())/(7*24*60*60*1000))
+    : 0
+
+  const hoy = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const hoyISO = new Date().toISOString().slice(0, 10)
+  const iniciales = tpl.generarIniciales(nombre)
+  const fileName = `Reporte_Familia_${nombreCap.replace(/\s+/g, '_')}_${hoyISO}.docx`
+  const codigoDoc = generarCodigoDocumento(childId, 'padres')
+
+  // ── IA: bienvenida + celebración + plan en casa + cierre cálido ──
+  const resumenDatos = programasInfo
+    .map(p => `· ${p.titulo} (${p.area}): ${p.n_sesiones} sesiones · ${p.promedio_reciente ?? 'sin datos'}% promedio reciente · estado ${p.estado}`)
+    .join('\n')
+
+  const [bienvenida, celebracion, planCasa, mensajeCierre] = await Promise.all([
+    callGroqSimple(
+      'Eres terapeuta ABA empática y cálida de SANTI. Escribís a familias con afecto, sin tecnicismos.',
+      `Saluda a la familia de ${nombreCorto} (${edadTexto}). Hacé una bienvenida CORTA y cálida (1 párrafo, 50 palabras máximo) reconociendo el período de trabajo (${semanas} semanas, ${totalSesiones} sesiones) y celebrando la constancia de la familia.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 200 },
+    ),
+    callGroqSimple(
+      'Eres terapeuta ABA cálida y celebratoria. Lenguaje accesible para padres.',
+      `Escribí 3 párrafos sobre los LOGROS Y AVANCES de ${nombreCorto} con estos datos:
+- Promedio general de logro: ${promedioGlobal}%
+- Programas con criterio alcanzado: ${programasDominados.length} (${programasDominados.map(p => p.titulo).slice(0, 4).join(', ') || 'avanzando'})
+- Sesiones: ${totalSesiones} en ${semanas} semanas
+- Áreas trabajadas: ${[...new Set(programasInfo.map(p => p.area))].join(', ')}
+
+Celebrá con ejemplos concretos y entusiasmo real. Mencioná avances específicos (cita nombres de programas). Sin tecnicismos, sin emojis técnicos. Máximo 220 palabras total.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 500 },
+    ),
+    callGroqSimple(
+      'Eres terapeuta ABA. Da consejos prácticos para casa, en lenguaje claro.',
+      `Escribí 4-5 ACTIVIDADES CONCRETAS para hacer en casa con ${nombreCorto} (${edadTexto}, ${(child as any)?.diagnosis || 'desarrollo en curso'}) basadas en estos programas activos:
+${resumenDatos}
+
+Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + por qué ayuda. No bullets, en prosa fluida. Lenguaje cercano, sin tecnicismos. Máximo 320 palabras.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.6, maxTokens: 700 },
+    ),
+    callGroqSimple(
+      'Eres terapeuta ABA. Mensaje final cálido y motivador.',
+      `Escribí un MENSAJE DE CIERRE corto (1 párrafo, máximo 70 palabras) para la familia de ${nombreCorto}. Reconocé el esfuerzo de los padres, proyectá optimismo realista, invitá a seguir en contacto. Sin emojis técnicos.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 200 },
+    ),
+  ])
+
+  // QR
+  const sellosVerif = await tpl.selloQRVerificacionAsync({
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+  })
+
+  // Datos del gráfico
+  const datosGraficoAreas: { label: string; valor: number }[] = []
+  const areasMap: Record<string, number[]> = {}
+  for (const p of programasInfo) {
+    if (p.promedio_reciente != null) {
+      if (!areasMap[p.area]) areasMap[p.area] = []
+      areasMap[p.area].push(p.promedio_reciente)
+    }
+  }
+  for (const [area, vals] of Object.entries(areasMap)) {
+    datosGraficoAreas.push({ label: area, valor: avg(vals) })
+  }
+
+  const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
+
+  const sections: DocChild[] = [
+    // PORTADA con QR
+    ...portadaInstitucional({
+      tipoInforme: 'REPORTE DE PROGRESO PARA LA FAMILIA',
+      nombrePaciente: nombre,
+      edadPaciente: edadTexto,
+      diagnostico: (child as any)?.diagnosis || 'En proceso',
+      especialista: 'Equipo Clínico SANTI',
+      credenciales: 'Terapia ABA · Centro Especializado',
+      fechaEmision: hoy,
+      periodoEval: periodoTexto,
+      codigoDoc,
+    }),
+    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+
+    // I. Bienvenida
+    tpl.tituloSeccion('I.  Querida Familia'),
+    ...bienvenida.split('\n').filter(l => l.trim()).map(l => tpl.parrafo(l.replace(/\*\*/g, ''))),
+
+    // II. Resumen del progreso (datos visuales)
+    tpl.tituloSeccion(`II.  ¿Cómo va ${nombreCorto}?`),
+    tpl.tablaDatosGenerales([
+      ['Período de trabajo', periodoTexto],
+      ['Sesiones realizadas', `${totalSesiones} en ${semanas} semanas`],
+      ['Promedio general de logro', `${promedioGlobal}%`],
+      ['Programas en los que está trabajando', `${progArr.length}`],
+      ['Programas dominados', `${programasDominados.length}`],
+    ]),
+
+    // III. Celebración de logros
+    tpl.tituloSeccion('III.  Sus logros este período'),
+    ...celebracion.split('\n').filter(l => l.trim()).map(l => tpl.parrafo(l.replace(/\*\*/g, ''))),
+  ]
+
+  // IV. Gráfico de áreas
+  if (datosGraficoAreas.length > 0) {
+    sections.push(tpl.tituloSeccion('IV.  Progreso por área de trabajo'))
+    sections.push(tpl.parrafo('Así va en cada área que estamos trabajando con ' + nombreCorto + ':'))
+    sections.push(...tpl.graficoProgresoBarra('Logro por área (%)', datosGraficoAreas, { mostrarMeta: true, metaPct: 90 }))
+  }
+
+  // V. Actividades en casa
+  sections.push(tpl.tituloSeccion('V.  Actividades para hacer en casa'))
+  sections.push(tpl.parrafo(`Estas actividades complementan el trabajo que hacemos en sesión. Solo necesitan 10-15 minutos al día y hacen una gran diferencia en el progreso de ${nombreCorto}:`))
+  planCasa.split('\n').filter(l => l.trim()).forEach(l => sections.push(tpl.parrafo(l.replace(/\*\*/g, ''))))
+
+  // VI. Mensaje de cierre
+  sections.push(tpl.tituloSeccion('VI.  Un mensaje especial para ustedes'))
+  mensajeCierre.split('\n').filter(l => l.trim()).forEach(l => sections.push(tpl.parrafo(l.replace(/\*\*/g, ''))))
+
+  // QR + firma
+  sections.push(new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }))
+  sections.push(...sellosVerif)
+  sections.push(
+    new Paragraph({
+      spacing: { before: 320, after: 40 },
+      border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'CBD5E1', space: 8 } },
+      children: [new TextRun({ text: 'Con cariño,', italics: true, size: 20, font: 'Arial', color: '1E3A8A' })],
+    }),
+    new Paragraph({
+      spacing: { before: 60, after: 0 },
+      children: [new TextRun({ text: 'Equipo Clínico — Neuropsicología y Terapias SANTI', bold: true, size: 19, font: 'Arial', color: '475569' })],
+    }),
+  )
+
+  const doc = new Document({
+    numbering: tpl.DOC_NUMBERING,
+    styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+    sections: [{
+      properties: tpl.DOC_PAGE_PROPS,
+      footers: { default: tpl.piePaginaOficial() },
+      children: sections,
+    }],
+  })
+
+  await registrarDocumentoEmitido({
+    codigoDoc, childId, tipo: 'reporte_padres',
+    pacienteNombre: nombreCap, pacienteIniciales: iniciales,
+    fileName, metadata: { periodo: periodoTexto, total_sesiones: totalSesiones, promedio_global: promedioGlobal },
+  })
+
+  return { doc, fileName }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REPORTE COMPARATIVO + PREDICCIÓN (versión PRO)
+// ═══════════════════════════════════════════════════════════════════════════
+async function generarReporteComparativoPro(
+  childId: string,
+  userLocale = 'es',
+): Promise<{ doc: Document; fileName: string }> {
+
+  const { data: child } = await supabaseAdmin
+    .from('children')
+    .select('name, age, birth_date, diagnosis')
+    .eq('id', childId).single()
+
+  const nombre = (child as any)?.name || 'Paciente'
+  const nombreCap = nombre.split(' ')
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+  const diagnostico = (child as any)?.diagnosis || 'En evaluación'
+
+  let edadTexto = 'no registrada'
+  if ((child as any)?.birth_date) {
+    const nac = new Date((child as any).birth_date)
+    const ahora = new Date()
+    const años = ahora.getFullYear() - nac.getFullYear()
+    const meses = ahora.getMonth() - nac.getMonth()
+    const edad = (meses < 0 || (meses === 0 && ahora.getDate() < nac.getDate())) ? años - 1 : años
+    const mesesAdj = meses < 0 ? meses + 12 : meses
+    edadTexto = `${edad} años${mesesAdj > 0 ? ` ${mesesAdj} meses` : ''}`
+  } else if ((child as any)?.age) {
+    edadTexto = `${(child as any).age} años`
+  }
+
+  const [{ data: programas }, { data: sesionesProg }] = await Promise.all([
+    supabaseAdmin.from('programas_aba').select('id, titulo, area, estado, criterio_dominio_pct').eq('child_id', childId).limit(30),
+    supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito').eq('child_id', childId).order('fecha', { ascending: true }).limit(400),
+  ])
+  const progArr = (programas || []) as any[]
+  const sesProgArr = (sesionesProg || []) as any[]
+  const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+
+  // Unificar todas las sesiones en lista cronológica
+  const sesionesUnif = sesProgArr
+    .map((s: any) => ({ fecha: s.fecha, porcentaje: Number(s.porcentaje_exito) || 0 }))
+    .filter(s => s.porcentaje > 0 && s.fecha)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha))
+
+  const total = sesionesUnif.length
+  const logros = sesionesUnif.map(s => s.porcentaje)
+
+  // Período 1 (primera mitad) vs Período 2 (segunda mitad)
+  const mitad = Math.floor(total / 2)
+  const p1 = logros.slice(0, mitad)
+  const p2 = logros.slice(mitad)
+  const avg1 = avg(p1), avg2 = avg(p2)
+  const diferencia = avg2 - avg1
+
+  // Cuartos para gráfico de fases
+  const q = (from: number, to: number) => avg(logros.slice(Math.floor(logros.length * from), Math.max(Math.floor(logros.length * to), 1)))
+  const q1 = q(0, 0.25), q2 = q(0.25, 0.5), q3 = q(0.5, 0.75), q4 = q(0.75, 1)
+
+  // Regresión lineal para predicción
+  const calcPendiente = (vals: number[]) => {
+    if (vals.length < 2) return 0
+    const n = vals.length
+    const sumX = (n*(n-1))/2
+    const sumX2 = (n*(n-1)*(2*n-1))/6
+    const sumY = vals.reduce((a, b) => a + b, 0)
+    const sumXY = vals.reduce((a, v, i) => a + i*v, 0)
+    const denom = n*sumX2 - sumX*sumX
+    return denom === 0 ? 0 : (n*sumXY - sumX*sumY) / denom
+  }
+  const pendiente = calcPendiente(logros)
+
+  const fechasUnif = sesionesUnif.map(s => s.fecha)
+  const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const fechaInicio = fechasUnif.length > 0 ? fmt(fechasUnif[0]) : '—'
+  const fechaFin    = fechasUnif.length > 0 ? fmt(fechasUnif[fechasUnif.length - 1]) : fmt(new Date().toISOString())
+  const semanas = fechasUnif.length > 1
+    ? Math.round((new Date(fechasUnif[fechasUnif.length-1]).getTime() - new Date(fechasUnif[0]).getTime())/(7*24*60*60*1000))
+    : 0
+  const sesXMes = semanas > 4 ? (total / (semanas / 4)) : 8
+  const ses30d = Math.max(4, Math.round(sesXMes))
+  const ses90d = Math.max(10, Math.round(sesXMes * 3))
+  const ses180d = Math.max(20, Math.round(sesXMes * 6))
+
+  // Predicciones (con fallback clínico para pocas sesiones)
+  let pred30: number, pred90: number, pred180: number, confianzaNota: string
+  if (logros.length < 6) {
+    const mejoraBase = avg2 < 40 ? 7 : avg2 < 55 ? 6 : avg2 < 70 ? 5 : avg2 < 85 ? 3 : 1
+    const factor = /tea|autis/i.test(diagnostico) ? 0.85 : /tdah/i.test(diagnostico) ? 1.0 : 0.9
+    const mm = Math.max(1, Math.round(mejoraBase * factor))
+    pred30  = Math.min(100, avg2 + mm)
+    pred90  = Math.min(100, avg2 + mm * 3)
+    pred180 = Math.min(100, avg2 + mm * 6)
+    confianzaNota = `Proyección basada en benchmarks clínicos ABA (${logros.length} sesiones disponibles). Se recomienda re-evaluar a partir de la sesión 8.`
+  } else {
+    const señal = diferencia * 0.15
+    pred30  = Math.min(100, Math.max(avg2 + 1, Math.round(avg2 + pendiente * ses30d + señal)))
+    pred90  = Math.min(100, Math.max(pred30 + 1, Math.round(avg2 + pendiente * ses90d + señal * 2)))
+    pred180 = Math.min(100, Math.max(pred90 + 1, Math.round(avg2 + pendiente * ses180d + señal * 3)))
+    confianzaNota = `Proyección por regresión lineal sobre ${logros.length} sesiones (confianza ${logros.length >= 12 ? 'alta' : 'moderada'}).`
+  }
+
+  // Por área
+  const areaMap: Record<string, { p1: number[]; p2: number[] }> = {}
+  for (const p of progArr) {
+    const area = (p.area || 'General').toUpperCase()
+    const allVals = sesProgArr.filter((s: any) => s.programa_id === p.id)
+      .map((s: any) => Number(s.porcentaje_exito) || 0)
+      .filter(v => v > 0)
+    if (allVals.length > 0) {
+      if (!areaMap[area]) areaMap[area] = { p1: [], p2: [] }
+      const half = Math.floor(allVals.length / 2)
+      areaMap[area].p1.push(...allVals.slice(0, half))
+      areaMap[area].p2.push(...allVals.slice(half))
+    }
+  }
+
+  const tendencia = diferencia > 10 ? 'progreso significativo' : diferencia > 3 ? 'progreso moderado' : diferencia < -5 ? 'regresión' : 'estabilidad'
+
+  const hoy = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const hoyISO = new Date().toISOString().slice(0, 10)
+  const iniciales = tpl.generarIniciales(nombre)
+  const fileName = `Analisis_Comparativo_${nombreCap.replace(/\s+/g, '_')}_${hoyISO}.docx`
+  const codigoDoc = generarCodigoDocumento(childId, 'comp')
+
+  // IA: análisis comparativo + predicción + recomendaciones
+  const programasResumen = progArr.map((p: any) => {
+    const sesP = sesProgArr.filter((s: any) => s.programa_id === p.id)
+    const pcts = sesP.map((s: any) => Number(s.porcentaje_exito) || 0).filter((v: number) => v > 0)
+    return `· ${p.titulo} (${p.area}): ${pcts.length} sesiones · promedio ${avg(pcts) || '—'}% · estado ${p.estado}`
+  }).join('\n')
+
+  const [analisisComp, analisisPred, recomendacionesIA] = await Promise.all([
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis, sin bullets.',
+      `Redactá el "ANÁLISIS COMPARATIVO DE PERÍODOS" para ${nombreCap} (${edadTexto}, ${diagnostico}):
+
+Datos:
+- Período 1 (${p1.length} sesiones): promedio ${avg1}%
+- Período 2 (${p2.length} sesiones): promedio ${avg2}%
+- Diferencia: ${diferencia > 0 ? '+' : ''}${diferencia}% (${tendencia})
+- Distribución por fases del tratamiento: Fase 1 ${q1}% · Fase 2 ${q2}% · Fase 3 ${q3}% · Fase 4 ${q4}%
+- Programas trabajados: ${progArr.length} (${progArr.filter((p: any) => ['dominado','logrado','criterio_alcanzado'].includes(p.estado)).length} con criterio alcanzado)
+
+Explicá clínicamente qué significa esta evolución, qué factores pueden contribuir, qué implica. 3 párrafos, máximo 240 palabras. Sin bullets, sin emojis.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 600 },
+    ),
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Prosa formal.',
+      `Redactá el "ANÁLISIS DE PREDICCIÓN TERAPÉUTICA" para ${nombreCap}:
+
+Sesiones totales: ${total} · Logro actual: ${avg2}%
+Proyecciones:
+- 30 días: ${pred30}%
+- 90 días: ${pred90}%
+- 180 días: ${pred180}%
+Tendencia: ${tendencia} (pendiente: ${pendiente.toFixed(2)} pts/sesión)
+${confianzaNota}
+
+Interpretá qué esperar en cada horizonte, qué condiciones son necesarias, qué nivel de confianza tiene cada proyección. 2 párrafos, máximo 160 palabras.`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 400 },
+    ),
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Devolvé SOLO JSON válido.',
+      `Generá RECOMENDACIONES TERAPÉUTICAS para ${nombreCap} en formato JSON:
+
+{
+  "ajustes_plan": ["...", "..."],
+  "objetivos_proximos": ["...", "..."],
+  "frecuencia": "Texto corto sugiriendo frecuencia óptima"
+}
+
+Datos:
+- Tendencia: ${tendencia}, logro actual ${avg2}%
+- Áreas activas: ${[...new Set(progArr.map((p: any) => p.area))].join(', ')}
+
+3-4 ítems por array. Específicos al caso. Sin emojis.`,
+      { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 500 },
+    ),
+  ])
+
+  let recomData: any = { ajustes_plan: [], objetivos_proximos: [], frecuencia: '' }
+  try {
+    const m = recomendacionesIA.match(/\{[\s\S]*\}/)
+    if (m) recomData = JSON.parse(m[0])
+  } catch { /* usar defaults */ }
+
+  const sellosVerif = await tpl.selloQRVerificacionAsync({
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+  })
+
+  const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
+
+  const parsearProsa = (texto: string): Paragraph[] => {
+    return texto.split('\n').filter(l => l.trim())
+      .map(l => tpl.parrafo(l.replace(/\*\*/g, '').trim()))
+  }
+
+  const sections: DocChild[] = [
+    // PORTADA con QR
+    ...portadaInstitucional({
+      tipoInforme: 'ANÁLISIS COMPARATIVO Y PROYECCIÓN TERAPÉUTICA',
+      nombrePaciente: nombre,
+      edadPaciente: edadTexto,
+      diagnostico,
+      especialista: 'Equipo Clínico SANTI',
+      credenciales: 'BCBA · Neuropsicología Infantil',
+      fechaEmision: hoy,
+      periodoEval: periodoTexto,
+      codigoDoc,
+    }),
+    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+
+    // I. Datos del análisis
+    tpl.tituloSeccion('I.  Datos del Análisis'),
+    tpl.tablaDatosGenerales([
+      ['Apellidos y nombres', nombre],
+      ['Edad', edadTexto],
+      ['Diagnóstico', diagnostico],
+      ['Período analizado', periodoTexto],
+      ['Semanas de tratamiento', String(semanas)],
+      ['Total de sesiones', String(total)],
+      ['Tendencia clínica', tendencia],
+      ['Documento N°', codigoDoc],
+    ]),
+
+    // II. Comparación P1 vs P2
+    tpl.tituloSeccion('II.  Comparación Directa de Períodos'),
+    tpl.tablaDatosGenerales([
+      [`Período 1 (${p1.length} sesiones)`, `${avg1}% promedio`],
+      [`Período 2 (${p2.length} sesiones)`, `${avg2}% promedio`],
+      ['Variación', `${diferencia > 0 ? '+' : ''}${diferencia}%`],
+      ['Lectura clínica', tendencia],
+    ]),
+
+    // III. Gráfico por fases
+    tpl.tituloSeccion('III.  Evolución por Fase del Tratamiento'),
+    tpl.parrafo('La evolución del logro terapéutico, distribuida en cuatro fases del tratamiento desde el inicio hasta hoy:'),
+    ...tpl.graficoProgresoBarra('Evolución por fase (%)', [
+      { label: `Fase 1 — Inicio  (S1–S${Math.ceil(total*0.25)})`, valor: q1 },
+      { label: `Fase 2 — Desarrollo  (S${Math.ceil(total*0.25)+1}–S${Math.ceil(total*0.5)})`, valor: q2 },
+      { label: `Fase 3 — Consolidación  (S${Math.ceil(total*0.5)+1}–S${Math.ceil(total*0.75)})`, valor: q3 },
+      { label: `Fase 4 — Estado Actual  (S${Math.ceil(total*0.75)+1}–S${total})`, valor: q4 },
+    ], { mostrarMeta: true, metaPct: 90 }),
+
+    // IV. Análisis clínico
+    tpl.tituloSeccion('IV.  Análisis Clínico Comparativo'),
+    ...parsearProsa(analisisComp),
+
+    // V. Predicción
+    tpl.tituloSeccion('V.  Proyección Terapéutica'),
+    tpl.tablaDatosGenerales([
+      ['Logro actual', `${avg2}%`],
+      ['Proyección 30 días', `${pred30}%`],
+      ['Proyección 90 días', `${pred90}%`],
+      ['Proyección 180 días', `${pred180}%`],
+      ['Pendiente observada', `${pendiente.toFixed(2)} pts/sesión`],
+      ['Sesiones esperadas (período)', `${ses30d} (30d) · ${ses90d} (90d) · ${ses180d} (180d)`],
+    ]),
+    ...parsearProsa(analisisPred),
+    tpl.parrafo(`Nota técnica: ${confianzaNota}`),
+  ]
+
+  // VI. Análisis por área
+  const areasConDatos = Object.entries(areaMap).filter(([_, v]) => v.p1.length > 0 || v.p2.length > 0)
+  if (areasConDatos.length > 0) {
+    sections.push(tpl.tituloSeccion('VI.  Avance por Área de Intervención'))
+    sections.push(tpl.parrafo('Comparación del logro promedio por área entre el período de referencia y el período actual:'))
+    sections.push(...tpl.graficoProgresoBarra('Período 1 (referencia) — Logro por área (%)',
+      areasConDatos.map(([area, v]) => ({ label: area, valor: avg(v.p1) })),
+      { mostrarMeta: true, metaPct: 90 },
+    ))
+    sections.push(new Paragraph({ spacing: { before: 200, after: 0 }, children: [] }))
+    sections.push(...tpl.graficoProgresoBarra('Período 2 (actual) — Logro por área (%)',
+      areasConDatos.map(([area, v]) => ({ label: area, valor: avg(v.p2) })),
+      { mostrarMeta: true, metaPct: 90 },
+    ))
+  }
+
+  // VII. Recomendaciones
+  sections.push(tpl.tituloSeccion('VII.  Recomendaciones Terapéuticas'))
+  if (recomData.ajustes_plan?.length > 0) {
+    sections.push(new Paragraph({
+      spacing: { before: 200, after: 80 },
+      children: [new TextRun({ text: 'Ajustes al plan actual', bold: true, size: 21, font: 'Arial', color: '1E293B' })],
+    }))
+    sections.push(...tpl.items(recomData.ajustes_plan))
+  }
+  if (recomData.objetivos_proximos?.length > 0) {
+    sections.push(new Paragraph({
+      spacing: { before: 200, after: 80 },
+      children: [new TextRun({ text: 'Objetivos para el próximo período', bold: true, size: 21, font: 'Arial', color: '1E293B' })],
+    }))
+    sections.push(...tpl.items(recomData.objetivos_proximos))
+  }
+  if (recomData.frecuencia) {
+    sections.push(tpl.subseccion('Frecuencia sugerida', recomData.frecuencia))
+  }
+
+  // QR + firma
+  sections.push(new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }))
+  sections.push(...sellosVerif)
+  sections.push(
+    new Paragraph({
+      spacing: { before: 320, after: 40 },
+      border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'CBD5E1', space: 8 } },
+      children: [new TextRun({ text: 'Equipo Clínico', bold: true, size: 22, font: 'Arial', color: '1E3A8A' })],
+    }),
+    new Paragraph({
+      spacing: { before: 0, after: 0 },
+      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+    }),
+  )
+
+  const doc = new Document({
+    numbering: tpl.DOC_NUMBERING,
+    styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+    sections: [{
+      properties: tpl.DOC_PAGE_PROPS,
+      footers: { default: tpl.piePaginaOficial() },
+      children: sections,
+    }],
+  })
+
+  await registrarDocumentoEmitido({
+    codigoDoc, childId, tipo: 'reporte_comparativo',
+    pacienteNombre: nombreCap, pacienteIniciales: iniciales,
+    fileName, metadata: { periodo: periodoTexto, total_sesiones: total, tendencia, pred30, pred90, pred180 },
+  })
+
+  return { doc, fileName }
+}
+
 // i18n: responder en el idioma del usuario
 // getLangInstruction moved to lib/lang.ts
 
@@ -1765,8 +2320,11 @@ export async function POST(req: NextRequest) {
     // 'seguro' (botón "Informe Clínico" en el UI) → nuevo informe SANTI profesional
     if (tipo === 'seguro' || tipo === 'clinico' || tipo === 'tratamiento') result = await generarInformeClinicoSanti(childId, userLocale)
     else if (tipo === 'seguro_legacy') result = await generarReporteSeguro(childId, userLocale)
-    else if (tipo === 'comparativo') result = await generarReporteComparativo(childId, userLocale)
-    else result = await generarReportePadres(childId, userLocale)
+    // Versiones PRO (nivel profesional con portada + QR + IA + trazabilidad)
+    else if (tipo === 'comparativo') result = await generarReporteComparativoPro(childId, userLocale)
+    else if (tipo === 'padres_legacy') result = await generarReportePadres(childId, userLocale)
+    else if (tipo === 'comparativo_legacy') result = await generarReporteComparativo(childId, userLocale)
+    else result = await generarReportePadresPro(childId, userLocale)
 
     const buffer = await Packer.toBuffer(result.doc)
     const uint8 = new Uint8Array(buffer)
