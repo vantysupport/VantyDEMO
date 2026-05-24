@@ -101,6 +101,28 @@ function infoBox(text: string, fill = 'EDE9FE', color = '5B21B6') {
 
 type DocChild = Paragraph | Table
 
+/**
+ * Cuenta el "Total de sesiones realizadas" exactamente como el UI lo muestra
+ * en "Información General → Total de sesiones del paciente":
+ *   sessions_before_platform (manual) + MAX(appointments, agenda_sesiones, aba_sessions_v2)
+ */
+async function contarSesionesRealizadas(childId: string, sessionsBefore: number = 0): Promise<number> {
+  try {
+    const [a, b, c] = await Promise.all([
+      supabaseAdmin.from('appointments').select('id', { count: 'exact', head: true })
+        .eq('child_id', childId).in('status', ['completed','completada','realizada']),
+      supabaseAdmin.from('agenda_sesiones').select('id', { count: 'exact', head: true })
+        .eq('child_id', childId).in('estado', ['realizada','completada','completed']),
+      supabaseAdmin.from('aba_sessions_v2').select('id', { count: 'exact', head: true })
+        .eq('child_id', childId),
+    ])
+    const max = Math.max((a as any).count || 0, (b as any).count || 0, (c as any).count || 0)
+    return (Number(sessionsBefore) || 0) + max
+  } catch {
+    return Number(sessionsBefore) || 0
+  }
+}
+
 async function makeDoc(
   sections: DocChild[],
   fileName: string,
@@ -1174,7 +1196,7 @@ async function generarInformeClinicoSanti(
   // ─── 1. Datos del paciente ──────────────────────────────────────────
   const { data: child } = await supabaseAdmin
     .from('children')
-    .select('name, age, birth_date, diagnosis, parent_id')
+    .select('name, age, birth_date, diagnosis, parent_id, sessions_before_platform')
     .eq('id', childId).single()
 
   const nombre = (child as any)?.name || 'Paciente'
@@ -1194,6 +1216,9 @@ async function generarInformeClinicoSanti(
   } else if ((child as any)?.age) {
     edadTexto = `${(child as any).age} años`
   }
+
+  // Total de sesiones realizadas (misma fórmula que el UI)
+  const totalSesionesRealizadas = await contarSesionesRealizadas(childId, (child as any)?.sessions_before_platform)
 
   // ─── 2. Cargar todo en paralelo (defensivo) ─────────────────────────
   const [
@@ -1684,8 +1709,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       ['Edad', edadTexto],
       ['Diagnóstico', (child as any)?.diagnosis || 'En evaluación'],
       ['Período de trabajo', periodoTexto],
-      ['Total de sesiones registradas', String(totalSesiones)],
-      ['Semanas de tratamiento', String(semanas)],
+      ['Total de sesiones realizadas', String(totalSesionesRealizadas)],
       // Programas activos = los que NO cumplen criterio (siguen en intervención/línea base)
       ['Programas activos', String(programasConDatos.filter(p => !programaCumpleCriterio(p.id)).length)],
       ['Programas con criterio alcanzado', String(programasDominados.length)],
@@ -1845,7 +1869,7 @@ async function generarReportePadresPro(
 
   const { data: child } = await supabaseAdmin
     .from('children')
-    .select('name, age, birth_date, diagnosis, parent_id')
+    .select('name, age, birth_date, diagnosis, parent_id, sessions_before_platform')
     .eq('id', childId).single()
 
   const nombre = (child as any)?.name || 'Paciente'
@@ -1866,6 +1890,9 @@ async function generarReportePadresPro(
   } else if ((child as any)?.age) {
     edadTexto = `${(child as any).age} años`
   }
+
+  // Total de sesiones realizadas (misma fórmula que el UI)
+  const totalSesionesRealizadas = await contarSesionesRealizadas(childId, (child as any)?.sessions_before_platform)
 
   const [
     { data: programas },
@@ -2073,7 +2100,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
     tpl.tituloSeccion(`II.  ¿Cómo va ${nombreCorto}?`),
     tpl.tablaDatosGenerales([
       ['Período de trabajo', periodoTexto],
-      ['Sesiones realizadas', `${totalSesiones} en ${semanas} semanas`],
+      ['Total de sesiones realizadas', String(totalSesionesRealizadas)],
       ['Promedio general de logro', `${promedioGlobal}%`],
       // Programas en curso (no incluye los que ya cumplen criterio)
       ['Programas en los que está trabajando', `${programasInfo.filter(p => !p.cumple_criterio && !['dominado','logrado','criterio_alcanzado'].includes(p.estado)).length}`],
@@ -2145,7 +2172,7 @@ async function generarReporteComparativoPro(
 
   const { data: child } = await supabaseAdmin
     .from('children')
-    .select('name, age, birth_date, diagnosis')
+    .select('name, age, birth_date, diagnosis, sessions_before_platform')
     .eq('id', childId).single()
 
   const nombre = (child as any)?.name || 'Paciente'
@@ -2153,6 +2180,9 @@ async function generarReporteComparativoPro(
     .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ')
   const diagnostico = (child as any)?.diagnosis || 'En evaluación'
+
+  // Total de sesiones realizadas (misma fórmula que el UI)
+  const totalSesionesRealizadas = await contarSesionesRealizadas(childId, (child as any)?.sessions_before_platform)
 
   let edadTexto = 'no registrada'
   if ((child as any)?.birth_date) {
@@ -2399,8 +2429,7 @@ Datos:
       ['Edad', edadTexto],
       ['Diagnóstico', diagnostico],
       ['Período analizado', periodoTexto],
-      ['Semanas de tratamiento', String(semanas)],
-      ['Total de sesiones', String(totalSesionesReales)],
+      ['Total de sesiones realizadas', String(totalSesionesRealizadas)],
       ['Tendencia clínica', tendencia],
       ['Documento N°', codigoDoc],
     ]),
