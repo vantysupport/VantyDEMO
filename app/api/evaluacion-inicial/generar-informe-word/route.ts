@@ -17,8 +17,10 @@ import {
 import {
   tituloPrincipal, tituloSeccion, subseccion, parrafo, items,
   tablaDatosGenerales, recomendaciones, piePaginaOficial,
-  generarIniciales, DOC_NUMBERING, DOC_PAGE_PROPS,
+  generarIniciales, generarCodigoDocumento, portadaInstitucional,
+  selloQRVerificacionAsync, DOC_NUMBERING, DOC_PAGE_PROPS,
 } from '@/lib/santi-report-template'
+import { registrarDocumentoEmitido } from '@/lib/registrar-documento'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -361,9 +363,26 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
       return out
     }
 
+    // Sello QR de verificación (async)
+    const sellosVerif = await selloQRVerificacionAsync({
+      codigoDoc: docNum,
+      fechaEmision: hoy,
+      especialista: 'Equipo Clínico SANTI',
+    })
+
     const seccionesDocx: (Paragraph | Table)[] = [
-      // ── Encabezado profesional ──
-      ...tituloPrincipal(`Informe de Anamnesis ${tipoInforme}`, iniciales),
+      // ── Portada institucional profesional ──
+      ...portadaInstitucional({
+        tipoInforme: `INFORME DE ANAMNESIS ${tipoInforme.toUpperCase()}`,
+        nombrePaciente: child.name || 'Paciente',
+        edadPaciente: (child as any).age != null ? `${(child as any).age} años` : '—',
+        diagnostico: (child as any).diagnosis || 'En evaluación clínica',
+        especialista: 'Equipo Clínico SANTI',
+        credenciales: 'Centro de Neuropsicología y Terapias',
+        fechaEmision: hoy,
+        codigoDoc: docNum,
+      }),
+      new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
 
       // ── Datos generales (estilo LuTr/SoRo) ──
       tituloSeccion('Datos Generales'),
@@ -416,8 +435,11 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
       tituloSeccion('Observaciones finales'),
       parrafo(`El presente informe fue generado a partir de la ficha de anamnesis ${tipoInforme.toLowerCase()} completada por la familia el ${hoy}. La información aquí consignada constituye una base preliminar para el proceso de evaluación clínica directa con el paciente y deberá ser corroborada, ampliada y contrastada por el equipo profesional a cargo del caso.`),
       parrafo(`La información contenida en este documento es confidencial y de uso exclusivo del equipo clínico del Centro de Neuropsicología y Terapias SANTI, en el marco del proceso de atención del paciente.`),
+      // ── Sello QR ──
+      new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+      ...sellosVerif,
       new Paragraph({
-        spacing: { before: 480, after: 40 },
+        spacing: { before: 320, after: 40 },
         children: [new TextRun({
           text: 'Equipo Clínico',
           bold: true,
@@ -445,6 +467,20 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
         footers: { default: piePaginaOficial() },
         children: seccionesDocx,
       }],
+    })
+
+    // Registrar el documento emitido para verificación pública vía QR
+    await registrarDocumentoEmitido({
+      codigoDoc: docNum,
+      childId: child.id,
+      tipo: 'anamnesis_inicial',
+      pacienteNombre: child.name || 'Paciente',
+      pacienteIniciales: iniciales,
+      fileName,
+      metadata: {
+        tipo_anamnesis: tipoInforme,
+        recomendacion: eval_.recomendacion,
+      },
     })
 
     const buffer = await Packer.toBuffer(doc)

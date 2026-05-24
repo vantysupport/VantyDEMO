@@ -11,6 +11,11 @@ import {
   AlignmentType, BorderStyle, WidthType, ShadingType, HeadingLevel,
   PageNumber, Footer, Header, NumberFormat,
 } from 'docx'
+import {
+  portadaInstitucional, selloQRVerificacionAsync, piePaginaOficial,
+  generarCodigoDocumento, generarIniciales, DOC_PAGE_PROPS,
+} from '@/lib/santi-report-template'
+import { registrarDocumentoEmitido } from '@/lib/registrar-documento'
 
 // ── Helpers de formato ────────────────────────────────────────────────────────
 const BD = { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }
@@ -92,25 +97,26 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
     .filter(l => l.trim())
     .map(l => pp(l.replace(/^[*#\-–]+\s*/, '')))
 
+  // Código de documento + QR de verificación
+  const codigoDoc = generarCodigoDocumento(d.child_id || childName, 'sesion-aba')
+  const sellosVerif = await selloQRVerificacionAsync({
+    codigoDoc,
+    fechaEmision: hoy,
+    especialista: 'Equipo Clínico SANTI',
+  })
+
   const children = [
-    // ── ENCABEZADO ────────────────────────────────────────────────────────────
-    new Paragraph({
-      spacing: { before: 0, after: 20 },
-      border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '2563EB', space: 8 } },
-      children: [
-        new TextRun({ text: 'Neuropsicología y Terapias SANTI', bold: true, size: 36, font: 'Arial', color: '1E40AF' }),
-        new TextRun({ text: '  ·  Registro de Sesión ABA', size: 22, font: 'Arial', color: '9CA3AF' }),
-      ],
+    // ── PORTADA INSTITUCIONAL PROFESIONAL ──
+    ...portadaInstitucional({
+      tipoInforme: 'REGISTRO DE SESIÓN ABA',
+      nombrePaciente: childName,
+      edadPaciente: childAge ? `${childAge} años` : '—',
+      especialista: 'Equipo Clínico SANTI',
+      credenciales: 'Centro Especializado en Neuropsicología y Terapias',
+      fechaEmision: hoy,
+      codigoDoc,
     }),
-    new Paragraph({
-      spacing: { before: 200, after: 60 },
-      children: [new TextRun({ text: `Informe de Sesión — ${childName}`, bold: true, size: 44, font: 'Arial', color: '1E3A5F' })],
-    }),
-    new Paragraph({
-      spacing: { before: 0, after: 360 },
-      shading: { fill: 'EFF6FF', type: ShadingType.CLEAR },
-      children: [new TextRun({ text: `Emitido: ${hoy}   ·   Edad: ${childAge || 'N/E'} años   ·   CONFIDENCIAL`, size: 18, font: 'Arial', color: '64748B' })],
-    }),
+    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
 
     // ── I. DATOS DE LA SESIÓN ─────────────────────────────────────────────────
     h2('I.  DATOS DE LA SESIÓN'),
@@ -244,35 +250,43 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
       }),
     ] : []),
 
+    // ── SELLO QR DE VERIFICACIÓN ──────────────────────────────────────────────
+    new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+    ...sellosVerif,
+
     // ── CIERRE ────────────────────────────────────────────────────────────────
     new Paragraph({
-      spacing: { before: 400 },
+      spacing: { before: 320 },
       border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0', space: 8 } },
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI  ·  Terapeuta ABA Certificado', size: 20, font: 'Arial', color: '2563EB', bold: true, italics: true })],
+      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI  ·  Equipo Clínico ABA', size: 20, font: 'Arial', color: '1E3A8A', bold: true })],
     }),
     new Paragraph({
       spacing: { before: 40, after: 0 },
-      children: [new TextRun({ text: `${hoy}  ·  Documento confidencial — uso clínico exclusivo`, size: 16, font: 'Arial', color: '94A3B8' })],
+      children: [new TextRun({ text: `${hoy}  ·  Documento confidencial — uso clínico exclusivo`, size: 16, font: 'Arial', color: '94A3B8', italics: true })],
     }),
   ]
 
   const doc = new Document({
     styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
     sections: [{
-      properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
-      footers: {
-        default: new Footer({
-          children: [new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({ text: `Neuropsicología y Terapias SANTI · Sesión ABA ${nombreCorto} · Pág. `, size: 16, font: 'Arial', color: '9CA3AF' }),
-              new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' }),
-            ],
-          })],
-        }),
-      },
+      properties: DOC_PAGE_PROPS,
+      footers: { default: piePaginaOficial() },
       children,
     }],
+  })
+
+  // Registrar el documento emitido para verificación pública vía QR
+  await registrarDocumentoEmitido({
+    codigoDoc,
+    childId: d.child_id,
+    tipo: 'sesion_aba',
+    pacienteNombre: childName,
+    pacienteIniciales: generarIniciales(childName),
+    fileName: `Sesion_ABA_${childName.replace(/\s+/g, '_')}_${hoyISO}.docx`,
+    metadata: {
+      nivel_logro: nivelLogro,
+      fecha_sesion: d.fecha_sesion || hoyISO,
+    },
   })
 
   return Packer.toBuffer(doc)

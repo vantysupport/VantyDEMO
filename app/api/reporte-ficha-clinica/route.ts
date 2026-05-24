@@ -7,6 +7,11 @@ import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   AlignmentType, BorderStyle, WidthType, ShadingType, Footer, PageNumber,
 } from 'docx'
+import {
+  selloQRVerificacionAsync, piePaginaOficial,
+  generarCodigoDocumento, generarIniciales, DOC_PAGE_PROPS,
+} from '@/lib/santi-report-template'
+import { registrarDocumentoEmitido } from '@/lib/registrar-documento'
 
 // ── Estilos ───────────────────────────────────────────────────────────────────
 const BD   = { style: BorderStyle.SINGLE, size: 1, color: 'D1D5DB' }
@@ -128,12 +133,19 @@ export async function POST(req: NextRequest) {
       filaLarga(f.label, String(responses[f.id] ?? ''), i % 2 === 0)
     )
 
+    // ── QR + footer institucional ──
+    const fechaActual = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+    const codigoDoc = generarCodigoDocumento((resp as any).child_id || nombrePaciente, 'ficha')
+    const sellosVerif = await selloQRVerificacionAsync({
+      codigoDoc,
+      fechaEmision: fechaActual,
+      especialista: (resp as any).filler_name || 'Equipo Clínico SANTI',
+    })
+
     const doc = new Document({
       styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
       sections: [{
-        properties: {
-          page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } },
-        },
+        properties: DOC_PAGE_PROPS,
         footers: {
           default: new Footer({
             children: [new Paragraph({
@@ -205,8 +217,12 @@ export async function POST(req: NextRequest) {
 
           // ── FIRMA ────────────────────────────────────────────────────────────
           espacio(),
+          // ── SELLO QR DE VERIFICACIÓN ──
+          new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+          ...sellosVerif,
+
           new Paragraph({
-            spacing: { before: 400, after: 0 },
+            spacing: { before: 320, after: 0 },
             border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'E2E8F0', space: 8 } },
             children: [],
           }),
@@ -240,6 +256,18 @@ export async function POST(req: NextRequest) {
           }),
         ],
       }],
+    })
+
+    // Registrar el documento emitido para verificación pública vía QR
+    await registrarDocumentoEmitido({
+      codigoDoc,
+      childId: (resp as any).child_id,
+      tipo: 'ficha_clinica',
+      pacienteNombre: nombrePaciente,
+      pacienteIniciales: generarIniciales(nombrePaciente),
+      especialista: (resp as any).filler_name || 'Equipo Clínico SANTI',
+      fileName,
+      metadata: { plantilla: nombrePlantilla },
     })
 
     const buffer = await Packer.toBuffer(doc)

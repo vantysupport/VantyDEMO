@@ -15,11 +15,25 @@
 // Sin emojis · Sin gradientes · Lenguaje clínico-formal peruano.
 
 import {
-  Paragraph, TextRun, Table, TableRow, TableCell,
+  Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
   AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat,
   HeadingLevel, PageNumber, PageBreak, Footer, Header, VerticalAlign,
   VerticalMergeType, TabStopType, TabStopPosition,
 } from 'docx'
+import QRCode from 'qrcode'
+
+// ─── Generador de QR como PNG buffer ──────────────────────────────────────────
+//   Usa la librería `qrcode` para generar un QR REAL (no placeholder).
+//   Retorna un Buffer PNG que docx-js puede insertar como ImageRun.
+async function generarQRBuffer(data: string, size = 128): Promise<Buffer> {
+  return await QRCode.toBuffer(data, {
+    type: 'png',
+    width: size,
+    margin: 1,
+    errorCorrectionLevel: 'M',
+    color: { dark: '#0F172A', light: '#FFFFFF' },
+  })
+}
 
 // ─── Paleta institucional ────────────────────────────────────────────────────
 export const COLOR = {
@@ -578,6 +592,8 @@ export interface SelloQROptions {
   especialista?:  string
 }
 
+// ─── Versión SÍNCRONA (deprecated, placeholder visual) ───────────────────────
+//   Mantengo por retrocompatibilidad pero el ideal es usar `selloQRVerificacionAsync`
 export function selloQRVerificacion(opts: SelloQROptions): (Paragraph | Table)[] {
   const fecha = opts.fechaEmision ?? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
   const url = opts.urlValidacion ?? `https://santiterapias.com/verificar/${opts.codigoDoc}`
@@ -1002,4 +1018,112 @@ export const DOC_PAGE_PROPS = {
     size: { width: 12240, height: 15840 },
     margin: { top: 1200, right: 1260, bottom: 1200, left: 1260 },
   },
+}
+
+// ─── Sello QR REAL con imagen embebida (versión async) ───────────────────────
+//   Genera un QR PNG y lo inserta como ImageRun de docx. Se puede escanear con
+//   cualquier app y abre la URL de verificación.
+export async function selloQRVerificacionAsync(opts: SelloQROptions): Promise<(Paragraph | Table)[]> {
+  const fecha = opts.fechaEmision ?? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://centro-santi.vanty.xyz'
+  const url = opts.urlValidacion ?? `${baseUrl}/verificar/${opts.codigoDoc}`
+
+  // Generar QR como PNG buffer real
+  let qrBuffer: Buffer
+  try {
+    qrBuffer = await generarQRBuffer(url, 200)
+  } catch (e) {
+    console.warn('[selloQRVerificacionAsync] QR generation failed, falling back to placeholder', e)
+    return selloQRVerificacion(opts)
+  }
+
+  return [
+    new Table({
+      width: { size: 9360, type: WidthType.DXA },
+      columnWidths: [1800, 7560],
+      rows: [new TableRow({ children: [
+        // QR REAL embebido
+        new TableCell({
+          borders: { top: BD, bottom: BD, left: BD, right: BD },
+          shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
+          margins: { top: 100, bottom: 100, left: 100, right: 100 },
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new ImageRun({
+                type: 'png',
+                data: qrBuffer,
+                transformation: { width: 110, height: 110 },
+                altText: {
+                  title: 'Código QR de verificación',
+                  description: `Escanea para validar el documento ${opts.codigoDoc}`,
+                  name: 'qr_verificacion',
+                },
+              } as any)],
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 60 },
+              children: [new TextRun({
+                text: 'Escanear para verificar',
+                size: 13, font: FONT, color: '64748B', italics: true,
+              })],
+            }),
+          ],
+        }),
+        // Información de verificación
+        new TableCell({
+          borders: { top: BD, bottom: BD, left: BD, right: BD },
+          shading: { fill: 'EFF6FF', type: ShadingType.CLEAR },
+          margins: { top: 140, bottom: 140, left: 200, right: 160 },
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({ children: [new TextRun({
+              text: 'DOCUMENTO VERIFICABLE — NEUROPSICOLOGÍA Y TERAPIAS SANTI',
+              bold: true, size: 18, font: FONT, color: COLOR.azulDark,
+            })] }),
+            new Paragraph({ spacing: { before: 100 }, children: [
+              new TextRun({ text: 'Código de documento:  ', size: 17, font: FONT, color: COLOR.grisMed }),
+              new TextRun({ text: opts.codigoDoc, bold: true, size: 17, font: 'Courier New', color: COLOR.acento }),
+            ]}),
+            new Paragraph({ spacing: { before: 40 }, children: [
+              new TextRun({ text: 'Emitido:  ', size: 17, font: FONT, color: COLOR.grisMed }),
+              new TextRun({ text: fecha, size: 17, font: FONT, color: COLOR.grisMed }),
+              ...(opts.especialista ? [
+                new TextRun({ text: '   ·   Responsable:  ', size: 17, font: FONT, color: COLOR.grisMed }),
+                new TextRun({ text: opts.especialista, bold: true, size: 17, font: FONT, color: COLOR.grisMed }),
+              ] : []),
+            ]}),
+            new Paragraph({ spacing: { before: 40 }, children: [
+              new TextRun({ text: 'Verificar en:  ', size: 16, font: FONT, color: COLOR.grisMed }),
+              new TextRun({ text: url, size: 15, font: FONT, color: COLOR.azulMed, italics: true }),
+            ]}),
+            new Paragraph({ spacing: { before: 80 }, children: [
+              new TextRun({
+                text: 'Este documento fue generado digitalmente por el sistema SANTI. La autenticidad puede validarse escaneando el código QR o accediendo a la URL indicada. La validez legal queda condicionada a la firma manuscrita o digital del profesional responsable.',
+                size: 14, font: FONT, color: '94A3B8', italics: true,
+              }),
+            ]}),
+          ],
+        }),
+      ]})],
+    }),
+  ]
+}
+
+// ─── Helper: generar QR como ImageRun standalone ─────────────────────────────
+//   Para casos donde quieras solo el QR sin todo el sello.
+export async function qrComoImagen(url: string, sizeMM = 30): Promise<Paragraph> {
+  const px = Math.round(sizeMM * 3.78)  // mm a px aprox (96 DPI)
+  const buffer = await generarQRBuffer(url, 256)
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    children: [new ImageRun({
+      type: 'png',
+      data: buffer,
+      transformation: { width: px, height: px },
+      altText: { title: 'QR', description: url, name: 'qr' },
+    } as any)],
+  })
 }

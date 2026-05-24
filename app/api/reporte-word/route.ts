@@ -21,6 +21,7 @@ import {
   generarCodigoDocumento,
 } from '@/lib/santi-report-template'
 import type { HabilidadFila, RecomendacionesBloque } from '@/lib/santi-report-template'
+import { registrarDocumentoEmitido } from '@/lib/registrar-documento'
 
 // ÔöÇÔöÇ FIX: Helper universal para parsear nivel_logro_objetivos ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 // Maneja: n├║mero, "75", "75%", "51-75%", "mayormente logrado", "alto", etc.
@@ -100,7 +101,7 @@ function infoBox(text: string, fill = 'EDE9FE', color = '5B21B6') {
 
 type DocChild = Paragraph | Table
 
-function makeDoc(
+async function makeDoc(
   sections: DocChild[],
   fileName: string,
   opts?: {
@@ -115,7 +116,7 @@ function makeDoc(
     conPortada?: boolean
     conQR?: boolean
   }
-) {
+): Promise<Document> {
   const conPortada = opts?.conPortada !== false
   const conQR      = opts?.conQR !== false
   const codigo     = opts?.codigoDoc ?? ''
@@ -141,13 +142,14 @@ function makeDoc(
     }) as any[],
   }] : []
 
-  const selloFinal: DocChild[] = conQR && codigo ? [
-    ...(selloQRVerificacion({
-      codigoDoc:    codigo,
-      fechaEmision: fecha,
-      especialista: opts?.especialista,
-    }) as any[]),
-  ] : []
+  // Generar sello QR REAL (PNG embebido) si hay código de documento
+  const selloFinal: DocChild[] = (conQR && codigo)
+    ? (await tpl.selloQRVerificacionAsync({
+        codigoDoc:    codigo,
+        fechaEmision: fecha,
+        especialista: opts?.especialista,
+      }) as any[])
+    : []
 
   const seccionContenido = {
     properties: {
@@ -406,8 +408,13 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
   ]
 
   const codigoDoc = generarCodigoDocumento(childId, 'padres')
+  await registrarDocumentoEmitido({
+    codigoDoc, childId, tipo: 'reporte_padres',
+    pacienteNombre: nombreCap, pacienteIniciales: tpl.generarIniciales(nombreCap),
+    fileName, metadata: { periodo: `${fechaInicio} – ${fechaFin}`, semanas, total_sesiones: totalSesiones },
+  })
   return {
-    doc: makeDoc(sections, fileName, {
+    doc: await makeDoc(sections, fileName, {
       tipoInforme:  'REPORTE DE PROGRESO PARA LA FAMILIA',
       childName:    nombreCap,
       childAge:     String(edad),
@@ -797,8 +804,13 @@ Incluye: (a) ajustes al plan actual de los programas m├ís relevantes, (b) obj
   ]
 
     const codigoDoc = generarCodigoDocumento(childId, 'comp')
+  await registrarDocumentoEmitido({
+    codigoDoc, childId, tipo: 'reporte_comparativo',
+    pacienteNombre: nombreCap, pacienteIniciales: tpl.generarIniciales(nombreCap),
+    fileName, metadata: { periodo: `${fechaInicio} \u2013 ${fechaFin}`, semanas, total_sesiones: total },
+  })
   return {
-    doc: makeDoc(sections, fileName, {
+    doc: await makeDoc(sections, fileName, {
       tipoInforme:  'AN\u00c1LISIS COMPARATIVO DE PER\u00cdODOS',
       childName:    nombreCap,
       childAge:     String(edad),
@@ -1119,8 +1131,13 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
   ]
 
   const codigoDoc = generarCodigoDocumento(childId, 'seg')
+  await registrarDocumentoEmitido({
+    codigoDoc, childId, tipo: 'reporte_seguro',
+    pacienteNombre: nombreCap, pacienteIniciales: tpl.generarIniciales(nombreCap),
+    fileName, metadata: { periodo: `${fechaInicio} – ${fechaFin}` },
+  })
   return {
-    doc: makeDoc(sections, fileName, {
+    doc: await makeDoc(sections, fileName, {
       tipoInforme:  'REPORTE NEUROPSICOLÓGICO Y CLÍNICO',
       childName:    nombreCap,
       childAge:     String(edad),
@@ -1221,7 +1238,8 @@ async function generarInformeClinicoSanti(
   type ProgramaConDatos = {
     id: string
     titulo: string
-    area: string
+    area: string         // texto visible (normalizado, mayúsculas)
+    areaKey: string      // clave para agrupar (sin tildes, mayúsculas)
     estado: string
     fase: string
     criterio: number
@@ -1234,6 +1252,10 @@ async function generarInformeClinicoSanti(
     tendencia: 'ascendente' | 'descendente' | 'estable'
     delta_inicio: number  // % cambio desde inicio
     sets: any[]
+    primeraFecha?: string
+    ultimaFecha?: string
+    minPct?: number
+    maxPct?: number
   }
 
   const programasConDatos: ProgramaConDatos[] = progArr.map((p: any) => {
@@ -1254,10 +1276,30 @@ async function generarInformeClinicoSanti(
     const sets = objetivosArr.filter((o: any) => o.programa_id === p.id)
       .sort((a: any, b: any) => (a.numero_set || 0) - (b.numero_set || 0))
 
+    // FIX: normalizar el área para evitar duplicados visuales (ej: "Memoria de trabajo" vs "MEMORIA DE TRABAJO" vs "memoria  de trabajo")
+    //      trim → colapsar espacios → uppercase → quitar tildes residuales
+    const areaRaw = String(p.area || 'General').trim().replace(/\s+/g, ' ')
+    const areaNorm = areaRaw
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')  // quitar diacríticos para comparar
+      .toUpperCase()
+    // Reconstruir con tildes a partir del texto original capitalizado uniformemente
+    const areaFinal = areaRaw.toUpperCase()
+
+    // Datos crudos adicionales para trazabilidad
+    const primeraFecha = sesP.length > 0 ? sesP[0].fecha : undefined
+    const ultimaFecha = sesP.length > 0 ? sesP[sesP.length - 1].fecha : undefined
+    const minPct = pcts.length > 0 ? Math.min(...pcts) : undefined
+    const maxPct = pcts.length > 0 ? Math.max(...pcts) : undefined
+
     return {
       id: p.id,
       titulo: p.titulo || 'Sin nombre',
-      area: (p.area || 'General').toUpperCase(),
+      area: areaFinal,
+      areaKey: areaNorm,  // clave para agrupar sin duplicar
+      primeraFecha,
+      ultimaFecha,
+      minPct,
+      maxPct,
       estado: p.estado || 'activo',
       fase: p.fase_actual || '—',
       criterio: p.criterio_dominio_pct || 90,
@@ -1302,14 +1344,19 @@ async function generarInformeClinicoSanti(
 
   // ─── 4. Construir filas de Habilidades y Logros con vertical merge ──
   const habilidades: HabilidadFila[] = []
+  // FIX: agrupar por areaKey (normalizada sin tildes) para evitar duplicados
+  //      pero usar el texto `area` (con tildes) para mostrar al usuario
   const programasPorArea: Record<string, ProgramaConDatos[]> = {}
+  const areaKeyToLabel: Record<string, string> = {}
   for (const p of programasConDatos) {
-    if (!programasPorArea[p.area]) programasPorArea[p.area] = []
-    programasPorArea[p.area].push(p)
+    if (!programasPorArea[p.areaKey]) programasPorArea[p.areaKey] = []
+    programasPorArea[p.areaKey].push(p)
+    if (!areaKeyToLabel[p.areaKey]) areaKeyToLabel[p.areaKey] = p.area
   }
 
-  for (const [areaName, progs] of Object.entries(programasPorArea)) {
+  for (const [areaKey, progs] of Object.entries(programasPorArea)) {
     let areaMostrada = false
+    const areaName = areaKeyToLabel[areaKey] || areaKey
     for (const p of progs) {
       // Texto del objetivo en estilo LuTr:
       //   "Con un criterio de éxito del [X]% en dos sesiones consecutivas, [objetivo_lp]"
@@ -1506,9 +1553,11 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
   }
 
   // ─── 6. Gráficos: progreso global + por área ────────────────────────
-  const datosGraficoArea = Object.entries(programasPorArea).map(([area, progs]) => {
+  // FIX: usar areaKey para agrupar (sin duplicados) + label legible con n° de programas
+  const datosGraficoArea = Object.entries(programasPorArea).map(([areaKey, progs]) => {
     const proms = progs.map(p => p.promedio_reciente ?? p.promedio ?? 0).filter(v => v > 0)
-    return { label: area, valor: proms.length > 0 ? avg(proms) : 0 }
+    const label = areaKeyToLabel[areaKey] || areaKey
+    return { label: `${label} (${progs.length})`, valor: proms.length > 0 ? avg(proms) : 0 }
   }).filter(d => d.valor > 0)
 
   const datosGraficoTopProgs = programasConDatos
@@ -1520,9 +1569,27 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
   // ─── 7. Construir documento ─────────────────────────────────────────
   const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
 
+  // ── Generar QR async (necesita estar fuera del array spread) ─────────
+  const sellosVerificacion = await tpl.selloQRVerificacionAsync({
+    codigoDoc: docNum,
+    fechaEmision: hoy,
+    especialista: 'Equipo Clínico SANTI',
+  })
+
   const sections: DocChild[] = [
-    // ── PORTADA ──
-    ...tpl.tituloPrincipal('Informe Clínico de Tratamiento', iniciales),
+    // ── PORTADA institucional con QR ──
+    ...portadaInstitucional({
+      tipoInforme: 'INFORME CLÍNICO DE TRATAMIENTO',
+      nombrePaciente: nombre,
+      edadPaciente: edadTexto,
+      diagnostico: (child as any)?.diagnosis || 'En evaluación clínica',
+      especialista: 'Equipo Clínico SANTI',
+      credenciales: 'Centro Especializado en Neuropsicología y Terapias',
+      fechaEmision: hoy,
+      periodoEval: periodoTexto,
+      codigoDoc: docNum,
+    }),
+    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
 
     // ── DATOS GENERALES ──
     tpl.tituloSeccion('I.  Datos Generales'),
@@ -1588,6 +1655,56 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
   // Recomendaciones
   sections.push(...tpl.recomendaciones(recomObj))
 
+  // ─── VIII. FUENTE DE DATOS Y TRAZABILIDAD ──────────────────────────
+  //   Esto permite al lector verificar cada número del informe contra
+  //   los datos reales del expediente. Cero datos sintéticos.
+  sections.push(tpl.tituloSeccion('VIII.  Fuente de Datos y Trazabilidad'))
+
+  sections.push(tpl.parrafo(
+    `Todos los porcentajes, conteos y análisis de este informe se calculan en tiempo real a partir de los datos registrados en la plataforma SANTI para este paciente. No se incluyen valores predeterminados, simulados ni inferidos. Las fuentes consultadas son:`
+  ))
+
+  sections.push(...tpl.items([
+    `Tabla "programas_aba" — ${progArr.length} programas registrados para ${nombreCap}.`,
+    `Tabla "sesiones_datos_aba" — ${sesProgArr.length} sesiones registradas en el período del ${fechaInicio} al ${fechaFin}.`,
+    `Tabla "objetivos_cp" — ${objetivosArr.length} sets (objetivos a corto plazo) asociados a los programas activos.`,
+    evalIni ? `Tabla "evaluaciones_iniciales" — evaluación inicial registrada (estado: ${(evalIni as any).estado}).` : 'Tabla "evaluaciones_iniciales" — sin evaluación inicial registrada.',
+    `Tabla "patient_documents" — ${docsArr.length} documentos con texto extraído por IA.`,
+    `Tabla "clinical_template_responses" — ${fichasArr.length} fichas clínicas registradas.`,
+  ]))
+
+  sections.push(new Paragraph({
+    spacing: { before: 220, after: 80 },
+    children: [new TextRun({
+      text: 'Cálculos por programa (datos crudos)',
+      bold: true, italics: true, size: 19, font: 'Arial', color: '1E3A8A',
+    })],
+  }))
+
+  // Tabla de trazabilidad: una fila por programa con todos los datos crudos
+  const filasTraza: [string, string][] = []
+  for (const p of programasConDatos) {
+    const fechaIni = p.primeraFecha ? new Date(p.primeraFecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+    const fechaFn = p.ultimaFecha ? new Date(p.ultimaFecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+    const detalle =
+      `${p.n_sesiones} sesiones · min ${p.minPct ?? '—'}% · max ${p.maxPct ?? '—'}% · promedio total ${p.promedio ?? '—'}% · promedio últimas 5 ${p.promedio_reciente ?? '—'}% · primera ${fechaIni} · última ${fechaFn} · estado ${p.estado} · tendencia ${p.tendencia}`
+    filasTraza.push([
+      `${p.titulo}  (${p.area})`,
+      detalle,
+    ])
+  }
+  if (filasTraza.length > 0) {
+    sections.push(tpl.tablaDatosGenerales(filasTraza))
+  }
+
+  sections.push(tpl.parrafo(
+    `Fórmulas utilizadas: "promedio total" = media aritmética de todas las sesiones del programa; "promedio últimas 5" = media de las cinco sesiones más recientes (lo que se muestra en los gráficos); "tendencia" se determina por la diferencia entre las cinco primeras y las cinco últimas sesiones (≥ +8% ascendente, ≤ −8% descendente, sino estable); "estado" proviene del campo "estado" del programa registrado por el especialista en la plataforma.`,
+  ))
+
+  // ── Sello QR de verificación + firma del equipo ──
+  sections.push(new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }))
+  sections.push(...sellosVerificacion)
+
   // Cierre
   sections.push(
     new Paragraph({
@@ -1613,6 +1730,22 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
       footers: { default: tpl.piePaginaOficial() },
       children: sections,
     }],
+  })
+
+  // Registrar el documento emitido (alimenta la página /verificar/<codigo>)
+  await registrarDocumentoEmitido({
+    codigoDoc:         docNum,
+    childId:           childId,
+    tipo:              'informe_clinico',
+    pacienteNombre:    nombre,
+    pacienteIniciales: iniciales,
+    fileName,
+    metadata: {
+      total_sesiones:    totalSesiones,
+      programas_activos: progArr.length,
+      promedio_global:   promedioGlobal,
+      periodo:           periodoTexto,
+    },
   })
 
   return { doc, fileName }

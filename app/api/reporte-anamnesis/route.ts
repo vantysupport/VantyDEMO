@@ -7,6 +7,11 @@ import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   AlignmentType, BorderStyle, WidthType, ShadingType, Footer, PageNumber,
 } from 'docx'
+import {
+  selloQRVerificacionAsync, piePaginaOficial,
+  generarCodigoDocumento, generarIniciales, DOC_PAGE_PROPS,
+} from '@/lib/santi-report-template'
+import { registrarDocumentoEmitido } from '@/lib/registrar-documento'
 
 // ── Estilos base ──────────────────────────────────────────────────────────────
 const BD   = { style: BorderStyle.SINGLE, size: 1, color: 'D1D5DB' }
@@ -122,23 +127,19 @@ export async function POST(req: NextRequest) {
     const hoyISO = new Date().toISOString().slice(0, 10)
     const fileName = `Historia_Clinica_${nombrePaciente.replace(/\s+/g, '_')}_${hoyISO}.docx`
 
+    // ── QR de verificación del documento ──
+    const codigoDoc = generarCodigoDocumento((registro as any).child_id || nombrePaciente, 'anamnesis')
+    const sellosVerif = await selloQRVerificacionAsync({
+      codigoDoc,
+      fechaEmision: hoy,
+      especialista: 'Equipo Clínico SANTI',
+    })
+
     const doc = new Document({
       styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
       sections: [{
-        properties: {
-          page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } },
-        },
-        footers: {
-          default: new Footer({
-            children: [new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  Historia Clínica — ${nombrePaciente}  ·  `, size: 16, font: 'Arial', color: '9CA3AF' }),
-                new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' }),
-              ],
-            })],
-          }),
-        },
+        properties: DOC_PAGE_PROPS,
+        footers: { default: piePaginaOficial() },
         children: [
 
           // ── PORTADA ────────────────────────────────────────────────────────
@@ -277,20 +278,35 @@ export async function POST(req: NextRequest) {
           espacio(),
 
           // ── CIERRE ─────────────────────────────────────────────────────────
+          // ── SELLO QR DE VERIFICACIÓN ──
+          new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+          ...sellosVerif,
+
           new Paragraph({
-            spacing: { before: 500 },
+            spacing: { before: 400 },
             border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0', space: 8 } },
             children: [
-              new TextRun({ text: 'Terapeuta responsable: ', bold: true, size: 19, font: 'Arial', color: '4C1D95' }),
+              new TextRun({ text: 'Terapeuta responsable: ', bold: true, size: 19, font: 'Arial', color: '1E3A8A' }),
               new TextRun({ text: '_'.repeat(40), size: 19, font: 'Arial', color: '9CA3AF' }),
             ],
           }),
           new Paragraph({
             spacing: { before: 60, after: 0 },
-            children: [new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  ${hoy}  ·  Documento clínico confidencial`, size: 16, font: 'Arial', color: '94A3B8' })],
+            children: [new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  ${hoy}  ·  Documento clínico confidencial`, size: 16, font: 'Arial', color: '94A3B8', italics: true })],
           }),
         ],
       }],
+    })
+
+    // Registrar el documento emitido para verificación pública vía QR
+    await registrarDocumentoEmitido({
+      codigoDoc,
+      childId: (registro as any).child_id,
+      tipo: 'anamnesis_legacy',
+      pacienteNombre: nombrePaciente,
+      pacienteIniciales: generarIniciales(nombrePaciente),
+      fileName,
+      metadata: { fecha_anamnesis: registro.fecha_creacion || hoyISO },
     })
 
     const buffer = await Packer.toBuffer(doc)
