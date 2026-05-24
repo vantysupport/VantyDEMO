@@ -30,13 +30,18 @@ export async function POST(req: NextRequest) {
       .single()
 
     // Programas ABA activos con sus objetivos
-    const { data: programas } = await supabaseAdmin
+    // FIX: objetivos_cp tiene `descripcion`, no `nombre`. Antes la query fallaba silenciosamente.
+    const { data: programas, error: progErr } = await supabaseAdmin
       .from('programas_aba')
-      .select('id, titulo, area, fase_actual, estado, criterio_dominio_pct, objetivos_cp(id, nombre, estado, numero_set)')
+      .select('id, titulo, area, fase_actual, estado, criterio_dominio_pct, objetivos_cp(id, descripcion, estado, numero_set)')
       .eq('child_id', childId)
-      .not('estado', 'in', '("archivado","alta","dado_de_alta","inactivo","cancelado")')
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(20)
+    if (progErr) console.warn('[agente-objetivos] error cargando programas:', progErr.message)
+    // Filtrar localmente programas archivados/dados de alta
+    const programasFiltrados = (programas || []).filter((p: any) =>
+      !['archivado', 'alta', 'dado_de_alta', 'inactivo', 'cancelado'].includes(String(p.estado || '').toLowerCase())
+    )
 
     // Últimas 8 sesiones para contexto
     const { data: sesiones } = await supabaseAdmin
@@ -46,24 +51,24 @@ export async function POST(req: NextRequest) {
       .order('fecha_sesion', { ascending: false })
       .limit(8)
 
-    // Patrones detectados recientes
+    // Patrones detectados recientes (puede no existir → maybeSingle para no romper)
     const { data: patronesData } = await supabaseAdmin
       .from('patrones_detectados')
       .select('patrones, analisis_ia')
       .eq('child_id', childId)
-      .single()
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     const nombre = (child as any)?.name || childName || 'Paciente'
     const diagnostico = (child as any)?.diagnosis || 'No especificado'
     const edad = (child as any)?.age || 'N/A'
 
     // Calcular tasa de dominio por programa
-    const resumenProgramas = programas?.map(p => {
+    const resumenProgramas = programasFiltrados.map((p: any) => {
       const objetivos = (p as any).objetivos_cp || []
       const total = objetivos.length
       // Lógica en cascada: mismo criterio que padre/stats
-      // Nivel 1: estado === 'dominado' en el set individual
-      // Nivel 2: el programa completo está dominado → todos sus sets son logrados
       const progDominado = p.estado === 'dominado'
       const dominados = progDominado
         ? total
@@ -76,9 +81,14 @@ export async function POST(req: NextRequest) {
         pct_dominio: total > 0 ? Math.round((dominados / total) * 100) : (progDominado ? 100 : 0),
         dominados,
         total,
-        criterio: p.criterio_dominio_pct || 80
+        criterio: p.criterio_dominio_pct || 80,
+        sets: objetivos.map((o: any) => ({
+          numero: o.numero_set,
+          descripcion: o.descripcion,
+          estado: o.estado,
+        })),
       }
-    }) || []
+    })
 
     // Resumen sesiones recientes
     const resumenSesiones = sesiones?.slice(0, 5).map(s => ({
