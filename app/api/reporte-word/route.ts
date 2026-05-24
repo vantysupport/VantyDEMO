@@ -1202,12 +1202,20 @@ async function generarInformeClinicoSanti(
     evalIniRes,
     docsRes,
     fichasRes,
+    anamnesisRes,
+    registroAbaRes,
+    entornoHogarRes,
+    formResponsesRes,
   ] = await Promise.all([
     supabaseAdmin.from('programas_aba').select('id, titulo, area, fase_actual, criterio_dominio_pct, criterio_sesiones_consecutivas, estado, objetivo_lp').eq('child_id', childId).limit(30),
     supabaseAdmin.from('sesiones_datos_aba').select('id, programa_id, fecha, porcentaje_exito, fase, set, nivel_ayuda, notas').eq('child_id', childId).order('fecha', { ascending: true }).limit(400),
     (async () => { try { return await supabaseAdmin.from('evaluaciones_iniciales').select('estado, recomendacion, recomendacion_resumen, recomendacion_razon, anamnesis_completada_en').eq('child_id', childId).order('created_at', { ascending: false }).limit(1).maybeSingle() } catch { return { data: null } } })(),
     (async () => { try { return await supabaseAdmin.from('patient_documents').select('file_name, category, extracted_text, created_at').eq('child_id', childId).eq('extraction_status', 'done').not('extracted_text', 'is', null).order('created_at', { ascending: false }).limit(8) } catch { return { data: [] as any[] } } })(),
     (async () => { try { return await supabaseAdmin.from('clinical_template_responses').select('id, created_at, filler_name, filler_role, responses, notes, clinical_templates(name)').eq('child_id', childId).order('created_at', { ascending: false }).limit(6) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('anamnesis_completa').select('id, form_title, datos, fecha_creacion').eq('child_id', childId).order('fecha_creacion', { ascending: false }).limit(3) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('registro_aba').select('id, form_title, datos, fecha_sesion').eq('child_id', childId).order('fecha_sesion', { ascending: false }).limit(5) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('registro_entorno_hogar').select('id, form_title, datos, fecha_visita').eq('child_id', childId).order('fecha_visita', { ascending: false }).limit(3) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('form_responses').select('id, form_type, form_title, responses, ai_analysis, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(5) } catch { return { data: [] as any[] } } })(),
   ])
 
   const progArr = (programas || []) as any[]
@@ -1215,6 +1223,10 @@ async function generarInformeClinicoSanti(
   const evalIni = (evalIniRes as any)?.data || null
   const docsArr = ((docsRes as any)?.data || []) as any[]
   const fichasArr = ((fichasRes as any)?.data || []) as any[]
+  const anamnesisArr = ((anamnesisRes as any)?.data || []) as any[]
+  const registroAbaArr = ((registroAbaRes as any)?.data || []) as any[]
+  const entornoHogarArr = ((entornoHogarRes as any)?.data || []) as any[]
+  const formResponsesArr = ((formResponsesRes as any)?.data || []) as any[]
 
   // Cargar objetivos_cp con los IDs reales
   let objetivosArr: any[] = []
@@ -1461,6 +1473,39 @@ async function generarInformeClinicoSanti(
     ? `Fichas clínicas recientes (${fichasArr.length}): ${fichasArr.map(f => (f.clinical_templates as any)?.name || 'Ficha').slice(0, 4).join(', ')}.`
     : ''
 
+  // ─── Contexto invisible: Evaluaciones del tab "Evaluaciones" ───
+  // Estos datos NO aparecen como sección formal en el Word, solo enriquecen el análisis IA.
+  const truncar = (s: any, max = 180) => {
+    const txt = typeof s === 'string' ? s : (s != null ? JSON.stringify(s) : '')
+    return txt.length > max ? txt.slice(0, max) + '…' : txt
+  }
+  const resumenRespuestas = (datos: any, maxClaves = 6, maxCharsValor = 100) => {
+    if (!datos || typeof datos !== 'object') return ''
+    const claves = Object.keys(datos).filter(k => datos[k] != null && datos[k] !== '').slice(0, maxClaves)
+    return claves.map(k => `${k}: ${truncar(datos[k], maxCharsValor)}`).join(' | ')
+  }
+
+  const evalCtxParts: string[] = []
+  if (anamnesisArr.length > 0) {
+    evalCtxParts.push(`ANAMNESIS COMPLETA (${anamnesisArr.length}):\n` +
+      anamnesisArr.slice(0, 2).map(a => `· ${a.form_title || 'Anamnesis'} (${(a.fecha_creacion || '').slice(0,10)}): ${resumenRespuestas(a.datos)}`).join('\n'))
+  }
+  if (registroAbaArr.length > 0) {
+    evalCtxParts.push(`REGISTROS ABA (${registroAbaArr.length}):\n` +
+      registroAbaArr.slice(0, 3).map(r => `· ${r.form_title || 'Registro ABA'} (${(r.fecha_sesion || '').slice(0,10)}): ${resumenRespuestas(r.datos)}`).join('\n'))
+  }
+  if (entornoHogarArr.length > 0) {
+    evalCtxParts.push(`ENTORNO HOGAR (${entornoHogarArr.length}):\n` +
+      entornoHogarArr.slice(0, 2).map(e => `· ${e.form_title || 'Entorno hogar'} (${(e.fecha_visita || '').slice(0,10)}): ${resumenRespuestas(e.datos)}`).join('\n'))
+  }
+  if (formResponsesArr.length > 0) {
+    evalCtxParts.push(`OTRAS EVALUACIONES (${formResponsesArr.length}):\n` +
+      formResponsesArr.slice(0, 3).map(f => `· ${f.form_title || f.form_type || 'Evaluación'} (${(f.created_at || '').slice(0,10)}): ${truncar(f.ai_analysis || f.responses, 200)}`).join('\n'))
+  }
+  const evaluacionesCtx = evalCtxParts.length > 0
+    ? `\n\nEVALUACIONES COMPLEMENTARIAS REGISTRADAS (contexto adicional para tu análisis clínico, no las cites como secciones del informe):\n${evalCtxParts.join('\n\n')}`
+    : ''
+
   const [textoResumenEjecutivo, textoAnalisisGlobal, textoPlanTerapeutico, textoRecomendacionesIA] = await Promise.all([
     callGroqSimple(
       'Eres neuropsicóloga clínica senior de SANTI. Prosa formal, sin emojis, sin bullets en el body.',
@@ -1476,7 +1521,7 @@ Datos disponibles:
 - ${evalIniContexto}
 
 Programas:
-${resumenProgramas}
+${resumenProgramas}${evaluacionesCtx}
 
 Escribe 2 párrafos densos (máximo 200 palabras total) que UN CLÍNICO senior pueda leer y comprender el caso en 30 segundos. NO repitas tablas. Sintetizá: dónde está hoy el paciente, qué fortalezas muestra, qué áreas requieren foco, qué tendencia clínica predomina. Tono académico, sin emojis.`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 500 },
@@ -1490,7 +1535,7 @@ Escribe 2 párrafos densos (máximo 200 palabras total) que UN CLÍNICO senior p
 3. Mencionar el programa más fuerte y el más débil del área si hay varios.
 
 Datos:
-${resumenProgramas}
+${resumenProgramas}${evaluacionesCtx}
 
 Sin bullets, sin emojis. Cada área 50-80 palabras. Total ≤ 450 palabras.`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 1100 },
@@ -1527,7 +1572,7 @@ Devolvé JSON ESTRICTO:
 
 Contexto del paciente:
 ${resumenProgramas}
-${evalIniContexto}`+getLangInstruction(userLocale),
+${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.5, maxTokens: 900 },
     ),
   ])
@@ -1807,10 +1852,25 @@ async function generarReportePadresPro(
     edadTexto = `${(child as any).age} años`
   }
 
-  const [{ data: programas }, { data: sesionesProg }] = await Promise.all([
+  const [
+    { data: programas },
+    { data: sesionesProg },
+    anamnesisRes,
+    registroAbaRes,
+    entornoHogarRes,
+    formResponsesRes,
+  ] = await Promise.all([
     supabaseAdmin.from('programas_aba').select('id, titulo, area, estado, fase_actual, criterio_dominio_pct, criterio_sesiones_consecutivas, objetivo_lp').eq('child_id', childId).limit(30),
     supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito, set').eq('child_id', childId).order('fecha', { ascending: true }).limit(300),
+    (async () => { try { return await supabaseAdmin.from('anamnesis_completa').select('form_title, datos, fecha_creacion').eq('child_id', childId).order('fecha_creacion', { ascending: false }).limit(2) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('registro_aba').select('form_title, datos, fecha_sesion').eq('child_id', childId).order('fecha_sesion', { ascending: false }).limit(3) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('registro_entorno_hogar').select('form_title, datos, fecha_visita').eq('child_id', childId).order('fecha_visita', { ascending: false }).limit(2) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('form_responses').select('form_type, form_title, responses, ai_analysis, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(3) } catch { return { data: [] as any[] } } })(),
   ])
+  const anamnesisArr = ((anamnesisRes as any)?.data || []) as any[]
+  const registroAbaArr = ((registroAbaRes as any)?.data || []) as any[]
+  const entornoHogarArr = ((entornoHogarRes as any)?.data || []) as any[]
+  const formResponsesArr = ((formResponsesRes as any)?.data || []) as any[]
   const progArr = (programas || []) as any[]
   const sesProgArr = (sesionesProg || []) as any[]
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
@@ -1885,6 +1945,25 @@ async function generarReportePadresPro(
     .map(p => `· ${p.titulo} (${p.area}): ${p.n_sesiones} sesiones · ${p.promedio_reciente ?? 'sin datos'}% promedio reciente · estado ${p.estado}`)
     .join('\n')
 
+  // Contexto invisible: evaluaciones complementarias (no se muestran como sección)
+  const truncar = (s: any, max = 150) => {
+    const txt = typeof s === 'string' ? s : (s != null ? JSON.stringify(s) : '')
+    return txt.length > max ? txt.slice(0, max) + '…' : txt
+  }
+  const resumenRespuestas = (datos: any, maxClaves = 5, maxCharsValor = 80) => {
+    if (!datos || typeof datos !== 'object') return ''
+    const claves = Object.keys(datos).filter(k => datos[k] != null && datos[k] !== '').slice(0, maxClaves)
+    return claves.map(k => `${k}: ${truncar(datos[k], maxCharsValor)}`).join(' | ')
+  }
+  const evalCtxParts: string[] = []
+  if (anamnesisArr.length > 0) evalCtxParts.push(`ANAMNESIS: ${anamnesisArr.slice(0,1).map(a => resumenRespuestas(a.datos)).join('')}`)
+  if (registroAbaArr.length > 0) evalCtxParts.push(`REGISTROS ABA (${registroAbaArr.length}): ${registroAbaArr.slice(0,2).map(r => resumenRespuestas(r.datos)).join(' || ')}`)
+  if (entornoHogarArr.length > 0) evalCtxParts.push(`ENTORNO HOGAR: ${entornoHogarArr.slice(0,1).map(e => resumenRespuestas(e.datos)).join('')}`)
+  if (formResponsesArr.length > 0) evalCtxParts.push(`OTRAS EVALUACIONES: ${formResponsesArr.slice(0,2).map(f => truncar(f.ai_analysis || f.responses, 120)).join(' || ')}`)
+  const evaluacionesCtx = evalCtxParts.length > 0
+    ? `\n\nContexto adicional de evaluaciones registradas (úsalo para personalizar el tono y mensaje, no las menciones explícitamente):\n${evalCtxParts.join('\n')}`
+    : ''
+
   const [bienvenida, celebracion, planCasa, mensajeCierre] = await Promise.all([
     callGroqSimple(
       'Eres terapeuta ABA empática y cálida de SANTI. Escribís a familias con afecto, sin tecnicismos.',
@@ -1897,7 +1976,7 @@ async function generarReportePadresPro(
 - Promedio general de logro: ${promedioGlobal}%
 - Programas con criterio alcanzado: ${programasDominados.length} (${programasDominados.map(p => p.titulo).slice(0, 4).join(', ') || 'avanzando'})
 - Sesiones: ${totalSesiones} en ${semanas} semanas
-- Áreas trabajadas: ${[...new Set(programasInfo.map(p => p.area))].join(', ')}
+- Áreas trabajadas: ${[...new Set(programasInfo.map(p => p.area))].join(', ')}${evaluacionesCtx}
 
 Celebrá con ejemplos concretos y entusiasmo real. Mencioná avances específicos (cita nombres de programas). Sin tecnicismos, sin emojis técnicos. Máximo 220 palabras total.`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 500 },
@@ -1905,7 +1984,7 @@ Celebrá con ejemplos concretos y entusiasmo real. Mencioná avances específico
     callGroqSimple(
       'Eres terapeuta ABA. Da consejos prácticos para casa, en lenguaje claro.',
       `Escribí 4-5 ACTIVIDADES CONCRETAS para hacer en casa con ${nombreCorto} (${edadTexto}, ${(child as any)?.diagnosis || 'desarrollo en curso'}) basadas en estos programas activos:
-${resumenDatos}
+${resumenDatos}${evaluacionesCtx}
 
 Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + por qué ayuda. No bullets, en prosa fluida. Lenguaje cercano, sin tecnicismos. Máximo 320 palabras.`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.6, maxTokens: 700 },
@@ -2053,12 +2132,27 @@ async function generarReporteComparativoPro(
     edadTexto = `${(child as any).age} años`
   }
 
-  const [{ data: programas }, { data: sesionesProg }] = await Promise.all([
+  const [
+    { data: programas },
+    { data: sesionesProg },
+    anamnesisRes,
+    registroAbaRes,
+    entornoHogarRes,
+    formResponsesRes,
+  ] = await Promise.all([
     supabaseAdmin.from('programas_aba').select('id, titulo, area, estado, criterio_dominio_pct').eq('child_id', childId).limit(30),
     supabaseAdmin.from('sesiones_datos_aba').select('programa_id, fecha, porcentaje_exito').eq('child_id', childId).order('fecha', { ascending: true }).limit(400),
+    (async () => { try { return await supabaseAdmin.from('anamnesis_completa').select('form_title, datos, fecha_creacion').eq('child_id', childId).order('fecha_creacion', { ascending: false }).limit(2) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('registro_aba').select('form_title, datos, fecha_sesion').eq('child_id', childId).order('fecha_sesion', { ascending: false }).limit(4) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('registro_entorno_hogar').select('form_title, datos, fecha_visita').eq('child_id', childId).order('fecha_visita', { ascending: false }).limit(2) } catch { return { data: [] as any[] } } })(),
+    (async () => { try { return await supabaseAdmin.from('form_responses').select('form_type, form_title, responses, ai_analysis, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(4) } catch { return { data: [] as any[] } } })(),
   ])
   const progArr = (programas || []) as any[]
   const sesProgArr = (sesionesProg || []) as any[]
+  const anamnesisArr = ((anamnesisRes as any)?.data || []) as any[]
+  const registroAbaArr = ((registroAbaRes as any)?.data || []) as any[]
+  const entornoHogarArr = ((entornoHogarRes as any)?.data || []) as any[]
+  const formResponsesArr = ((formResponsesRes as any)?.data || []) as any[]
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
 
   // Unificar todas las sesiones en lista cronológica (datapoints = filas con %)
@@ -2157,6 +2251,31 @@ async function generarReporteComparativoPro(
     return `· ${p.titulo} (${p.area}): ${pcts.length} sesiones · promedio ${avg(pcts) || '—'}% · estado ${p.estado}`
   }).join('\n')
 
+  // Contexto invisible de evaluaciones registradas (no se muestran como sección)
+  const truncar = (s: any, max = 160) => {
+    const txt = typeof s === 'string' ? s : (s != null ? JSON.stringify(s) : '')
+    return txt.length > max ? txt.slice(0, max) + '…' : txt
+  }
+  const resumenRespuestas = (datos: any, maxClaves = 5, maxCharsValor = 80) => {
+    if (!datos || typeof datos !== 'object') return ''
+    const claves = Object.keys(datos).filter(k => datos[k] != null && datos[k] !== '').slice(0, maxClaves)
+    return claves.map(k => `${k}: ${truncar(datos[k], maxCharsValor)}`).join(' | ')
+  }
+  const evalCtxParts: string[] = []
+  if (anamnesisArr.length > 0) evalCtxParts.push(`ANAMNESIS: ${anamnesisArr.slice(0,1).map(a => resumenRespuestas(a.datos)).join('')}`)
+  if (registroAbaArr.length > 0) {
+    // Comparar evaluación inicial vs reciente si hay al menos 2
+    const reciente = registroAbaArr[0]
+    const inicial = registroAbaArr[registroAbaArr.length - 1]
+    evalCtxParts.push(`REGISTROS ABA — INICIAL (${(inicial.fecha_sesion||'').slice(0,10)}): ${resumenRespuestas(inicial.datos)}`)
+    if (registroAbaArr.length > 1) evalCtxParts.push(`REGISTROS ABA — RECIENTE (${(reciente.fecha_sesion||'').slice(0,10)}): ${resumenRespuestas(reciente.datos)}`)
+  }
+  if (entornoHogarArr.length > 0) evalCtxParts.push(`ENTORNO HOGAR: ${entornoHogarArr.slice(0,1).map(e => resumenRespuestas(e.datos)).join('')}`)
+  if (formResponsesArr.length > 0) evalCtxParts.push(`OTRAS EVALUACIONES: ${formResponsesArr.slice(0,2).map(f => truncar(f.ai_analysis || f.responses, 120)).join(' || ')}`)
+  const evaluacionesCtx = evalCtxParts.length > 0
+    ? `\n\nContexto clínico complementario (evaluaciones registradas — úsalo para fundamentar tu análisis, no las menciones como sección):\n${evalCtxParts.join('\n')}`
+    : ''
+
   const [analisisComp, analisisPred, recomendacionesIA] = await Promise.all([
     callGroqSimple(
       'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis, sin bullets.',
@@ -2167,7 +2286,7 @@ Datos:
 - Período 2 (${p2.length} registros): promedio ${avg2}%
 - Diferencia: ${diferencia > 0 ? '+' : ''}${diferencia}% (${tendencia})
 - Distribución por fases del tratamiento: Fase 1 ${q1}% · Fase 2 ${q2}% · Fase 3 ${q3}% · Fase 4 ${q4}%
-- Programas trabajados: ${progArr.length} (${progArr.filter((p: any) => ['dominado','logrado','criterio_alcanzado'].includes(p.estado)).length} con criterio alcanzado)
+- Programas trabajados: ${progArr.length} (${progArr.filter((p: any) => ['dominado','logrado','criterio_alcanzado'].includes(p.estado)).length} con criterio alcanzado)${evaluacionesCtx}
 
 Explicá clínicamente qué significa esta evolución, qué factores pueden contribuir, qué implica. 3 párrafos, máximo 240 palabras. Sin bullets, sin emojis.`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 600 },
@@ -2199,7 +2318,7 @@ Interpretá qué esperar en cada horizonte, qué condiciones son necesarias, qu�
 
 Datos:
 - Tendencia: ${tendencia}, logro actual ${avg2}%
-- Áreas activas: ${[...new Set(progArr.map((p: any) => p.area))].join(', ')}
+- Áreas activas: ${[...new Set(progArr.map((p: any) => p.area))].join(', ')}${evaluacionesCtx}
 
 3-4 ítems por array. Específicos al caso. Sin emojis.`,
       { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 500 },
