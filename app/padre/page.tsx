@@ -86,6 +86,10 @@ export default function ParentDashboard() {
 
   const [showAddChild, setShowAddChild] = useState(false)
   const [showChangePass, setShowChangePass] = useState(false)
+  // Estado de la evaluación inicial del paciente seleccionado.
+  // Si está completa (revisado/completado/terapia_seleccionada), ocultamos el menú.
+  const [evalInicialEstado, setEvalInicialEstado] = useState<string | null>(null)
+  const evalInicialCompleta = ['terapia_seleccionada', 'revisado', 'completado'].includes(evalInicialEstado || '')
   const [showNotifications, setShowNotifications] = useState(false)
   const [selectedNoti, setSelectedNoti] = useState<any>(null)
   const [showEditProfile, setShowEditProfile] = useState(false)
@@ -98,6 +102,22 @@ export default function ParentDashboard() {
   useEffect(() => {
     setSelectedDate(new Date().toISOString().split('T')[0])
   }, [])
+
+  // Cargar estado de evaluación inicial al cambiar de paciente o de vista.
+  // Refrescar al cambiar de vista garantiza que, apenas el padre termina de llenar
+  // la evaluación y navega a otra sección, el menú se actualiza y oculta el ítem.
+  useEffect(() => {
+    if (!selectedChild?.id || !profile?.id) { setEvalInicialEstado(null); return }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/evaluacion-inicial?child_id=${selectedChild.id}&parent_id=${profile.id}`)
+        const data = await res.json()
+        if (!cancelled) setEvalInicialEstado(data?.evaluacion?.estado || 'pendiente_intake')
+      } catch { if (!cancelled) setEvalInicialEstado(null) }
+    })()
+    return () => { cancelled = true }
+  }, [selectedChild?.id, profile?.id, refreshTrigger, activeView])
 
   useEffect(() => {
     const loadData = async () => {
@@ -538,7 +558,9 @@ export default function ParentDashboard() {
             {/* Nav */}
             <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
                 <NavBtnDesktop icon={<Home size={17}/>} label="Inicio" active={activeView==='home'} onClick={()=>setActiveView('home')} />
-                <NavBtnDesktop icon={<ClipboardCheck size={17}/>} label="Evaluación Inicial" active={activeView==='evaluacion-inicial'} onClick={()=>setActiveView('evaluacion-inicial')} badge="NUEVO" />
+                {!evalInicialCompleta && (
+                  <NavBtnDesktop icon={<ClipboardCheck size={17}/>} label="Evaluación Inicial" active={activeView==='evaluacion-inicial'} onClick={()=>setActiveView('evaluacion-inicial')} badge="NUEVO" />
+                )}
                 <NavBtnDesktop icon={<Calendar size={17}/>} label="Agenda" active={activeView==='miscitas'} onClick={()=>setActiveView('miscitas')} />
                 <NavBtnDesktop icon={<Heart size={17}/>} label="Practicar en Casa" active={activeView==='engagement'} onClick={()=>setActiveView('engagement')} badge="IA" />
                 <NavBtnDesktop icon={<Sparkles size={17}/>} label={t('familias.asistente')} active={activeView==='chat'} onClick={()=>setActiveView('chat')} badge="NUEVO" />
@@ -766,7 +788,8 @@ export default function ParentDashboard() {
                   {showMoreMenu && (
                     <div className="absolute bottom-14 right-0 rounded-2xl shadow-2xl border p-2 w-56 z-50 flex flex-col gap-1" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
                       {[
-                        { id: 'evaluacion-inicial', icon: <ClipboardCheck size={18}/>, label: 'Evaluación Inicial', badge: 'NUEVO' as any },
+                        // Solo mostramos Evaluación Inicial si aún NO está completa
+                        ...(!evalInicialCompleta ? [{ id: 'evaluacion-inicial', icon: <ClipboardCheck size={18}/>, label: 'Evaluación Inicial', badge: 'NUEVO' as any }] : []),
                         { id: 'engagement',    icon: <Zap size={18}/>,            label: 'Practicar en Casa' },
                         { id: 'chat-familias', icon: <MessageCircle size={18}/>,  label: 'Chat', badge: familiasUnread > 0 ? familiasUnread : null },
                         { id: 'programas',     icon: <BookOpen size={18}/>,       label: 'Programas ABA' },
