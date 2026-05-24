@@ -1550,6 +1550,21 @@ function TabSugerencias() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // TAB: REPORTES IA (CAPA 2)
 // ═══════════════════════════════════════════════════════════════════════════════
+type DocEmitido = {
+  codigo_doc: string
+  child_id: string | null
+  tipo: string
+  tipo_label: string
+  paciente_nombre: string | null
+  paciente_iniciales: string | null
+  fecha_emision: string
+  especialista: string | null
+  valido: boolean
+  file_name: string | null
+  metadata: any
+  notas: string | null
+}
+
 function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
   const { t } = useI18n()
 
@@ -1558,6 +1573,53 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  // ── Historial de documentos emitidos ───────────────────────────────────
+  const [docs, setDocs] = useState<DocEmitido[]>([])
+  const [stats, setStats] = useState<{ total_validos: number; total_invalidos: number; por_tipo: Record<string, number> } | null>(null)
+  const [filterTipo, setFilterTipo] = useState<string>('')
+  const [filterValido, setFilterValido] = useState<'' | '1' | '0'>('')
+  const [filterQ, setFilterQ] = useState('')
+  const [filterChildId, setFilterChildId] = useState<string>('')
+  const [loadingDocs, setLoadingDocs] = useState(false)
+
+  const cargarDocs = async () => {
+    setLoadingDocs(true)
+    try {
+      const params = new URLSearchParams()
+      if (filterChildId) params.set('child_id', filterChildId)
+      if (filterTipo)    params.set('tipo', filterTipo)
+      if (filterValido)  params.set('valido', filterValido)
+      if (filterQ)       params.set('q', filterQ)
+      const res = await fetch(`/api/admin/documentos-emitidos?${params.toString()}`)
+      const json = await res.json()
+      if (json.ok) {
+        setDocs(json.documentos)
+        setStats(json.stats)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingDocs(false)
+    }
+  }
+
+  useEffect(() => { cargarDocs() }, [filterTipo, filterValido, filterChildId])
+
+  const invalidar = async (codigoDoc: string) => {
+    const motivo = window.prompt('Motivo de la invalidación (opcional):')
+    if (motivo === null) return  // canceló
+    try {
+      await fetch('/api/admin/documentos-emitidos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo_doc: codigoDoc, motivo: motivo || 'Reemitido' }),
+      })
+      await cargarDocs()
+    } catch (e: any) {
+      alert('Error: ' + e.message)
+    }
+  }
 
   const generar = async () => {
     if (!selected) return
@@ -1583,6 +1645,8 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
       a.click()
       URL.revokeObjectURL(url)
       setSuccess(`✅ Reporte Word descargado: ${a.download}`)
+      // Refrescar el historial de documentos emitidos
+      setTimeout(() => cargarDocs(), 600)
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }
@@ -1631,6 +1695,164 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
 
         {error && <div className="bg-red-50 border border-red-100 rounded-xl p-3"><p className="text-red-600 text-xs">{error}</p></div>}
         {success && <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3"><p className="text-emerald-700 text-sm font-semibold">{success}</p></div>}
+      </div>
+
+      {/* ═══ HISTORIAL DE DOCUMENTOS EMITIDOS ═══ */}
+      <div className="rounded-2xl border p-4 space-y-3" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-indigo-600">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Historial de documentos emitidos</h3>
+            </div>
+            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Cada documento generado queda registrado y es verificable vía QR
+            </p>
+          </div>
+          {stats && (
+            <div className="flex gap-2 text-xs">
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                ✓ {stats.total_validos} válidos
+              </span>
+              {stats.total_invalidos > 0 && (
+                <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                  ⚠ {stats.total_invalidos} invalidados
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <input
+            type="text"
+            placeholder="🔍 Buscar por código o paciente…"
+            value={filterQ}
+            onChange={e => setFilterQ(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') cargarDocs() }}
+            className="border rounded-lg px-3 py-2 text-xs md:col-span-2"
+            style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
+          />
+          <select
+            value={filterTipo}
+            onChange={e => setFilterTipo(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-xs"
+            style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
+          >
+            <option value="">Todos los tipos</option>
+            <option value="informe_clinico">Informe Clínico</option>
+            <option value="reporte_padres">Reporte Padres</option>
+            <option value="reporte_comparativo">Comparativo</option>
+            <option value="reporte_seguro">Seguros</option>
+            <option value="anamnesis_inicial">Anamnesis Inicial</option>
+            <option value="anamnesis_legacy">Anamnesis</option>
+            <option value="sesion_aba">Sesión ABA</option>
+            <option value="ficha_clinica">Ficha Clínica</option>
+          </select>
+          <select
+            value={filterValido}
+            onChange={e => setFilterValido(e.target.value as any)}
+            className="border rounded-lg px-3 py-2 text-xs"
+            style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
+          >
+            <option value="">Todos los estados</option>
+            <option value="1">Solo válidos</option>
+            <option value="0">Solo invalidados</option>
+          </select>
+        </div>
+
+        {/* Lista */}
+        {loadingDocs ? (
+          <div className="py-8 text-center text-xs" style={{ color: 'var(--text-muted)' }}>Cargando…</div>
+        ) : docs.length === 0 ? (
+          <div className="py-8 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+            No hay documentos emitidos con esos filtros.
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--card-border)' }}>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-[10px] font-black uppercase tracking-wider" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>
+                  <th className="px-3 py-2 text-left">Código</th>
+                  <th className="px-3 py-2 text-left">Tipo</th>
+                  <th className="px-3 py-2 text-left">Paciente</th>
+                  <th className="px-3 py-2 text-left">Fecha</th>
+                  <th className="px-3 py-2 text-center">Estado</th>
+                  <th className="px-3 py-2 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {docs.map(d => {
+                  const fecha = new Date(d.fecha_emision)
+                  const verifUrl = `/verificar/${encodeURIComponent(d.codigo_doc)}`
+                  return (
+                    <tr key={d.codigo_doc} className="border-t" style={{ borderColor: 'var(--card-border)' }}>
+                      <td className="px-3 py-2 font-mono font-bold text-blue-700">{d.codigo_doc}</td>
+                      <td className="px-3 py-2" style={{ color: 'var(--text-primary)' }}>{d.tipo_label}</td>
+                      <td className="px-3 py-2" style={{ color: 'var(--text-secondary)' }}>
+                        <span className="font-bold">{d.paciente_iniciales || '—'}</span>
+                        {d.paciente_nombre && (
+                          <span className="text-[10px] block opacity-60" title={d.paciente_nombre}>
+                            {d.paciente_nombre.length > 28 ? d.paciente_nombre.slice(0, 28) + '…' : d.paciente_nombre}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2" style={{ color: 'var(--text-secondary)' }}>
+                        {fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        <span className="text-[10px] block opacity-60">
+                          {fecha.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {d.valido ? (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                            ✓ Válido
+                          </span>
+                        ) : (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700" title={d.notas || ''}>
+                            ⚠ Invalidado
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <div className="flex gap-1 justify-center">
+                          <a
+                            href={verifUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Abrir página de verificación"
+                            className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-[10px] font-bold"
+                          >
+                            🔗 Ver
+                          </a>
+                          {d.valido && (
+                            <button
+                              onClick={() => invalidar(d.codigo_doc)}
+                              title="Invalidar este documento"
+                              className="px-2 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-[10px] font-bold"
+                            >
+                              ⚠ Invalidar
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {docs.length > 0 && (
+          <p className="text-[10px] text-center" style={{ color: 'var(--text-muted)' }}>
+            Mostrando {docs.length} documento{docs.length === 1 ? '' : 's'}. Cada uno tiene QR escaneable que apunta a su URL de verificación pública.
+          </p>
+        )}
       </div>
     </div>
   )
