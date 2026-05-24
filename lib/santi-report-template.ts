@@ -258,10 +258,10 @@ export function portadaInstitucional(opts: PortadaOptions): (Paragraph | Table)[
     ],
   })
 
-  // Salto de página al terminar la portada
+  // Salto de página al terminar la portada (solo PageBreak — sin break:1 + pageBreakBefore
+  // que generaban una página vacía intermedia)
   const salto = new Paragraph({
-    children: [new TextRun({ text: '', break: 1 })],
-    pageBreakBefore: true,
+    children: [new PageBreak()],
   })
 
   return [

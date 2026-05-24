@@ -382,7 +382,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
         fechaEmision: hoy,
         codigoDoc: docNum,
       }),
-      new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+      // (la portada ya incluye su propio salto de página)
 
       // ── Datos generales (estilo LuTr/SoRo) ──
       tituloSeccion('Datos Generales'),
@@ -436,7 +436,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
       parrafo(`El presente informe fue generado a partir de la ficha de anamnesis ${tipoInforme.toLowerCase()} completada por la familia el ${hoy}. La información aquí consignada constituye una base preliminar para el proceso de evaluación clínica directa con el paciente y deberá ser corroborada, ampliada y contrastada por el equipo profesional a cargo del caso.`),
       parrafo(`La información contenida en este documento es confidencial y de uso exclusivo del equipo clínico del Centro de Neuropsicología y Terapias SANTI, en el marco del proceso de atención del paciente.`),
       // ── Sello QR ──
-      new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+      new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }),
       ...sellosVerif,
       new Paragraph({
         spacing: { before: 320, after: 40 },

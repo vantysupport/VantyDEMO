@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
           // ── FIRMA ────────────────────────────────────────────────────────────
           espacio(),
           // ── SELLO QR DE VERIFICACIÓN ──
-          new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+          new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }),
           ...sellosVerif,
 
           new Paragraph({

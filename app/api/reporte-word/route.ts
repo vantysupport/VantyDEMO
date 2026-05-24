@@ -1589,7 +1589,7 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
       periodoEval: periodoTexto,
       codigoDoc: docNum,
     }),
-    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+    // (la portada ya incluye su propio salto de página)
 
     // ── DATOS GENERALES ──
     tpl.tituloSeccion('I.  Datos Generales'),
@@ -1702,7 +1702,7 @@ ${evalIniContexto}`+getLangInstruction(userLocale),
   ))
 
   // ── Sello QR de verificación + firma del equipo ──
-  sections.push(new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }))
+  sections.push(new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }))
   sections.push(...sellosVerificacion)
 
   // Cierre
@@ -1901,7 +1901,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
       periodoEval: periodoTexto,
       codigoDoc,
     }),
-    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+    // (la portada ya incluye su propio salto de página)
 
     // I. Bienvenida
     tpl.tituloSeccion('I.  Querida Familia'),
@@ -1939,7 +1939,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
   mensajeCierre.split('\n').filter(l => l.trim()).forEach(l => sections.push(tpl.parrafo(l.replace(/\*\*/g, ''))))
 
   // QR + firma
-  sections.push(new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }))
+  sections.push(new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }))
   sections.push(...sellosVerif)
   sections.push(
     new Paragraph({
@@ -2184,7 +2184,7 @@ Datos:
       periodoEval: periodoTexto,
       codigoDoc,
     }),
-    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+    // (la portada ya incluye su propio salto de página)
 
     // I. Datos del análisis
     tpl.tituloSeccion('I.  Datos del Análisis'),
@@ -2273,7 +2273,7 @@ Datos:
   }
 
   // QR + firma
-  sections.push(new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }))
+  sections.push(new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }))
   sections.push(...sellosVerif)
   sections.push(
     new Paragraph({

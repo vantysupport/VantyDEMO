@@ -116,7 +116,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
       fechaEmision: hoy,
       codigoDoc,
     }),
-    new Paragraph({ children: [new TextRun({ text: '', break: 1 })] }),
+    // (la portada ya incluye su propio salto de página)
 
     // ── I. DATOS DE LA SESIÓN ─────────────────────────────────────────────────
     h2('I.  DATOS DE LA SESIÓN'),
@@ -251,7 +251,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
     ] : []),
 
     // ── SELLO QR DE VERIFICACIÓN ──────────────────────────────────────────────
-    new Paragraph({ spacing: { before: 320, after: 80 }, children: [] }),
+    new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }),
     ...sellosVerif,
 
     // ── CIERRE ────────────────────────────────────────────────────────────────
