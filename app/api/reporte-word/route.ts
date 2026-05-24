@@ -1686,7 +1686,8 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       ['Período de trabajo', periodoTexto],
       ['Total de sesiones registradas', String(totalSesiones)],
       ['Semanas de tratamiento', String(semanas)],
-      ['Programas activos', String(progArr.length)],
+      // Programas activos = los que NO cumplen criterio (siguen en intervención/línea base)
+      ['Programas activos', String(programasConDatos.filter(p => !programaCumpleCriterio(p.id)).length)],
       ['Programas con criterio alcanzado', String(programasDominados.length)],
       ['Promedio global de logro', `${promedioGlobal}%`],
       ['Documento N°', docNum],
@@ -2074,7 +2075,8 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
       ['Período de trabajo', periodoTexto],
       ['Sesiones realizadas', `${totalSesiones} en ${semanas} semanas`],
       ['Promedio general de logro', `${promedioGlobal}%`],
-      ['Programas en los que está trabajando', `${progArr.length}`],
+      // Programas en curso (no incluye los que ya cumplen criterio)
+      ['Programas en los que está trabajando', `${programasInfo.filter(p => !p.cumple_criterio && !['dominado','logrado','criterio_alcanzado'].includes(p.estado)).length}`],
       ['Programas con criterio alcanzado', `${programasDominados.length}`],
     ]),
 
