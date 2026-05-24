@@ -116,33 +116,14 @@ export async function POST(req: NextRequest) {
       else protocoloSugerido = 'AFLS'  // adolescentes/adultos: habilidades funcionales
     }
 
-    const protocolosGuia = `MARCO DE TRABAJO OBLIGATORIO (no inventes objetivos genéricos):
+    const protocolosGuia = `PROTOCOLOS ABA DE REFERENCIA:
+- VB-MAPP (0-48m): 16 áreas verbales (Mand, Tact, Echoic, Listener, etc.).
+- ABLLS-R (2-12 años): 25 áreas A-Z con códigos (B=Mand, F=Receptivo, H=Tact, K=Conversación, L=Social, etc.).
+- AFLS (adolescentes/funcional): 6 módulos (Basic, Home, Community, School, Vocational, Independent).
 
-📘 VB-MAPP (Verbal Behavior Milestones Assessment and Placement Program):
-   - 16 áreas operantes verbales: Mand, Tact, Echoic, Listener Responding, Visual Performance, etc.
-   - Niveles: 0-18m / 18-30m / 30-48m
-   - Usar para: niños 0-48 meses, especialmente con foco en conducta verbal.
+PROTOCOLO SUGERIDO PARA ESTE CASO: ${protocoloSugerido}
 
-📗 ABLLS-R (Assessment of Basic Language and Learning Skills - Revised):
-   - 25 áreas (A-Z): A=Cooperación, B=Petición/Mand, C=Identificación visual, D=Imitación motora,
-     F=Repertorio receptivo, G=Mando, H=Tacto, K=Conversación, L=Habilidades sociales, etc.
-   - Cada ítem tiene código (ej: B12, H21, K6) y criterio observable.
-   - Usar para: niños 2-12 años con TEA/TDAH/dificultades cognitivas.
-
-📕 AFLS (Assessment of Functional Living Skills):
-   - 6 módulos: Basic Living, Home, Community, School, Vocational, Independent Living.
-   - Usar para: adolescentes/adultos o niños mayores con foco en autonomía funcional.
-
-PROTOCOLO RECOMENDADO PARA ESTE CASO (basado en edad/diagnóstico): ${protocoloSugerido}
-Podés combinar con otros si corresponde clínicamente.
-
-🚫 PROHIBIDO devolver objetivos genéricos como "Mejorar la atención" o "Desarrollar la comunicación".
-✅ OBLIGATORIO citar:
-   - Protocolo de origen (VB-MAPP / ABLLS-R / AFLS)
-   - Código exacto del ítem cuando aplique (ej: "ABLLS-R B12", "VB-MAPP Mand Nivel 2", "AFLS Basic 3.4")
-   - Conducta operacionalizada (qué se ve, en qué contexto, bajo qué SD)
-   - Criterio de dominio numérico (ej: 80% en 3 sesiones consecutivas con 2 terapeutas distintos)
-   - Procedimiento de enseñanza específico (DTT, NET, ITT, BST, video modeling, errorless teaching, etc.)`
+🚫 NUNCA objetivos genéricos. ✅ SIEMPRE: protocolo + código + SD/R/consecuencia + criterio numérico + técnica ABA.`
 
     if (accion === 'evaluar_dominio') {
       promptBase = `${protocolosGuia}
@@ -255,14 +236,55 @@ REGLAS NO NEGOCIABLES:
 
     const respuestaRaw = await callGroqSimple(sistemaPrompt,
       promptConCerebro,
-      { model: GROQ_MODELS.SMART, temperature: 0.3, maxTokens: 2000 }
+      { model: GROQ_MODELS.SMART, temperature: 0.3, maxTokens: 4000 }
     )
 
-    // Parsear JSON de la respuesta — robusto contra prefijos/sufijos extra del modelo
-    let resultado: any = null
+    // Parsear JSON de la respuesta — robusto contra prefijos/sufijos extra Y truncamiento
     const intentarParsear = (txt: string): any | null => {
       try { return JSON.parse(txt) } catch { return null }
     }
+    /**
+     * Repara JSON truncado: cierra strings/braces/brackets abiertos y elimina la
+     * última coma/objeto incompleto para que parseé como JSON válido.
+     */
+    const repararJsonTruncado = (txt: string): string => {
+      let s = txt.trim()
+      // Si terminamos en medio de un string, cerrarlo
+      const comillas = (s.match(/"/g) || []).length
+      // contar comillas no-escapadas
+      let escapando = false
+      let dentroString = false
+      for (let i = 0; i < s.length; i++) {
+        const c = s[i]
+        if (escapando) { escapando = false; continue }
+        if (c === '\\') { escapando = true; continue }
+        if (c === '"') dentroString = !dentroString
+      }
+      if (dentroString) s += '"'
+      // Cortar última coma colgante o coma + objeto/array incompleto
+      s = s.replace(/,\s*$/, '')
+      s = s.replace(/,\s*\{[^}]*$/, '')  // ", { ...incompleto"
+      s = s.replace(/,\s*"[^"]*"\s*:\s*"[^"]*$/, '')  // ", "key": "valor incompleto"
+      s = s.replace(/,\s*"[^"]*"\s*:\s*$/, '')  // ", "key":"
+      // Contar y cerrar brackets/braces abiertos
+      let abreLlave = 0, abreCorch = 0
+      escapando = false; dentroString = false
+      for (const c of s) {
+        if (escapando) { escapando = false; continue }
+        if (c === '\\') { escapando = true; continue }
+        if (c === '"') { dentroString = !dentroString; continue }
+        if (dentroString) continue
+        if (c === '{') abreLlave++
+        else if (c === '}') abreLlave--
+        else if (c === '[') abreCorch++
+        else if (c === ']') abreCorch--
+      }
+      while (abreCorch > 0) { s += ']'; abreCorch-- }
+      while (abreLlave > 0) { s += '}'; abreLlave-- }
+      return s
+    }
+
+    let resultado: any = null
     // 1) Limpiar code fences ```json
     const sinFences = respuestaRaw.replace(/```json\n?|\n?```/g, '').trim()
     resultado = intentarParsear(sinFences)
@@ -271,7 +293,13 @@ REGLAS NO NEGOCIABLES:
       const m = sinFences.match(/\{[\s\S]*\}/)
       if (m) resultado = intentarParsear(m[0])
     }
-    // 3) Último recurso: devolver texto plano
+    // 3) Intentar reparar JSON truncado
+    if (!resultado) {
+      const reparado = repararJsonTruncado(sinFences)
+      resultado = intentarParsear(reparado)
+      if (resultado) console.log('[agente-objetivos] JSON reparado desde respuesta truncada')
+    }
+    // 4) Último recurso: devolver texto plano
     if (!resultado) {
       console.warn('[agente-objetivos] no se pudo parsear JSON, devolviendo texto plano. Respuesta:', respuestaRaw.slice(0, 200))
       resultado = { texto_libre: respuestaRaw }
