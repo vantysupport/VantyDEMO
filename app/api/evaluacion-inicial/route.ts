@@ -154,6 +154,10 @@ export async function PATCH(req: NextRequest) {
       'asignado_en',
       'documento_url',
       'documento_md',
+      // Permite al admin editar la selección de terapias hecha por el padre
+      'terapias_seleccionadas',
+      'nota_cambio_terapias',
+      'terapias_cambiadas_por_admin',
     ]
     const patch: Record<string, any> = { updated_at: new Date().toISOString() }
     for (const k of Object.keys(campos)) {
