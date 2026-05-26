@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     { id: 'cerebro',      icon: Database,        label: t('nav.cerebro'),         roles: ['jefe','admin'] },
     { id: 'pagos',        icon: DollarSign,      label: 'Pagos',                  roles: ['jefe','admin'] },
     { id: 'reportes-financieros', icon: BarChart3, label: 'Reportes Financieros', roles: ['jefe'] },
-    { id: 'recursos-adicionales', icon: BookOpen, label: 'Recursos Adicionales',  roles: ['jefe','admin','especialista','terapeuta'] },
+    { id: 'recursos-adicionales', icon: BookOpen, label: 'Recursos Adicionales',  roles: ['jefe','admin','especialista','terapeuta','secretaria'] },
     { id: 'chat-especialistas', icon: MessageCircle, label: 'Chat Equipo', roles: ['jefe'] },
   ]
   const MOBILE_NAV = [

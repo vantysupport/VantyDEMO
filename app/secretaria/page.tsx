@@ -6,7 +6,7 @@ import Image from 'next/image'
 import {
   LayoutDashboard, Calendar, CalendarDays,
   User, Menu, X, Loader2, Settings, Bell,
-  DollarSign, ClipboardList, TrendingUp
+  DollarSign, ClipboardList, TrendingUp, BookOpen, ShoppingBag, Sparkles,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
@@ -18,6 +18,39 @@ import SecretariaAgenda    from './components/SecretariaAgenda'
 import SecretariaPagos     from './components/SecretariaPagos'
 import AdminReportesFinancieros from '@/app/admin/components/AdminReportesFinancieros'
 import SecretariaPerfil    from './components/SecretariaPerfil'
+// Recursos Adicionales (Catálogo de Terapias + Recursos + Tienda)
+import ResourcesManagementView from '@/app/admin/components/ResourcesManagementView'
+import StoreManagementView     from '@/app/admin/components/StoreManagementView'
+import CatalogoTerapiasView    from '@/app/admin/components/CatalogoTerapiasView'
+
+// Vista de Recursos Adicionales — replica de la del admin (3 tabs)
+function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
+  const [tab, setTab] = useState<'recursos' | 'tienda' | 'terapias'>('terapias')
+  return (
+    <div className="flex flex-col gap-4">
+      <div className={`flex gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
+        {([
+          { id: 'recursos', icon: BookOpen, label: 'Recursos' },
+          { id: 'tienda',   icon: ShoppingBag, label: 'Tienda' },
+          { id: 'terapias', icon: Sparkles,   label: 'Catálogo Terapias' },
+        ] as const).map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all
+              ${tab === t.id
+                ? 'bg-blue-600 text-white shadow-md'
+                : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'
+              }`}>
+            <t.icon size={15} />
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {tab === 'recursos' && <ResourcesManagementView />}
+      {tab === 'tienda'   && <StoreManagementView />}
+      {tab === 'terapias' && <CatalogoTerapiasView />}
+    </div>
+  )
+}
 
 function SidebarLink({ icon: Icon, label, active, onClick, badge }: any) {
   const { isDark } = useTheme()
@@ -50,6 +83,7 @@ export default function SecretariaDashboard() {
     { id: 'agenda',        icon: Calendar,        label: 'Agenda' },
     { id: 'pagos',                icon: DollarSign,      label: 'Pagos' },
     { id: 'reportes-financieros', icon: TrendingUp,      label: 'Rep. Financieros' },
+    { id: 'recursos-adicionales', icon: BookOpen,        label: 'Recursos Adicionales' },
     { id: 'perfil',        icon: User,            label: 'Mi Perfil' },
   ]
 
@@ -58,6 +92,7 @@ export default function SecretariaDashboard() {
     agenda:       'Agenda',
     pagos:                'Pagos y Facturación',
     'reportes-financieros': 'Reportes Financieros',
+    'recursos-adicionales': 'Recursos Adicionales',
     perfil:       'Mi Perfil',
   }
 
@@ -93,6 +128,7 @@ export default function SecretariaDashboard() {
       case 'agenda':        return <SecretariaAgenda profile={profile} />
       case 'pagos':                 return <SecretariaPagos profile={profile} />
       case 'reportes-financieros':  return <AdminReportesFinancieros />
+      case 'recursos-adicionales':  return <RecursosAdicionalesView isDark={isDark} />
       case 'perfil':        return <SecretariaPerfil profile={profile} onUpdate={loadProfile} onAvatarUpdate={(url: string) => setProfile((p: any) => ({ ...p, avatar_url: url }))} />
       default:              return <SecretariaHome onNavigate={setActiveView} />
     }
