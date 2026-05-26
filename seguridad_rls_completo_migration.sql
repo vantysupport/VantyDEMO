@@ -84,12 +84,23 @@ BEGIN
   EXECUTE format('ALTER TABLE %s ENABLE ROW LEVEL SECURITY', v_full);
   EXECUTE format('DROP POLICY IF EXISTS %I ON %s', p_policy, v_full);
 
+  -- PostgreSQL exige distintas cláusulas según el comando:
+  --   SELECT/DELETE → solo USING
+  --   INSERT        → solo WITH CHECK
+  --   UPDATE/ALL    → ambas
   IF p_for = 'SELECT' OR p_for = 'DELETE' THEN
     EXECUTE format(
       'CREATE POLICY %I ON %s FOR %s TO authenticated USING (%s)',
       p_policy, v_full, p_for, p_using
     );
+  ELSIF p_for = 'INSERT' THEN
+    v_check_clause := COALESCE(p_check, p_using);
+    EXECUTE format(
+      'CREATE POLICY %I ON %s FOR INSERT TO authenticated WITH CHECK (%s)',
+      p_policy, v_full, v_check_clause
+    );
   ELSE
+    -- UPDATE o ALL
     v_check_clause := COALESCE(p_check, p_using);
     EXECUTE format(
       'CREATE POLICY %I ON %s FOR %s TO authenticated USING (%s) WITH CHECK (%s)',
