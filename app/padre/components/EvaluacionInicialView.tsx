@@ -38,17 +38,10 @@ type Pregunta =
 type Seccion = { titulo: string; descripcion?: string; icono: string; preguntas: Pregunta[] }
 
 // ─── Primera ficha: INTAKE — "Ficha inicial para papás" ────────────────
-// Estructura oficial SANTI: 9 secciones que cubren contacto, datos del menor,
-// padres, motivo de consulta, historia escolar, diagnósticos, terapias previas,
+// Estructura oficial SANTI: secciones que cubren datos del menor, padres,
+// motivo de consulta, historia escolar, diagnósticos, terapias previas,
 // dinámica familiar e información final / marketing.
 const SECCIONES_INTAKE: Seccion[] = [
-  {
-    titulo: 'Datos de contacto y consentimiento', icono: '✉️',
-    descripcion: 'Te enviaremos una copia de tus respuestas al correo que indiques. Tus datos son privados y confidenciales — los usaremos únicamente para atender mejor a tu hijo/a.',
-    preguntas: [
-      { id: 'correo_contacto', type: 'text', label: 'Correo electrónico', placeholder: 'tucorreo@ejemplo.com', required: true },
-    ],
-  },
   {
     titulo: 'Datos generales del menor', icono: '🧒',
     descripcion: 'Información básica del niño/a a evaluar.',
@@ -67,7 +60,6 @@ const SECCIONES_INTAKE: Seccion[] = [
     preguntas: [
       { id: 'padre_nombre', type: 'text', label: 'Nombres y apellidos del papá' },
       { id: 'madre_nombre', type: 'text', label: 'Nombres y apellidos de la mamá' },
-      { id: 'correo_envio', type: 'text', label: 'Correo para envío de respuestas', placeholder: 'Confirma el correo donde recibirás la copia', required: true },
     ],
   },
   {
@@ -865,7 +857,7 @@ function WizardIntake({ child, seccionIdx, setSeccionIdx, respuestas, setRespues
           Documento necesario para la entrevista inicial / primera consulta de <strong>{child.name}</strong>.
         </p>
         <p className="text-white/80 text-xs leading-relaxed">
-          Este cuestionario nos permite atender mejor las necesidades de tu hijo/a. Los datos son <strong>privados y confidenciales</strong>. Recibirás una copia de tus respuestas al correo electrónico que indiques.
+          Este cuestionario nos permite atender mejor las necesidades de tu hijo/a. Los datos son <strong>privados y confidenciales</strong> y se usan únicamente con fines clínicos.
         </p>
       </div>
 
