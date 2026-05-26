@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logAuditEvent } from '@/lib/audit-log'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -186,15 +187,41 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 })
 
+    // Cargar info para el audit log antes de borrar
+    const { data: evalToDelete } = await supabaseAdmin
+      .from('evaluaciones_iniciales')
+      .select('id, child_id, estado, parent_id')
+      .eq('id', id).maybeSingle()
+
     const { error } = await supabaseAdmin
       .from('evaluaciones_iniciales')
       .delete()
       .eq('id', id)
     if (error) throw error
 
+    // Audit log (best-effort)
+    await logAuditEvent({
+      action: 'delete',
+      resource_type: 'evaluacion',
+      resource_id: id,
+      child_id: evalToDelete?.child_id || null,
+      description: 'Evaluación inicial eliminada por admin',
+      metadata: { estado_previo: evalToDelete?.estado, parent_id: evalToDelete?.parent_id },
+      req,
+    })
+
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     console.error('[evaluacion-inicial][DELETE]', e)
+    await logAuditEvent({
+      action: 'delete',
+      resource_type: 'evaluacion',
+      resource_id: new URL(req.url).searchParams.get('id') || undefined,
+      description: 'Intento fallido de eliminar evaluación inicial',
+      success: false,
+      errorMessage: e?.message,
+      req,
+    })
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
