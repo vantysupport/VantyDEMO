@@ -37,63 +37,86 @@ type Pregunta =
 
 type Seccion = { titulo: string; descripcion?: string; icono: string; preguntas: Pregunta[] }
 
-// ─── Primera ficha: INTAKE (sin cambios) ───────────────────────────────
+// ─── Primera ficha: INTAKE — "Ficha inicial para papás" ────────────────
+// Estructura oficial SANTI: 9 secciones que cubren contacto, datos del menor,
+// padres, motivo de consulta, historia escolar, diagnósticos, terapias previas,
+// dinámica familiar e información final / marketing.
 const SECCIONES_INTAKE: Seccion[] = [
+  {
+    titulo: 'Datos de contacto y consentimiento', icono: '✉️',
+    descripcion: 'Te enviaremos una copia de tus respuestas al correo que indiques. Tus datos son privados y confidenciales — los usaremos únicamente para atender mejor a tu hijo/a.',
+    preguntas: [
+      { id: 'correo_contacto', type: 'text', label: 'Correo electrónico', placeholder: 'tucorreo@ejemplo.com', required: true },
+    ],
+  },
+  {
+    titulo: 'Datos generales del menor', icono: '🧒',
+    descripcion: 'Información básica del niño/a a evaluar.',
+    preguntas: [
+      { id: 'menor_nombre', type: 'text', label: 'Nombres y apellidos del menor', required: true },
+      { id: 'menor_edad', type: 'text', label: 'Edad (años y meses)', placeholder: 'Ej: 7 años 3 meses', required: true },
+      { id: 'menor_fecha_nacimiento', type: 'date', label: 'Fecha de nacimiento', required: true },
+      { id: 'menor_grado', type: 'text', label: 'Grado educativo', placeholder: 'Ej: 2° de primaria' },
+      { id: 'menor_institucion', type: 'text', label: 'Institución educativa' },
+      { id: 'menor_residencia', type: 'text', label: 'Lugar de residencia (distrito / ciudad)' },
+      { id: 'menor_contacto', type: 'text', label: 'Número de contacto', placeholder: 'Indica si es de mamá o papá', required: true },
+    ],
+  },
+  {
+    titulo: 'Datos generales de los padres', icono: '👨‍👩‍👧',
+    preguntas: [
+      { id: 'padre_nombre', type: 'text', label: 'Nombres y apellidos del papá' },
+      { id: 'madre_nombre', type: 'text', label: 'Nombres y apellidos de la mamá' },
+      { id: 'correo_envio', type: 'text', label: 'Correo para envío de respuestas', placeholder: 'Confirma el correo donde recibirás la copia', required: true },
+    ],
+  },
   {
     titulo: 'Motivo de consulta', icono: '💬',
     descripcion: 'Cuéntanos en tus palabras qué te trae al centro.',
     preguntas: [
-      { id: 'motivo_principal', type: 'textarea', label: '¿Cuál es el motivo principal por el que buscas evaluación?', required: true },
-      { id: 'desde_cuando', type: 'text', label: '¿Desde cuándo notas estas dificultades?', placeholder: 'Ej: hace 6 meses…', required: true },
-      { id: 'quien_deriva', type: 'select', label: '¿Quién sugirió la evaluación?', options: ['Iniciativa propia', 'Colegio / docente', 'Pediatra / médico', 'Familiar', 'Otro profesional'], required: true },
+      { id: 'motivo_principal', type: 'textarea', label: '¿Cuál es su principal preocupación? Menciona una o varias.', required: true },
+      { id: 'desde_cuando', type: 'radio', label: '¿Desde cuándo notas esta preocupación?', options: ['Menos de 1 mes', '1-3 meses', '3-6 meses', 'Más de 6 meses'], required: true },
+      { id: 'como_manejo', type: 'textarea', label: '¿De qué manera lo has manejado? ¿Cómo has tratado de solucionarlo?' },
     ],
   },
   {
-    titulo: 'Desarrollo y antecedentes', icono: '👶',
+    titulo: 'Historia escolar', icono: '🏫',
     preguntas: [
-      { id: 'embarazo', type: 'radio', label: 'El embarazo fue:', options: ['Normal', 'Con complicaciones', 'No lo sé'] },
-      { id: 'tipo_parto', type: 'radio', label: 'Tipo de parto:', options: ['Natural', 'Cesárea programada', 'Cesárea de emergencia', 'No lo sé'] },
-      { id: 'prematuro', type: 'radio', label: '¿Fue prematuro/a?', options: ['No', 'Sí, leve (35-37 sem)', 'Sí, moderado (32-34 sem)', 'Sí, severo (<32 sem)'] },
-      { id: 'caminar_edad', type: 'text', label: '¿A qué edad caminó solo/a?', placeholder: 'Ej: 12 meses' },
-      { id: 'primeras_palabras', type: 'text', label: '¿A qué edad dijo sus primeras palabras?', placeholder: 'Ej: 14 meses' },
-      { id: 'antecedentes_medicos', type: 'checkbox', label: 'Marca si presentó alguno:', options: ['Convulsiones', 'Meningitis o encefalitis', 'Golpes fuertes en la cabeza', 'Hospitalizaciones', 'Cirugías', 'Problemas auditivos', 'Problemas visuales', 'Ninguno'] },
+      { id: 'experiencia_escolar', type: 'textarea', label: '¿Cómo ha sido la experiencia escolar de tu hijo/a hasta ahora?' },
+      { id: 'rendimiento_academico', type: 'textarea', label: '¿Cómo crees que le va a nivel académico?' },
+      { id: 'bullying', type: 'textarea', label: '¿Alguna vez ha sufrido bullying? ¿Algún dato escolar importante que desees mencionar?' },
     ],
   },
   {
-    titulo: 'Área cognitiva y aprendizaje', icono: '🧠',
+    titulo: 'Diagnóstico y/o comorbilidades', icono: '🩺',
     preguntas: [
-      { id: 'escolaridad', type: 'select', label: 'Nivel escolar actual:', options: ['No asiste', 'Estimulación / Nido', 'Inicial', 'Primaria 1°-3°', 'Primaria 4°-6°', 'Secundaria 1°-3°', 'Secundaria 4°-5°'] },
-      { id: 'rendimiento_escolar', type: 'radio', label: 'Rendimiento escolar general:', options: ['Bueno', 'Regular', 'Bajo', 'Muy bajo'] },
-      { id: 'atencion', type: 'radio', label: '¿Tiene dificultades para mantener la atención?', options: ['No', 'A veces', 'Frecuentemente', 'Siempre'] },
-      { id: 'memoria', type: 'radio', label: '¿Olvida instrucciones o lo que acaba de aprender?', options: ['No', 'A veces', 'Frecuentemente'] },
-      { id: 'lectura', type: 'radio', label: 'Lectura:', options: ['No corresponde a su edad', 'Adecuada para su edad', 'Con dificultades', 'No lee aún'] },
-      { id: 'escritura', type: 'radio', label: 'Escritura:', options: ['No corresponde a su edad', 'Adecuada para su edad', 'Con dificultades', 'No escribe aún'] },
-      { id: 'matematicas', type: 'radio', label: 'Matemáticas:', options: ['Adecuadas', 'Con dificultades', 'No corresponde a su edad'] },
+      { id: 'diagnostico_previo', type: 'textarea', label: '¿Cuenta con algún diagnóstico previo? ¿Cuál?' },
+      { id: 'alergias_medicacion', type: 'textarea', label: '¿Cuenta con alergias o está recibiendo alguna medicación?' },
+      { id: 'antecedentes_medicos', type: 'textarea', label: '¿Algún antecedente médico del niño/a o de algún familiar que consideres importante?' },
     ],
   },
   {
-    titulo: 'Área socioemocional', icono: '❤️',
+    titulo: 'Evaluaciones y terapias anteriores', icono: '📋',
     preguntas: [
-      { id: 'estado_animo', type: 'checkbox', label: 'Marca lo que observas frecuentemente:', options: ['Tristeza', 'Ansiedad / preocupación', 'Miedos intensos', 'Irritabilidad o enojo', 'Llanto frecuente', 'Cambios bruscos de humor', 'Está bien la mayoría del tiempo'] },
-      { id: 'regulacion', type: 'radio', label: '¿Le cuesta calmarse cuando se frustra?', options: ['No', 'A veces', 'Frecuentemente'] },
-      { id: 'vinculos', type: 'radio', label: 'Cómo se relaciona con otros niños:', options: ['Bien, hace amigos fácilmente', 'Le cuesta un poco', 'Se aísla / prefiere estar solo/a', 'Tiene conflictos frecuentes'] },
-      { id: 'evento_estresante', type: 'textarea', label: '¿Ha vivido algún evento significativo recientemente?' },
-      { id: 'conductas_repetitivas', type: 'radio', label: '¿Movimientos o conductas repetitivas, intereses muy fijos o le incomodan los cambios?', options: ['No', 'Un poco', 'Sí, claramente'] },
+      { id: 'evaluaciones_previas', type: 'textarea', label: '¿Realizaron evaluaciones anteriores? Si fue así, ¿cuáles fueron los resultados?' },
+      { id: 'terapias_previas', type: 'textarea', label: '¿Ha recibido algún tipo de terapia anteriormente (psicología, terapia ocupacional, lenguaje, fisioterapia, etc.)? ¿Cómo le fue?' },
     ],
   },
   {
-    titulo: 'Familia y entorno', icono: '🏠',
+    titulo: 'Dinámica familiar', icono: '🏠',
     preguntas: [
-      { id: 'con_quien_vive', type: 'text', label: '¿Con quién vive?', placeholder: 'Ej: papá, mamá, dos hermanas…' },
-      { id: 'dinamica_familiar', type: 'textarea', label: 'Cómo describirías la dinámica familiar actual:' },
-      { id: 'antecedentes_familiares', type: 'checkbox', label: '¿Hay antecedentes familiares?', options: ['TDAH', 'TEA / autismo', 'Dificultades de aprendizaje', 'Depresión / ansiedad', 'Epilepsia / convulsiones', 'Otros trastornos del desarrollo', 'Ninguno'] },
+      { id: 'conflictos_recientes', type: 'textarea', label: '¿Hubo conflictos en la familia o algún cambio fuerte en los últimos 6 meses (separación, mudanza, pérdida de un ser querido)?' },
+      { id: 'manejo_conflictos', type: 'textarea', label: '¿Cómo manejan los conflictos en casa?' },
+      { id: 'notas_adicionales', type: 'textarea', label: 'Notas adicionales: algo que desees mencionar y que no se haya cubierto en las preguntas anteriores.' },
     ],
   },
   {
-    titulo: 'Expectativas', icono: '✨',
+    titulo: 'Información final', icono: '✨',
+    descripcion: 'Para conocerte mejor.',
     preguntas: [
-      { id: 'expectativas', type: 'textarea', label: '¿Qué esperas obtener de esta evaluación?', required: true },
-      { id: 'observaciones', type: 'textarea', label: '¿Algo más que quieras compartir con el equipo?' },
+      { id: 'medio_conocimiento', type: 'select', label: '¿Por cuál medio nos conociste?', options: ['Instagram', 'Tiktok', 'Recomendación', 'Colegio', 'Otros'] },
+      { id: 'medio_otros', type: 'text', label: 'Si elegiste "Otros", cuéntanos cuál:', placeholder: 'Ej: Facebook, búsqueda en Google, etc.' },
+      { id: 'recibir_contenido', type: 'radio', label: '¿Deseas recibir información, consejos de crianza/familia y contenido sobre nuestros servicios en tu correo?', options: ['Sí', 'No'], required: true },
     ],
   },
 ]
@@ -836,10 +859,13 @@ function WizardIntake({ child, seccionIdx, setSeccionIdx, respuestas, setRespues
       <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)' }}>
         <div className="flex items-center gap-3 mb-2">
           <ClipboardCheck size={28} />
-          <h1 className="text-2xl font-black">Evaluación Inicial</h1>
+          <h1 className="text-2xl font-black">Ficha inicial para papás</h1>
         </div>
-        <p className="text-white/90 text-sm">
-          Esta ficha nos ayuda a entender mejor a <strong>{child.name}</strong>. Toma unos 8-10 minutos.
+        <p className="text-white/90 text-sm mb-2">
+          Documento necesario para la entrevista inicial / primera consulta de <strong>{child.name}</strong>.
+        </p>
+        <p className="text-white/80 text-xs leading-relaxed">
+          Este cuestionario nos permite atender mejor las necesidades de tu hijo/a. Los datos son <strong>privados y confidenciales</strong>. Recibirás una copia de tus respuestas al correo electrónico que indiques.
         </p>
       </div>
 
