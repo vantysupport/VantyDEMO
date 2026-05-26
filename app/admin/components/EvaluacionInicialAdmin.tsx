@@ -13,7 +13,7 @@
 import { useEffect, useState } from 'react'
 import {
   ClipboardCheck, Brain, Heart, Loader2, X, Sparkles, FileText, RefreshCw,
-  CheckCircle2, User, Send, Award, Clock, Download, MessageCircle, Edit3,
+  CheckCircle2, User, Send, Award, Clock, Download, MessageCircle, Edit3, Trash2,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -43,6 +43,8 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
   const [respuesta, setRespuesta] = useState('')
   const [enviandoResp, setEnviandoResp] = useState(false)
   const [profile, setProfile] = useState<any>(null)
+  const [eliminando, setEliminando] = useState(false)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
 
   useEffect(() => { if (childId) cargar() }, [childId])
 
@@ -108,6 +110,22 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       await cargar()
     } catch (e: any) { alert('Error: ' + e.message) }
     finally { setReRecomendando(false) }
+  }
+
+  const eliminarEvaluacion = async () => {
+    if (!evaluacion?.id) return
+    setEliminando(true)
+    try {
+      const r = await fetch(`/api/evaluacion-inicial?id=${evaluacion.id}`, { method: 'DELETE' })
+      const d = await r.json()
+      if (!r.ok || d.error) throw new Error(d.error || 'No se pudo eliminar')
+      setShowConfirmDelete(false)
+      setEvaluacion(null)
+    } catch (e: any) {
+      alert('Error al eliminar: ' + e.message)
+    } finally {
+      setEliminando(false)
+    }
   }
 
   const enviarRespuesta = async () => {
@@ -215,9 +233,53 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 <FileText size={14} /> Doc. interno
               </button>
             )}
+            {/* Eliminar evaluación (acción destructiva, va al final) */}
+            <button onClick={() => setShowConfirmDelete(true)}
+              className="px-3 py-2 rounded-lg border-2 text-xs font-bold flex items-center gap-1.5 hover:bg-red-50 transition-colors"
+              style={{ borderColor: '#fecaca', color: '#dc2626' }}>
+              <Trash2 size={14} /> Eliminar
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmación para eliminar */}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => !eliminando && setShowConfirmDelete(false)}>
+          <div className="rounded-2xl p-6 max-w-md w-full shadow-2xl border-2 border-red-200"
+            style={{ background: 'var(--card)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Trash2 size={20} className="text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-base mb-1" style={{ color: 'var(--text-primary)' }}>
+                  ¿Eliminar evaluación inicial?
+                </h3>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Se borrará permanentemente la evaluación de <strong>{childName}</strong>, incluyendo el intake, la anamnesis específica, la recomendación de la IA y las terapias seleccionadas. Esta acción <strong>no se puede deshacer</strong>.
+                </p>
+                <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                  El padre/madre podrá iniciar una nueva evaluación desde cero.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowConfirmDelete(false)} disabled={eliminando}
+                className="px-4 py-2 rounded-lg border-2 text-sm font-bold disabled:opacity-50"
+                style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
+                Cancelar
+              </button>
+              <button onClick={eliminarEvaluacion} disabled={eliminando}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold flex items-center gap-1.5 disabled:opacity-50">
+                {eliminando ? <><Loader2 size={14} className="animate-spin" /> Eliminando…</> : <><Trash2 size={14} /> Sí, eliminar</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ALERTA si está esperando respuesta */}
       {evaluacion.estado === 'terapia_seleccionada' && (
