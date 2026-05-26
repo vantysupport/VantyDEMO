@@ -113,22 +113,15 @@ export default function CatalogoTerapiasView() {
     if (!file) return
     setUploading(true)
     try {
-      const ext = file.name.split('.').pop() || 'jpg'
-      const path = `terapias/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const buckets = ['public', 'images', 'recursos', 'avatars']
-      let url: string | null = null
-      let lastErr = ''
-      for (const bucket of buckets) {
-        const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false })
-        if (!error) {
-          const { data } = supabase.storage.from(bucket).getPublicUrl(path)
-          url = data.publicUrl
-          break
-        }
-        lastErr = error.message
-      }
-      if (!url) throw new Error('No se pudo subir: ' + lastErr + ' (crea un bucket público "public" en Supabase Storage)')
-      setEditing(ed => ({ ...ed!, imagen_url: url! }))
+      // Usa el endpoint server-side que auto-crea el bucket si no existe
+      // y maneja la subida con service_role (sin depender de RLS).
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('folder', 'terapias')
+      const res = await fetch('/api/admin/upload-imagen', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data.url) throw new Error(data.error || 'No se pudo subir la imagen')
+      setEditing(ed => ({ ...ed!, imagen_url: data.url }))
     } catch (e: any) {
       alert(e.message)
     } finally { setUploading(false) }
@@ -187,7 +180,10 @@ export default function CatalogoTerapiasView() {
           className="px-3 py-2.5 rounded-xl border outline-none text-sm focus:border-indigo-500"
           style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
           <option value="">Todas las categorías</option>
-          {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+          {/* Categorías dinámicas extraídas de las terapias existentes */}
+          {Array.from(new Set(terapias.map(t => t.categoria).filter(Boolean) as string[])).sort().map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </select>
         <div className="text-xs font-bold px-3 py-2.5 rounded-xl" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>
           {terapiasFiltradas.length} {terapiasFiltradas.length === 1 ? 'terapia' : 'terapias'}
@@ -350,11 +346,9 @@ function TerapiaCard({
             </p>
             {t.precio != null ? (
               <div className="flex items-baseline gap-1">
+                <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>S/.</span>
                 <span className="text-2xl font-black" style={{ color: c.accent }}>
                   {Number(t.precio).toFixed(0)}
-                </span>
-                <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
-                  {t.moneda}
                 </span>
               </div>
             ) : (
@@ -463,12 +457,13 @@ function EditorModal({
           {/* CATEGORÍA + MODALIDAD */}
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Categoría">
-              <select value={editing.categoria || ''} onChange={e => setEditing({ ...editing, categoria: e.target.value })}
+              <input
+                type="text"
+                value={editing.categoria || ''}
+                onChange={e => setEditing({ ...editing, categoria: e.target.value })}
+                placeholder="Ej: ABA, Lenguaje, Aprendizaje, Conducta…"
                 className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
-                style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
-                <option value="">— Sin categoría —</option>
-                {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+                style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
             </Field>
             <Field label="Modalidad">
               <div className="grid grid-cols-3 gap-1.5">
@@ -490,13 +485,13 @@ function EditorModal({
 
           {/* PRECIO + DURACIÓN */}
           <div className="grid sm:grid-cols-2 gap-3">
-            <Field label="Precio (PEN)">
+            <Field label="Precio (Soles)">
               <div className="relative">
-                <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold pointer-events-none" style={{ color: 'var(--text-muted)' }}>S/.</span>
                 <input type="number" step="0.01" value={editing.precio ?? ''}
                   onChange={e => setEditing({ ...editing, precio: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="0.00"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
+                  className="w-full pl-11 pr-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
                   style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
               </div>
             </Field>

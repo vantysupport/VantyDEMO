@@ -63,11 +63,19 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
   }
   const uploadImage = async (): Promise<string|null> => {
     if (!imageFile) return product?.imagen_url||null
-    const ext = imageFile.name.split('.').pop()
-    const path = `products/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('store-images').upload(path, imageFile, { upsert: true })
-    if (error) { toast.error('Error subiendo imagen'); return null }
-    return supabase.storage.from('store-images').getPublicUrl(path).data.publicUrl
+    try {
+      const fd = new FormData()
+      fd.append('file', imageFile)
+      fd.append('folder', 'products')
+      fd.append('bucket', 'store-images')
+      const res = await fetch('/api/admin/upload-imagen', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok || !data.url) { toast.error(data.error || 'Error subiendo imagen'); return null }
+      return data.url as string
+    } catch (e: any) {
+      toast.error('Error subiendo imagen: ' + e.message)
+      return null
+    }
   }
   const handleSave = async () => {
     if (!form.nombre.trim()) { toast.error('El nombre es obligatorio'); return }
