@@ -29,11 +29,14 @@ const TERAPIA_COLORES: Record<string, { gradient: string; accent: string; accent
   slate:    { gradient: 'from-slate-600 to-slate-700',     accent: '#64748b', accentDark: '#94a3b8' },
 }
 
+type ColumnaTabla = { id: string; label: string; type?: 'text' | 'number' | 'date'; placeholder?: string; options?: string[] }
+
 type Pregunta =
   | { id: string; type: 'text' | 'textarea' | 'number'; label: string; placeholder?: string; required?: boolean }
   | { id: string; type: 'select' | 'radio'; label: string; options: string[]; required?: boolean }
   | { id: string; type: 'checkbox'; label: string; options: string[] }
   | { id: string; type: 'date'; label: string; required?: boolean }
+  | { id: string; type: 'tabla_dinamica'; label: string; columns: ColumnaTabla[]; addLabel?: string; minRows?: number; required?: boolean }
 
 type Seccion = { titulo: string; descripcion?: string; icono: string; preguntas: Pregunta[] }
 
@@ -113,204 +116,409 @@ const SECCIONES_INTAKE: Seccion[] = [
   },
 ]
 
-// ─── Segunda ficha: ANAMNESIS PSICOLÓGICA ──────────────────────────────
+// ─── Segunda ficha: ANAMNESIS PSICOLÓGICA / EMOCIONAL ───────────────────
+// Estructura oficial SANTI — 7 secciones (I a VII).
 const SECCIONES_PSICO: Seccion[] = [
+  // ─── I. Datos Generales y Familiares ───────────────────────────────────
   {
-    titulo: 'Historia emocional', icono: '💗',
-    descripcion: 'Profundicemos en cómo se siente tu hijo/a.',
+    titulo: 'I. Datos generales', icono: '🧒',
+    descripcion: 'Información básica del niño/a.',
     preguntas: [
-      { id: 'cuando_empezaron', type: 'textarea', label: '¿Cuándo notaste por primera vez los cambios emocionales?', required: true },
-      { id: 'situaciones_dificiles', type: 'textarea', label: '¿Hay situaciones específicas que lo/la afectan más? (colegio, casa, familia, amigos)', required: true },
-      { id: 'duerme', type: 'radio', label: '¿Cómo duerme?', options: ['Bien, descansa', 'Le cuesta dormir', 'Se despierta seguido', 'Pesadillas frecuentes'] },
-      { id: 'apetito', type: 'radio', label: 'Apetito:', options: ['Normal', 'Aumentó', 'Disminuyó', 'Variable'] },
-      { id: 'energia', type: 'radio', label: 'Nivel de energía:', options: ['Normal para su edad', 'Muy activo/a', 'Cansado/a / desganado/a', 'Variable'] },
+      { id: 'menor_nombre', type: 'text', label: 'Apellidos y nombres', required: true },
+      { id: 'menor_sexo', type: 'radio', label: 'Sexo', options: ['Femenino', 'Masculino', 'Otro / prefiere no decir'] },
+      { id: 'menor_edad', type: 'text', label: 'Edad (años y meses)', placeholder: 'Ej: 7 años 3 meses' },
+      { id: 'menor_fecha_nacimiento', type: 'date', label: 'Fecha de nacimiento' },
+      { id: 'menor_escolaridad', type: 'text', label: 'Escolaridad / grado', placeholder: 'Ej: 2° de primaria' },
+      { id: 'menor_institucion', type: 'text', label: 'Institución educativa' },
+      { id: 'menor_direccion', type: 'text', label: 'Dirección' },
+      { id: 'menor_residencia', type: 'text', label: 'Lugar de residencia', placeholder: 'Distrito / ciudad' },
+      { id: 'menor_tiempo_lima', type: 'text', label: 'Tiempo de residencia en Lima', placeholder: 'Ej: 5 años / siempre' },
+      { id: 'menor_celular', type: 'text', label: 'Celular(es) de contacto' },
+      { id: 'menor_correo', type: 'text', label: 'Correo(s) electrónico(s) de contacto' },
     ],
   },
   {
-    titulo: 'Vínculos y relaciones', icono: '🤝',
+    titulo: 'I. Datos familiares', icono: '👨‍👩‍👧',
+    descripcion: 'Personas que viven con el niño/a. Podés agregar tantos familiares como necesites.',
     preguntas: [
-      { id: 'figura_apego', type: 'text', label: '¿Con quién se siente más cómodo/a o protegido/a?', placeholder: 'Ej: mamá, abuelita, papá…' },
-      { id: 'amigos', type: 'radio', label: '¿Tiene amigos cercanos?', options: ['Sí, varios', 'Uno o dos', 'No realmente', 'No quiere tenerlos'] },
-      { id: 'conflictos_escuela', type: 'textarea', label: '¿Ha tenido conflictos en el colegio? (bullying, peleas, aislamiento)' },
-      { id: 'figuras_apoyo', type: 'textarea', label: '¿Quiénes son sus figuras de apoyo emocional?' },
+      { id: 'datos_familiares', type: 'tabla_dinamica', label: 'Familiares que conviven con el niño/a',
+        addLabel: '+ Agregar familiar', minRows: 2,
+        columns: [
+          { id: 'relacion', label: 'Relación', options: ['Madre', 'Padre', 'Hermano/a', 'Abuelo/a', 'Tío/a', 'Otro'] },
+          { id: 'nombre', label: 'Nombres y apellidos' },
+          { id: 'edad', label: 'Edad', type: 'number', placeholder: 'Años' },
+          { id: 'instruccion', label: 'Grado de instrucción', placeholder: 'Ej: Superior, técnica' },
+          { id: 'ocupacion', label: 'Ocupación' },
+        ],
+      },
+    ],
+  },
+
+  // ─── II. Motivo de Consulta ────────────────────────────────────────────
+  {
+    titulo: 'II. Motivo de consulta', icono: '💬',
+    descripcion: 'Las principales preocupaciones y su contexto.',
+    preguntas: [
+      { id: 'preocupaciones', type: 'textarea', label: '¿Cuáles son las preocupaciones principales (conducta, lenguaje, autovalimiento, emocional, etc.)? Describí cada una lo más detalladamente posible.', required: true },
+      { id: 'desde_cuando', type: 'textarea', label: '¿Desde cuándo se observan estas conductas?', required: true },
+      { id: 'situaciones_frecuentes', type: 'textarea', label: '¿En qué situaciones aparecen con mayor frecuencia?' },
+      { id: 'entornos_afectados', type: 'checkbox', label: 'Entornos donde se manifiestan:', options: ['Casa', 'Colegio', 'Relaciones con pares', 'Familia extendida', 'Espacios públicos', 'Otros'] },
+      { id: 'intentos_previos', type: 'textarea', label: '¿Qué han intentado para manejarlo? ¿Qué tan efectivo resultó?' },
+      { id: 'opinion_profesores', type: 'textarea', label: 'Opinión de los profesores / equipo escolar' },
+    ],
+  },
+
+  // ─── III. Historia del Desarrollo y Antecedentes ───────────────────────
+  {
+    titulo: 'III. Historia del desarrollo', icono: '🤰',
+    descripcion: 'Embarazo, parto y primeros hitos.',
+    preguntas: [
+      { id: 'complicaciones_embarazo_parto', type: 'textarea', label: 'Complicaciones durante el embarazo y/o parto' },
+      { id: 'hito_sostener_cabeza', type: 'text', label: 'Edad en que sostuvo la cabeza', placeholder: 'Meses' },
+      { id: 'hito_sentarse', type: 'text', label: 'Edad en que se sentó solo/a', placeholder: 'Meses' },
+      { id: 'hito_gatear', type: 'text', label: 'Edad en que gateó', placeholder: 'Meses' },
+      { id: 'hito_caminar', type: 'text', label: 'Edad en que caminó', placeholder: 'Meses' },
+      { id: 'hito_hablar', type: 'text', label: 'Edad en que comenzó a hablar', placeholder: 'Meses' },
     ],
   },
   {
-    titulo: 'Conductas y reacciones', icono: '🌪️',
+    titulo: 'III. Antecedentes médicos y familiares', icono: '🩺',
     preguntas: [
-      { id: 'que_le_calma', type: 'textarea', label: 'Cuando está mal, ¿qué cosas le ayudan a calmarse?' },
-      { id: 'expresa_emociones', type: 'radio', label: '¿Expresa sus emociones?', options: ['Sí, las habla', 'Las muestra con conducta', 'Se las guarda', 'Depende del momento'] },
-      { id: 'autoestima', type: 'radio', label: '¿Cómo describirías su autoestima?', options: ['Alta y estable', 'Adecuada', 'Baja', 'Muy crítica de sí mismo/a'] },
-      { id: 'pensamientos_dificiles', type: 'textarea', label: '¿Ha expresado pensamientos preocupantes? (no querer estar, hacerse daño, etc.) Tu honestidad nos ayuda a cuidarlo/a mejor.' },
+      { id: 'alergias', type: 'textarea', label: '¿Cuenta con alergias? ¿Cuáles?' },
+      { id: 'hospitalizaciones', type: 'textarea', label: 'Hospitalizaciones (motivo, edad, duración)' },
+      { id: 'medicacion', type: 'textarea', label: '¿Está recibiendo medicación? ¿Cuál y desde cuándo?' },
+      { id: 'diagnostico_previo', type: 'textarea', label: 'Diagnósticos previos' },
+      { id: 'antecedentes_familiares', type: 'checkbox', label: 'Antecedentes familiares de:', options: ['Salud mental (depresión, ansiedad, etc.)', 'TEA / autismo', 'TDAH', 'Dificultades de aprendizaje', 'Dificultades de habla / lenguaje', 'Epilepsia / convulsiones', 'Discapacidad intelectual', 'Otros', 'Ninguno'] },
+      { id: 'antecedentes_detalle', type: 'textarea', label: 'Si marcaste alguno, indicá quién y de qué se trata' },
+    ],
+  },
+
+  // ─── IV. Historia Escolar ──────────────────────────────────────────────
+  {
+    titulo: 'IV. Historia escolar', icono: '🏫',
+    descripcion: 'Trayectoria y desempeño en el colegio.',
+    preguntas: [
+      { id: 'edu_edad_inicio', type: 'text', label: 'Edad de inicio escolar', placeholder: 'Años' },
+      { id: 'edu_adaptacion', type: 'textarea', label: 'Adaptación en los diferentes niveles educativos (inicial, primaria, secundaria)' },
+      { id: 'edu_gustos', type: 'textarea', label: 'Cursos / materias que más le gustan' },
+      { id: 'edu_dificultades', type: 'textarea', label: 'Cursos / materias en los que presenta dificultades' },
+      { id: 'edu_comentarios_colegio', type: 'textarea', label: 'Comentarios recurrentes del colegio sobre su hijo/a' },
+      { id: 'edu_conducta_bullying', type: 'textarea', label: 'Problemas de conducta o bullying (recibido o ejercido)' },
+      { id: 'edu_apoyos_previos', type: 'textarea', label: 'Apoyos previos recibidos (refuerzo, terapia psicopedagógica, etc.)' },
+    ],
+  },
+
+  // ─── V. Áreas Específicas ──────────────────────────────────────────────
+  {
+    titulo: 'V. Área socioemocional', icono: '❤️',
+    preguntas: [
+      { id: 'soc_personalidad', type: 'textarea', label: '¿Cómo describirías la personalidad de tu hijo/a?' },
+      { id: 'soc_expresion_emociones', type: 'radio', label: '¿Cómo expresa sus emociones?', options: ['Las habla con palabras', 'Las muestra con conducta', 'Se las guarda', 'Depende del momento'] },
+      { id: 'soc_factores_frustracion', type: 'textarea', label: '¿Qué situaciones le generan frustración?' },
+      { id: 'soc_reaccion_limites', type: 'textarea', label: '¿Cómo reacciona ante los límites o cuando se le dice "no"?' },
+      { id: 'soc_autorregulacion', type: 'textarea', label: '¿Qué estrategias usa para calmarse? ¿Lo logra solo/a o necesita ayuda?' },
     ],
   },
   {
-    titulo: 'Contexto familiar actual', icono: '🏡',
+    titulo: 'V. Relaciones familiares', icono: '🏡',
     preguntas: [
-      { id: 'cambios_recientes', type: 'checkbox', label: '¿Han habido cambios recientes?', options: ['Mudanza', 'Separación o divorcio', 'Nuevo hermano/a', 'Pérdida o duelo', 'Enfermedad familiar', 'Cambio de colegio', 'Ninguno'] },
-      { id: 'rutina_casa', type: 'textarea', label: 'Cómo es la rutina en casa (horarios, dispositivos, actividades)' },
-      { id: 'que_te_preocupa_mas', type: 'textarea', label: '¿Qué es lo que más te preocupa como padre/madre?', required: true },
+      { id: 'fam_convivencia', type: 'textarea', label: '¿Cómo es la convivencia en casa?' },
+      { id: 'fam_vinculos_afectivos', type: 'textarea', label: 'Vínculos afectivos: ¿con quién es más cercano/a? ¿con quién le cuesta?' },
+      { id: 'fam_estilo_disciplina', type: 'radio', label: 'Estilo de disciplina predominante:', options: ['Permisivo', 'Autoritario', 'Negociador / democrático', 'Inconsistente', 'Otro'] },
+      { id: 'fam_estrategias_disciplina', type: 'textarea', label: '¿Qué estrategias usan cuando hay un problema de conducta?' },
+      { id: 'fam_conflictos', type: 'textarea', label: '¿Hay conflictos familiares actuales que sea importante conocer?' },
+    ],
+  },
+  {
+    titulo: 'V. Ámbito social', icono: '🤝',
+    preguntas: [
+      { id: 'social_amigos', type: 'radio', label: '¿Le es fácil hacer amigos?', options: ['Sí, muy fácil', 'Con algo de esfuerzo', 'Le cuesta', 'Casi no socializa'] },
+      { id: 'social_juego_pref', type: 'radio', label: 'Cuando juega, prefiere:', options: ['Estar solo/a', 'Estar en grupo', 'Le es indistinto', 'Depende del momento'] },
+      { id: 'social_fuera_colegio', type: 'textarea', label: '¿Cómo es su interacción social fuera del colegio? (familiares, vecinos, actividades extracurriculares)' },
+      { id: 'social_manejo_conflictos', type: 'textarea', label: '¿Cómo maneja los conflictos con sus compañeros?' },
+    ],
+  },
+  {
+    titulo: 'V. Estado emocional actual', icono: '🌧️',
+    descripcion: 'Tu honestidad nos ayuda a cuidar mejor a tu hijo/a.',
+    preguntas: [
+      { id: 'emo_sintomas', type: 'checkbox', label: 'Marca lo que observas actualmente:', options: ['Tristeza persistente', 'Irritabilidad o enojo frecuente', 'Miedos intensos', 'Cambios en el sueño', 'Cambios en el apetito', 'Pensamientos negativos sobre sí mismo/a', 'Aislamiento social', 'Miedo anticipatorio (a algo que va a pasar)', 'Conductas de riesgo', 'Está bien la mayor parte del tiempo'] },
+      { id: 'emo_pensamientos_riesgo', type: 'textarea', label: '¿Ha expresado pensamientos preocupantes (no querer estar, hacerse daño, etc.)? Tu sinceridad nos ayuda a cuidarlo/a mejor.' },
+      { id: 'emo_descripcion_general', type: 'textarea', label: '¿Cómo describirías el estado emocional general de tu hijo/a en este momento?' },
+    ],
+  },
+
+  // ─── VI. Áreas Específicas según Edad ──────────────────────────────────
+  {
+    titulo: 'VI. Área específica según edad (2–6 años)', icono: '🧸',
+    descripcion: 'Completá esta sección si tu hijo/a tiene entre 2 y 6 años. Si no, saltala.',
+    preguntas: [
+      { id: 'edad26_juego_simbolico', type: 'textarea', label: 'Juego simbólico: ¿juega "de a que es..." (cocinar, ser doctor, etc.)? ¿Con qué frecuencia?' },
+      { id: 'edad26_imitacion', type: 'textarea', label: 'Imitación: ¿imita acciones, sonidos, gestos de otros?' },
+      { id: 'edad26_rutinas', type: 'textarea', label: 'Rutinas: ¿se adapta a rutinas o le cuesta? ¿Cómo reacciona a los cambios?' },
+      { id: 'edad26_separacion', type: 'textarea', label: 'Separación del cuidador: ¿cómo reacciona al despedirse de mamá/papá?' },
+    ],
+  },
+  {
+    titulo: 'VI. Área específica según edad (7–11 años)', icono: '🎒',
+    descripcion: 'Completá esta sección si tu hijo/a tiene entre 7 y 11 años. Si no, saltala.',
+    preguntas: [
+      { id: 'edad711_autoconcepto', type: 'textarea', label: 'Autoconcepto: ¿cómo se ve a sí mismo/a? ¿Qué opinión tiene de sí?' },
+      { id: 'edad711_frustracion', type: 'textarea', label: 'Manejo de la frustración: ¿qué hace cuando algo no le sale?' },
+      { id: 'edad711_habilidades_sociales', type: 'textarea', label: 'Habilidades sociales: ¿cómo se relaciona con sus pares?' },
+      { id: 'edad711_miedos', type: 'textarea', label: 'Miedos frecuentes: ¿qué le causa temor o ansiedad?' },
+    ],
+  },
+  {
+    titulo: 'VI. Área específica según edad (12–15 años)', icono: '🎓',
+    descripcion: 'Completá esta sección si tu hijo/a tiene entre 12 y 15 años. Si no, saltala.',
+    preguntas: [
+      { id: 'edad1215_autoestima', type: 'textarea', label: 'Autoestima / identidad: ¿cómo se valora a sí mismo/a?' },
+      { id: 'edad1215_cambios_etapa', type: 'textarea', label: 'Gestión de los cambios propios de la adolescencia (corporales, emocionales, sociales)' },
+      { id: 'edad1215_pares', type: 'textarea', label: 'Influencia de pares: ¿qué tan influenciable es por sus amigos?' },
+      { id: 'edad1215_tecnologia', type: 'textarea', label: 'Uso de tecnología y redes sociales: cantidad de tiempo, plataformas, comportamiento' },
+      { id: 'edad1215_metas_futuro', type: 'textarea', label: 'Metas a futuro: ¿qué planes / sueños tiene?' },
+    ],
+  },
+
+  // ─── VII. Expectativas y Observaciones ─────────────────────────────────
+  {
+    titulo: 'VII. Expectativas y observaciones', icono: '✨',
+    preguntas: [
+      { id: 'expectativas', type: 'textarea', label: '¿Qué esperan obtener de esta evaluación?', required: true },
+      { id: 'cambios_deseados', type: 'textarea', label: '¿Qué cambios desean observar en su hijo/a tras el proceso?' },
+      { id: 'observaciones', type: 'textarea', label: 'Observaciones finales: cualquier cosa que quieran compartir y no se haya cubierto antes.' },
     ],
   },
 ]
 
 // ─── Segunda ficha: ANAMNESIS NEUROPSICOLÓGICA ──────────────────────────
-//     Basada en la plantilla oficial SANTI:
-//     "[Plantilla] Anamnesis Ev. Neuropsicológica"
-//     Responde lo que sepas; si no aplica para la edad puedes dejarlo en blanco.
+// Estructura oficial SANTI — 11 secciones (I a XI).
+// Las tablas dinámicas permiten al padre/madre agregar varias filas (familiares, accidentes, etc.).
 const SECCIONES_NEURO: Seccion[] = [
+  // ─── I. Datos Familiares ───────────────────────────────────────────────
   {
-    titulo: 'Datos familiares', icono: '👨‍👩‍👧',
-    descripcion: 'Personas que conviven con el niño/a.',
+    titulo: 'I. Datos familiares', icono: '👨‍👩‍👧',
+    descripcion: 'Familiares que viven con el niño/a. Podés agregar tantos como necesites.',
     preguntas: [
-      { id: 'fam_padre_nombre', type: 'text', label: 'Nombre y apellidos del padre' },
-      { id: 'fam_padre_edad', type: 'text', label: 'Edad del padre', placeholder: 'Años' },
-      { id: 'fam_padre_instruccion', type: 'text', label: 'Grado de instrucción del padre', placeholder: 'Ej: superior, técnica…' },
-      { id: 'fam_padre_ocupacion', type: 'text', label: 'Ocupación del padre' },
-      { id: 'fam_madre_nombre', type: 'text', label: 'Nombre y apellidos de la madre' },
-      { id: 'fam_madre_edad', type: 'text', label: 'Edad de la madre', placeholder: 'Años' },
-      { id: 'fam_madre_instruccion', type: 'text', label: 'Grado de instrucción de la madre' },
-      { id: 'fam_madre_ocupacion', type: 'text', label: 'Ocupación de la madre' },
-      { id: 'fam_hermanos', type: 'textarea', label: 'Hermanos/as y otros familiares que viven con el niño/a', placeholder: 'Nombres, edades, relación' },
+      { id: 'datos_familiares', type: 'tabla_dinamica', label: 'Familiares que conviven con el niño/a',
+        addLabel: '+ Agregar familiar', minRows: 2,
+        columns: [
+          { id: 'relacion', label: 'Relación', options: ['Madre', 'Padre', 'Hermano/a', 'Abuelo/a', 'Tío/a', 'Otro'] },
+          { id: 'nombre', label: 'Nombres y apellidos' },
+          { id: 'edad', label: 'Edad', type: 'number', placeholder: 'Años' },
+          { id: 'instruccion', label: 'Grado de instrucción', placeholder: 'Ej: Superior, técnica' },
+          { id: 'ocupacion', label: 'Ocupación' },
+        ],
+      },
     ],
   },
+
+  // ─── II. Perfil Actual ─────────────────────────────────────────────────
   {
-    titulo: 'Perfil actual', icono: '🔍',
+    titulo: 'II. Perfil actual', icono: '🔍',
     descripcion: 'Las principales preocupaciones que motivan la consulta.',
     preguntas: [
-      { id: 'perfil_preocupaciones', type: 'textarea', label: '¿Cuáles son las principales preocupaciones que tiene con relación a su hijo/a (conducta, lenguaje, autovalimiento, etc.)? Describa cada una lo más detalladamente posible.', required: true },
-      { id: 'perfil_desde_cuando', type: 'textarea', label: '¿Desde cuándo observó estas conductas?', required: true },
+      { id: 'perfil_preocupaciones', type: 'textarea', label: 'Motivo de consulta: ¿Cuáles son las principales preocupaciones relacionadas con conducta, lenguaje, autovalimiento, etc.? Describí cada una lo más detalladamente posible.', required: true },
+      { id: 'perfil_desde_cuando', type: 'textarea', label: 'Inicio: ¿Desde cuándo se observan estas conductas?', required: true },
     ],
   },
+
+  // ─── III. Historia Evolutiva ───────────────────────────────────────────
   {
-    titulo: 'Historia evolutiva — prenatal', icono: '🤰',
+    titulo: 'III. Historia evolutiva — Prenatal', icono: '🤰',
     descripcion: 'Etapa antes del nacimiento.',
     preguntas: [
-      { id: 'pren_duracion', type: 'text', label: '¿Cuánto tiempo duró el embarazo?', placeholder: 'Semanas/meses' },
+      { id: 'pren_duracion', type: 'text', label: 'Duración del embarazo', placeholder: 'Ej: 9 meses / 38 semanas' },
       { id: 'pren_programado', type: 'radio', label: '¿Fue un embarazo programado?', options: ['Sí', 'No', 'No estoy seguro/a'] },
-      { id: 'pren_salud', type: 'textarea', label: '¿Cómo fue la salud durante el embarazo? ¿Enfermedades?' },
-      { id: 'pren_edad_papa', type: 'text', label: 'Edad del papá cuando nació su hijo/a' },
-      { id: 'pren_edad_mama', type: 'text', label: 'Edad de la mamá cuando nació' },
-      { id: 'pren_medicamentos', type: 'textarea', label: '¿Se ingirieron medicamentos durante el embarazo? ¿Cuáles?' },
-      { id: 'pren_comentarios', type: 'textarea', label: '¿Algo más que quiera comentar sobre el embarazo?' },
+      { id: 'pren_salud', type: 'textarea', label: 'Salud materna durante el embarazo (enfermedades, complicaciones)' },
+      { id: 'pren_edad_papa', type: 'number', label: 'Edad del papá cuando nació su hijo/a' },
+      { id: 'pren_edad_mama', type: 'number', label: 'Edad de la mamá cuando nació' },
+      { id: 'pren_medicamentos', type: 'textarea', label: 'Ingesta de medicamentos durante el embarazo. ¿Cuáles?' },
+      { id: 'pren_comentarios', type: 'textarea', label: 'Otros comentarios sobre el embarazo' },
     ],
   },
   {
-    titulo: 'Historia evolutiva — perinatal y postnatal', icono: '👶',
-    descripcion: 'El parto y los primeros días.',
+    titulo: 'III. Historia evolutiva — Perinatal', icono: '🍼',
+    descripcion: 'El parto.',
     preguntas: [
-      { id: 'peri_duracion_gestacion', type: 'radio', label: '¿La gestación fue?', options: ['Normal (a término)', 'Prematuro', 'Post-término', 'No lo sé'] },
+      { id: 'peri_duracion_gestacion', type: 'radio', label: 'Duración de la gestación:', options: ['Normal (a término)', 'Prematuro', 'Post-término', 'No lo sé'] },
       { id: 'peri_tipo_parto', type: 'radio', label: 'Tipo de parto:', options: ['Natural', 'Cesárea programada', 'Cesárea de emergencia', 'No lo sé'] },
       { id: 'peri_motivo_cesarea', type: 'textarea', label: 'Si fue cesárea, ¿por qué?' },
-      { id: 'peri_comentarios', type: 'textarea', label: '¿Algo más sobre el parto que quiera comentar?' },
+      { id: 'peri_comentarios', type: 'textarea', label: 'Comentarios adicionales sobre el parto' },
+    ],
+  },
+  {
+    titulo: 'III. Historia evolutiva — Post natal', icono: '👶',
+    descripcion: 'Los primeros días después del nacimiento.',
+    preguntas: [
       { id: 'post_lloro', type: 'radio', label: '¿Lloró inmediatamente al nacer?', options: ['Sí', 'No', 'No lo sé'] },
-      { id: 'post_oxigeno', type: 'radio', label: '¿Necesitó reanimación con oxígeno?', options: ['No', 'Sí, brevemente', 'Sí, prolongado', 'No lo sé'] },
+      { id: 'post_oxigeno', type: 'radio', label: '¿Necesitó oxígeno / reanimación?', options: ['No', 'Sí, brevemente', 'Sí, prolongado', 'No lo sé'] },
       { id: 'post_incubadora', type: 'text', label: '¿Necesitó incubadora? ¿Por cuánto tiempo?', placeholder: 'No / Sí, X días' },
-      { id: 'post_color', type: 'text', label: '¿Qué color presentó al nacer?', placeholder: 'Rosado, azulado, amarillo…' },
-      { id: 'post_comentarios', type: 'textarea', label: '¿Algo más a comentar sobre las horas/días después del nacimiento?' },
+      { id: 'post_color', type: 'text', label: 'Color que presentó al nacer', placeholder: 'Rosado, azulado, amarillo…' },
+      { id: 'post_comentarios', type: 'textarea', label: 'Comentarios adicionales' },
+    ],
+  },
+
+  // ─── IV. Historia Médica ───────────────────────────────────────────────
+  {
+    titulo: 'IV. Historia médica — Enfermedades', icono: '🏥',
+    descripcion: 'Padecimientos específicos.',
+    preguntas: [
+      { id: 'med_enfermedades', type: 'checkbox', label: 'Marca las enfermedades que haya presentado:', options: ['Meningitis', 'Encefalitis', 'Convulsiones', 'Otitis', 'Ictericia', 'Fiebres altas', 'Amigdalitis', 'Otros', 'Ninguna'] },
+      { id: 'med_enfermedades_detalle', type: 'textarea', label: 'Detalla las marcadas: edad y duración aproximadas.', placeholder: 'Ej: convulsiones a los 2 años, una sola vez de 5 min' },
     ],
   },
   {
-    titulo: 'Historia médica', icono: '🏥',
-    descripcion: 'Enfermedades, accidentes y atención médica.',
+    titulo: 'IV. Historia médica — Accidentes', icono: '🚨',
+    descripcion: 'Registro de accidentes ocurridos.',
     preguntas: [
-      { id: 'med_enfermedades', type: 'checkbox', label: 'Marca las que haya presentado:', options: ['Meningitis', 'Encefalitis', 'Convulsiones', 'Otitis', 'Ictericia', 'Fiebres altas', 'Amigdalitis', 'Ninguna'] },
-      { id: 'med_enfermedades_detalle', type: 'textarea', label: 'Detalla las que marcaste: edad y duración aproximadas.', placeholder: 'Ej: convulsiones a los 2 años, una sola vez de 5 min' },
-      { id: 'med_accidentes', type: 'textarea', label: '¿Ha sufrido accidentes? ¿Cuáles? ¿A qué edad?' },
-      { id: 'med_cambios_post', type: 'textarea', label: 'Tras esas enfermedades/accidentes, ¿observó algún cambio? ¿Pasajero o continuo?' },
-      { id: 'med_examen_neuro', type: 'textarea', label: '¿Le han hecho examen neurológico? ¿Cuál fue el resultado?' },
-      { id: 'med_diagnostico', type: 'textarea', label: '¿Ha sido diagnosticado/a con alguna condición en particular?' },
+      { id: 'med_accidentes', type: 'tabla_dinamica', label: 'Accidentes',
+        addLabel: '+ Agregar accidente', minRows: 0,
+        columns: [
+          { id: 'anio', label: 'Año', type: 'number', placeholder: 'Ej: 2022' },
+          { id: 'edad', label: 'Edad', type: 'number', placeholder: 'Años' },
+          { id: 'tipo', label: 'Tipo de accidente' },
+          { id: 'tratamiento', label: 'Tratamiento recibido' },
+          { id: 'situacion_final', label: 'Situación final / secuelas' },
+          { id: 'medicamentos', label: 'Medicamentos' },
+        ],
+      },
+    ],
+  },
+  {
+    titulo: 'IV. Historia médica — Otros', icono: '🩺',
+    preguntas: [
+      { id: 'med_cambios_post', type: 'textarea', label: 'Cambios post-evento: ¿hubo cambios en el niño/a tras enfermedades o accidentes? ¿Pasajeros o continuos?' },
+      { id: 'med_examen_neuro', type: 'textarea', label: 'Exámenes neurológicos: ¿le han hecho alguno? ¿Cuál fue el resultado?' },
+      { id: 'med_diagnostico', type: 'textarea', label: 'Diagnósticos previos: ¿ha sido diagnosticado/a con alguna condición?' },
       { id: 'med_sensorial', type: 'textarea', label: '¿Presenta dificultades visuales o auditivas?' },
-      { id: 'med_terapias_previas', type: 'textarea', label: '¿Ha asistido a alguna terapia? ¿Cuál? ¿Desde cuándo? ¿Cuántas veces a la semana/mes?' },
-      { id: 'med_otros', type: 'textarea', label: '¿Algo más sobre el historial médico?' },
+      { id: 'med_terapias_previas', type: 'textarea', label: 'Terapias recibidas: ¿cuál? ¿desde cuándo? ¿cuántas veces a la semana/mes?' },
+      { id: 'med_otros', type: 'textarea', label: 'Otros comentarios médicos' },
     ],
   },
+
+  // ─── V. Historia del Desarrollo Muscular ───────────────────────────────
   {
-    titulo: 'Desarrollo motor', icono: '🏃',
-    descripcion: 'Los hitos motores: cuándo logró cada cosa.',
+    titulo: 'V. Desarrollo muscular', icono: '🏃',
+    descripcion: 'Hitos motores, dificultades y temperamento.',
     preguntas: [
-      { id: 'mot_sentarse', type: 'text', label: '¿A qué edad se sentó solo/a (sin ayuda)?', placeholder: 'Meses' },
+      { id: 'mot_sentarse', type: 'text', label: '¿A qué edad se sentó solo/a?', placeholder: 'Meses' },
       { id: 'mot_gatear', type: 'text', label: '¿A qué edad gateó?', placeholder: 'Meses' },
       { id: 'mot_pararse', type: 'text', label: '¿A qué edad se paró solo/a?', placeholder: 'Meses' },
-      { id: 'mot_primeros_pasos', type: 'text', label: '¿Sus primeros pasos?', placeholder: 'Meses' },
-      { id: 'mot_caminar', type: 'text', label: '¿Caminó solo/a?', placeholder: 'Meses' },
-      { id: 'mot_dificultades', type: 'textarea', label: '¿Observó alguna dificultad en sentarse, pararse o caminar? ¿Cuál?' },
-      { id: 'mot_actividad', type: 'radio', label: 'Considera que su hijo/a es:', options: ['Demasiado inquieto/a para su edad', 'Demasiado tranquilo/a para su edad', 'Adecuado/a para su edad'] },
-      { id: 'mot_balanceo', type: 'textarea', label: '¿Realizaba movimientos automáticos (balanceos, mecerse)? ¿Cuáles?' },
-      { id: 'mot_agitados', type: 'textarea', label: '¿Movimientos agitados (sacudir brazos, estrujar manos)? ¿En qué momento y con qué frecuencia?' },
-      { id: 'mot_mano_preferida', type: 'radio', label: 'Mano que prefiere usar:', options: ['Derecha', 'Izquierda', 'Ambas', 'No definida aún'] },
+      { id: 'mot_caminar', type: 'text', label: '¿A qué edad caminó?', placeholder: 'Meses' },
+      { id: 'mot_dificultades', type: 'textarea', label: 'Dificultades observadas durante estos hitos' },
+      { id: 'mot_actividad', type: 'radio', label: 'Temperamento — considera que su hijo/a es:', options: ['Demasiado inquieto/a para su edad', 'Demasiado tranquilo/a para su edad', 'Adecuado/a para su edad'] },
     ],
   },
+
+  // ─── VI. Movimiento y Lenguaje ─────────────────────────────────────────
   {
-    titulo: 'Habla y lenguaje', icono: '🗣️',
-    descripcion: 'Cómo se comunica.',
+    titulo: 'VI. Movimiento y lenguaje', icono: '🗣️',
+    descripcion: 'Movimientos, lateralidad y comunicación.',
     preguntas: [
-      { id: 'leng_primera_edad', type: 'text', label: '¿A qué edad dijo sus primeras palabras?', placeholder: 'Meses' },
-      { id: 'leng_primeras_cuales', type: 'text', label: '¿Cuáles fueron sus primeras palabras?' },
-      { id: 'leng_dificultad_pronunciar', type: 'textarea', label: '¿Presentó dificultad para pronunciar palabras? ¿Cuáles?' },
-      { id: 'leng_dificultad_actual', type: 'textarea', label: 'En la actualidad, ¿presenta dificultad al hablar? ¿Desde cuándo? ¿En qué situaciones?' },
-      { id: 'leng_comprende', type: 'radio', label: '¿Entiende todo lo que se le dice?', options: ['Sí, todo', 'Casi todo', 'Solo cosas simples', 'Le cuesta entender'] },
-      { id: 'leng_comentarios', type: 'textarea', label: '¿Algo más sobre el habla o lenguaje?' },
+      { id: 'mov_balanceo', type: 'textarea', label: 'Movimientos automáticos (balanceo, mecerse): ¿los presenta? ¿cuáles?' },
+      { id: 'mov_agitados', type: 'textarea', label: 'Movimientos agitados (sacudir manos, estrujar): ¿cuándo aparecen?' },
+      { id: 'mov_mano_preferida', type: 'radio', label: 'Lateralidad — mano preferida:', options: ['Derecha', 'Izquierda', 'Ambas', 'No definida aún'] },
+      { id: 'leng_primera_edad', type: 'text', label: 'Edad de sus primeras palabras', placeholder: 'Meses' },
+      { id: 'leng_dificultad_pronunciar', type: 'textarea', label: 'Dificultades de pronunciación (cuáles)' },
+      { id: 'leng_dificultad_actual', type: 'textarea', label: 'Dificultades actuales al hablar: ¿en qué situaciones aparecen?' },
+      { id: 'leng_comprende', type: 'radio', label: 'Nivel de comprensión — ¿entiende lo que se le dice?', options: ['Sí, todo', 'Casi todo', 'Solo cosas simples', 'Le cuesta entender'] },
     ],
   },
+
+  // ─── VII. Formación de Hábitos ─────────────────────────────────────────
   {
-    titulo: 'Formación de hábitos', icono: '🍽️',
-    descripcion: 'Alimentación, higiene, sueño e independencia.',
+    titulo: 'VII. Formación de hábitos — Alimentación', icono: '🍽️',
     preguntas: [
-      // Alimentos
       { id: 'hab_lactancia', type: 'radio', label: 'Tipo de lactancia que recibió:', options: ['Materna exclusiva', 'Artificial', 'Mixta', 'No lo sé'] },
-      { id: 'hab_lactancia_duracion', type: 'text', label: '¿Cuánto tiempo recibió lactancia?', placeholder: 'Ej: 6 meses' },
+      { id: 'hab_lactancia_duracion', type: 'text', label: 'Duración de la lactancia', placeholder: 'Ej: 6 meses' },
       { id: 'hab_come_solo', type: 'radio', label: '¿Come sin ayuda y usa cubiertos?', options: ['Sí, sin problema', 'Parcialmente', 'No', 'Aún no por edad'] },
-      { id: 'hab_apetito', type: 'textarea', label: '¿Tiene buen apetito o rechaza alimentos? ¿Cuáles?' },
-      // Higiene
-      { id: 'hab_control_orina_edad', type: 'text', label: '¿A qué edad comenzó a controlar la orina (diurna/nocturna)?' },
-      { id: 'hab_control_heces_edad', type: 'text', label: '¿A qué edad comenzó a controlar las heces?' },
+      { id: 'hab_apetito', type: 'textarea', label: 'Apetito y rechazo de alimentos: ¿cuáles?' },
+    ],
+  },
+  {
+    titulo: 'VII. Formación de hábitos — Higiene y sueño', icono: '🛁',
+    preguntas: [
+      { id: 'hab_control_orina_edad', type: 'text', label: 'Edad de control de orina (diurno/nocturno)' },
+      { id: 'hab_control_heces_edad', type: 'text', label: 'Edad de control de heces' },
       { id: 'hab_control_actual', type: 'radio', label: 'En la actualidad, ¿controla orina y heces?', options: ['Sí, ambas', 'Solo diurno', 'Aún no', 'Variable'] },
       { id: 'hab_orina_cama', type: 'text', label: '¿Hasta qué edad se orinó en la cama? (o si aún ocurre)', placeholder: 'Ej: 5 años / aún ocurre' },
-      // Sueño
-      { id: 'hab_sueno_primeros', type: 'textarea', label: '¿Cómo fue el sueño durante sus primeros 2 años?' },
-      { id: 'hab_medicamento_dormir', type: 'textarea', label: '¿Usó algún medicamento para dormir? ¿Cuál? ¿Cuánto tiempo?' },
-      { id: 'hab_horas_sueno', type: 'text', label: '¿Cuántas horas duerme actualmente?', placeholder: 'Ej: 9 horas' },
-      { id: 'hab_calidad_sueno', type: 'checkbox', label: 'Durante el sueño:', options: ['Habla dormido', 'Grita', 'Se mueve mucho', 'Transpira', 'Babea', 'Cruje los dientes', 'Camina dormido', 'Duerme tranquilo'] },
-      // Independencia
-      { id: 'hab_mandados', type: 'radio', label: '¿Hace mandados?', options: ['Sí, dentro y fuera de casa', 'Solo dentro de casa', 'No', 'Aún no por edad'] },
-      { id: 'hab_ayuda_casa', type: 'textarea', label: '¿Ayuda en casa? ¿Qué hace?' },
-      { id: 'hab_viste_solo', type: 'radio', label: '¿Se viste solo/a?', options: ['Sí, completamente', 'Casi todo', 'Con ayuda', 'No, depende del adulto'] },
+      { id: 'hab_sueno_primeros', type: 'textarea', label: 'Calidad del sueño durante los primeros 2 años' },
+      { id: 'hab_medicamento_dormir', type: 'textarea', label: '¿Usó medicamentos para dormir? ¿Cuáles y por cuánto tiempo?' },
+      { id: 'hab_horas_sueno', type: 'text', label: 'Horas que duerme actualmente', placeholder: 'Ej: 9 horas' },
+      { id: 'hab_calidad_sueno', type: 'checkbox', label: 'Conductas durante el sueño:', options: ['Habla dormido', 'Grita', 'Se mueve mucho', 'Transpira', 'Babea', 'Cruje los dientes', 'Sonambulismo', 'Duerme tranquilo'] },
     ],
   },
   {
-    titulo: 'Historia educativa y juegos', icono: '🎒',
-    descripcion: 'Colegio, aprendizaje y tiempo libre.',
+    titulo: 'VII. Formación de hábitos — Independencia', icono: '🧦',
     preguntas: [
-      { id: 'edu_edad_inicio', type: 'text', label: '¿A qué edad inició el colegio?' },
-      { id: 'edu_agrado', type: 'radio', label: '¿Mostró agrado al asistir al colegio?', options: ['Sí, le gusta', 'Al inicio costó pero ahora va bien', 'Le cuesta ir', 'No le gusta'] },
-      { id: 'edu_cambios_colegio', type: 'textarea', label: '¿Ha cambiado de colegio durante su escolaridad? ¿Por qué?' },
-      { id: 'edu_dificultades_relaciones', type: 'textarea', label: '¿Dificultades con maestro/a, compañeros u otros? Descríbalas.' },
-      { id: 'edu_conducta_aula', type: 'textarea', label: 'Conducta en clase y en el recreo:' },
-      { id: 'edu_resumen', type: 'textarea', label: 'Resumen de su trayectoria escolar (años, grados, colegios, dificultades, si aprobó)', placeholder: 'Ej: 2022 - 1° primaria - Colegio X - se adaptó bien - aprobó' },
-      // Juegos
-      { id: 'jue_solo', type: 'radio', label: '¿Juega solo?', options: ['Sí, frecuentemente', 'A veces', 'No, prefiere con otros', 'Variable'] },
-      { id: 'jue_preferidos', type: 'textarea', label: '¿Qué juegos, juguetes o actividades prefiere?' },
+      { id: 'hab_mandados', type: 'radio', label: '¿Realiza mandados?', options: ['Sí, dentro y fuera de casa', 'Solo dentro de casa', 'No', 'Aún no por edad'] },
+      { id: 'hab_ayuda_casa', type: 'textarea', label: 'Ayuda en casa: ¿qué cosas hace?' },
+      { id: 'hab_viste_solo', type: 'radio', label: 'Capacidad para vestirse solo/a:', options: ['Sí, completamente', 'Casi todo', 'Con ayuda', 'No, depende del adulto'] },
+    ],
+  },
+
+  // ─── VIII. Historia Educativa ──────────────────────────────────────────
+  {
+    titulo: 'VIII. Historia educativa', icono: '🏫',
+    descripcion: 'Trayectoria escolar.',
+    preguntas: [
+      { id: 'edu_edad_inicio', type: 'text', label: 'Edad de ingreso al colegio' },
+      { id: 'edu_agrado', type: 'radio', label: '¿Le agrada asistir al colegio?', options: ['Sí, le gusta', 'Al inicio costó pero ahora va bien', 'Le cuesta ir', 'No le gusta'] },
+      { id: 'edu_cambios_colegio', type: 'textarea', label: 'Cambios de colegio (¿cuántos y por qué?)' },
+      { id: 'edu_relaciones', type: 'textarea', label: 'Relación con maestros y compañeros' },
+      { id: 'edu_conducta_aula', type: 'textarea', label: 'Conducta en clase y en el recreo' },
+      { id: 'edu_trayectoria', type: 'tabla_dinamica', label: 'Registro escolar por año',
+        addLabel: '+ Agregar año escolar', minRows: 1,
+        columns: [
+          { id: 'anio', label: 'Año', type: 'number', placeholder: 'Ej: 2024' },
+          { id: 'edad', label: 'Edad', type: 'number', placeholder: 'Años' },
+          { id: 'colegio', label: 'Colegio / institución' },
+          { id: 'grado', label: 'Grado' },
+          { id: 'conducta', label: 'Conducta / dificultades observadas' },
+          { id: 'aprobado', label: '¿Aprobó?', options: ['Sí', 'No', 'En proceso'] },
+        ],
+      },
+    ],
+  },
+
+  // ─── IX. Juegos ────────────────────────────────────────────────────────
+  {
+    titulo: 'IX. Juegos', icono: '🎲',
+    descripcion: 'Actividades preferidas y socialización al jugar.',
+    preguntas: [
+      { id: 'jue_solo', type: 'radio', label: '¿Juega solo/a?', options: ['Sí, frecuentemente', 'A veces', 'No, prefiere con otros', 'Variable'] },
+      { id: 'jue_preferidos', type: 'textarea', label: 'Juegos, juguetes o actividades preferidas' },
       { id: 'jue_dirige', type: 'radio', label: 'Cuando juega con otros niños:', options: ['Dirige a los demás', 'Es dirigido por ellos', 'Es flexible / colabora', 'Le cuesta integrarse'] },
-      { id: 'jue_tiempo_libre', type: 'textarea', label: '¿Qué hace en su tiempo libre?' },
+      { id: 'jue_tiempo_libre', type: 'textarea', label: 'Uso del tiempo libre' },
     ],
   },
+
+  // ─── X. Dinámica Familiar ──────────────────────────────────────────────
   {
-    titulo: 'Dinámica y antecedentes familiares', icono: '🏡',
-    descripcion: 'Vínculos en el hogar y antecedentes en la familia.',
+    titulo: 'X. Dinámica familiar', icono: '🏡',
+    descripcion: 'Vínculos en el hogar, estilo de crianza y comportamiento.',
     preguntas: [
-      { id: 'din_estructura', type: 'textarea', label: '¿Quiénes conforman la familia nuclear y extendida?' },
-      { id: 'din_convive', type: 'textarea', label: '¿Con quién vive actualmente?' },
-      { id: 'din_crianza_otros', type: 'textarea', label: '¿Hay otros familiares o personas cercanas con rol importante en la crianza?' },
-      { id: 'din_dinamica', type: 'textarea', label: '¿Cómo describiría la dinámica familiar?' },
-      { id: 'din_cambios', type: 'textarea', label: '¿Ha habido cambios significativos (separaciones, fallecimientos, mudanzas, etc.)?' },
-      { id: 'din_estilo_crianza', type: 'radio', label: 'Estilo de crianza predominante en el hogar:', options: ['Permisivo', 'Autoritario', 'Negociador / democrático', 'Inconsistente', 'Otro'] },
-      { id: 'din_conducta_casa', type: 'textarea', label: '¿Cómo se comporta en casa?' },
-      { id: 'din_conductas_preocupan', type: 'textarea', label: '¿Hay conductas que les preocupen (agresividad, retraimiento, miedo excesivo)?' },
-      { id: 'din_frente_a_limites', type: 'textarea', label: '¿Cómo reacciona ante situaciones nuevas, frustraciones o límites?' },
-      { id: 'din_le_gusta', type: 'textarea', label: '¿Qué le gusta hacer en su tiempo libre?' },
-      { id: 'ant_familiares', type: 'checkbox', label: 'En la familia, hay o hubo casos de:', options: ['Enfermedades psiquiátricas', 'Epilepsia o convulsiones', 'Retardo mental / discapacidad intelectual', 'Dificultades de aprendizaje', 'Problemas de habla / lenguaje', 'TEA / autismo', 'TDAH', 'Depresión / ansiedad', 'Ninguno'] },
-      { id: 'ant_familiares_detalle', type: 'textarea', label: 'Si marcaste alguno arriba, ¿quién y de qué se trata?' },
+      { id: 'din_estructura', type: 'textarea', label: 'Estructura: ¿quiénes conforman la familia y con quién vive el menor?' },
+      { id: 'din_crianza_otros', type: 'textarea', label: 'Roles de otros familiares cercanos en la crianza' },
+      { id: 'din_dinamica', type: 'textarea', label: 'Dinámica: descripción de la comunicación en casa' },
+      { id: 'din_cambios', type: 'textarea', label: 'Cambios significativos recientes (duelos, mudanzas, separaciones, etc.)' },
+      { id: 'din_estilo_crianza', type: 'radio', label: 'Estilo de crianza predominante:', options: ['Permisivo', 'Autoritario', 'Negociador / democrático', 'Inconsistente', 'Otro'] },
+      { id: 'din_conducta_casa', type: 'textarea', label: 'Comportamiento en casa' },
+      { id: 'din_conductas_preocupan', type: 'textarea', label: 'Preocupaciones específicas de los padres (agresividad, retraimiento, miedo excesivo, etc.)' },
+      { id: 'din_frente_a_limites', type: 'textarea', label: 'Reacciones ante situaciones nuevas, frustraciones o límites' },
+      { id: 'din_tiempo_libre', type: 'textarea', label: '¿Qué le gusta hacer en su tiempo libre?' },
+    ],
+  },
+
+  // ─── XI. Antecedentes Familiares ───────────────────────────────────────
+  {
+    titulo: 'XI. Antecedentes familiares', icono: '🧬',
+    descripcion: 'Historial genético / familiar.',
+    preguntas: [
+      { id: 'ant_familiares', type: 'checkbox', label: '¿En la familia hay o hubo casos de…?', options: ['Enfermedades psiquiátricas', 'Epilepsia o convulsiones', 'Retardo mental / discapacidad intelectual', 'Dificultades de aprendizaje', 'Problemas de habla / lenguaje', 'TEA / autismo', 'TDAH', 'Depresión / ansiedad', 'Otros', 'Ninguno'] },
+      { id: 'ant_familiares_detalle', type: 'textarea', label: 'Si marcaste alguna opción, indicá quién y de qué se trata' },
     ],
   },
 ]
@@ -1042,6 +1250,67 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                 })}
               </div>
             )}
+            {p.type === 'tabla_dinamica' && (() => {
+              const cols = (p as any).columns as ColumnaTabla[]
+              const minRows = (p as any).minRows ?? 1
+              const filas: any[] = Array.isArray(respuestas[p.id]) ? respuestas[p.id] : []
+              const filasMostrar = filas.length >= minRows ? filas : [...filas, ...Array(minRows - filas.length).fill({})]
+              const setFila = (idx: number, colId: string, v: any) => {
+                const next = [...filasMostrar]
+                next[idx] = { ...(next[idx] || {}), [colId]: v }
+                setCampo(p.id, next)
+              }
+              const addFila = () => setCampo(p.id, [...filasMostrar, {}])
+              const removeFila = (idx: number) => {
+                const next = filasMostrar.filter((_, i) => i !== idx)
+                setCampo(p.id, next.length === 0 ? [{}] : next)
+              }
+              return (
+                <div className="space-y-3">
+                  {filasMostrar.map((fila, idx) => (
+                    <div key={idx} className="rounded-xl border-2 p-3 space-y-2 relative"
+                      style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                          {(p as any).addLabel?.replace(/^\+\s*/, '') || 'Fila'} {idx + 1}
+                        </span>
+                        {filasMostrar.length > minRows && (
+                          <button type="button" onClick={() => removeFila(idx)}
+                            className="text-xs text-red-500 hover:text-red-700 font-bold flex items-center gap-1">
+                            <X size={12} /> Quitar
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {cols.map(col => (
+                          <div key={col.id}>
+                            <label className="block text-[11px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{col.label}</label>
+                            {col.options ? (
+                              <select value={fila[col.id] || ''} onChange={e => setFila(idx, col.id, e.target.value)}
+                                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-indigo-500"
+                                style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
+                                <option value="">—</option>
+                                {col.options.map(o => <option key={o} value={o}>{o}</option>)}
+                              </select>
+                            ) : (
+                              <input type={col.type || 'text'} value={fila[col.id] || ''} placeholder={col.placeholder}
+                                onChange={e => setFila(idx, col.id, e.target.value)}
+                                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-indigo-500"
+                                style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addFila}
+                    className="w-full py-2.5 rounded-xl border-2 border-dashed text-sm font-bold flex items-center justify-center gap-2 hover:border-indigo-400 transition-colors"
+                    style={{ borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}>
+                    <span className="text-lg leading-none">+</span> {(p as any).addLabel || 'Agregar fila'}
+                  </button>
+                </div>
+              )
+            })()}
           </div>
         ))}
       </div>
