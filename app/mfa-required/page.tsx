@@ -35,7 +35,7 @@ export default function MFARequiredPage() {
       // Verificar si ya existe un factor pendiente y limpiarlo
       const { data: factors } = await supabase.auth.mfa.listFactors()
       for (const f of factors?.totp || []) {
-        if (f.status === 'unverified') {
+        if ((f.status as string) === 'unverified') {
           await supabase.auth.mfa.unenroll({ factorId: f.id })
         }
       }
