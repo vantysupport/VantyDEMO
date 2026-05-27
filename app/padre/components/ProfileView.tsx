@@ -202,26 +202,22 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
     if (!file || !profile?.id) return
     setUploadingPhoto(true)
     try {
-      // Convert to base64 and upload via a simple fetch
-      const reader = new FileReader()
-      reader.onload = async () => {
-        try {
-          const ext = file.name.split('.').pop()
-          const path = `avatars/${profile.id}.${ext}`
-          const { error: upErr } = await supabase.storage
-            .from('store-images')
-            .upload(path, file, { upsert: true, contentType: file.type })
-          if (upErr) throw upErr
-          const { data: { publicUrl } } = supabase.storage.from('store-images').getPublicUrl(path)
-          const url = publicUrl + '?t=' + Date.now()
-          await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', profile.id)
-          setAvatarUrl(url)
-          toast.success('Foto actualizada ✅')
-        } catch (err: any) {
-          toast.error('Error: ' + (err.message || 'No se pudo subir la foto'))
-        } finally { setUploadingPhoto(false) }
-      }
-      reader.readAsDataURL(file)
+      // ✅ FIX: usar endpoint server-side para subir y guardar en DB
+      // evita el fallo silencioso de RLS al usar el cliente browser
+      try {
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('folder', `avatars/${profile.id}`)
+        fd.append('updateProfileId', profile.id)
+        const upRes = await fetch('/api/admin/upload-imagen', { method: 'POST', body: fd })
+        const upData = await upRes.json()
+        if (!upRes.ok || !upData.url) throw new Error(upData.error || 'No se pudo subir la imagen')
+        const finalUrl = `${upData.url}?t=${Date.now()}`
+        setAvatarUrl(finalUrl)
+        toast.success('Foto actualizada ✅')
+      } catch (err: any) {
+        toast.error('Error: ' + (err.message || 'No se pudo subir la foto'))
+      } finally { setUploadingPhoto(false) }
     } catch { toast.error('Error al leer el archivo'); setUploadingPhoto(false) }
   }
 

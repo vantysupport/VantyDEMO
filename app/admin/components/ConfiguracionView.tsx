@@ -151,15 +151,35 @@ function SeccionPerfil({ onAvatarUpdate }: { onAvatarUpdate?: (url: string) => v
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
               const file = e.target.files?.[0]
               if (!file) return
-              const { data: { user } } = await supabase.auth.getUser()
-              if (!user) return
-              const path = `avatars/${user.id}.${file.name.split('.').pop()}`
-              await supabase.storage.from('store-images').upload(path, file, { upsert: true })
-              const url = supabase.storage.from('store-images').getPublicUrl(path).data.publicUrl
-              await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
-              setAvatarUrl(url)
-              onAvatarUpdate?.(url)
-              toast.success('Foto actualizada')
+              try {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) { toast.error('No estás logueado'); return }
+
+                // 1. Subir vía endpoint server-side (auto-crea bucket, valida tipo, etc.)
+                const fd = new FormData()
+                fd.append('file', file)
+                fd.append('folder', `avatars/${user.id}`)
+                // ✅ FIX: el servidor actualiza avatar_url con supabaseAdmin,
+                // evitando el fallo silencioso de RLS del cliente browser
+                fd.append('updateProfileId', user.id)
+                const upRes = await fetch('/api/admin/upload-imagen', { method: 'POST', body: fd })
+                const upData = await upRes.json()
+                if (!upRes.ok || !upData.url) {
+                  throw new Error(upData.error || 'No se pudo subir la imagen')
+                }
+
+                // 3. Actualizar UI con cache-buster para forzar refresh
+                const finalUrl = `${upData.url}?t=${Date.now()}`
+                setAvatarUrl(finalUrl)
+                onAvatarUpdate?.(finalUrl)
+                toast.success('Foto actualizada')
+              } catch (err: any) {
+                console.error('[avatar-upload]', err)
+                toast.error(err?.message || 'Error al actualizar la foto')
+              } finally {
+                // Limpiar el input para permitir re-subir la misma imagen
+                if (fileRef.current) fileRef.current.value = ''
+              }
             }} />
           </div>
           <div>
