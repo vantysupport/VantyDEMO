@@ -734,7 +734,7 @@ export function subseccion(label: string, prosa: string): Paragraph {
 }
 
 // ─── Párrafo de prosa ─────────────────────────────────────────────────────────
-export function parrafo(texto: string, color = COLOR.grisMed): Paragraph {
+export function parrafo(texto: string, color: string = COLOR.grisMed): Paragraph {
   return new Paragraph({
     spacing: { before: 60, after: 80 },
     children: [new TextRun({ text: texto, size: 19, font: FONT, color })],

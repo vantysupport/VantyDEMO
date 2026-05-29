@@ -2645,6 +2645,38 @@ async function generarReporteProgramasFamilia(
     const fase = String(p.fase_actual || '').toLowerCase()
     const enLineaBase = fase.includes('linea') || fase.includes('base') || fase === 'baseline'
 
+    // ── Desglose por SET (cada set tiene su propio avance) ──
+    const setsDelPrograma = objetivosArr
+      .filter((o: any) => o.programa_id === p.id)
+      .sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0))
+
+    const sets = setsDelPrograma.map((o: any) => {
+      // La sesión guarda set = "Set N" (o la descripción si no tiene número)
+      const setLabel = o.numero_set != null ? `Set ${o.numero_set}` : (o.descripcion || '')
+      const sesSet = sesP.filter((ses: any) => String(ses.set || '') === setLabel)
+      const pctsSet = sesSet.map((ses: any) => parseNivelLogro(ses.porcentaje_exito)).filter((v: number | null): v is number => v !== null)
+      const recSet = pctsSet.slice(-5)
+      const promRecSet = recSet.length > 0 ? avg(recSet) : null
+      const iniSet = pctsSet.slice(0, 5)
+      const promIniSet = iniSet.length > 0 ? avg(iniSet) : null
+      const deltaSet = (promRecSet != null && promIniSet != null) ? promRecSet - promIniSet : 0
+      let tendSet: 'sube' | 'baja' | 'estable' = 'estable'
+      if (deltaSet >= 8) tendSet = 'sube'
+      else if (deltaSet <= -8) tendSet = 'baja'
+      // Criterio del set por desempeño reciente o estado manual 'dominado'
+      const cumpleSet = o.estado === 'dominado' || (promRecSet != null && promRecSet >= crit)
+      return {
+        numero: o.numero_set ?? null,
+        nombre: (o.descripcion || setLabel).toString().trim() || setLabel,
+        estadoManual: o.estado || 'pendiente',
+        n_sesiones: pctsSet.length,
+        pcts: pctsSet,
+        promReciente: promRecSet,
+        tendencia: tendSet,
+        cumple: cumpleSet,
+      }
+    })
+
     return {
       id: p.id,
       titulo: p.titulo || 'Programa',
@@ -2660,6 +2692,7 @@ async function generarReporteProgramasFamilia(
       tendencia,
       cumple,
       enLineaBase,
+      sets,
     }
   })
 
@@ -2741,6 +2774,33 @@ async function generarReporteProgramasFamilia(
     if (p.tendencia === 'sube') return 'Avanzando'
     if (p.tendencia === 'baja') return 'En revisión'
     return 'En proceso'
+  }
+
+  type SetInfo = typeof programasInfo[number]['sets'][number]
+  const estadoSetTexto = (st: SetInfo): string => {
+    if (st.cumple) return 'Dominado'
+    if (st.estadoManual === 'en_progreso') return 'En progreso'
+    if (st.n_sesiones === 0) return 'Por iniciar'
+    if (st.tendencia === 'sube') return 'Avanzando'
+    if (st.tendencia === 'baja') return 'En revisión'
+    return 'En proceso'
+  }
+
+  const explicarSet = (p: typeof programasInfo[number], st: SetInfo, n: number): string => {
+    if (st.n_sesiones === 0) {
+      return `Este nivel todavía no se ha trabajado. Se enseñará cuando ${nombreCorto} avance lo suficiente en los niveles anteriores.`
+    }
+    if (st.cumple) {
+      return `${nombreCorto} ya domina este nivel. ¡Excelente! Está listo/a para avanzar al siguiente.`
+    }
+    const reciente = st.promReciente ?? 0
+    if (st.tendencia === 'sube') {
+      return `Viene mejorando en este nivel (alrededor del ${reciente}%). Vamos por buen camino hacia la meta del ${p.criterio}%.`
+    }
+    if (st.tendencia === 'baja') {
+      return `En este nivel notamos una baja reciente (cerca del ${reciente}%). El equipo lo está revisando para ajustar la estrategia.`
+    }
+    return `Se mantiene estable en este nivel (cerca del ${reciente}%). Seguimos practicando para llegar a la meta del ${p.criterio}%.`
   }
 
   // ─── Construcción del documento ───────────────────────────────────────────
@@ -2828,38 +2888,80 @@ async function generarReporteProgramasFamilia(
     // Tabla de datos del programa
     const filas: [string, string][] = []
     if (p.objetivo) filas.push(['Objetivo', p.objetivo])
-    filas.push(['Estado', estadoTexto(p)])
+    filas.push(['Estado general', estadoTexto(p)])
     filas.push(['Meta a alcanzar', `${p.criterio}% de aciertos de forma constante`])
+    if (p.sets.length > 0) filas.push(['Niveles (sets) del programa', String(p.sets.length)])
     if (p.n_sesiones > 0) {
       filas.push(['Sesiones registradas', String(p.n_sesiones)])
-      if (p.promReciente != null) filas.push(['Desempeño reciente', `${p.promReciente}%`])
-      if (p.promedio != null) filas.push(['Promedio histórico', `${p.promedio}%`])
     }
     sections.push(tpl.tablaDatosGenerales(filas))
 
-    // Gráfico de avance (solo si hay ≥ 2 puntos)
-    if (p.pcts.length >= 2) {
-      sections.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [] }))
-      sections.push(...tpl.graficoCurvaLineal('Evolución de aciertos (%)', p.pcts))
-    }
-
-    // Explicación en lenguaje simple
+    // Explicación general del programa
     sections.push(new Paragraph({
-      spacing: { before: 120, after: 40 },
+      spacing: { before: 100, after: 40 },
       border: { left: { style: BorderStyle.SINGLE, size: 18, color: '4F46E5', space: 10 } },
       children: [new TextRun({ text: explicarPrograma(p), size: 20, font: 'Arial', color: '334155', italics: true })],
     }))
+
+    // ── Desglose por SET (cada set avanza por separado) ──
+    if (p.sets.length > 0) {
+      sections.push(new Paragraph({
+        spacing: { before: 160, after: 40 },
+        children: [new TextRun({ text: 'Avance por nivel (set):', bold: true, size: 21, font: 'Arial', color: '475569' })],
+      }))
+      sections.push(tpl.parrafo('Este programa se trabaja por niveles. Cada nivel (set) se enseña por separado y avanza a su propio ritmo:', '64748B'))
+
+      let sIdx = 0
+      for (const st of p.sets) {
+        sIdx++
+        // Encabezado del set
+        sections.push(new Paragraph({
+          spacing: { before: 140, after: 20 },
+          children: [
+            new TextRun({ text: `   ▸ Set ${st.numero ?? sIdx}: `, bold: true, size: 20, font: 'Arial', color: '1E3A8A' }),
+            new TextRun({ text: st.nombre || `Nivel ${sIdx}`, size: 20, font: 'Arial', color: '1E293B' }),
+            new TextRun({ text: `   ·   ${estadoSetTexto(st)}`, bold: true, size: 18, font: 'Arial', color: st.cumple ? '15803D' : '64748B' }),
+          ],
+        }))
+        // Datos del set
+        const filasSet: [string, string][] = []
+        filasSet.push(['Estado', estadoSetTexto(st)])
+        if (st.n_sesiones > 0) {
+          filasSet.push(['Sesiones de este nivel', String(st.n_sesiones)])
+          if (st.promReciente != null) filasSet.push(['Desempeño reciente', `${st.promReciente}%`])
+        }
+        sections.push(tpl.tablaDatosGenerales(filasSet))
+        // Mini gráfico del set (si hay ≥ 2 puntos)
+        if (st.pcts.length >= 2) {
+          sections.push(new Paragraph({ spacing: { before: 80, after: 30 }, children: [] }))
+          sections.push(...tpl.graficoCurvaLineal(`Set ${st.numero ?? sIdx} — Evolución de aciertos (%)`, st.pcts))
+        }
+        // Explicación del set en lenguaje simple
+        sections.push(new Paragraph({
+          spacing: { before: 60, after: 40 },
+          border: { left: { style: BorderStyle.SINGLE, size: 12, color: '93C5FD', space: 10 } },
+          children: [new TextRun({ text: explicarSet(p, st, sIdx), size: 19, font: 'Arial', color: '475569', italics: true })],
+        }))
+      }
+    } else {
+      // Sin sets definidos → gráfico general del programa
+      if (p.pcts.length >= 2) {
+        sections.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [] }))
+        sections.push(...tpl.graficoCurvaLineal('Evolución de aciertos (%)', p.pcts))
+      }
+    }
   }
 
   // VI. Glosario simple
   sections.push(tpl.tituloSeccion('VI.  Pequeño glosario'))
   sections.push(...tpl.items([
     'Programa: una habilidad específica que enseñamos (ej. pedir lo que necesita, esperar su turno, leer).',
+    'Nivel o set: cada programa se divide en niveles que se enseñan de a uno, del más fácil al más difícil. Por eso cada nivel avanza a su propio ritmo.',
     'Sesión: cada encuentro de terapia donde practicamos y medimos el avance.',
     'Porcentaje de aciertos: de cada 100 oportunidades, cuántas respondió correctamente.',
-    'Meta o criterio: el porcentaje que debe alcanzar de forma constante para dar por logrado el objetivo (normalmente 90%).',
+    'Meta o criterio: el porcentaje que debe alcanzar de forma constante para dar por logrado el nivel (normalmente 90%).',
     'Línea base: etapa inicial donde medimos el punto de partida antes de empezar a enseñar.',
-    'Objetivo alcanzado: cuando logró la meta de forma estable y está listo para avanzar.',
+    'Nivel dominado: cuando logró la meta de forma estable en ese nivel y está listo para pasar al siguiente.',
   ]))
 
   // VII. Cierre
