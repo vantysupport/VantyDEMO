@@ -578,10 +578,10 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
     specialist_id: nino.specialist_id || '',
   })
 
-  // Cargar especialistas disponibles
+  // Cargar especialistas disponibles (incluye especialidad — solo uso interno)
   useEffect(() => {
     supabase.from('profiles')
-      .select('id, full_name, email, role')
+      .select('id, full_name, email, role, specialty')
       .in('role', ['especialista', 'terapeuta', 'jefe', 'admin'])
       .order('full_name')
       .then(({ data }) => setSpecialists(data || []))
@@ -694,7 +694,9 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
     ? `${String(nino.age).replace(/[^0-9]/g, '')} ${t('common.anos')}`
     : birthFormatted ? `${calcularEdadNumerica(nino.birth_date)} ${t('common.anos')}` : '—'
 
-  const specialistName = specialists.find(s => s.id === (nino.specialist_id || form.specialist_id))?.full_name || null
+  const specialistObj = specialists.find(s => s.id === (nino.specialist_id || form.specialist_id)) || null
+  const specialistName = specialistObj?.full_name || null
+  const specialistSpecialty = specialistObj?.specialty || null   // solo visible en panel interno
 
   const fieldCls = "w-full px-3 py-2.5 rounded-lg text-sm border outline-none transition-colors"
   const fieldStyle = { borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }
@@ -787,7 +789,12 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
                   <div className="w-6 h-6 rounded-lg bg-violet-500 flex items-center justify-center flex-shrink-0">
                     <User size={11} className="text-white"/>
                   </div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{specialistName}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>{specialistName}</p>
+                    {specialistSpecialty && (
+                      <p className="text-[11px] leading-tight truncate" style={{ color: '#7b5ea7' }}>{specialistSpecialty}</p>
+                    )}
+                  </div>
                 </div>
               : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin especialista asignado</p>
             }
@@ -897,7 +904,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
               <option value="">— Sin asignar —</option>
               {specialists.map(s => (
                 <option key={s.id} value={s.id}>
-                  {s.full_name || s.email} ({s.role})
+                  {s.full_name || s.email}{s.specialty ? ` — ${s.specialty}` : ` (${s.role})`}
                 </option>
               ))}
             </select>

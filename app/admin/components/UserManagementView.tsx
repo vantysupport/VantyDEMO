@@ -19,6 +19,20 @@ const ROLES = [
   { value: 'secretaria',  label: 'Secretaria(o)', description: 'Apoyo administrativo',     icon: ClipboardList, dotColor: 'bg-violet-500', badgeClass: 'role-secretaria'  },
 ]
 
+// Especialidades sugeridas (datalist) — el usuario puede elegir una o escribir la suya.
+const SPECIALTY_SUGGESTIONS = [
+  'Neuropsicología',
+  'Psicología clínica',
+  'Terapia ABA',
+  'Terapia de lenguaje / Fonoaudiología',
+  'Terapia ocupacional',
+  'Psicopedagogía',
+  'Terapia física',
+  'Psicología educativa',
+  'Dirección / Coordinación clínica',
+  'Secretaría / Admisión',
+]
+
 function getRoleInfo(role: string) {
   const { t } = useI18n()
 
@@ -202,6 +216,7 @@ export default function UserManagementView() {
   const [currentUserRole, setCurrentUserRole] = useState<string>('')
   const [activeTab, setActiveTab] = useState<'jefe' | 'especialista' | 'padre' | 'secretaria' | 'todos'>('todos')
   const [searchTerm, setSearchTerm] = useState('')
+  const [filterSpecialty, setFilterSpecialty] = useState<string>('')
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [savingRole, setSavingRole] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -223,6 +238,11 @@ export default function UserManagementView() {
   const [editingTokensFor, setEditingTokensFor] = useState<string | null>(null)
   const [newTokens, setNewTokens] = useState(0)
   const [savingTokens, setSavingTokens] = useState(false)
+
+  // Especialidad / clasificación de equipo (interno)
+  const [editingSpecialtyFor, setEditingSpecialtyFor] = useState<string | null>(null)
+  const [newSpecialty, setNewSpecialty] = useState('')
+  const [savingSpecialty, setSavingSpecialty] = useState(false)
 
   // Create user
   const [createForm, setCreateForm] = useState({ email: '', password: '', full_name: '', role: 'especialista', specialty: '' })
@@ -358,6 +378,24 @@ export default function UserManagementView() {
     } finally { setSavingTokens(false) }
   }
 
+  const handleUpdateSpecialty = async (userId: string) => {
+    setSavingSpecialty(true)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        body: JSON.stringify({ action: 'update_profile', userId, specialty: newSpecialty.trim() }),
+      })
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      toast.success('✅ Especialidad actualizada')
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, profile: { ...u.profile, specialty: newSpecialty.trim() } } : u))
+      setEditingSpecialtyFor(null)
+    } catch (err: any) {
+      toast.error('Error: ' + err.message)
+    } finally { setSavingSpecialty(false) }
+  }
+
   const handleSendResetEmail = async (user: UserData) => {
     try {
       const res = await fetch('/api/admin/users', {
@@ -437,8 +475,14 @@ export default function UserManagementView() {
     const matchSearch = !term || u.email.toLowerCase().includes(term) || u.profile?.full_name?.toLowerCase().includes(term)
     const role = u.profile?.role || ''
     const matchTab = activeTab === 'todos' || (activeTab === 'jefe' && (role === 'jefe' || role === 'admin')) || activeTab === role
-    return matchSearch && matchTab
+    const matchSpecialty = !filterSpecialty || u.profile?.specialty === filterSpecialty
+    return matchSearch && matchTab && matchSpecialty
   })
+
+  // Especialidades existentes en el equipo (para el filtro), ordenadas
+  const especialidadesEquipo = Array.from(
+    new Set(users.map(u => u.profile?.specialty).filter(Boolean) as string[])
+  ).sort()
 
   const totalJefes = users.filter(u => u.profile?.role === 'jefe' || u.profile?.role === 'admin').length
   const totalEspecialistas = users.filter(u => u.profile?.role === 'especialista').length
@@ -454,6 +498,15 @@ export default function UserManagementView() {
 
   return (
     <div className="space-y-5 animate-fade-in pb-6">
+
+      {/* Datalist global de especialidades (lo usan el modal de crear y la edición inline) */}
+      <datalist id="specialty-suggestions">
+        {/* Sugeridas + las que ya existen en el equipo (dinámicas) */}
+        {Array.from(new Set([
+          ...SPECIALTY_SUGGESTIONS,
+          ...users.map(u => u.profile?.specialty).filter(Boolean) as string[],
+        ])).map(sp => <option key={sp} value={sp} />)}
+      </datalist>
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -510,13 +563,26 @@ export default function UserManagementView() {
         <StatCard value={totalSecretarias}   label="Secretarias"  icon={ClipboardList}color="bg-violet-500" />
       </div>
 
-      {/* Buscador */}
-      <div className="relative">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-          {...{placeholder: t('ui.search_user')}}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-          style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
+      {/* Buscador + filtro por especialidad */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+            {...{placeholder: t('ui.search_user')}}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
+        </div>
+        {especialidadesEquipo.length > 0 && (
+          <div className="relative sm:w-64">
+            <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+            <select value={filterSpecialty} onChange={e => setFilterSpecialty(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}>
+              <option value="">Todas las especialidades</option>
+              {especialidadesEquipo.map(sp => <option key={sp} value={sp}>{sp}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Lista de usuarios */}
@@ -556,6 +622,13 @@ export default function UserManagementView() {
                       {user.profile?.full_name || 'Sin nombre'}
                     </p>
                     <RoleBadge role={role} />
+                    {/* Especialidad (clasificación interna del equipo) */}
+                    {role !== 'padre' && user.profile?.specialty && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
+                        style={{ background: 'rgba(123,94,167,0.12)', color: '#7b5ea7' }}>
+                        <Briefcase size={9} /> {user.profile.specialty}
+                      </span>
+                    )}
                     {isSelf && (
                       <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">TÚ</span>
                     )}
@@ -606,8 +679,40 @@ export default function UserManagementView() {
                       <p className="flex items-center gap-1.5"><Calendar size={11} /> Creado: {new Date(user.created_at).toLocaleDateString('es')}</p>
                       <p className="flex items-center gap-1.5"><Clock size={11} /> Último acceso: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('es') : 'Nunca'}</p>
                       <p className="flex items-center gap-1.5"><Ticket size={11} /> Tokens: <strong style={{ color: 'var(--text-primary)' }}>{user.profile?.tokens ?? 0}</strong></p>
-                      {user.profile?.specialty && (
-                        <p className="flex items-center gap-1.5"><Briefcase size={11} /> {user.profile.specialty}</p>
+
+                      {/* Especialidad / clasificación de equipo — solo staff (no padres) */}
+                      {role !== 'padre' && (
+                        editingSpecialtyFor === user.id ? (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <Briefcase size={11} />
+                            <input
+                              type="text" value={newSpecialty} autoFocus list="specialty-suggestions"
+                              onChange={e => setNewSpecialty(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') handleUpdateSpecialty(user.id); if (e.key === 'Escape') setEditingSpecialtyFor(null) }}
+                              placeholder="Elegí una o escribí la tuya…"
+                              className="flex-1 px-2 py-1 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              style={{ background: 'var(--card)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
+                            <button onClick={() => handleUpdateSpecialty(user.id)} disabled={savingSpecialty}
+                              className="p-1 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 disabled:opacity-50" title="Guardar">
+                              {savingSpecialty ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                            </button>
+                            <button onClick={() => setEditingSpecialtyFor(null)} className="p-1 rounded-md hover:text-red-500" style={{ color: 'var(--text-muted)' }} title="Cancelar">
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="flex items-center gap-1.5">
+                            <Briefcase size={11} />
+                            {user.profile?.specialty
+                              ? <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{user.profile.specialty}</span>
+                              : <span className="italic">Sin especialidad asignada</span>}
+                            <button
+                              onClick={() => { setEditingSpecialtyFor(user.id); setNewSpecialty(user.profile?.specialty || '') }}
+                              className="ml-1 text-blue-500 hover:underline font-semibold">
+                              {user.profile?.specialty ? 'editar' : 'asignar'}
+                            </button>
+                          </p>
+                        )
                       )}
                     </div>
 
@@ -746,8 +851,8 @@ export default function UserManagementView() {
                 <option value="padre">{t('usuarios.rolPadre')}</option>
                 <option value="secretaria">📋 Secretaria(o) — Apoyo administrativo</option>
               </select>
-              {createForm.role === 'especialista' && (
-                <input {...{placeholder: t('ui.specialty')}} value={createForm.specialty}
+              {createForm.role !== 'padre' && (
+                <input list="specialty-suggestions" placeholder="Especialidad / área (elegí una o escribí la tuya)" value={createForm.specialty}
                   onChange={e => setCreateForm(f => ({ ...f, specialty: e.target.value }))}
                   className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
