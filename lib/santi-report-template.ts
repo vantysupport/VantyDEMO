@@ -495,11 +495,13 @@ export function graficoCurvaLineal(titulo: string, valores: number[], etiquetas?
   const tendenciaColor = tendencia > 5 ? COLOR.verde : tendencia < -5 ? COLOR.rojo : COLOR.azulEn
 
   // Cuadrícula: 8 filas × N columnas
+  // FIX: la fila superior (fi=0) debe INCLUIR el valor máximo (100%), si no, un
+  // valor de exactamente 100 no caía en ninguna banda y el gráfico salía vacío.
   const cuadricula: boolean[][] = Array.from({ length: FILAS }, (_, fi) =>
     vals.map(v => {
       const umbralAlto = max - (fi / FILAS) * max
       const umbralBajo = max - ((fi + 1) / FILAS) * max
-      return v >= umbralBajo && v < umbralAlto
+      return fi === 0 ? (v >= umbralBajo && v <= umbralAlto) : (v >= umbralBajo && v < umbralAlto)
     })
   )
 
