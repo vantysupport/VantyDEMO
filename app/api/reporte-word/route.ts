@@ -2663,8 +2663,15 @@ async function generarReporteProgramasFamilia(
       let tendSet: 'sube' | 'baja' | 'estable' = 'estable'
       if (deltaSet >= 8) tendSet = 'sube'
       else if (deltaSet <= -8) tendSet = 'baja'
-      // Criterio del set por desempeño reciente o estado manual 'dominado'
-      const cumpleSet = o.estado === 'dominado' || (promRecSet != null && promRecSet >= crit)
+      // Criterio del set — MISMA lógica que el badge verde de la UI:
+      //   1) estado manual = 'dominado', O
+      //   2) automático: últimas N sesiones consecutivas del set >= criterio
+      const critSesSet = Number(p.criterio_sesiones_consecutivas) || 2
+      let cumpleSet = o.estado === 'dominado'
+      if (!cumpleSet && pctsSet.length >= critSesSet) {
+        const ultSet = pctsSet.slice(-critSesSet)
+        cumpleSet = ultSet.every((v: number) => v >= crit)
+      }
       return {
         numero: o.numero_set ?? null,
         nombre: (o.descripcion || setLabel).toString().trim() || setLabel,
@@ -2778,7 +2785,7 @@ async function generarReporteProgramasFamilia(
 
   type SetInfo = typeof programasInfo[number]['sets'][number]
   const estadoSetTexto = (st: SetInfo): string => {
-    if (st.cumple) return 'Dominado'
+    if (st.cumple) return 'Criterio alcanzado'
     if (st.estadoManual === 'en_progreso') return 'En progreso'
     if (st.n_sesiones === 0) return 'Por iniciar'
     if (st.tendencia === 'sube') return 'Avanzando'
@@ -2787,11 +2794,11 @@ async function generarReporteProgramasFamilia(
   }
 
   const explicarSet = (p: typeof programasInfo[number], st: SetInfo, n: number): string => {
-    if (st.n_sesiones === 0) {
+    if (st.n_sesiones === 0 && !st.cumple) {
       return `Este nivel todavía no se ha trabajado. Se enseñará cuando ${nombreCorto} avance lo suficiente en los niveles anteriores.`
     }
     if (st.cumple) {
-      return `${nombreCorto} ya domina este nivel. ¡Excelente! Está listo/a para avanzar al siguiente.`
+      return `${nombreCorto} ya alcanzó el criterio de este nivel. ¡Excelente! Está listo/a para avanzar al siguiente.`
     }
     const reciente = st.promReciente ?? 0
     if (st.tendencia === 'sube') {
@@ -2920,7 +2927,18 @@ async function generarReporteProgramasFamilia(
           children: [
             new TextRun({ text: `   ▸ Set ${st.numero ?? sIdx}: `, bold: true, size: 20, font: 'Arial', color: '1E3A8A' }),
             new TextRun({ text: st.nombre || `Nivel ${sIdx}`, size: 20, font: 'Arial', color: '1E293B' }),
-            new TextRun({ text: `   ·   ${estadoSetTexto(st)}`, bold: true, size: 18, font: 'Arial', color: st.cumple ? '15803D' : '64748B' }),
+          ],
+        }))
+        // Marcador de estado del set (verde con check si alcanzó criterio)
+        sections.push(new Paragraph({
+          spacing: { before: 0, after: 30 },
+          shading: st.cumple ? { type: ShadingType.CLEAR, color: 'auto', fill: 'DCFCE7' } : undefined,
+          children: [
+            new TextRun({
+              text: st.cumple ? `   ✓  Criterio alcanzado` : `   ${estadoSetTexto(st)}`,
+              bold: true, size: 18, font: 'Arial',
+              color: st.cumple ? '15803D' : '64748B',
+            }),
           ],
         }))
         // Datos del set
