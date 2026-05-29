@@ -494,17 +494,6 @@ export function graficoCurvaLineal(titulo: string, valores: number[], etiquetas?
   const tendenciaTexto = tendencia > 5 ? 'Tendencia ascendente' : tendencia < -5 ? 'Tendencia descendente' : 'Tendencia estable'
   const tendenciaColor = tendencia > 5 ? COLOR.verde : tendencia < -5 ? COLOR.rojo : COLOR.azulEn
 
-  // Cuadrícula: 8 filas × N columnas
-  // FIX: la fila superior (fi=0) debe INCLUIR el valor máximo (100%), si no, un
-  // valor de exactamente 100 no caía en ninguna banda y el gráfico salía vacío.
-  const cuadricula: boolean[][] = Array.from({ length: FILAS }, (_, fi) =>
-    vals.map(v => {
-      const umbralAlto = max - (fi / FILAS) * max
-      const umbralBajo = max - ((fi + 1) / FILAS) * max
-      return fi === 0 ? (v >= umbralBajo && v <= umbralAlto) : (v >= umbralBajo && v < umbralAlto)
-    })
-  )
-
   const colWidth = Math.floor(7920 / COLS)
   const labelColW = 480
 
@@ -520,7 +509,9 @@ export function graficoCurvaLineal(titulo: string, valores: number[], etiquetas?
       ...vals.map((v, ci) => {
         const umbralAlto = max - (fi / FILAS) * max
         const umbralBajo = max - ((fi + 1) / FILAS) * max
-        const enEstaFila = v >= umbralBajo && v < umbralAlto
+        // FIX: la fila superior (fi=0) incluye el máximo (100%), si no un valor
+        // de exactamente 100 no se pintaba en ninguna fila y el gráfico salía vacío.
+        const enEstaFila = fi === 0 ? (v >= umbralBajo && v <= umbralAlto) : (v >= umbralBajo && v < umbralAlto)
         const barColor = colorBarra(v)
         return new TableCell({
           borders: NBDR,
