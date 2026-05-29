@@ -826,6 +826,38 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [editandoSetId, setEditandoSetId] = useState<string | null>(null)
   const [editSetForm, setEditSetForm] = useState<any>({})
   const [savingEditSet, setSavingEditSet] = useState(false)
+  const [descargandoSetId, setDescargandoSetId] = useState<string | null>(null)
+
+  // Descargar la guía de ejercicio para casa de un set específico
+  const descargarGuiaSet = async (objetivoId: string) => {
+    if (descargandoSetId) return
+    setDescargandoSetId(objetivoId)
+    try {
+      const res = await fetch('/api/reporte-word', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'set', objetivoId }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'No se pudo generar la guía')
+      }
+      const blob = await res.blob()
+      const cd = res.headers.get('Content-Disposition') || ''
+      const m = cd.match(/filename="?([^"]+)"?/)
+      const fileName = m ? m[1] : `Guia_Casa.docx`
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = fileName
+      document.body.appendChild(a); a.click(); a.remove()
+      URL.revokeObjectURL(url)
+      toast.success('Guía descargada')
+    } catch (e: any) {
+      toast.error(e?.message || 'Error al generar la guía')
+    } finally {
+      setDescargandoSetId(null)
+    }
+  }
 
   const saveField = async (field: string, value: string, onSuccess?: () => void) => {
     const res = await fetch('/api/programas-aba', {
@@ -1544,11 +1576,23 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           <div className="flex items-center justify-between mb-1">
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">📌 Procedimiento del Set</p>
                             {editandoSetId !== obj.id && (
-                              <button
-                                onClick={() => { setEditandoSetId(obj.id); setEditSetForm({ descripcion: obj.descripcion || '', materiales: obj.materiales || '', sd_estimulo: obj.sd_estimulo || '', unidad_positiva: obj.unidad_positiva || '', unidad_negativa: obj.unidad_negativa || '', reforzadores: obj.reforzadores || obj.ayudas || '', correction_errores: obj.correction_errores || '', generalizacion: obj.generalizacion || '' }) }}
-                                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-indigo-500 hover:bg-indigo-100 transition-colors">
-                                <Edit3 size={10} /> Editar
-                              </button>
+                              <div className="flex items-center gap-1">
+                                {/* Descargar guía de ejercicio para casa (para enviar a la familia) */}
+                                <button
+                                  onClick={() => descargarGuiaSet(obj.id)}
+                                  disabled={descargandoSetId === obj.id}
+                                  title="Descargar este ejercicio como guía Word para que la familia lo practique en casa"
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-50">
+                                  {descargandoSetId === obj.id
+                                    ? <><Loader2 size={10} className="animate-spin" /> Generando…</>
+                                    : <><BookOpen size={10} /> Guía para casa</>}
+                                </button>
+                                <button
+                                  onClick={() => { setEditandoSetId(obj.id); setEditSetForm({ descripcion: obj.descripcion || '', materiales: obj.materiales || '', sd_estimulo: obj.sd_estimulo || '', unidad_positiva: obj.unidad_positiva || '', unidad_negativa: obj.unidad_negativa || '', reforzadores: obj.reforzadores || obj.ayudas || '', correction_errores: obj.correction_errores || '', generalizacion: obj.generalizacion || '' }) }}
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-indigo-500 hover:bg-indigo-100 transition-colors">
+                                  <Edit3 size={10} /> Editar
+                                </button>
+                              </div>
                             )}
                           </div>
 

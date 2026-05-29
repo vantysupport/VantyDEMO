@@ -2901,17 +2901,230 @@ async function generarReporteProgramasFamilia(
   return { doc, fileName }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// GUÍA DE EJERCICIO PARA CASA (un set/objetivo) — para la familia
+// ═══════════════════════════════════════════════════════════════════════════
+// Convierte el procedimiento de un set (materiales, Sd, unidad +/-, ayudas,
+// corrección, generalización) en una guía clara, paso a paso, que el padre
+// puede seguir en casa aunque no tenga formación clínica.
+async function generarGuiaSetFamilia(
+  objetivoId: string,
+  userLocale = 'es',
+): Promise<{ doc: Document; fileName: string }> {
+
+  // 1. Cargar el set + su programa + el paciente
+  const { data: setObj, error: e1 } = await supabaseAdmin
+    .from('objetivos_cp')
+    .select('*')
+    .eq('id', objetivoId)
+    .maybeSingle()
+  if (e1) throw e1
+  if (!setObj) throw new Error('Set/objetivo no encontrado')
+
+  const { data: programa } = await supabaseAdmin
+    .from('programas_aba')
+    .select('id, titulo, area, criterio_dominio_pct, objetivo_lp, child_id')
+    .eq('id', (setObj as any).programa_id)
+    .maybeSingle()
+
+  const childId = (programa as any)?.child_id || null
+  const { data: child } = childId
+    ? await supabaseAdmin.from('children').select('name, age, birth_date, diagnosis').eq('id', childId).maybeSingle()
+    : { data: null }
+
+  const nombre = (child as any)?.name || 'el/la estudiante'
+  const nombreCap = nombre.split(' ')
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+  const nombreCorto = nombreCap.split(' ')[0]
+  const diagnostico = (child as any)?.diagnosis || 'En evaluación'
+
+  let edadTexto = 'no registrada'
+  if ((child as any)?.birth_date) {
+    const nac = new Date((child as any).birth_date)
+    const ahora = new Date()
+    const años = ahora.getFullYear() - nac.getFullYear()
+    const meses = ahora.getMonth() - nac.getMonth()
+    const edad = (meses < 0 || (meses === 0 && ahora.getDate() < nac.getDate())) ? años - 1 : años
+    const mesesAdj = meses < 0 ? meses + 12 : meses
+    edadTexto = `${edad} años${mesesAdj > 0 ? ` ${mesesAdj} meses` : ''}`
+  } else if ((child as any)?.age) {
+    edadTexto = `${(child as any).age} años`
+  }
+
+  const s: any = setObj
+  const prog: any = programa || {}
+  const criterio = Number(prog.criterio_dominio_pct) || 90
+  const tituloPrograma = prog.titulo || 'Programa'
+  const area = (prog.area || 'General').toString().trim()
+  const numeroSet = s.numero_set != null ? `Set ${s.numero_set}` : 'Set'
+  const descSet = (s.descripcion || '').toString().trim()
+  const ayudas = (s.reforzadores || s.ayudas || '').toString().trim()
+
+  const hoy = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const hoyISO = new Date().toISOString().slice(0, 10)
+  const iniciales = tpl.generarIniciales(nombre)
+  const safeName = nombreCap.replace(/\s+/g, '_') || 'Paciente'
+  const fileName = `Guia_Casa_${safeName}_${numeroSet.replace(/\s+/g, '')}_${hoyISO}.docx`
+  const codigoDoc = generarCodigoDocumento(childId || objetivoId, 'guia')
+
+  // 2. Pasos del procedimiento → cada uno con explicación amigable
+  type Paso = { icono: string; titulo: string; queSignifica: string; contenido: string }
+  const pasosRaw: Paso[] = [
+    { icono: '📚', titulo: 'Qué necesitas (materiales)', queSignifica: 'Reuní estos materiales antes de empezar para que la práctica fluya sin interrupciones.', contenido: (s.materiales || '').toString().trim() },
+    { icono: '📍', titulo: 'Qué decir o mostrar (la instrucción)', queSignifica: 'Es la indicación que le das para que sepa qué tiene que hacer. Decila de forma clara y una sola vez.', contenido: (s.sd_estimulo || '').toString().trim() },
+    { icono: '✅', titulo: 'Qué respuesta buscamos (respuesta correcta)', queSignifica: 'Esto es lo que esperamos que haga. Cuando lo logre, felicitalo enseguida con entusiasmo.', contenido: (s.unidad_positiva || '').toString().trim() },
+    { icono: '❎', titulo: 'Qué no contamos como correcto', queSignifica: 'Si responde de esta manera, no es la respuesta que buscamos todavía. No lo regañes: simplemente seguí al paso de corrección.', contenido: (s.unidad_negativa || '').toString().trim() },
+    { icono: '🤝', titulo: 'Cómo ayudarlo (ayudas / apoyos)', queSignifica: 'Si le cuesta, podés darle estos apoyos. La idea es ir retirándolos de a poco para que lo haga cada vez más solo.', contenido: ayudas },
+    { icono: '🔄', titulo: 'Qué hacer si se equivoca (corrección)', queSignifica: 'Cuando no acierte, seguí estos pasos con calma y paciencia, sin frustrarte. Es parte normal del aprendizaje.', contenido: (s.correction_errores || '').toString().trim() },
+    { icono: '🏠', titulo: 'Cómo practicarlo en el día a día (generalización)', queSignifica: 'Buscá momentos naturales en casa para repetir esta habilidad, así la aprende de verdad y la usa en su vida diaria.', contenido: (s.generalizacion || '').toString().trim() },
+  ]
+  const pasos = pasosRaw.filter(p => p.contenido)
+
+  const sellosVerif = await tpl.selloQRVerificacionAsync({
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+  })
+
+  const sections: DocChild[] = [
+    ...portadaInstitucional({
+      tipoInforme: 'GUÍA DE EJERCICIO PARA CASA',
+      nombrePaciente: nombre,
+      edadPaciente: edadTexto,
+      diagnostico,
+      especialista: 'Equipo Clínico SANTI',
+      credenciales: 'Terapia ABA · Neuropsicología Infantil',
+      fechaEmision: hoy,
+      periodoEval: tituloPrograma,
+      codigoDoc,
+    }),
+
+    // I. Presentación
+    tpl.tituloSeccion('I.  ¿Para qué sirve esta guía?'),
+    tpl.parrafo(`Esta guía explica, paso a paso, cómo practicar en casa un ejercicio que estamos trabajando con ${nombreCorto} en terapia. Practicar en casa ayuda muchísimo a que aprenda más rápido y use lo aprendido en su día a día. No necesitas experiencia previa: solo seguí los pasos con cariño, paciencia y constancia.`),
+
+    // II. Datos del ejercicio
+    tpl.tituloSeccion('II.  El ejercicio de hoy'),
+    tpl.tablaDatosGenerales([
+      ['Estudiante', nombreCap],
+      ['Área de trabajo', area],
+      ['Programa', tituloPrograma],
+      ['Ejercicio', `${numeroSet}${descSet ? ` — ${descSet}` : ''}`],
+      ['Meta', `Que lo logre en el ${criterio}% de las veces, de forma constante`],
+    ]),
+  ]
+
+  if (prog.objetivo_lp) {
+    sections.push(tpl.subseccion('¿Qué queremos lograr a largo plazo?', String(prog.objetivo_lp)))
+  }
+
+  // III. Pasos
+  sections.push(tpl.tituloSeccion('III.  Cómo hacerlo, paso a paso'))
+  if (pasos.length === 0) {
+    sections.push(tpl.parrafo('Este ejercicio todavía no tiene el procedimiento detallado. Consultá con el especialista para que te explique cómo practicarlo en casa.'))
+  } else {
+    let n = 0
+    for (const paso of pasos) {
+      n++
+      // Encabezado del paso
+      sections.push(new Paragraph({
+        spacing: { before: 220, after: 40 },
+        children: [
+          new TextRun({ text: `${paso.icono}  Paso ${n}: ${paso.titulo}`, bold: true, size: 23, font: 'Arial', color: '1E3A8A' }),
+        ],
+      }))
+      // Qué significa (nota guía, en cursiva)
+      sections.push(new Paragraph({
+        spacing: { before: 0, after: 40 },
+        children: [new TextRun({ text: paso.queSignifica, italics: true, size: 19, font: 'Arial', color: '64748B' })],
+      }))
+      // Contenido específico de este set (lo que escribió el especialista)
+      sections.push(new Paragraph({
+        spacing: { before: 0, after: 40 },
+        border: { left: { style: BorderStyle.SINGLE, size: 18, color: '4F46E5', space: 10 } },
+        shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'F8FAFC' },
+        children: [new TextRun({ text: paso.contenido, size: 21, font: 'Arial', color: '1E293B' })],
+      }))
+    }
+  }
+
+  // IV. Consejos para la familia
+  sections.push(tpl.tituloSeccion('IV.  Consejos para que funcione mejor'))
+  sections.push(...tpl.items([
+    'Elegí un momento tranquilo, sin distracciones (sin TV ni celular cerca).',
+    'Practicá poco tiempo pero seguido: 5 a 10 minutos varias veces es mejor que una sesión larga.',
+    'Festejá cada logro al instante: un aplauso, un abrazo o algo que le guste lo motiva muchísimo.',
+    'Si se frustra o se cansa, hacé una pausa. Nunca lo obligues ni lo regañes por equivocarse.',
+    'La constancia es la clave: repetir el ejercicio en distintos momentos del día acelera el aprendizaje.',
+    'Anotá tus dudas y compartilas con el especialista en la próxima sesión.',
+  ]))
+
+  // V. Cierre
+  sections.push(tpl.tituloSeccion('V.  Gracias por acompañar'))
+  sections.push(tpl.parrafo(`Tu participación en casa hace una diferencia enorme en el progreso de ${nombreCorto}. Cada pequeño paso cuenta. Ante cualquier duda sobre cómo realizar este ejercicio, el equipo está para ayudarte.`))
+
+  // QR + firma
+  sections.push(new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }))
+  sections.push(...sellosVerif)
+  sections.push(
+    new Paragraph({
+      spacing: { before: 320, after: 40 },
+      border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'CBD5E1', space: 8 } },
+      children: [new TextRun({ text: 'Equipo Clínico', bold: true, size: 22, font: 'Arial', color: '1E3A8A' })],
+    }),
+    new Paragraph({
+      spacing: { before: 0, after: 0 },
+      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+    }),
+  )
+
+  const doc = new Document({
+    numbering: tpl.DOC_NUMBERING,
+    styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+    sections: [{
+      properties: tpl.DOC_PAGE_PROPS,
+      footers: { default: tpl.piePaginaOficial() },
+      children: sections,
+    }],
+  })
+
+  await registrarDocumentoEmitido({
+    codigoDoc, childId: childId || undefined, tipo: 'reporte_padres',
+    tipoLabel: 'Guía de Ejercicio para Casa',
+    pacienteNombre: nombreCap, pacienteIniciales: iniciales,
+    fileName, metadata: { programa: tituloPrograma, set: numeroSet, objetivo_id: objetivoId },
+  })
+
+  return { doc, fileName }
+}
+
 // i18n: responder en el idioma del usuario
 // getLangInstruction moved to lib/lang.ts
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { childId, tipo } = body
+    const { childId, tipo, objetivoId } = body
     const userLocale = body.locale || req.headers.get('x-locale') || 'es'
-    if (!childId) return NextResponse.json({ error: 'childId requerido' }, { status: 400 })
 
     let result: { doc: Document; fileName: string }
+
+    // Guía de ejercicio para casa (un set) — usa objetivoId, no childId
+    if (tipo === 'set' || tipo === 'guia_set') {
+      if (!objetivoId) return NextResponse.json({ error: 'objetivoId requerido' }, { status: 400 })
+      result = await generarGuiaSetFamilia(objetivoId, userLocale)
+      const bufSet = await Packer.toBuffer(result.doc)
+      const u8Set = new Uint8Array(bufSet)
+      return new NextResponse(u8Set, {
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'Content-Disposition': `attachment; filename="${result.fileName}"`,
+          'Content-Length': String(u8Set.byteLength),
+        },
+      })
+    }
+
+    if (!childId) return NextResponse.json({ error: 'childId requerido' }, { status: 400 })
+
     // 'seguro' (botón "Informe Clínico" en el UI) → nuevo informe SANTI profesional
     if (tipo === 'seguro' || tipo === 'clinico' || tipo === 'tratamiento') result = await generarInformeClinicoSanti(childId, userLocale)
     else if (tipo === 'seguro_legacy') result = await generarReporteSeguro(childId, userLocale)
