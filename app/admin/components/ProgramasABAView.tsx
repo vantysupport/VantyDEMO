@@ -89,6 +89,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   const [programas, setProgramas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCrear, setShowCrear] = useState(false)
+  const [descargandoWord, setDescargandoWord] = useState(false)
   const [programaActivo, setProgramaActivo] = useState<any>(null)
   const [showRegistrarSesion, setShowRegistrarSesion] = useState(false)
   const [loadingModal, setLoadingModal] = useState(false)
@@ -167,6 +168,40 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   }, [childId])
 
   useEffect(() => { loadProgramas() }, [loadProgramas])
+
+  // Descargar reporte de programas en Word (explicativo para la familia)
+  const descargarProgramasWord = async () => {
+    if (descargandoWord) return
+    setDescargandoWord(true)
+    try {
+      const res = await fetch('/api/reporte-word', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ childId, tipo: 'programas' }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'No se pudo generar el documento')
+      }
+      const blob = await res.blob()
+      const cd = res.headers.get('Content-Disposition') || ''
+      const m = cd.match(/filename="?([^"]+)"?/)
+      const fileName = m ? m[1] : `Programas_${childName.replace(/\s+/g, '_')}.docx`
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast.success('Documento descargado')
+    } catch (e: any) {
+      toast.error(e?.message || 'Error al generar el documento')
+    } finally {
+      setDescargandoWord(false)
+    }
+  }
 
   // Análisis proactivo del agente al cargar
   useEffect(() => {
@@ -250,13 +285,25 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
           </div>
         </div>
 
-        <button onClick={() => setShowCrear(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all"
-          style={{ background: 'var(--text-primary)', color: 'var(--card)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.88'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
-          <Plus size={15} /> {t('programas.nuevo')}
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Descargar reporte de programas en Word (para enviar a la familia) */}
+          <button onClick={descargarProgramasWord} disabled={descargandoWord || programas.length === 0}
+            title="Descargar un documento Word explicativo con todos los programas, para compartir con la familia"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50"
+            style={{ background: 'var(--muted-bg)', color: 'var(--text-primary)', border: '1px solid var(--card-border)' }}>
+            {descargandoWord
+              ? <><Loader2 size={15} className="animate-spin" /> Generando…</>
+              : <><BookOpen size={15} /> Descargar Word</>}
+          </button>
+
+          <button onClick={() => setShowCrear(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all"
+            style={{ background: 'var(--text-primary)', color: 'var(--card)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.88'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
+            <Plus size={15} /> {t('programas.nuevo')}
+          </button>
+        </div>
       </div>
 
       {/* ── Stats ── */}

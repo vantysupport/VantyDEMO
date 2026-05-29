@@ -2541,6 +2541,366 @@ Datos:
   return { doc, fileName }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// REPORTE DE PROGRAMAS ABA PARA LA FAMILIA (versión PRO, explicativa)
+// ═══════════════════════════════════════════════════════════════════════════
+// Pensado para padres/madres que NO son de tecnología: el especialista lo
+// descarga y se lo envía. Lenguaje claro, glosario, y por cada programa una
+// explicación en palabras simples de qué significa el avance.
+async function generarReporteProgramasFamilia(
+  childId: string,
+  userLocale = 'es',
+): Promise<{ doc: Document; fileName: string }> {
+
+  const { data: child } = await supabaseAdmin
+    .from('children')
+    .select('name, age, birth_date, diagnosis, sessions_before_platform')
+    .eq('id', childId).single()
+
+  const nombre = (child as any)?.name || 'Paciente'
+  const nombreCap = nombre.split(' ')
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+  const nombreCorto = nombreCap.split(' ')[0]
+  const diagnostico = (child as any)?.diagnosis || 'En evaluación'
+
+  let edadTexto = 'no registrada'
+  if ((child as any)?.birth_date) {
+    const nac = new Date((child as any).birth_date)
+    const ahora = new Date()
+    const años = ahora.getFullYear() - nac.getFullYear()
+    const meses = ahora.getMonth() - nac.getMonth()
+    const edad = (meses < 0 || (meses === 0 && ahora.getDate() < nac.getDate())) ? años - 1 : años
+    const mesesAdj = meses < 0 ? meses + 12 : meses
+    edadTexto = `${edad} años${mesesAdj > 0 ? ` ${mesesAdj} meses` : ''}`
+  } else if ((child as any)?.age) {
+    edadTexto = `${(child as any).age} años`
+  }
+
+  const totalSesionesRealizadas = await contarSesionesRealizadas(childId, (child as any)?.sessions_before_platform)
+
+  const [{ data: programas }, { data: sesionesProg }] = await Promise.all([
+    supabaseAdmin.from('programas_aba')
+      .select('id, titulo, area, estado, fase_actual, criterio_dominio_pct, criterio_sesiones_consecutivas, objetivo_lp')
+      .eq('child_id', childId).limit(40),
+    supabaseAdmin.from('sesiones_datos_aba')
+      .select('programa_id, fecha, porcentaje_exito, set')
+      .eq('child_id', childId).order('fecha', { ascending: true }).limit(500),
+  ])
+  const progArr = (programas || []) as any[]
+  const sesProgArr = (sesionesProg || []) as any[]
+
+  // Cargar objetivos_cp (sets) para criterio manual
+  let objetivosArr: any[] = []
+  if (progArr.length > 0) {
+    try {
+      const progIds = progArr.map(p => p.id)
+      const { data } = await supabaseAdmin
+        .from('objetivos_cp')
+        .select('programa_id, numero_set, descripcion, estado')
+        .in('programa_id', progIds)
+      objetivosArr = data || []
+    } catch (e: any) {
+      console.warn('[reporte-programas] objetivos_cp falló:', e?.message)
+    }
+  }
+
+  const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+
+  // Criterio alcanzado (3 vías): estado oficial · automático (últimas N ≥ criterio) · todos los sets dominados
+  const programaCumpleCriterio = (programaId: string): boolean => {
+    const p = progArr.find(x => x.id === programaId)
+    if (!p) return false
+    if (['dominado', 'logrado', 'criterio_alcanzado'].includes(String(p.estado || '').toLowerCase())) return true
+    const crit = Number(p.criterio_dominio_pct) || 90
+    const critSes = Number(p.criterio_sesiones_consecutivas) || 2
+    const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    if (todas.length >= critSes) {
+      const ultimas = todas.slice(-critSes)
+      if (ultimas.every((s: any) => parseNivelLogro(s.porcentaje_exito) != null && (parseNivelLogro(s.porcentaje_exito) as number) >= crit)) return true
+    }
+    const setsProg = objetivosArr.filter((o: any) => o.programa_id === programaId)
+    if (setsProg.length > 0 && setsProg.every((o: any) => o.estado === 'dominado')) return true
+    return false
+  }
+
+  // Construir datos por programa
+  const programasInfo = progArr.map((p: any) => {
+    const sesP = sesProgArr.filter((s: any) => s.programa_id === p.id)
+      .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
+    const pcts = sesP.map((s: any) => parseNivelLogro(s.porcentaje_exito)).filter((v: number | null): v is number => v !== null)
+    const ultimo = pcts.length > 0 ? pcts[pcts.length - 1] : null
+    const promedio = pcts.length > 0 ? avg(pcts) : null
+    const recientes = pcts.slice(-5)
+    const promReciente = recientes.length > 0 ? avg(recientes) : null
+    const iniciales = pcts.slice(0, 5)
+    const promInicial = iniciales.length > 0 ? avg(iniciales) : null
+    const delta = (promReciente != null && promInicial != null) ? promReciente - promInicial : 0
+    let tendencia: 'sube' | 'baja' | 'estable' = 'estable'
+    if (delta >= 8) tendencia = 'sube'
+    else if (delta <= -8) tendencia = 'baja'
+    const crit = Number(p.criterio_dominio_pct) || 90
+    const cumple = programaCumpleCriterio(p.id)
+    const fase = String(p.fase_actual || '').toLowerCase()
+    const enLineaBase = fase.includes('linea') || fase.includes('base') || fase === 'baseline'
+
+    return {
+      id: p.id,
+      titulo: p.titulo || 'Programa',
+      area: (p.area || 'General').toString().trim(),
+      objetivo: (p.objetivo_lp || '').toString().trim(),
+      criterio: crit,
+      n_sesiones: pcts.length,
+      pcts,
+      ultimo,
+      promedio,
+      promReciente,
+      delta,
+      tendencia,
+      cumple,
+      enLineaBase,
+    }
+  })
+
+  const conDatos = programasInfo.filter(p => p.n_sesiones > 0)
+  const sinDatos = programasInfo.filter(p => p.n_sesiones === 0)
+  const logrados = programasInfo.filter(p => p.cumple)
+  const enProceso = programasInfo.filter(p => !p.cumple && p.n_sesiones > 0)
+  const promedioGlobal = avg(conDatos.map(p => p.promReciente ?? p.promedio ?? 0).filter(v => v > 0))
+
+  const fechasUnif = sesProgArr.map((s: any) => s.fecha).filter(Boolean).sort()
+  const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const fechaInicio = fechasUnif.length > 0 ? fmt(fechasUnif[0]) : '—'
+  const fechaFin = fechasUnif.length > 0 ? fmt(fechasUnif[fechasUnif.length - 1]) : fmt(new Date().toISOString())
+  const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
+
+  const hoy = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+  const hoyISO = new Date().toISOString().slice(0, 10)
+  const iniciales = tpl.generarIniciales(nombre)
+  const fileName = `Programas_${nombreCap.replace(/\s+/g, '_')}_${hoyISO}.docx`
+  const codigoDoc = generarCodigoDocumento(childId, 'programas')
+
+  // ── IA: bienvenida cálida + cierre (con fallback si falla) ──
+  const resumenIA = programasInfo
+    .map(p => `· ${p.titulo} (${p.area}): ${p.n_sesiones} sesiones, ${p.promReciente ?? 'sin datos'}% reciente, ${p.cumple ? 'criterio alcanzado' : p.enLineaBase ? 'en línea base' : 'en proceso'}`)
+    .join('\n')
+
+  let bienvenida = ''
+  let cierre = ''
+  try {
+    const [bRes, cRes] = await Promise.all([
+      callGroqSimple(
+        'Eres terapeuta ABA cálida y cercana de SANTI. Escribís a familias sin tecnicismos.',
+        `Escribí una bienvenida CORTA y cálida (1 párrafo, máx 60 palabras) para la familia de ${nombreCorto}. Explicá que este documento resume los programas de terapia que estamos trabajando con su hijo/a y cómo va avanzando. Tono humano, esperanzador, sin tecnicismos, sin emojis.` + getLangInstruction(userLocale),
+        { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 180 },
+      ),
+      callGroqSimple(
+        'Eres terapeuta ABA cálida de SANTI.',
+        `Escribí un MENSAJE DE CIERRE corto (1 párrafo, máx 55 palabras) para la familia de ${nombreCorto}. Reconocé el esfuerzo de la familia, invitá a preguntar cualquier duda al especialista y proyectá optimismo realista. Sin tecnicismos, sin emojis.` + getLangInstruction(userLocale),
+        { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 160 },
+      ),
+    ])
+    bienvenida = bRes
+    cierre = cRes
+  } catch { /* usar fallback */ }
+  if (!bienvenida.trim()) bienvenida = `Estimada familia de ${nombreCorto}: en este documento les compartimos un resumen claro de los programas de terapia que estamos trabajando y cómo viene avanzando. Nuestro objetivo es que puedan acompañar este proceso con tranquilidad y confianza.`
+  if (!cierre.trim()) cierre = `Agradecemos su compromiso y constancia, que son fundamentales para el progreso de ${nombreCorto}. Ante cualquier duda sobre este reporte, no duden en consultar con el especialista a cargo.`
+
+  const sellosVerif = await tpl.selloQRVerificacionAsync({
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+  })
+
+  const limpiar = (t: string) => t.split('\n').filter(l => l.trim()).map(l => tpl.parrafo(l.replace(/\*\*/g, '').trim()))
+
+  // ── Explicación en lenguaje simple por programa (determinística, confiable) ──
+  const explicarPrograma = (p: typeof programasInfo[number]): string => {
+    if (p.n_sesiones === 0) {
+      return `Este programa recién comienza. Todavía no registramos sesiones con datos, así que pronto verán aquí su avance.`
+    }
+    if (p.cumple) {
+      return `¡Muy buena noticia! ${nombreCorto} ya alcanzó el objetivo de este programa (la meta era ${p.criterio}% de aciertos). El equipo evaluará avanzar al siguiente nivel o reforzar lo aprendido para que se mantenga en el tiempo.`
+    }
+    if (p.enLineaBase) {
+      return `Estamos en la etapa inicial de observación (línea base). Aquí medimos desde dónde parte ${nombreCorto} para luego diseñar el mejor plan de trabajo. Es un paso normal y necesario.`
+    }
+    const reciente = p.promReciente ?? p.promedio ?? 0
+    if (p.tendencia === 'sube') {
+      return `${nombreCorto} viene mejorando en este programa: su desempeño reciente está alrededor del ${reciente}% y la tendencia es de avance. Vamos por buen camino hacia la meta del ${p.criterio}%.`
+    }
+    if (p.tendencia === 'baja') {
+      return `En las últimas sesiones notamos una baja en el desempeño (alrededor del ${reciente}%). Esto puede deberse a varios factores y el equipo ya lo está revisando para ajustar la estrategia. Es parte normal del proceso.`
+    }
+    return `${nombreCorto} se mantiene estable en este programa, con un desempeño cercano al ${reciente}%. Seguimos trabajando de forma constante para acercarnos a la meta del ${p.criterio}%.`
+  }
+
+  const estadoTexto = (p: typeof programasInfo[number]): string => {
+    if (p.cumple) return 'Objetivo alcanzado'
+    if (p.enLineaBase) return 'Etapa inicial (línea base)'
+    if (p.n_sesiones === 0) return 'Por iniciar'
+    if (p.tendencia === 'sube') return 'Avanzando'
+    if (p.tendencia === 'baja') return 'En revisión'
+    return 'En proceso'
+  }
+
+  // ─── Construcción del documento ───────────────────────────────────────────
+  const sections: DocChild[] = [
+    ...portadaInstitucional({
+      tipoInforme: 'REPORTE DE PROGRAMAS DE TERAPIA',
+      nombrePaciente: nombre,
+      edadPaciente: edadTexto,
+      diagnostico,
+      especialista: 'Equipo Clínico SANTI',
+      credenciales: 'Terapia ABA · Neuropsicología Infantil',
+      fechaEmision: hoy,
+      periodoEval: periodoTexto,
+      codigoDoc,
+    }),
+
+    // I. Bienvenida
+    tpl.tituloSeccion('I.  Para la familia'),
+    ...limpiar(bienvenida),
+
+    // II. ¿Qué es este documento? (explicación)
+    tpl.tituloSeccion('II.  ¿Qué encontrarán en este documento?'),
+    tpl.parrafo('Cada "programa" es una habilidad específica que estamos enseñando a su hijo/a (por ejemplo: comunicación, atención, autonomía o conducta). Para cada uno verán:'),
+    ...tpl.items([
+      'El objetivo: qué buscamos que logre.',
+      'Su avance: cómo viene desempeñándose en las sesiones, mostrado en porcentaje de aciertos.',
+      'Una explicación en palabras sencillas de qué significa ese avance.',
+      'La meta: el porcentaje que debe alcanzar de forma constante para considerar el objetivo logrado.',
+    ]),
+
+    // III. Resumen general
+    tpl.tituloSeccion('III.  Resumen general'),
+    tpl.tablaDatosGenerales([
+      ['Nombre', nombreCap],
+      ['Edad', edadTexto],
+      ['Período de trabajo', periodoTexto],
+      ['Total de sesiones realizadas', String(totalSesionesRealizadas)],
+      ['Programas en total', String(programasInfo.length)],
+      ['Objetivos ya alcanzados', String(logrados.length)],
+      ['Programas en proceso', String(enProceso.length)],
+      ['Promedio general de aciertos', promedioGlobal > 0 ? `${promedioGlobal}%` : 'En recolección de datos'],
+      ['Documento N°', codigoDoc],
+      ['Fecha de emisión', hoy],
+    ]),
+  ]
+
+  // Gráfico resumen por área (si hay datos)
+  const areaMap: Record<string, number[]> = {}
+  for (const p of conDatos) {
+    if (p.promReciente != null) {
+      const key = p.area.toUpperCase()
+      if (!areaMap[key]) areaMap[key] = []
+      areaMap[key].push(p.promReciente)
+    }
+  }
+  const datosArea = Object.entries(areaMap).map(([label, vals]) => ({ label, valor: avg(vals) }))
+  if (datosArea.length > 0) {
+    sections.push(tpl.tituloSeccion('IV.  Avance por área de trabajo'))
+    sections.push(tpl.parrafo(`Así viene ${nombreCorto} en cada gran área que trabajamos. La línea punteada marca la meta de dominio.`))
+    sections.push(...tpl.graficoProgresoBarra('Promedio reciente por área (%)', datosArea, { mostrarMeta: true, metaPct: 90 }))
+  }
+
+  // V. Detalle programa por programa
+  sections.push(tpl.tituloSeccion('V.  Detalle de cada programa'))
+
+  // Ordenar: primero logrados, luego en proceso, luego por iniciar
+  const ordenados = [
+    ...logrados,
+    ...enProceso.filter(p => !p.cumple),
+    ...sinDatos,
+  ].filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)
+
+  let idx = 0
+  for (const p of ordenados) {
+    idx++
+    // Título del programa
+    sections.push(new Paragraph({
+      spacing: { before: 280, after: 60 },
+      children: [
+        new TextRun({ text: `${idx}. ${p.titulo}`, bold: true, size: 24, font: 'Arial', color: '1E3A8A' }),
+        new TextRun({ text: `   ·   ${p.area}`, size: 20, font: 'Arial', color: '64748B' }),
+      ],
+    }))
+
+    // Tabla de datos del programa
+    const filas: [string, string][] = []
+    if (p.objetivo) filas.push(['Objetivo', p.objetivo])
+    filas.push(['Estado', estadoTexto(p)])
+    filas.push(['Meta a alcanzar', `${p.criterio}% de aciertos de forma constante`])
+    if (p.n_sesiones > 0) {
+      filas.push(['Sesiones registradas', String(p.n_sesiones)])
+      if (p.promReciente != null) filas.push(['Desempeño reciente', `${p.promReciente}%`])
+      if (p.promedio != null) filas.push(['Promedio histórico', `${p.promedio}%`])
+    }
+    sections.push(tpl.tablaDatosGenerales(filas))
+
+    // Gráfico de avance (solo si hay ≥ 2 puntos)
+    if (p.pcts.length >= 2) {
+      sections.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [] }))
+      sections.push(...tpl.graficoCurvaLineal('Evolución de aciertos (%)', p.pcts))
+    }
+
+    // Explicación en lenguaje simple
+    sections.push(new Paragraph({
+      spacing: { before: 120, after: 40 },
+      border: { left: { style: BorderStyle.SINGLE, size: 18, color: '4F46E5', space: 10 } },
+      children: [new TextRun({ text: explicarPrograma(p), size: 20, font: 'Arial', color: '334155', italics: true })],
+    }))
+  }
+
+  // VI. Glosario simple
+  sections.push(tpl.tituloSeccion('VI.  Pequeño glosario'))
+  sections.push(...tpl.items([
+    'Programa: una habilidad específica que enseñamos (ej. pedir lo que necesita, esperar su turno, leer).',
+    'Sesión: cada encuentro de terapia donde practicamos y medimos el avance.',
+    'Porcentaje de aciertos: de cada 100 oportunidades, cuántas respondió correctamente.',
+    'Meta o criterio: el porcentaje que debe alcanzar de forma constante para dar por logrado el objetivo (normalmente 90%).',
+    'Línea base: etapa inicial donde medimos el punto de partida antes de empezar a enseñar.',
+    'Objetivo alcanzado: cuando logró la meta de forma estable y está listo para avanzar.',
+  ]))
+
+  // VII. Cierre
+  sections.push(tpl.tituloSeccion('VII.  Mensaje final'))
+  sections.push(...limpiar(cierre))
+
+  // QR + firma
+  sections.push(new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }))
+  sections.push(...sellosVerif)
+  sections.push(
+    new Paragraph({
+      spacing: { before: 320, after: 40 },
+      border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'CBD5E1', space: 8 } },
+      children: [new TextRun({ text: 'Equipo Clínico', bold: true, size: 22, font: 'Arial', color: '1E3A8A' })],
+    }),
+    new Paragraph({
+      spacing: { before: 0, after: 0 },
+      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+    }),
+  )
+
+  const doc = new Document({
+    numbering: tpl.DOC_NUMBERING,
+    styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+    sections: [{
+      properties: tpl.DOC_PAGE_PROPS,
+      footers: { default: tpl.piePaginaOficial() },
+      children: sections,
+    }],
+  })
+
+  await registrarDocumentoEmitido({
+    codigoDoc, childId, tipo: 'reporte_padres',
+    tipoLabel: 'Reporte de Programas de Terapia',
+    pacienteNombre: nombreCap, pacienteIniciales: iniciales,
+    fileName, metadata: { periodo: periodoTexto, total_programas: programasInfo.length, logrados: logrados.length },
+  })
+
+  return { doc, fileName }
+}
+
 // i18n: responder en el idioma del usuario
 // getLangInstruction moved to lib/lang.ts
 
@@ -2557,6 +2917,8 @@ export async function POST(req: NextRequest) {
     else if (tipo === 'seguro_legacy') result = await generarReporteSeguro(childId, userLocale)
     // Versiones PRO (nivel profesional con portada + QR + IA + trazabilidad)
     else if (tipo === 'comparativo') result = await generarReporteComparativoPro(childId, userLocale)
+    // Reporte de programas ABA — explicativo para la familia
+    else if (tipo === 'programas') result = await generarReporteProgramasFamilia(childId, userLocale)
     else if (tipo === 'padres_legacy') result = await generarReportePadres(childId, userLocale)
     else if (tipo === 'comparativo_legacy') result = await generarReporteComparativo(childId, userLocale)
     else result = await generarReportePadresPro(childId, userLocale)
