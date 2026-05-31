@@ -229,20 +229,32 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   //   2) Decisión del especialista: TODOS los SETs del programa marcados como 'dominado'
   //      (si hay sets definidos; un solo set dominado no basta si quedan otros pendientes)
   const programaCriterioAlcanzado = (p: any) => {
-    // Vía 2: TODOS los SETs marcados como dominado por la especialista
-    const sets = Array.isArray(p.objetivos_cp) ? p.objetivos_cp : []
-    if (sets.length > 0 && sets.every((o: any) => o.estado === 'dominado')) {
-      return true
-    }
-    // Vía 1: cálculo automático
+    // Override manual a nivel programa
+    if (['dominado', 'logrado', 'criterio_alcanzado'].includes(String(p.estado || '').toLowerCase())) return true
+
     const todasSesiones = (p.sesiones_datos_aba || []).sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
     const crit = p.criterio_dominio_pct || 90
     const critSesiones = p.criterio_sesiones_consecutivas || 2
-    const setsConSes = Array.from(new Set(todasSesiones.map((s: any) => s.set ?? '__none__')))
-    const setAct = setsConSes[setsConSes.length - 1] ?? '__none__'
-    const sesActivo = todasSesiones.filter((s: any) => (s.set ?? '__none__') === setAct)
-    if (sesActivo.length < critSesiones) return false
-    const last = sesActivo.slice(-critSesiones)
+    const sets = Array.isArray(p.objetivos_cp) ? p.objetivos_cp : []
+
+    // ¿Un SET concreto está alcanzado? (estado manual O últimas N sesiones del set >= criterio)
+    const setAlcanzado = (o: any) => {
+      if (o.estado === 'dominado') return true
+      const label = o.numero_set != null ? `Set ${o.numero_set}` : (o.descripcion || '')
+      const ses = todasSesiones.filter((s: any) => String(s.set ?? '') === label)
+      if (ses.length < critSesiones) return false
+      return ses.slice(-critSesiones).every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
+    }
+
+    // Si el programa tiene SETs definidos → solo está alcanzado si TODOS lo están.
+    // (un set en progreso = programa NO alcanzado todavía)
+    if (sets.length > 0) {
+      return sets.every(setAlcanzado)
+    }
+
+    // Sin sets definidos → criterio automático sobre todas las sesiones
+    if (todasSesiones.length < critSesiones) return false
+    const last = todasSesiones.slice(-critSesiones)
     return last.every((s: any) => (s.porcentaje_exito ?? 0) >= crit)
   }
 

@@ -2607,7 +2607,11 @@ async function generarReporteProgramasFamilia(
 
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
 
-  // Criterio alcanzado (3 vías): estado oficial · automático (últimas N ≥ criterio) · todos los sets dominados
+  // Criterio alcanzado a nivel programa.
+  //   · Override manual (estado del programa), O
+  //   · Si tiene SETs definidos → SOLO si TODOS los sets están alcanzados
+  //     (un set en progreso = programa NO alcanzado todavía)
+  //   · Sin sets → automático: últimas N sesiones del programa >= criterio
   const programaCumpleCriterio = (programaId: string): boolean => {
     const p = progArr.find(x => x.id === programaId)
     if (!p) return false
@@ -2616,13 +2620,32 @@ async function generarReporteProgramasFamilia(
     const critSes = Number(p.criterio_sesiones_consecutivas) || 2
     const todas = sesProgArr.filter((s: any) => s.programa_id === programaId)
       .sort((a: any, b: any) => (a.fecha || '').localeCompare(b.fecha || ''))
-    if (todas.length >= critSes) {
-      const ultimas = todas.slice(-critSes)
-      if (ultimas.every((s: any) => parseNivelLogro(s.porcentaje_exito) != null && (parseNivelLogro(s.porcentaje_exito) as number) >= crit)) return true
-    }
+
     const setsProg = objetivosArr.filter((o: any) => o.programa_id === programaId)
-    if (setsProg.length > 0 && setsProg.every((o: any) => o.estado === 'dominado')) return true
-    return false
+
+    // ¿Un set concreto está alcanzado? (estado manual O últimas N sesiones del set >= criterio)
+    const setAlcanzado = (o: any): boolean => {
+      if (o.estado === 'dominado') return true
+      const label = o.numero_set != null ? `Set ${o.numero_set}` : (o.descripcion || '')
+      const ses = todas.filter((s: any) => String(s.set ?? '') === label)
+      if (ses.length < critSes) return false
+      return ses.slice(-critSes).every((s: any) => {
+        const v = parseNivelLogro(s.porcentaje_exito)
+        return v != null && v >= crit
+      })
+    }
+
+    if (setsProg.length > 0) {
+      return setsProg.every(setAlcanzado)
+    }
+
+    // Sin sets → automático sobre todas las sesiones
+    if (todas.length < critSes) return false
+    const ultimas = todas.slice(-critSes)
+    return ultimas.every((s: any) => {
+      const v = parseNivelLogro(s.porcentaje_exito)
+      return v != null && v >= crit
+    })
   }
 
   // Construir datos por programa

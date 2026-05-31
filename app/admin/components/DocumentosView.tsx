@@ -151,6 +151,8 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
   const [editingFolder, setEditingFolder] = useState<Carpeta | null>(null)
   const [movingDoc, setMovingDoc] = useState<Doc | null>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [renamingDoc, setRenamingDoc] = useState<string | null>(null)  // doc.id en edición
+  const [renameValue, setRenameValue] = useState('')
 
   // Upload form state
   const [newCat, setNewCat]       = useState('general')
@@ -218,46 +220,86 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user.id).single()
 
       let uploaded = 0
+      const fallidos: string[] = []
       const newIds: string[] = []
-      for (const file of selectedFiles) {
-        const path = `${childId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
-        const { error: upErr } = await supabase.storage.from('patient-documents').upload(path, file, { upsert: false })
-        if (upErr) throw upErr
-        const { data: { publicUrl } } = supabase.storage.from('patient-documents').getPublicUrl(path)
-        const { data: inserted, error: dbErr } = await supabase.from('patient_documents').insert({
-          child_id: childId, uploaded_by: user.id,
-          uploader_role: profile?.role || currentRole,
-          uploader_name: profile?.full_name || 'Usuario',
-          file_name: file.name, file_url: publicUrl,
-          file_type: fileTypeFromName(file.name), file_size: file.size,
-          category: newCat === 'otro' && otroLabel.trim() ? otroLabel.trim() : newCat,
-          description: newDesc.trim() || null, visible_to_parent: visibleParent,
-        }).select('id').single()
-        if (dbErr) throw dbErr
-        if (inserted?.id && currentFolder) newIds.push(inserted.id)
-        // 🧠 Auto-extraer texto en background para que la IA lo conozca
-        if (inserted?.id) {
-          fetch('/api/patient-documents/extract', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ document_id: inserted.id }),
-          }).catch(() => {})
+
+      // Subimos archivo por archivo de forma RESILIENTE: si uno falla, los demás
+      // siguen subiendo (antes un solo error abortaba todo el lote).
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i]
+        try {
+          // Path único garantizado: timestamp + índice + random + nombre saneado
+          const rand = Math.random().toString(36).slice(2, 8)
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+          const path = `${childId}/${Date.now()}_${i}_${rand}_${safeName}`
+
+          const { error: upErr } = await supabase.storage.from('patient-documents').upload(path, file, { upsert: false })
+          if (upErr) throw upErr
+
+          const { data: { publicUrl } } = supabase.storage.from('patient-documents').getPublicUrl(path)
+          const { data: inserted, error: dbErr } = await supabase.from('patient_documents').insert({
+            child_id: childId, uploaded_by: user.id,
+            uploader_role: profile?.role || currentRole,
+            uploader_name: profile?.full_name || 'Usuario',
+            file_name: file.name, file_url: publicUrl,
+            file_type: fileTypeFromName(file.name), file_size: file.size,
+            category: newCat === 'otro' && otroLabel.trim() ? otroLabel.trim() : newCat,
+            description: newDesc.trim() || null, visible_to_parent: visibleParent,
+          }).select('id').single()
+          if (dbErr) throw dbErr
+
+          if (inserted?.id && currentFolder) newIds.push(inserted.id)
+          // 🧠 Auto-extraer texto en background para que la IA lo conozca
+          if (inserted?.id) {
+            fetch('/api/patient-documents/extract', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ document_id: inserted.id }),
+            }).catch(() => {})
+          }
+          uploaded++
+        } catch (errFile: any) {
+          console.error(`[docs] falló subida de "${file.name}":`, errFile?.message)
+          fallidos.push(file.name)
         }
-        uploaded++
       }
-      // Assign to current folder
+
+      // Asignar los subidos a la carpeta actual
       if (currentFolder && newIds.length > 0) {
-        const newDocFolder = { ...fs.docFolder }
-        newIds.forEach(id => { newDocFolder[id] = currentFolder })
-        // we need to update through moverDoc for each
         newIds.forEach(id => moverDoc(id, currentFolder))
       }
-      toast.success(`✅ ${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} correctamente`)
-      setShowUpload(false); setSelectedFiles([]); setNewDesc(''); setNewCat('general'); setOtroLabel('')
-      loadDocs()
+
+      if (uploaded > 0 && fallidos.length === 0) {
+        toast.success(`✅ ${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} correctamente`)
+      } else if (uploaded > 0 && fallidos.length > 0) {
+        toast.warning(`Se subieron ${uploaded}, pero fallaron ${fallidos.length}: ${fallidos.join(', ')}`)
+      } else {
+        toast.error(`No se pudo subir ningún archivo. Intentá de nuevo.`)
+      }
+
+      if (uploaded > 0) {
+        setShowUpload(false); setSelectedFiles([]); setNewDesc(''); setNewCat('general'); setOtroLabel('')
+        loadDocs()
+      }
     } catch (e: any) {
       toast.error('Error: ' + e.message)
     } finally {
       setUploading(false)
+    }
+  }
+
+  // ── Renombrar documento (solo cambia el nombre visible en la BD) ──
+  const renombrarDoc = async (doc: Doc, nuevoNombre: string) => {
+    const nombre = nuevoNombre.trim()
+    if (!nombre || nombre === doc.file_name) { setRenamingDoc(null); return }
+    try {
+      const { error } = await supabase.from('patient_documents').update({ file_name: nombre }).eq('id', doc.id)
+      if (error) throw error
+      setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, file_name: nombre } : d))
+      toast.success('Nombre actualizado')
+    } catch (e: any) {
+      toast.error('Error: ' + e.message)
+    } finally {
+      setRenamingDoc(null)
     }
   }
 
@@ -636,7 +678,18 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className={`text-sm font-bold truncate ${txt1}`}>{doc.file_name}</p>
+                  {renamingDoc === doc.id ? (
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      onChange={e => setRenameValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') renombrarDoc(doc, renameValue); if (e.key === 'Escape') setRenamingDoc(null) }}
+                      onBlur={() => renombrarDoc(doc, renameValue)}
+                      className={`text-sm font-bold px-2 py-1 rounded-lg border outline-none ${inputCls}`}
+                      style={{ minWidth: 220 }} />
+                  ) : (
+                    <p className={`text-sm font-bold truncate ${txt1}`}>{doc.file_name}</p>
+                  )}
                   <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full
                     ${isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
                     {CATEGORIES.find(c => c.id === doc.category)?.emoji} {doc.category}
@@ -657,6 +710,11 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                 <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
                   className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
                   title="Ver / descargar"><ExternalLink size={14} /></a>
+                {canUpload && (
+                  <button onClick={() => { setRenamingDoc(doc.id); setRenameValue(doc.file_name) }}
+                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
+                    title="Renombrar"><Edit2 size={14} /></button>
+                )}
                 {canUpload && (
                   <button onClick={() => setMovingDoc(doc)}
                     className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
