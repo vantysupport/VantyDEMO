@@ -14,6 +14,8 @@ import VideoCallModal from '@/components/VideoCallModal'
 import { supabase } from '@/lib/supabase'
 import GoogleCalendarSync from './GoogleCalendarSync'
 import MicrosoftCalendarSync from './MicrosoftCalendarSync'
+import ReservasOnlinePanel from './ReservasOnlinePanel'
+import { CalendarClock } from 'lucide-react'
 
 // ── Cronómetro de 45 min por cita ──────────────────────────────────────────
 function SessionTimer({ apt, onExpired }: { apt: any; onExpired: (id: string) => void }) {
@@ -121,6 +123,7 @@ function MonthlyCalendarView() {
   const [newApt, setNewApt] = useState({ child_id:'', date:'', time:'09:00', service:'Terapia ABA', notes:'', group_name:'', status:'confirmed', specialist_id:'' })
   const [especialistas, setEspecialistas] = useState<any[]>([])
   const [recurrencia, setRecurrencia] = useState<'none'|'weekly'|'biweekly'>('none')
+  const [showReservas, setShowReservas] = useState(false)
 
   useEffect(() => {
     supabase.from('profiles')
@@ -525,6 +528,14 @@ function MonthlyCalendarView() {
         />
       )}
 
+      {showReservas && (
+        <ReservasOnlinePanel
+          ninos={ninos}
+          especialistas={especialistas}
+          onClose={() => { setShowReservas(false); cargarCitas() }}
+        />
+      )}
+
       <div className="min-h-full overflow-y-auto px-5 pt-5 pb-8 animate-fade-in-up" style={{ background: "var(--background)" }}>
 
         {/* Header */}
@@ -547,6 +558,13 @@ function MonthlyCalendarView() {
             <GoogleCalendarSync />
             <MicrosoftCalendarSync />
             <div className="w-px h-6 bg-slate-200 dark:bg-[#30363d] hidden sm:block" />
+            <button
+              onClick={() => setShowReservas(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm
+                border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 transition-all whitespace-nowrap"
+            >
+              <CalendarClock size={16}/> Reservas online
+            </button>
             <button
               onClick={() => setShow(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white
