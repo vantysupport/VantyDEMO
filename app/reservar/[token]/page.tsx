@@ -8,6 +8,7 @@ import { useState, useEffect, use as usePromise } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   Calendar, Clock, CheckCircle2, Loader2, AlertCircle, LogIn, CalendarCheck,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react'
 
 type Slot = { time: string; label: string }
@@ -31,6 +32,8 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
   const [seleccion, setSeleccion] = useState<{ fecha: string; time: string; label: string }[]>([])
   const [confirmando, setConfirmando] = useState(false)
   const [exito, setExito] = useState<any[] | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [calMonth, setCalMonth] = useState<Date>(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   // Login inline
   const [email, setEmail] = useState('')
@@ -73,8 +76,15 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
       if (sr.error) throw new Error(sr.error)
       setLinkInfo(lr)
       if (lr.link?.child_id) setChildId(lr.link.child_id)
-      setDias(sr.dias || [])
+      const ds = sr.dias || []
+      setDias(ds)
       setMeta(sr)
+      // Auto-seleccionar el primer día disponible y posicionar el calendario en su mes
+      if (ds.length > 0) {
+        setSelectedDate(ds[0].fecha)
+        const [y, m] = ds[0].fecha.split('-').map(Number)
+        setCalMonth(new Date(y, m - 1, 1))
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -257,34 +267,51 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
           </div>
         )}
 
-        {/* Slots por día */}
+        {/* Calendario + horarios del día elegido */}
         {dias.length === 0 ? (
           <div className="rounded-2xl bg-white p-8 text-center shadow-sm border border-slate-100">
             <Clock size={32} className="text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-500">No hay horarios disponibles por ahora. Contactá al centro.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {dias.map(dia => (
-              <div key={dia.fecha} className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
-                <p className="text-sm font-black text-slate-800 capitalize mb-3 flex items-center gap-2">
-                  <Calendar size={15} className="text-indigo-500" /> {dia.label}
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {dia.slots.map(slot => {
-                    const sel = seleccion.some(s => s.fecha === dia.fecha && s.time === slot.time)
-                    return (
-                      <button key={slot.time} onClick={() => toggleSlot(dia.fecha, slot.time, slot.label)}
-                        className={`px-3 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
-                          sel ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-300'
-                        }`}>
-                        {slot.label}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Calendario */}
+            <CalendarioReserva
+              mes={calMonth}
+              onCambiarMes={setCalMonth}
+              disponibles={new Set(dias.map(d => d.fecha))}
+              seleccionadas={new Set(seleccion.map(s => s.fecha))}
+              diaActivo={selectedDate}
+              onElegirDia={setSelectedDate}
+            />
+
+            {/* Horarios del día elegido */}
+            <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
+              {(() => {
+                const dia = dias.find(d => d.fecha === selectedDate)
+                if (!dia) return <p className="text-sm text-slate-400 italic text-center py-8">Elegí un día disponible (en verde) para ver los horarios.</p>
+                return (
+                  <>
+                    <p className="text-sm font-black text-slate-800 capitalize mb-3 flex items-center gap-2">
+                      <Clock size={15} className="text-indigo-500" /> {dia.label}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {dia.slots.map(slot => {
+                        const sel = seleccion.some(s => s.fecha === dia.fecha && s.time === slot.time)
+                        return (
+                          <button key={slot.time} onClick={() => toggleSlot(dia.fecha, slot.time, slot.label)}
+                            className={`px-3 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                              sel ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-300'
+                            }`}>
+                            {slot.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
           </div>
         )}
 
@@ -314,6 +341,70 @@ function Centro({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(135deg,#eef2ff,#faf5ff)' }}>
       <div className="bg-white rounded-3xl shadow-2xl p-8 flex items-center justify-center">{children}</div>
+    </div>
+  )
+}
+
+// Calendario mensual para elegir el día de la cita
+function CalendarioReserva({ mes, onCambiarMes, disponibles, seleccionadas, diaActivo, onElegirDia }: {
+  mes: Date
+  onCambiarMes: (d: Date) => void
+  disponibles: Set<string>
+  seleccionadas: Set<string>
+  diaActivo: string
+  onElegirDia: (fecha: string) => void
+}) {
+  const year = mes.getFullYear()
+  const month = mes.getMonth()
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7 // lunes = 0
+  const diasEnMes = new Date(year, month + 1, 0).getDate()
+  const nombreMes = mes.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+  const celdas: (number | null)[] = [
+    ...Array(offset).fill(null),
+    ...Array.from({ length: diasEnMes }, (_, i) => i + 1),
+  ]
+  const fechaDe = (dia: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+
+  return (
+    <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={() => onCambiarMes(new Date(year, month - 1, 1))} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronLeft size={18} /></button>
+        <p className="text-sm font-black capitalize text-slate-800">{nombreMes}</p>
+        <button onClick={() => onCambiarMes(new Date(year, month + 1, 1))} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronRight size={18} /></button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center mb-1">
+        {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
+          <span key={i} className="text-[10px] font-black text-slate-400">{d}</span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {celdas.map((dia, i) => {
+          if (dia === null) return <div key={i} />
+          const fecha = fechaDe(dia)
+          const disp = disponibles.has(fecha)
+          const activo = fecha === diaActivo
+          const tieneSeleccion = seleccionadas.has(fecha)
+          return (
+            <button key={i} disabled={!disp}
+              onClick={() => onElegirDia(fecha)}
+              className={`aspect-square rounded-xl text-sm font-bold transition-all relative ${
+                activo ? 'bg-indigo-600 text-white shadow-md'
+                : disp ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                : 'text-slate-300 cursor-not-allowed'
+              }`}>
+              {dia}
+              {tieneSeleccion && !activo && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              )}
+            </button>
+          )
+        })}
+      </div>
+      <div className="flex items-center gap-3 mt-3 text-[10px] text-slate-400">
+        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded bg-emerald-100 border border-emerald-300" /> Disponible</span>
+        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded bg-indigo-600" /> Elegido</span>
+        <span className="flex items-center gap-1"><span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500" /> Con cita marcada</span>
+      </div>
     </div>
   )
 }
