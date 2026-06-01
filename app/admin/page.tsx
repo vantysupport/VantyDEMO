@@ -520,11 +520,11 @@ export default function AdminDashboard() {
 
         {/* Content */}
         <div className={`flex-1 overflow-y-auto transition-colors flex flex-col admin-content
-          ${currentView === 'ninos' || currentView === 'agenda' ? 'p-0 overflow-hidden' : 'p-3 md:p-4 pb-20 md:pb-4'}
+          ${currentView === 'ninos' || currentView === 'agenda' || currentView === 'chat-especialistas' ? 'p-0 overflow-hidden' : 'p-3 md:p-4 pb-20 md:pb-4'}
           ${isDark ? 'bg-[#0d1117]' : 'bg-slate-50'}`}>
           {/* Views that scroll normally */}
           {currentView !== 'usuarios' && (
-            <div className={`flex-1 ${currentView === 'ninos' ? 'min-h-0 h-full flex flex-col overflow-hidden' : ''}`}>
+            <div className={`flex-1 ${currentView === 'ninos' || currentView === 'chat-especialistas' ? 'min-h-0 h-full flex flex-col overflow-hidden' : ''}`}>
               {currentView === 'inicio'       && <DashboardHome navigateTo={navigateTo} navigateToPatient={navigateToPatient} />}
               {currentView === 'agenda'       && <CalendarView />}
               {currentView === 'ninos'        && <PatientsView initialChildId={pendingChildId} initialTab={pendingChildTab} onPatientSelect={(id: string, name: string) => { setActiveChild({ id, name }); setPendingChildId(null); setPendingChildTab(null) }} />}
@@ -621,8 +621,8 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* ── ARIA FLOTANTE ── */}
-      {ariaOpen && (
+      {/* ── ARIA FLOTANTE ── (oculta en las vistas de chat, donde no hace falta y tapa el input) */}
+      {ariaOpen && currentView !== 'chat-especialistas' && (
         <div className={`fixed bottom-6 md:bottom-6 right-4 md:right-6 z-[90] w-[calc(100vw-2rem)] rounded-3xl shadow-2xl overflow-hidden border flex flex-col transition-all duration-300
           ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}
           style={{
@@ -682,8 +682,8 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Botón flotante robot */}
-      {!ariaOpen && (
+      {/* Botón flotante robot (oculto en las vistas de chat) */}
+      {!ariaOpen && currentView !== 'chat-especialistas' && (
         <button
           onClick={() => setAriaOpen(true)}
           className="fixed bottom-6 md:bottom-6 right-4 md:right-6 z-[91] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-gradient-to-br from-violet-600 to-indigo-600"

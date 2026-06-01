@@ -722,8 +722,11 @@ export default function ChatEspecialistas({
         />
       )}
 
+      {/* Wrapper full-height con padding (chat ocupa todo el alto disponible) */}
+      <div className="flex flex-col h-full min-h-0 p-3 md:p-4">
+
       {/* ── Main tab selector ── */}
-      <div className={`flex items-center gap-1 mb-3 p-1 rounded-xl w-fit ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
+      <div className={`flex items-center gap-1 mb-3 p-1 rounded-xl w-fit flex-shrink-0 ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
         {(['equipo', 'familias'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveMainTab(tab)}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeMainTab === tab
@@ -736,11 +739,11 @@ export default function ChatEspecialistas({
       </div>
 
       {activeMainTab === 'familias' ? (
-        <div className={`h-[calc(100vh-248px)] md:h-[calc(100vh-185px)] min-h-[400px] rounded-2xl overflow-hidden shadow-sm`}>
+        <div className={`flex-1 min-h-0 rounded-2xl overflow-hidden shadow-sm`}>
           <ChatFamilias userId={userId} userName={userName} isDark={isDark} />
         </div>
       ) : (
-      <div className={`flex h-[calc(100vh-248px)] md:h-[calc(100vh-185px)] min-h-[400px] rounded-2xl border overflow-hidden shadow-sm ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}`}>
+      <div className={`flex flex-1 min-h-0 rounded-2xl border overflow-hidden shadow-sm ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}`}>
 
         {/* ── Panel izquierdo ── */}
         <div className={`${mobileShowChat ? 'hidden md:flex' : 'flex'} w-full md:w-[280px] flex-shrink-0 border-r flex-col ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50/50 border-slate-100'}`}>
@@ -1299,6 +1302,7 @@ export default function ChatEspecialistas({
         </div>
       </div>
       )}
+      </div>
     </>
   )
 }
