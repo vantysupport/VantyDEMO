@@ -254,15 +254,20 @@ export async function POST(req: NextRequest) {
     const knowledgeCtx = await buildClinicalContext(queryKB, 10).catch(() => '')
 
     const analisisIA = await callGroqSimple(
-      `Eres neuropsicóloga clínica senior de SANTI (Perú). Vas a redactar el INFORME PROFESIONAL de una anamnesis ${tipoInforme.toLowerCase()} para incluir en el historial clínico del paciente. Lenguaje técnico riguroso, párrafos fluidos, sin bullets. Cita observaciones concretas de los datos. Estructurado en 5 secciones cortas:
+      `Eres neuropsicóloga clínica senior de SANTI (Perú). Vas a redactar el INFORME PROFESIONAL de una anamnesis ${tipoInforme.toLowerCase()} para incluir en el historial clínico del paciente. Lenguaje técnico riguroso, párrafos fluidos, sin bullets. Cita observaciones concretas de los datos.
 
-1. **Motivo de consulta y antecedentes principales**
-2. **Análisis del desarrollo y antecedentes médicos relevantes**
-3. **Hallazgos en el ámbito ${isNeuro ? 'cognitivo / aprendizaje / lenguaje' : 'socioemocional y conductual'}**
-4. **Dinámica familiar y factores contextuales**
-5. **Conclusiones e impresión diagnóstica preliminar**
-
-Cada sección 2-3 párrafos. Total máximo 800 palabras. No incluyas títulos numerados (solo los nombres en mayúsculas o negrita simulada con asteriscos). Sé prudente con afirmaciones diagnósticas — habla de "indicadores compatibles con", "rasgos sugerentes de", etc.`,
+FORMATO OBLIGATORIO (respétalo al pie de la letra para que el documento se vea profesional):
+- Estructura el informe en estas 5 secciones, EN ESTE ORDEN:
+   Motivo de consulta y antecedentes principales
+   Análisis del desarrollo y antecedentes médicos relevantes
+   Hallazgos en el ámbito ${isNeuro ? 'cognitivo, de aprendizaje y lenguaje' : 'socioemocional y conductual'}
+   Dinámica familiar y factores contextuales
+   Conclusiones e impresión diagnóstica preliminar
+- Escribe el TÍTULO de cada sección en su PROPIA LÍNEA, tal cual (con su primera letra en mayúscula, el resto en minúscula), SIN numeración, SIN asteriscos, SIN almohadillas y SIN dos puntos al final.
+- Debajo de cada título, 2-3 párrafos de prosa continua. NO uses viñetas ni guiones.
+- NO uses asteriscos (*) ni símbolos de markdown en ninguna parte del texto.
+- Total máximo 800 palabras.
+- Sé prudente con afirmaciones diagnósticas — habla de "indicadores compatibles con", "rasgos sugerentes de", etc.`,
       `# DATOS DEL PACIENTE
 - Nombre: ${child.name}
 - Edad: ${(child as any).age || '—'}
@@ -336,28 +341,71 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
 
     const iniciales = generarIniciales(child.name || 'Paciente')
 
-    // Parsear el análisis IA: detectar secciones marcadas con ** y separar
+    // Convierte un texto con **negritas** inline en TextRuns, limpiando
+    // cualquier asterisco/almohadilla suelto que deje el modelo.
+    const runsConNegritas = (texto: string, baseColor = '374151', size = 20): TextRun[] => {
+      // Quitar viñetas iniciales (•, -, *) que a veces agrega el modelo
+      const limpio = texto.replace(/^\s*[•\-•]\s+/, '')
+      const partes = limpio.split(/(\*\*[^*]+\*\*)/g)
+      const runs: TextRun[] = []
+      for (const p of partes) {
+        if (!p) continue
+        if (p.startsWith('**') && p.endsWith('**')) {
+          const t = p.slice(2, -2)
+          if (t) runs.push(new TextRun({ text: t, bold: true, size, font: 'Arial', color: '1E293B' }))
+        } else {
+          const t = p.replace(/[*#]+/g, '').trim()
+          // re-agregar el espacio si la parte original tenía espacios alrededor
+          const conEspacio = p.match(/^\s/) ? ' ' + t : t
+          if (t) runs.push(new TextRun({ text: conEspacio + (p.match(/\s$/) ? ' ' : ''), size, font: 'Arial', color: baseColor }))
+        }
+      }
+      if (runs.length === 0) runs.push(new TextRun({ text: '', size, font: 'Arial', color: baseColor }))
+      return runs
+    }
+
+    const capFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+
+    // Parsear el análisis IA: detecta títulos (con *, **, #, numeración o EN MAYÚSCULAS)
+    // y los renderiza como subtítulos elegantes; el resto, como párrafos justificados.
     const parsearAnalisisIA = (texto: string): (Paragraph | Table)[] => {
       const out: (Paragraph | Table)[] = []
       const lineas = texto.split('\n').map(l => l.trim()).filter(Boolean)
-      for (const l of lineas) {
-        // Si la línea está en **negrita** = título de subsección
-        const m = l.match(/^\*\*(.+?)\*\*:?\s*(.*)$/)
-        if (m) {
-          const label = m[1].replace(/^\d+\.\s*/, '').trim()
-          const resto = m[2].trim()
-          if (resto) {
-            out.push(subseccion(label, resto))
-          } else {
-            out.push(new Paragraph({
-              spacing: { before: 200, after: 60 },
-              children: [new TextRun({
-                text: label, bold: true, size: 21, font: 'Arial', color: '1E293B',
-              })],
-            }))
-          }
+      for (const raw of lineas) {
+        const l = raw
+        // Línea separadora suelta (---, ***, ___) → ignorar
+        if (/^[-—*_#]{2,}$/.test(l)) continue
+
+        // Quitar numeración inicial "1. " / "1) "
+        const sinNum = l.replace(/^\d+[\.\)]\s*/, '')
+        // Título envuelto en *...* o **...** que ocupa TODA la línea
+        const soloBold = sinNum.match(/^\*{1,2}(.+?)\*{1,2}:?\s*$/)
+        // Título con almohadillas markdown (#, ##)
+        const conHash = sinNum.match(/^#{1,4}\s*(.+?):?\s*$/)
+        let headingText: string | null = soloBold ? soloBold[1] : conHash ? conHash[1] : null
+
+        // Título EN MAYÚSCULAS sin marcas (ej: "MOTIVO DE CONSULTA")
+        const limpioCaps = sinNum.replace(/[*#:]/g, '').trim()
+        const esCaps =
+          !headingText &&
+          limpioCaps.length > 2 && limpioCaps.length < 80 &&
+          /[A-ZÁÉÍÓÚÑ]/.test(limpioCaps) && !/[a-záéíóúñ]/.test(limpioCaps)
+        if (esCaps) headingText = limpioCaps
+
+        if (headingText) {
+          let title = headingText.replace(/[*#]/g, '').replace(/^\d+[\.\)]\s*/, '').replace(/:$/, '').trim()
+          // Normalizar títulos que vienen TODO EN MAYÚSCULAS
+          if (title === title.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(title)) title = capFirst(title)
+          out.push(new Paragraph({
+            spacing: { before: 260, after: 90 },
+            children: [new TextRun({ text: title, bold: true, size: 22, font: 'Arial', color: '4C1D95' })],
+          }))
         } else {
-          out.push(parrafo(l.replace(/\*\*/g, '')))
+          out.push(new Paragraph({
+            spacing: { before: 40, after: 120 },
+            alignment: AlignmentType.JUSTIFIED,
+            children: runsConNegritas(l),
+          }))
         }
       }
       return out

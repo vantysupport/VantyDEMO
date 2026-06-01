@@ -31,6 +31,37 @@ const ESTADO_LABEL: Record<string, { label: string; color: string; pasos: number
   rechazado:              { label: '⚠️ Padre NO aceptó · contactar',             color: 'bg-red-100 text-red-700',        pasos: 3 },
 }
 
+// Render de texto con **negritas** y --- (markdown sencillo de la IA) → formato limpio
+function RichText({ texto }: { texto: string }) {
+  const lineas = (texto || '').split('\n')
+  const renderInline = (linea: string, key: number) => {
+    const partes = linea.split(/(\*\*[^*]+\*\*)/g)
+    return (
+      <p key={key} className="leading-relaxed mb-1.5 last:mb-0">
+        {partes.map((p, i) => {
+          if (p.startsWith('**') && p.endsWith('**')) {
+            return <strong key={i} style={{ color: 'var(--text-primary)', fontWeight: 800 }}>{p.slice(2, -2)}</strong>
+          }
+          // limpiar asteriscos sueltos
+          return <span key={i}>{p.replace(/\*+/g, '')}</span>
+        })}
+      </p>
+    )
+  }
+  return (
+    <div>
+      {lineas.map((ln, i) => {
+        const t = ln.trim()
+        if (t === '') return null
+        if (/^[-—*_]{2,}$/.test(t)) {
+          return <hr key={i} className="my-2.5 border-0 h-px" style={{ background: 'var(--card-border)' }} />
+        }
+        return renderInline(ln, i)
+      })}
+    </div>
+  )
+}
+
 export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
   const [loading, setLoading] = useState(true)
   const [evaluacion, setEvaluacion] = useState<any>(null)
@@ -367,9 +398,9 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
           {evaluacion.recomendacion_razon && (
             <details className="text-sm" open>
               <summary className="cursor-pointer font-bold text-indigo-600 mb-2">Razonamiento clínico completo</summary>
-              <div className="mt-2 whitespace-pre-wrap leading-relaxed rounded-lg p-3"
+              <div className="mt-2 leading-relaxed rounded-lg p-3 text-sm"
                 style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)' }}>
-                {evaluacion.recomendacion_razon}
+                <RichText texto={evaluacion.recomendacion_razon} />
               </div>
             </details>
           )}
@@ -463,9 +494,9 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
           {evaluacion.terapias_recomendadas_razon && (
             <details className="text-sm">
               <summary className="cursor-pointer font-bold text-purple-700 mb-2">Ver razonamiento de la IA</summary>
-              <div className="mt-2 whitespace-pre-wrap leading-relaxed rounded-lg p-3 text-sm"
+              <div className="mt-2 leading-relaxed rounded-lg p-3 text-sm"
                 style={{ background: 'var(--card)', color: 'var(--text-secondary)' }}>
-                {evaluacion.terapias_recomendadas_razon}
+                <RichText texto={evaluacion.terapias_recomendadas_razon} />
               </div>
             </details>
           )}
@@ -679,33 +710,38 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             <summary className="cursor-pointer text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <User size={16} /> Intake inicial ({Object.keys(evaluacion.respuestas_intake).length} respuestas)
             </summary>
-            <div className="mt-4 space-y-3 text-sm">
+            <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-sm">
               {Object.entries(evaluacion.respuestas_intake).map(([k, v]) => {
                 const esTabla = Array.isArray(v) && v.length > 0 && typeof v[0] === 'object' && v[0] !== null && !Array.isArray(v[0])
+                const vacio = v == null || v === '' || (Array.isArray(v) && v.length === 0)
                 return (
-                  <div key={k}>
-                    <p className="text-xs font-bold uppercase mb-0.5" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
-                    {esTabla ? (
-                      <div className="space-y-1.5 mt-1">
-                        {(v as any[]).map((fila, idx) => {
-                          const entries = Object.entries(fila).filter(([, val]) => val != null && val !== '')
-                          if (entries.length === 0) return null
-                          return (
-                            <div key={idx} className="rounded-lg border px-3 py-2 text-xs"
-                              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-                              <span className="font-bold mr-2" style={{ color: 'var(--text-muted)' }}>#{idx + 1}</span>
-                              {entries.map(([col, val]) => (
-                                <span key={col} className="mr-3" style={{ color: 'var(--text-primary)' }}>
-                                  <strong className="capitalize">{col.replace(/_/g, ' ')}:</strong> {String(val)}
-                                </span>
-                              ))}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <p style={{ color: 'var(--text-primary)' }}>{Array.isArray(v) ? v.join(', ') : String(v ?? '—')}</p>
-                    )}
+                  <div key={k} className={esTabla ? 'sm:col-span-2' : ''}>
+                    <div className="rounded-xl border px-3.5 py-2.5 h-full" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
+                      <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                      {esTabla ? (
+                        <div className="space-y-1.5 mt-1.5">
+                          {(v as any[]).map((fila, idx) => {
+                            const entries = Object.entries(fila).filter(([, val]) => val != null && val !== '')
+                            if (entries.length === 0) return null
+                            return (
+                              <div key={idx} className="rounded-lg border px-3 py-2 text-xs flex flex-wrap gap-x-3 gap-y-1"
+                                style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+                                <span className="font-black px-1.5 rounded bg-indigo-100 text-indigo-700">#{idx + 1}</span>
+                                {entries.map(([col, val]) => (
+                                  <span key={col} style={{ color: 'var(--text-primary)' }}>
+                                    <strong className="capitalize" style={{ color: 'var(--text-muted)' }}>{col.replace(/_/g, ' ')}:</strong> {String(val)}
+                                  </span>
+                                ))}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <p className="leading-snug" style={{ color: vacio ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                          {Array.isArray(v) ? v.join(', ') : (vacio ? '—' : String(v))}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )
               })}
@@ -721,35 +757,39 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             <summary className="cursor-pointer text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <ClipboardCheck size={16} /> 2ª Anamnesis ({Object.keys(evaluacion.anamnesis_especifica).length} respuestas)
             </summary>
-            <div className="mt-4 space-y-3 text-sm">
+            <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-sm">
               {Object.entries(evaluacion.anamnesis_especifica).map(([k, v]) => {
                 // Detectar tabla dinámica: array de objetos
                 const esTabla = Array.isArray(v) && v.length > 0 && typeof v[0] === 'object' && v[0] !== null && !Array.isArray(v[0])
+                const vacio = v == null || v === '' || (Array.isArray(v) && v.length === 0)
                 return (
-                  <div key={k}>
-                    <p className="text-xs font-bold uppercase mb-0.5" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
-                    {esTabla ? (
-                      <div className="space-y-1.5 mt-1">
-                        {(v as any[]).map((fila, idx) => {
-                          // Filtrar campos vacíos
-                          const entries = Object.entries(fila).filter(([, val]) => val != null && val !== '')
-                          if (entries.length === 0) return null
-                          return (
-                            <div key={idx} className="rounded-lg border px-3 py-2 text-xs"
-                              style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-                              <span className="font-bold mr-2" style={{ color: 'var(--text-muted)' }}>#{idx + 1}</span>
-                              {entries.map(([col, val]) => (
-                                <span key={col} className="mr-3" style={{ color: 'var(--text-primary)' }}>
-                                  <strong className="capitalize">{col.replace(/_/g, ' ')}:</strong> {String(val)}
-                                </span>
-                              ))}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <p style={{ color: 'var(--text-primary)' }}>{Array.isArray(v) ? v.join(', ') : String(v ?? '—')}</p>
-                    )}
+                  <div key={k} className={esTabla ? 'sm:col-span-2' : ''}>
+                    <div className="rounded-xl border px-3.5 py-2.5 h-full" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
+                      <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                      {esTabla ? (
+                        <div className="space-y-1.5 mt-1.5">
+                          {(v as any[]).map((fila, idx) => {
+                            const entries = Object.entries(fila).filter(([, val]) => val != null && val !== '')
+                            if (entries.length === 0) return null
+                            return (
+                              <div key={idx} className="rounded-lg border px-3 py-2 text-xs flex flex-wrap gap-x-3 gap-y-1"
+                                style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+                                <span className="font-black px-1.5 rounded bg-indigo-100 text-indigo-700">#{idx + 1}</span>
+                                {entries.map(([col, val]) => (
+                                  <span key={col} style={{ color: 'var(--text-primary)' }}>
+                                    <strong className="capitalize" style={{ color: 'var(--text-muted)' }}>{col.replace(/_/g, ' ')}:</strong> {String(val)}
+                                  </span>
+                                ))}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <p className="leading-snug" style={{ color: vacio ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                          {Array.isArray(v) ? v.join(', ') : (vacio ? '—' : String(v))}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )
               })}
