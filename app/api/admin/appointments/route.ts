@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: enriched })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
 
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     // Responder inmediatamente — las notificaciones corren en background
     return NextResponse.json({ data })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
 
@@ -165,7 +165,7 @@ export async function PATCH(request: NextRequest) {
             }),
           })
           calendarSync.google = await r.json().catch(() => null)
-        } catch (e: any) { calendarSync.google = { error: e?.message } }
+        } catch (e: any) { calendarSync.google = { error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : (e?.message || "error") } }
       }
 
       // 2. Microsoft del especialista/admin
@@ -183,7 +183,7 @@ export async function PATCH(request: NextRequest) {
             }),
           })
           calendarSync.microsoft = await r.json().catch(() => null)
-        } catch (e: any) { calendarSync.microsoft = { error: e?.message } }
+        } catch (e: any) { calendarSync.microsoft = { error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : (e?.message || "error") } }
       }
 
       // 3. Google del PADRE
@@ -206,7 +206,7 @@ export async function PATCH(request: NextRequest) {
             })
             calendarSync.parentGoogle = await r.json().catch(() => null)
           }
-        } catch (e: any) { calendarSync.parentGoogle = { error: e?.message } }
+        } catch (e: any) { calendarSync.parentGoogle = { error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : (e?.message || "error") } }
       }
 
       // 4. Microsoft del PADRE
@@ -228,13 +228,13 @@ export async function PATCH(request: NextRequest) {
             })
             calendarSync.parentMicrosoft = await r.json().catch(() => null)
           }
-        } catch (e: any) { calendarSync.parentMicrosoft = { error: e?.message } }
+        } catch (e: any) { calendarSync.parentMicrosoft = { error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : (e?.message || "error") } }
       }
     }
 
     return NextResponse.json({ data, calendarSync: timeChanged ? calendarSync : undefined })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
 
@@ -346,6 +346,6 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }

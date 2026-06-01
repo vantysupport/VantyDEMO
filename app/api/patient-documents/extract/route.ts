@@ -164,7 +164,7 @@ async function procesarDocumento(doc: any): Promise<{ ok: boolean; chars: number
         extracted_at: new Date().toISOString(),
       })
       .eq('id', doc.id)
-    return { ok: false, chars: 0, error: e?.message }
+    return { ok: false, chars: 0, error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : (e?.message || "error") }
   }
 }
 
@@ -217,6 +217,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Falta document_id, child_id o all_pending' }, { status: 400 })
   } catch (e: any) {
     console.error('[patient-documents/extract]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

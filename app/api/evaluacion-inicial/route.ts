@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Falta id o child_id' }, { status: 400 })
   } catch (e: any) {
     console.error('[evaluacion-inicial][GET]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, evaluacion: nueva, created: true })
   } catch (e: any) {
     console.error('[evaluacion-inicial][POST]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -176,7 +176,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, evaluacion: data })
   } catch (e: any) {
     console.error('[evaluacion-inicial][PATCH]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -222,6 +222,6 @@ export async function DELETE(req: NextRequest) {
       errorMessage: e?.message,
       req,
     })
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

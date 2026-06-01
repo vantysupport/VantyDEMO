@@ -367,6 +367,6 @@ Escribe 3 párrafos: (1) análisis funcional de la conducta, (2) interpretación
     })
   } catch (e: any) {
     console.error('Error reporte-sesion-aba:', e)
-    return NextResponse.json({ error: e.message || 'Error al generar el reporte' }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message || 'Error al generar el reporte' }, { status: 500 })
   }
 }

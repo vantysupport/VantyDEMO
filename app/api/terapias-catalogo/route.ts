@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, terapias: data || [] })
   } catch (e: any) {
     console.error('[terapias-catalogo][GET]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, terapia: data })
   } catch (e: any) {
     console.error('[terapias-catalogo][POST]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -85,7 +85,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, terapia: data })
   } catch (e: any) {
     console.error('[terapias-catalogo][PATCH]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -106,6 +106,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     console.error('[terapias-catalogo][DELETE]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

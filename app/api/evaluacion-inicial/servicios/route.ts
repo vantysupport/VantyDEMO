@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, servicios: data || [] })
   } catch (e: any) {
     console.error('[servicios][GET]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, servicio: data })
   } catch (e: any) {
     console.error('[servicios][POST]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -108,7 +108,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, servicio: data })
   } catch (e: any) {
     console.error('[servicios][PATCH]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -137,6 +137,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     console.error('[servicios][DELETE]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

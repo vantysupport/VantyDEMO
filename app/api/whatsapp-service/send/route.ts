@@ -13,6 +13,6 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json(await res.json(), { status: res.ok ? 200 : res.status })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 503 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 503 })
   }
 }

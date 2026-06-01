@@ -251,6 +251,6 @@ export async function GET(req: NextRequest) {
     })
   } catch (e: any) {
     console.error('[padre/stats] Error inesperado:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

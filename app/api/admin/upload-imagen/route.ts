@@ -89,6 +89,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: any) {
     console.error('[upload-imagen]', e)
-    return NextResponse.json({ error: e?.message || 'Error desconocido' }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : (e?.message || "error") || 'Error desconocido' }, { status: 500 })
   }
 }

@@ -187,6 +187,6 @@ Máximo 250 palabras. Tono ejecutivo y directo.`,
 
   } catch (e: any) {
     console.error('❌ Error benchmark:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

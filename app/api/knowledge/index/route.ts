@@ -29,6 +29,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: result.success, chunks: result.chunks, error: result.error })
   } catch (e: any) {
     console.error('[index] Error:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

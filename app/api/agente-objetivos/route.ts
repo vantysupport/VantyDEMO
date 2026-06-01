@@ -327,7 +327,7 @@ REGLAS NO NEGOCIABLES:
 
   } catch (e: any) {
     console.error('❌ Error agente-objetivos:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -344,6 +344,6 @@ export async function GET(req: NextRequest) {
       .limit(20)
     return NextResponse.json({ data: data || [] })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

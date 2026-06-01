@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     const totalNoLeidas = data?.filter(n => !n.leida).length || 0
     return NextResponse.json({ data, totalNoLeidas })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ error: 'Accion no reconocida' }, { status: 400 })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -56,6 +56,6 @@ export async function DELETE(req: NextRequest) {
     await supabaseAdmin.from('notificaciones').delete().eq('id', id)
     return NextResponse.json({ success: true })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

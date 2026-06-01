@@ -60,6 +60,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Push notification error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }

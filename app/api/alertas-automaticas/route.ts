@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const resultados = await ejecutarMotorAlertas()
     return NextResponse.json(resultados)
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const alertas = await analizarPaciente(child_id)
     return NextResponse.json({ alertas })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 

@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       const token = await getToken()
       return NextResponse.json({ ok: true, tokenPrefix: token.slice(0, 10) + '...' })
     } catch (e: any) {
-      return NextResponse.json({ ok: false, error: e.message })
+      return NextResponse.json({ ok: false, error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message })
     }
   }
 
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
 
     let token: string
     try { token = await getToken() }
-    catch (e: any) { return NextResponse.json({ results: [], fallback: true, error: e.message }) }
+    catch (e: any) { return NextResponse.json({ results: [], fallback: true, error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }) }
 
     const resolved = SIGLAS[q.toLowerCase().trim()] || q
     try {
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
       }))
       return NextResponse.json({ results, fallback: false })
     } catch (e: any) {
-      return NextResponse.json({ results: [], fallback: true, error: e.message })
+      return NextResponse.json({ results: [], fallback: true, error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message })
     }
   }
 
@@ -209,7 +209,7 @@ export async function GET(req: NextRequest) {
       })
     } catch (e: any) {
       console.error('[CIE-11] Detail exception:', e.message)
-      return NextResponse.json({ error: e.message, fallback: true }, { status: 500 })
+      return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message, fallback: true }, { status: 500 })
     }
   }
 

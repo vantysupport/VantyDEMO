@@ -920,7 +920,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error en /api/generate-report:', error)
     return NextResponse.json(
-      { error: error.message || 'Error interno al generar el reporte' },
+      { error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message || 'Error interno al generar el reporte' },
       { status: 500 }
     )
   }

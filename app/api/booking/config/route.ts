@@ -19,7 +19,7 @@ export async function GET() {
     if (error) throw error
     return NextResponse.json({ ok: true, config: data || null })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -58,6 +58,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, config: result })
   } catch (e: any) {
     console.error('[booking/config]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

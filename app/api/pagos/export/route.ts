@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   if (status !== 'all') query = query.eq('status', status)
 
   const { data: pays, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
 
   const filtered = (pays || []).filter(p => {
     if (!search) return true

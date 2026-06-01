@@ -26,7 +26,7 @@ export async function GET() {
     if (error) throw error
     return NextResponse.json({ data: data || [] })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
 
@@ -51,7 +51,7 @@ export async function DELETE(request: NextRequest) {
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
 
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('[ingest] Error POST:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
 
@@ -174,7 +174,7 @@ async function processAndIndex(
   } catch (error: any) {
     console.error(`[ingest] Error procesando ${documentId}:`, error)
     await markFailed(documentId, error.message)
-    return { success: false, chunks: 0, error: error.message }
+    return { success: false, chunks: 0, error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }
   }
 }
 

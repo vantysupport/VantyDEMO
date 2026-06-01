@@ -116,6 +116,6 @@ Genera un JSON con la siguiente estructura EXACTA (sin markdown, solo JSON puro)
 
     return NextResponse.json({ summary });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message || 'Error interno' }, { status: 500 });
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message || 'Error interno' }, { status: 500 });
   }
 }

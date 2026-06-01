@@ -28,6 +28,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: registros })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }

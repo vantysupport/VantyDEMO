@@ -168,6 +168,6 @@ REGLAS ESTRICTAS:
     })
   } catch (e: any) {
     console.error('[ocr-image]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

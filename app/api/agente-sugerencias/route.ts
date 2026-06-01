@@ -346,7 +346,7 @@ CONOCIMIENTO CLÍNICO (Cerebro IA): ${_cerebroCtx || 'No disponible'}`,
 
   } catch (e: any) {
     console.error('❌ Error agente-sugerencias:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -361,6 +361,6 @@ export async function POST(req: NextRequest) {
     }).eq('id', sugerenciaId)
     return NextResponse.json({ ok: true })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

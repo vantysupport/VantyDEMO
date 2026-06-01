@@ -10,6 +10,6 @@ export async function GET() {
     })
     return NextResponse.json(await res.json())
   } catch (e: any) {
-    return NextResponse.json({ error: e.message, connected: false }, { status: 503 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message, connected: false }, { status: 503 })
   }
 }

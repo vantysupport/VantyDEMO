@@ -436,7 +436,7 @@ Redacta en tercera persona institucional. Sin tuteos. Sin clichés motivacionale
 
   } catch (e: any) {
     console.error('❌ Error agente predicción:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }
 
@@ -452,6 +452,6 @@ export async function GET(req: NextRequest) {
     const { data } = await query.limit(50)
     return NextResponse.json({ data: data || [] })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : e.message }, { status: 500 })
   }
 }

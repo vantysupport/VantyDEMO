@@ -89,6 +89,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Error en API Progress:", error);
-    return NextResponse.json({ error: error.message || "Error interno" }, { status: 500 });
+    return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message || "Error interno" }, { status: 500 });
   }
 }
