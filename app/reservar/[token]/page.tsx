@@ -227,8 +227,8 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
   const restantes = meta?.slotsRestantes ?? 1
 
   return (
-    <div className="min-h-screen py-8 px-4" style={{ background: 'linear-gradient(135deg,#eef2ff,#faf5ff)' }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen py-6 sm:py-10 px-3 sm:px-4" style={{ background: 'linear-gradient(135deg,#eef2ff,#faf5ff)' }}>
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="rounded-3xl p-6 mb-5 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)' }}>
           <div className="flex items-center gap-3 mb-2">
@@ -274,34 +274,36 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
             <p className="text-sm text-slate-500">No hay horarios disponibles por ahora. Contactá al centro.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Calendario */}
-            <CalendarioReserva
-              mes={calMonth}
-              onCambiarMes={setCalMonth}
-              disponibles={new Set(dias.map(d => d.fecha))}
-              seleccionadas={new Set(seleccion.map(s => s.fecha))}
-              diaActivo={selectedDate}
-              onElegirDia={setSelectedDate}
-            />
+          <div className="grid md:grid-cols-5 gap-4 items-start">
+            {/* Calendario — ocupa más ancho en desktop */}
+            <div className="md:col-span-3">
+              <CalendarioReserva
+                mes={calMonth}
+                onCambiarMes={setCalMonth}
+                disponibles={new Set(dias.map(d => d.fecha))}
+                seleccionadas={new Set(seleccion.map(s => s.fecha))}
+                diaActivo={selectedDate}
+                onElegirDia={setSelectedDate}
+              />
+            </div>
 
             {/* Horarios del día elegido */}
-            <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
+            <div className="md:col-span-2 rounded-2xl bg-white p-4 sm:p-5 shadow-sm border border-slate-100 md:sticky md:top-6">
               {(() => {
                 const dia = dias.find(d => d.fecha === selectedDate)
-                if (!dia) return <p className="text-sm text-slate-400 italic text-center py-8">Elegí un día disponible (en verde) para ver los horarios.</p>
+                if (!dia) return <p className="text-sm text-slate-400 italic text-center py-10">Elegí un día disponible (en verde) para ver los horarios.</p>
                 return (
                   <>
-                    <p className="text-sm font-black text-slate-800 capitalize mb-3 flex items-center gap-2">
-                      <Clock size={15} className="text-indigo-500" /> {dia.label}
+                    <p className="text-base font-black text-slate-800 capitalize mb-3 flex items-center gap-2">
+                      <Clock size={16} className="text-indigo-500" /> {dia.label}
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto pr-1">
                       {dia.slots.map(slot => {
                         const sel = seleccion.some(s => s.fecha === dia.fecha && s.time === slot.time)
                         return (
                           <button key={slot.time} onClick={() => toggleSlot(dia.fecha, slot.time, slot.label)}
-                            className={`px-3 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
-                              sel ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-300'
+                            className={`px-3 py-3 rounded-xl text-sm font-bold border-2 transition-all ${
+                              sel ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/40'
                             }`}>
                             {slot.label}
                           </button>
@@ -366,18 +368,18 @@ function CalendarioReserva({ mes, onCambiarMes, disponibles, seleccionadas, diaA
   const fechaDe = (dia: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
-      <div className="flex items-center justify-between mb-3">
-        <button onClick={() => onCambiarMes(new Date(year, month - 1, 1))} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronLeft size={18} /></button>
-        <p className="text-sm font-black capitalize text-slate-800">{nombreMes}</p>
-        <button onClick={() => onCambiarMes(new Date(year, month + 1, 1))} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronRight size={18} /></button>
+    <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-sm border border-slate-100">
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={() => onCambiarMes(new Date(year, month - 1, 1))} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronLeft size={20} /></button>
+        <p className="text-base sm:text-lg font-black capitalize text-slate-800">{nombreMes}</p>
+        <button onClick={() => onCambiarMes(new Date(year, month + 1, 1))} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronRight size={20} /></button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center mb-1">
+      <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center mb-1.5">
         {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
-          <span key={i} className="text-[10px] font-black text-slate-400">{d}</span>
+          <span key={i} className="text-[11px] sm:text-xs font-black text-slate-400">{d}</span>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {celdas.map((dia, i) => {
           if (dia === null) return <div key={i} />
           const fecha = fechaDe(dia)
@@ -387,23 +389,23 @@ function CalendarioReserva({ mes, onCambiarMes, disponibles, seleccionadas, diaA
           return (
             <button key={i} disabled={!disp}
               onClick={() => onElegirDia(fecha)}
-              className={`aspect-square rounded-xl text-sm font-bold transition-all relative ${
-                activo ? 'bg-indigo-600 text-white shadow-md'
-                : disp ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              className={`aspect-square rounded-xl text-sm sm:text-base font-bold transition-all relative ${
+                activo ? 'bg-indigo-600 text-white shadow-md scale-105'
+                : disp ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:scale-105'
                 : 'text-slate-300 cursor-not-allowed'
               }`}>
               {dia}
               {tieneSeleccion && !activo && (
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-indigo-500" />
               )}
             </button>
           )
         })}
       </div>
-      <div className="flex items-center gap-3 mt-3 text-[10px] text-slate-400">
-        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded bg-emerald-100 border border-emerald-300" /> Disponible</span>
-        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded bg-indigo-600" /> Elegido</span>
-        <span className="flex items-center gap-1"><span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500" /> Con cita marcada</span>
+      <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-4 text-[11px] text-slate-500">
+        <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded bg-emerald-100 border border-emerald-300" /> Disponible</span>
+        <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded bg-indigo-600" /> Elegido</span>
+        <span className="flex items-center gap-1.5"><span className="inline-block w-2 h-2 rounded-full bg-indigo-500" /> Con cita marcada</span>
       </div>
     </div>
   )
