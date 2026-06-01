@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import {
   X, Clock, Plus, Trash2, Loader2, Link2, Copy, CheckCircle2,
-  Settings, CalendarClock, Power,
+  Settings, CalendarClock, Power, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
@@ -30,7 +30,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
   const [cfg, setCfg] = useState<any>(null)
   const [loadingCfg, setLoadingCfg] = useState(true)
   const [savingCfg, setSavingCfg] = useState(false)
-  const [closedInput, setClosedInput] = useState('')
+  const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   // ── Links ──
   const [links, setLinks] = useState<any[]>([])
@@ -126,13 +126,13 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
     })
   const delBloque = (k: string, i: number) =>
     setCfg((c: any) => ({ ...c, working_hours: { ...c.working_hours, [k]: { ...c.working_hours[k], bloques: (c.working_hours[k]?.bloques || []).filter((_: any, idx: number) => idx !== i) } } }))
-  const addClosed = () => {
-    if (!closedInput) return
-    setCfg((c: any) => ({ ...c, closed_dates: [...new Set([...(c.closed_dates || []), closedInput])].sort() }))
-    setClosedInput('')
-  }
-  const delClosed = (d: string) =>
-    setCfg((c: any) => ({ ...c, closed_dates: (c.closed_dates || []).filter((x: string) => x !== d) }))
+  // Marca/desmarca un día como cerrado (toggle)
+  const toggleClosed = (d: string) =>
+    setCfg((c: any) => {
+      const set = new Set<string>(c.closed_dates || [])
+      if (set.has(d)) set.delete(d); else set.add(d)
+      return { ...c, closed_dates: [...set].sort() }
+    })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -163,15 +163,19 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
               <div className="space-y-5">
                 {/* Parámetros generales */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Campo label="Duración de sesión (min)">
+                  <Campo label="Duración de cada sesión (min)">
                     <input type="number" value={cfg.session_duration_min} onChange={e => setCfg((c: any) => ({ ...c, session_duration_min: Number(e.target.value) }))} className={inp} />
                   </Campo>
-                  <Campo label="Turnos cada (min)">
+                  <Campo label="Cada cuánto empieza un turno (min)">
                     <input type="number" value={cfg.slot_step_min} onChange={e => setCfg((c: any) => ({ ...c, slot_step_min: Number(e.target.value) }))} className={inp} />
                   </Campo>
-                  <Campo label="Reservar hasta (días)">
+                  <Campo label="Permitir reservar hasta (días)">
                     <input type="number" value={cfg.max_advance_days} onChange={e => setCfg((c: any) => ({ ...c, max_advance_days: Number(e.target.value) }))} className={inp} />
                   </Campo>
+                </div>
+                <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--text-secondary)' }}>
+                  💡 <strong>"Cada cuánto empieza un turno"</strong>: si una sesión dura 45 min y ponés 60, los turnos salen a las 9:00, 10:00, 11:00… (uno por hora, con descanso).
+                  Si ponés 45, salen seguidos: 9:00, 9:45, 10:30… &nbsp;·&nbsp; Para abrir <strong>sábados o domingos</strong>, tildá el día abajo y agregale un bloque horario.
                 </div>
 
                 {/* Horario por día */}
@@ -210,20 +214,25 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                   </div>
                 </div>
 
-                {/* Días cerrados */}
+                {/* Días cerrados — calendario navegable por mes */}
                 <div>
-                  <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Días cerrados (feriados / vacaciones)</p>
-                  <div className="flex items-center gap-2 mb-2">
-                    <input type="date" value={closedInput} onChange={e => setClosedInput(e.target.value)} className={inpSm} />
-                    <button onClick={addClosed} className="px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-bold">Agregar</button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(cfg.closed_dates || []).map((d: string) => (
-                      <span key={d} className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626' }}>
-                        {d} <button onClick={() => delClosed(d)}><X size={11} /></button>
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Días cerrados (feriados / vacaciones)</p>
+                  <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Tocá los días que el centro estará cerrado. Podés marcar varios y cambiar de mes con las flechas.</p>
+                  <CalendarioDiasCerrados
+                    mes={calMonth}
+                    onCambiarMes={setCalMonth}
+                    cerrados={cfg.closed_dates || []}
+                    onToggle={toggleClosed}
+                  />
+                  {(cfg.closed_dates || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {[...(cfg.closed_dates || [])].sort().map((d: string) => (
+                        <span key={d} className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626' }}>
+                          {d} <button onClick={() => toggleClosed(d)}><X size={11} /></button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button onClick={guardarConfig} disabled={savingCfg}
@@ -334,6 +343,69 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <label className="block text-[11px] font-bold mb-1" style={{ color: 'var(--text-muted)' }}>{label}</label>
       {children}
+    </div>
+  )
+}
+
+// Calendario mensual para marcar varios días cerrados
+function CalendarioDiasCerrados({ mes, onCambiarMes, cerrados, onToggle }: {
+  mes: Date
+  onCambiarMes: (d: Date) => void
+  cerrados: string[]
+  onToggle: (fecha: string) => void
+}) {
+  const year = mes.getFullYear()
+  const month = mes.getMonth()
+  const primerDia = new Date(year, month, 1)
+  const offset = (primerDia.getDay() + 6) % 7 // lunes = 0
+  const diasEnMes = new Date(year, month + 1, 0).getDate()
+  const hoyStr = new Date().toISOString().slice(0, 10)
+  const cerradosSet = new Set(cerrados)
+  const nombreMes = mes.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+
+  const celdas: (number | null)[] = [
+    ...Array(offset).fill(null),
+    ...Array.from({ length: diasEnMes }, (_, i) => i + 1),
+  ]
+
+  const fechaDe = (dia: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+
+  return (
+    <div className="rounded-xl border p-3" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
+      <div className="flex items-center justify-between mb-2">
+        <button onClick={() => onCambiarMes(new Date(year, month - 1, 1))}
+          className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: 'var(--text-secondary)' }}><ChevronLeft size={16} /></button>
+        <p className="text-sm font-black capitalize" style={{ color: 'var(--text-primary)' }}>{nombreMes}</p>
+        <button onClick={() => onCambiarMes(new Date(year, month + 1, 1))}
+          className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: 'var(--text-secondary)' }}><ChevronRight size={16} /></button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center mb-1">
+        {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
+          <span key={i} className="text-[10px] font-black" style={{ color: 'var(--text-muted)' }}>{d}</span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {celdas.map((dia, i) => {
+          if (dia === null) return <div key={i} />
+          const fecha = fechaDe(dia)
+          const cerrado = cerradosSet.has(fecha)
+          const pasado = fecha < hoyStr
+          return (
+            <button key={i} disabled={pasado}
+              onClick={() => onToggle(fecha)}
+              className={`aspect-square rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                cerrado ? 'bg-red-500 text-white' : 'hover:bg-indigo-100'
+              }`}
+              style={cerrado ? {} : { background: 'var(--card)', color: 'var(--text-primary)', border: '1px solid var(--card-border)' }}
+              title={cerrado ? 'Cerrado — tocá para abrir' : 'Abierto — tocá para cerrar'}>
+              {dia}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-[10px] mt-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+        <span className="inline-block w-3 h-3 rounded bg-red-500" /> = cerrado
+      </p>
     </div>
   )
 }
