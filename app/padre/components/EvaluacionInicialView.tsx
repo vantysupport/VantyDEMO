@@ -550,6 +550,10 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
   const [showRechazoModal, setShowRechazoModal] = useState(false)
   const [motivoRechazo, setMotivoRechazo] = useState('')
 
+  // Estado generación de recomendación de terapias (IA)
+  const [generandoRec, setGenerandoRec] = useState(false)
+  const [recIntentada, setRecIntentada] = useState(false)
+
   useEffect(() => { if (child?.id) cargar() }, [child?.id])
 
   const cargar = async () => {
@@ -583,6 +587,29 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
       cargarTerapias()
     }
   }, [evaluacion?.estado])
+
+  // 🔮 Asegura que la recomendación de terapias exista al llegar a la selección.
+  // (En la anamnesis se dispara fire-and-forget y en serverless puede no completarse,
+  //  así que acá la generamos de forma confiable si todavía no hay recomendación.)
+  useEffect(() => {
+    const necesitaRec =
+      evaluacion?.estado === 'anamnesis_completa' &&
+      (!evaluacion?.terapias_recomendadas || evaluacion.terapias_recomendadas.length === 0)
+    if (necesitaRec && !recIntentada && !generandoRec) {
+      setRecIntentada(true)
+      ;(async () => {
+        setGenerandoRec(true)
+        try {
+          await fetch('/api/evaluacion-inicial/recomendar-terapias', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ evaluacion_id: evaluacion.id }),
+          })
+          await cargar()
+        } catch (e) { console.error(e) }
+        finally { setGenerandoRec(false) }
+      })()
+    }
+  }, [evaluacion?.estado, evaluacion?.terapias_recomendadas, recIntentada, generandoRec])
 
   if (!child) {
     return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Selecciona un hijo/a.</div>
@@ -781,124 +808,169 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
   if (estado === 'anamnesis_completa') {
     const recomendadasIds: string[] = evaluacion.terapias_recomendadas || []
     const recSet = new Set(recomendadasIds)
-    // Ordenar: primero las recomendadas (en el orden que dio la IA), luego el resto
-    const terapiasOrdenadas = [...terapias].sort((a, b) => {
-      const ai = recomendadasIds.indexOf(a.id)
-      const bi = recomendadasIds.indexOf(b.id)
-      if (ai >= 0 && bi >= 0) return ai - bi
-      if (ai >= 0) return -1
-      if (bi >= 0) return 1
-      return 0
-    })
+    // Recomendadas en el orden que dio la IA
+    const recomendadas = recomendadasIds
+      .map(id => terapias.find(t => t.id === id))
+      .filter(Boolean) as any[]
+    // El resto del catálogo (no recomendadas)
+    const resto = terapias.filter(t => !recSet.has(t.id))
+
+    const nombreCorto = (child.name || '').split(' ')[0] || child.name
+
+    // Tarjeta de terapia reutilizable (recomendada o catálogo general)
+    const renderTarjeta = (t: any) => {
+      const checked = terapiasElegidas.includes(t.id)
+      const esRecomendada = recSet.has(t.id)
+      const colorTema = TERAPIA_COLORES[t.color_tema || 'indigo'] || TERAPIA_COLORES.indigo
+      return (
+        <button
+          key={t.id}
+          onClick={() => setTerapiasElegidas(arr => arr.includes(t.id) ? arr.filter(x => x !== t.id) : [...arr, t.id])}
+          className="relative text-left rounded-2xl border-2 overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl"
+          style={{
+            background: 'var(--card)',
+            borderColor: checked ? colorTema.accent : esRecomendada ? colorTema.accent : 'var(--card-border)',
+            boxShadow: checked ? `0 0 0 3px ${colorTema.accent}33` : undefined,
+          }}
+        >
+          {/* Banda superior con el color */}
+          <div className={`h-1.5 bg-gradient-to-r ${colorTema.gradient}`} />
+
+          {esRecomendada && (
+            <div className="absolute top-3.5 right-3 z-10 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1"
+              style={{ background: `linear-gradient(135deg, ${colorTema.accent}, ${colorTema.accentDark})` }}>
+              <Sparkles size={10} /> Recomendada
+            </div>
+          )}
+          {checked && (
+            <div className="absolute top-3.5 left-3 z-10 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg"
+              style={{ background: colorTema.accent }}>
+              <CheckCircle2 size={16} />
+            </div>
+          )}
+
+          {t.imagen_url ? (
+            <img src={t.imagen_url} alt={t.nombre} className="w-full h-40 object-cover" />
+          ) : (
+            <div className={`w-full h-40 flex items-center justify-center bg-gradient-to-br ${colorTema.gradient} opacity-30`}>
+              <ImageIcon size={42} className="text-white/60" />
+            </div>
+          )}
+
+          <div className="p-5 space-y-3">
+            {t.categoria && (
+              <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded text-white bg-gradient-to-r ${colorTema.gradient}`}>
+                {t.categoria}
+              </span>
+            )}
+            <h4 className="font-black text-base leading-tight" style={{ color: 'var(--text-primary)' }}>{t.nombre}</h4>
+            {t.descripcion && <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{t.descripcion}</p>}
+            {t.por_que && (
+              <div className="rounded-lg p-3 text-sm leading-relaxed border-l-4"
+                style={{ background: 'var(--muted-bg)', borderLeftColor: colorTema.accent, color: 'var(--text-secondary)' }}>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: colorTema.accent }}>
+                  ✨ ¿Por qué llevarla?
+                </p>
+                <p>{t.por_que}</p>
+              </div>
+            )}
+            <div className="flex items-end justify-between pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
+              {t.duracion && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Duración</p>
+                  <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{t.duracion}</p>
+                </div>
+              )}
+              {t.precio != null && (
+                <div className="text-right">
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Inversión</p>
+                  <p className="text-xl font-black" style={{ color: colorTema.accent }}>
+                    S/. {Number(t.precio).toFixed(0)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </button>
+      )
+    }
 
     return (
       <div className="max-w-4xl mx-auto pb-12">
         <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }}>
           <h1 className="text-2xl font-black mb-2">🎉 ¡Casi terminamos!</h1>
           <p className="text-white/95">
-            {recomendadasIds.length > 0
-              ? <>Basándonos en lo que nos contaste sobre <strong>{child.name}</strong>, te recomendamos especialmente las terapias destacadas con <strong>✨</strong>. También puedes ver el resto del catálogo y marcar la(s) que te interese conocer más.</>
+            {recomendadas.length > 0
+              ? <>Revisamos con cuidado lo que nos contaste sobre <strong>{nombreCorto}</strong>. Más abajo verás <strong>nuestra recomendación personalizada</strong> y, debajo, <strong>todo nuestro catálogo</strong> por si quieres explorar otras opciones. Marca la(s) que te interese conocer más.</>
               : <>Estas son las terapias que ofrecemos en SANTI. Marca la(s) que te interese conocer más. El especialista te contactará con la propuesta personalizada.</>
             }
           </p>
         </div>
 
-        {/* Razonamiento general de la IA (si existe) */}
-        {evaluacion.terapias_recomendadas_razon && recomendadasIds.length > 0 && (
-          <div className="rounded-2xl p-5 mb-5 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.2)' }}>
-            <h3 className="text-sm font-black mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Sparkles size={16} className="text-purple-500" /> ¿Por qué te sugerimos estas terapias?
-            </h3>
-            <div className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {evaluacion.terapias_recomendadas_razon}
-            </div>
-          </div>
-        )}
-
-        {terapias.length === 0 ? (
-          <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
-            <Loader2 className="animate-spin mx-auto mb-3" size={32} />
-            <p>Cargando terapias…</p>
+        {terapias.length === 0 || generandoRec ? (
+          <div className="text-center py-16 rounded-2xl border" style={{ color: 'var(--text-muted)', background: 'var(--card)', borderColor: 'var(--card-border)' }}>
+            <Loader2 className="animate-spin mx-auto mb-3 text-purple-500" size={32} />
+            <p className="font-bold" style={{ color: 'var(--text-primary)' }}>
+              {generandoRec ? `Estamos preparando la recomendación para ${nombreCorto}…` : 'Cargando terapias…'}
+            </p>
+            {generandoRec && <p className="text-sm mt-1">Esto toma unos segundos. No cierres esta página.</p>}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-4 mb-6">
-            {terapiasOrdenadas.map(t => {
-              const checked = terapiasElegidas.includes(t.id)
-              const esRecomendada = recSet.has(t.id)
-              const colorTema = TERAPIA_COLORES[t.color_tema || 'indigo'] || TERAPIA_COLORES.indigo
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTerapiasElegidas(arr => arr.includes(t.id) ? arr.filter(x => x !== t.id) : [...arr, t.id])}
-                  className="relative text-left rounded-2xl border-2 overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl"
-                  style={{
-                    background: 'var(--card)',
-                    borderColor: checked ? colorTema.accent : esRecomendada ? colorTema.accent : 'var(--card-border)',
-                    boxShadow: checked ? `0 0 0 3px ${colorTema.accent}33` : undefined,
-                  }}
-                >
-                  {/* Banda superior con el color */}
-                  <div className={`h-1.5 bg-gradient-to-r ${colorTema.gradient}`} />
+          <>
+            {/* ─── SECCIÓN A: RECOMENDACIÓN PERSONALIZADA ─────────────────── */}
+            {recomendadas.length > 0 && (
+              <section className="mb-8">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center text-white shadow-md">
+                    <Sparkles size={18} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-black leading-tight" style={{ color: 'var(--text-primary)' }}>
+                      Lo que te recomendamos para {nombreCorto}
+                    </h2>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      Basado en la información que nos diste
+                    </p>
+                  </div>
+                </div>
 
-                  {esRecomendada && (
-                    <div className="absolute top-3.5 right-3 z-10 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1"
-                      style={{ background: `linear-gradient(135deg, ${colorTema.accent}, ${colorTema.accentDark})` }}>
-                      <Sparkles size={10} /> Recomendada
-                    </div>
-                  )}
-                  {checked && (
-                    <div className="absolute top-3.5 left-3 z-10 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg"
-                      style={{ background: colorTema.accent }}>
-                      <CheckCircle2 size={16} />
-                    </div>
-                  )}
-
-                  {t.imagen_url ? (
-                    <img src={t.imagen_url} alt={t.nombre} className="w-full h-40 object-cover" />
-                  ) : (
-                    <div className={`w-full h-40 flex items-center justify-center bg-gradient-to-br ${colorTema.gradient} opacity-30`}>
-                      <ImageIcon size={42} className="text-white/60" />
-                    </div>
-                  )}
-
-                  <div className="p-5 space-y-3">
-                    {t.categoria && (
-                      <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded text-white bg-gradient-to-r ${colorTema.gradient}`}>
-                        {t.categoria}
-                      </span>
-                    )}
-                    <h4 className="font-black text-base leading-tight" style={{ color: 'var(--text-primary)' }}>{t.nombre}</h4>
-                    {t.descripcion && <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{t.descripcion}</p>}
-                    {t.por_que && (
-                      <div className="rounded-lg p-3 text-sm leading-relaxed border-l-4"
-                        style={{ background: 'var(--muted-bg)', borderLeftColor: colorTema.accent, color: 'var(--text-secondary)' }}>
-                        <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: colorTema.accent }}>
-                          ✨ ¿Por qué llevarla?
-                        </p>
-                        <p>{t.por_que}</p>
-                      </div>
-                    )}
-                    <div className="flex items-end justify-between pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
-                      {t.duracion && (
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Duración</p>
-                          <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{t.duracion}</p>
-                        </div>
-                      )}
-                      {t.precio != null && (
-                        <div className="text-right">
-                          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Inversión</p>
-                          <p className="text-xl font-black" style={{ color: colorTema.accent }}>
-                            {Number(t.precio).toFixed(0)} <span className="text-xs">{t.moneda || 'PEN'}</span>
-                          </p>
-                        </div>
-                      )}
+                {/* Razonamiento general de la IA */}
+                {evaluacion.terapias_recomendadas_razon && (
+                  <div className="rounded-2xl p-5 my-4 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.2)' }}>
+                    <div className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                      {evaluacion.terapias_recomendadas_razon}
                     </div>
                   </div>
-                </button>
-              )
-            })}
-          </div>
+                )}
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {recomendadas.map(renderTarjeta)}
+                </div>
+              </section>
+            )}
+
+            {/* ─── SECCIÓN B: CATÁLOGO COMPLETO ───────────────────────────── */}
+            {resto.length > 0 && (
+              <section className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)' }}>
+                    <ClipboardCheck size={18} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-black leading-tight" style={{ color: 'var(--text-primary)' }}>
+                      {recomendadas.length > 0 ? 'Todo nuestro catálogo de terapias' : 'Nuestras terapias'}
+                    </h2>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {recomendadas.length > 0 ? 'Otras opciones que también ofrecemos' : 'Marca las que te interese conocer'}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {resto.map(renderTarjeta)}
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         <div className="rounded-2xl p-5 mb-4 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
