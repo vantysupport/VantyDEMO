@@ -52,7 +52,7 @@ function groupByPatientMonth(pays: any[]) {
 
     if (!g[k]) g[k] = {
       key: k,
-      child: p.children?.name || '—',
+      child: p.children?.name || p.paciente_externo || '—',
       month: `${year}-${String(month).padStart(2,'0')}`,
       monthLabel: `${MESES_LARGO[month]} ${year}`,
       pays: [],
@@ -176,19 +176,27 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
   }, [buildStats])
 
   // ─── Payment form ───────────────────────────────────────────────────────────
-  const emptyForm = { child_id: '', amount: '', concept: '', method: 'efectivo', status: 'paid', notes: '', date: new Date().toISOString().split('T')[0] }
+  // modo: 'registrado' (paciente del sistema) | 'externo' (nombre libre, ej. evaluación inicial)
+  const emptyForm = { child_id: '', external_name: '', modo: 'registrado' as 'registrado' | 'externo', amount: '', concept: '', method: 'efectivo', status: 'paid', notes: '', date: new Date().toISOString().split('T')[0] }
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const rateNames = rates.map(r => r.name)
 
   const handleSave = async () => {
-    if (!form.child_id) { toast.error('Selecciona el paciente'); return }
+    const esExterno = form.modo === 'externo'
+    if (esExterno) {
+      if (!form.external_name.trim()) { toast.error('Ingresa el nombre del niño/a'); return }
+    } else {
+      if (!form.child_id) { toast.error('Selecciona el paciente'); return }
+    }
     if (!form.amount || isNaN(Number(form.amount))) { toast.error('Ingresa un monto válido'); return }
     if (!form.concept.trim()) { toast.error('Ingresa el concepto'); return }
     setSaving(true)
     try {
       const { error } = await supabase.from('payments').insert({
-        child_id: form.child_id, amount: Number(form.amount), concept: form.concept.trim(),
+        child_id: esExterno ? null : form.child_id,
+        paciente_externo: esExterno ? form.external_name.trim() : null,
+        amount: Number(form.amount), concept: form.concept.trim(),
         payment_method: form.method, status: form.status, notes: form.notes || null,
         paid_at: form.status === 'paid' ? new Date(form.date).toISOString() : null,
         created_by: profile?.id,
@@ -202,7 +210,8 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
 
   // ─── Package form ───────────────────────────────────────────────────────────
   const emptyPkg = {
-    child_id: '', amount: '', concept: '', method: 'efectivo', status: 'paid',
+    child_id: '', external_name: '', modo: 'registrado' as 'registrado' | 'externo',
+    amount: '', concept: '', method: 'efectivo', status: 'paid',
     calMonth: new Date().toISOString().slice(0, 7), // YYYY-MM
   }
   const [pkg, setPkg] = useState(emptyPkg)
@@ -210,14 +219,21 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
   const [savingPkg, setSavingPkg] = useState(false)
 
   const handleSavePkg = async () => {
-    if (!pkg.child_id) { toast.error('Selecciona el paciente'); return }
+    const esExterno = pkg.modo === 'externo'
+    if (esExterno) {
+      if (!pkg.external_name.trim()) { toast.error('Ingresa el nombre del niño/a'); return }
+    } else {
+      if (!pkg.child_id) { toast.error('Selecciona el paciente'); return }
+    }
     if (!pkg.amount || isNaN(Number(pkg.amount))) { toast.error('Ingresa el monto por sesión'); return }
     if (!pkg.concept.trim()) { toast.error('Ingresa el concepto'); return }
     if (pkgDates.length === 0) { toast.error('Selecciona al menos un día de sesión'); return }
     setSavingPkg(true)
     try {
       const inserts = pkgDates.map((date, i) => ({
-        child_id: pkg.child_id, amount: Number(pkg.amount),
+        child_id: esExterno ? null : pkg.child_id,
+        paciente_externo: esExterno ? pkg.external_name.trim() : null,
+        amount: Number(pkg.amount),
         concept: `${pkg.concept.trim()} (${i+1}/${pkgDates.length})`,
         payment_method: pkg.method, status: pkg.status,
         paid_at: pkg.status === 'paid' ? new Date(date + 'T12:00:00').toISOString() : null,
@@ -237,7 +253,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const handleDeletePago = async (p: any) => {
     const monto = `S/ ${Number(p.amount).toFixed(2)}`
-    const nombre = p.children?.name || 'paciente'
+    const nombre = p.children?.name || p.paciente_externo || 'paciente'
     if (!confirm(`¿Eliminar este pago de ${nombre}?\n\nConcepto: ${p.concept}\nMonto: ${monto}\n\nEsta acción no se puede deshacer.`)) return
     setDeletingId(p.id)
     // Optimistic update — sacar de la lista al instante
@@ -332,7 +348,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
   const filtered = payments.filter(p => {
     const q = search.toLowerCase()
     return (filterStatus === 'all' || p.status === filterStatus) &&
-           (!q || (p.children?.name || '').toLowerCase().includes(q) || (p.concept || '').toLowerCase().includes(q))
+           (!q || (p.children?.name || p.paciente_externo || '').toLowerCase().includes(q) || (p.concept || '').toLowerCase().includes(q))
   })
   const grouped = groupByPatientMonth(filtered)
 
@@ -548,10 +564,26 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <Field label="Paciente *">
-                  <select value={form.child_id} onChange={e => setForm(f => ({ ...f, child_id: e.target.value }))} className={inputCls}>
-                    <option value="">Seleccionar...</option>
-                    {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  {/* Toggle: paciente registrado vs nombre libre (no inscrito aún) */}
+                  <div className="flex gap-1 mb-2">
+                    <button type="button" onClick={() => setForm(f => ({ ...f, modo: 'registrado' }))}
+                      className={`flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold border-2 transition ${form.modo === 'registrado' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500'}`}>
+                      Registrado
+                    </button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, modo: 'externo' }))}
+                      className={`flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold border-2 transition ${form.modo === 'externo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500'}`}>
+                      Sin inscribir
+                    </button>
+                  </div>
+                  {form.modo === 'registrado' ? (
+                    <select value={form.child_id} onChange={e => setForm(f => ({ ...f, child_id: e.target.value }))} className={inputCls}>
+                      <option value="">Seleccionar...</option>
+                      {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  ) : (
+                    <input value={form.external_name} onChange={e => setForm(f => ({ ...f, external_name: e.target.value }))}
+                      placeholder="Nombre del niño/a (ej. evaluación inicial)" className={inputCls} />
+                  )}
                 </Field>
                 <Field label="Concepto *">
                   <ConceptInput value={form.concept} onChange={v => setForm(f => ({ ...f, concept: v }))}
@@ -608,10 +640,25 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                 {/* Row 1: Paciente, Concepto, Monto */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Field label="Paciente *">
-                    <select value={pkg.child_id} onChange={e => setPkg(p => ({ ...p, child_id: e.target.value }))} className={inputCls}>
-                      <option value="">Seleccionar...</option>
-                      {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <div className="flex gap-1 mb-2">
+                      <button type="button" onClick={() => setPkg(p => ({ ...p, modo: 'registrado' }))}
+                        className={`flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold border-2 transition ${pkg.modo === 'registrado' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500'}`}>
+                        Registrado
+                      </button>
+                      <button type="button" onClick={() => setPkg(p => ({ ...p, modo: 'externo' }))}
+                        className={`flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold border-2 transition ${pkg.modo === 'externo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500'}`}>
+                        Sin inscribir
+                      </button>
+                    </div>
+                    {pkg.modo === 'registrado' ? (
+                      <select value={pkg.child_id} onChange={e => setPkg(p => ({ ...p, child_id: e.target.value }))} className={inputCls}>
+                        <option value="">Seleccionar...</option>
+                        {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    ) : (
+                      <input value={pkg.external_name} onChange={e => setPkg(p => ({ ...p, external_name: e.target.value }))}
+                        placeholder="Nombre del niño/a" className={inputCls} />
+                    )}
                   </Field>
                   <Field label="Concepto *">
                     <ConceptInput value={pkg.concept}
@@ -739,7 +786,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                   <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--card-border)' }}>
                     <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--muted-bg)', borderBottom: '1px solid var(--card-border)' }}>
                       <p className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>
-                        Vista previa {pkg.child_id ? `— ${children.find(c => c.id === pkg.child_id)?.name}` : ''}
+                        Vista previa {pkg.modo === 'externo' ? (pkg.external_name ? `— ${pkg.external_name}` : '') : (pkg.child_id ? `— ${children.find(c => c.id === pkg.child_id)?.name}` : '')}
                       </p>
                       <p className="text-xs font-black" style={{ color: '#10b981' }}>
                         Total: S/ {(Number(pkg.amount || 0) * pkgDates.length).toFixed(2)}
@@ -776,7 +823,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                     className="flex-1 py-3 rounded-xl text-sm font-bold border-2"
                     style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>Cancelar</button>
                   <button onClick={handleSavePkg}
-                    disabled={savingPkg || !pkg.child_id || !pkg.amount || !pkg.concept || pkgDates.length === 0}
+                    disabled={savingPkg || (pkg.modo === 'externo' ? !pkg.external_name.trim() : !pkg.child_id) || !pkg.amount || !pkg.concept || pkgDates.length === 0}
                     className="flex-1 py-3 rounded-xl text-sm font-black text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
                     {savingPkg ? <Loader2 size={14} className="animate-spin" /> : <Repeat size={14} />}
                     {savingPkg ? 'Creando...' : pkgDates.length > 0 ? `Crear ${pkgDates.length} cobros` : 'Selecciona fechas'}
@@ -808,7 +855,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                   <div key={p.id} className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3.5 items-center transition-colors hover:bg-[var(--muted-bg)]"
                     style={{ borderBottom: '1px solid var(--card-border)' }}>
                     <div>
-                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.children?.name || '—'}</p>
+                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.children?.name || p.paciente_externo || '—'}</p>
                       <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(p.created_at).toLocaleDateString('es-PE')}</p>
                     </div>
                     <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{p.concept}</p>
