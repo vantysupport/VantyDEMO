@@ -426,8 +426,8 @@ nav.fixed.bottom-0 {
   .px-8 { padding-left: 16px !important; padding-right: 16px !important; }
   .px-6 { padding-left: 12px !important; padding-right: 12px !important; }
 
-  /* Touch targets */
-  button, a, [role="button"] { min-height: 44px; min-width: 44px; }
+  /* Touch targets — solo altura mínima (min-width causaba desbordes horizontales) */
+  button, [role="button"] { min-height: 40px; }
   button svg, a svg { min-height: unset !important; min-width: unset !important; }
 
   /* Cards */
@@ -485,6 +485,61 @@ nav.fixed.bottom-0 {
     border-top: 1px solid var(--card-border);
     z-index: 10;
   }
+
+  /* ── HARDENING RESPONSIVE (catch-all de problemas comunes) ── */
+
+  /* 1. Nada genera scroll horizontal en la app */
+  html, body { overflow-x: hidden; max-width: 100%; }
+
+  /* 2. Multimedia y bloques nunca más anchos que la pantalla */
+  img, video, canvas, svg, iframe, pre, table { max-width: 100% !important; }
+
+  /* 3. Grids densos (3+ columnas) → máximo 2 en celular */
+  .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6, .grid-cols-7 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  /* Grids de 1 columna en celular para tablas de stats muy anchas */
+  .grid-cols-2.gap-6 { gap: 0.75rem !important; }
+
+  /* 4. Textos largos (emails, URLs, nombres) no rompen el layout
+        overflow-wrap solo parte la palabra cuando realmente desbordaría. */
+  p, span, a, li, h1, h2, h3, h4, h5, td, th, label {
+    overflow-wrap: break-word;
+  }
+
+  /* 5. Modales: que entren en pantalla con margen y scroll interno propio */
+  .fixed.inset-0 > div,
+  .fixed.inset-0 > .rounded-xl,
+  .fixed.inset-0 > .rounded-2xl,
+  .fixed.inset-0 > .rounded-3xl {
+    max-width: calc(100vw - 1.5rem) !important;
+    max-height: 92dvh !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 6. Anchos fijos grandes (min-w / w-[Npx]) se ablandan */
+  [class*="min-w-["] { min-width: 0 !important; }
+  .w-96 { width: 100% !important; max-width: 100%; }
+  .w-80 { width: 100% !important; max-width: 100%; }
+  .max-w-md, .max-w-lg, .max-w-xl, .max-w-2xl, .max-w-3xl { max-width: 100% !important; }
+
+  /* 7. Hijos flex que no encogen → permitirles encoger (evita overflow) */
+  .flex > .flex-1, .flex > .min-w-0 { min-width: 0; }
+
+  /* 8. Inputs y selects nunca más anchos que su contenedor */
+  input, select, textarea { max-width: 100%; }
+}
+
+/* ── PANTALLAS MUY CHICAS (≤380px) ── */
+@media (max-width: 380px) {
+  .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .text-3xl { font-size: 1.6rem !important; }
+  .text-2xl { font-size: 1.35rem !important; }
+  .p-6 { padding: 12px !important; }
+  .p-5 { padding: 12px !important; }
 }
 
 /* ── TABLET (768px–1023px) ───────────────────────────────────── */
