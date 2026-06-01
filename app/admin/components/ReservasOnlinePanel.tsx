@@ -70,9 +70,11 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
     setSavingCfg(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
+      // Turnos seguidos: el paso = la duración de la sesión
+      const payload = { ...cfg, slot_step_min: Number(cfg.session_duration_min) || 45, updated_by: user?.id }
       const r = await fetch('/api/booking/config', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...cfg, updated_by: user?.id }),
+        body: JSON.stringify(payload),
       })
       const d = await r.json()
       if (d.error) throw new Error(d.error)
@@ -161,21 +163,9 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
           {tab === 'config' && (
             loadingCfg || !cfg ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" /></div> : (
               <div className="space-y-5">
-                {/* Parámetros generales */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Campo label="Duración de cada sesión (min)">
-                    <input type="number" value={cfg.session_duration_min} onChange={e => setCfg((c: any) => ({ ...c, session_duration_min: Number(e.target.value) }))} className={inp} />
-                  </Campo>
-                  <Campo label="Cada cuánto empieza un turno (min)">
-                    <input type="number" value={cfg.slot_step_min} onChange={e => setCfg((c: any) => ({ ...c, slot_step_min: Number(e.target.value) }))} className={inp} />
-                  </Campo>
-                  <Campo label="Permitir reservar hasta (días)">
-                    <input type="number" value={cfg.max_advance_days} onChange={e => setCfg((c: any) => ({ ...c, max_advance_days: Number(e.target.value) }))} className={inp} />
-                  </Campo>
-                </div>
                 <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--text-secondary)' }}>
-                  💡 <strong>"Cada cuánto empieza un turno"</strong>: si una sesión dura 45 min y ponés 60, los turnos salen a las 9:00, 10:00, 11:00… (uno por hora, con descanso).
-                  Si ponés 45, salen seguidos: 9:00, 9:45, 10:30… &nbsp;·&nbsp; Para abrir <strong>sábados o domingos</strong>, tildá el día abajo y agregale un bloque horario.
+                  💡 Agregá los <strong>horarios de atención</strong> de cada día (ej. 09:00 a 13:00). Cada bloque que pongas es un turno que el padre podrá elegir.
+                  &nbsp;Para abrir <strong>sábados o domingos</strong>, tildá el día y agregale un bloque. Marcá los días cerrados en el calendario.
                 </div>
 
                 {/* Horario por día */}
@@ -262,21 +252,36 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                       {especialistas.map(e => <option key={e.id} value={e.id}>{e.full_name || e.email}</option>)}
                     </select>
                   </Campo>
-                  <Campo label="¿Cuántas citas puede separar?">
-                    <select value={form.max_slots} onChange={e => setForm(f => ({ ...f, max_slots: Number(e.target.value) }))} className={inp}>
-                      {[1, 2, 3, 4, 5, 6, 8, 10, 12].map(n => <option key={n} value={n}>{n} cita{n > 1 ? 's' : ''}</option>)}
-                    </select>
+                  <Campo label="Tipo de reserva">
+                    <div className="flex gap-2">
+                      <button type="button"
+                        onClick={() => setForm(f => ({ ...f, plan_type: 'individual', max_slots: 1 }))}
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold border-2 transition ${form.plan_type === 'individual' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-500'}`}>
+                        Individual<br /><span className="text-[10px] font-medium">1 cita</span>
+                      </button>
+                      <button type="button"
+                        onClick={() => setForm(f => ({ ...f, plan_type: 'mensual', max_slots: f.max_slots > 1 ? f.max_slots : 4 }))}
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold border-2 transition ${form.plan_type === 'mensual' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-500'}`}>
+                        Mensual / Paquete<br /><span className="text-[10px] font-medium">varias citas</span>
+                      </button>
+                    </div>
                   </Campo>
-                  <Campo label="Tipo de plan">
-                    <select value={form.plan_type} onChange={e => setForm(f => ({ ...f, plan_type: e.target.value }))} className={inp}>
-                      <option value="individual">Individual</option>
-                      <option value="paquete">Paquete</option>
-                      <option value="evaluación">Evaluación</option>
-                    </select>
-                  </Campo>
-                  <Campo label="Servicio">
-                    <input value={form.service_type} onChange={e => setForm(f => ({ ...f, service_type: e.target.value }))} className={inp} />
-                  </Campo>
+                  {form.plan_type === 'mensual' ? (
+                    <Campo label="¿Cuántas citas incluye el paquete?">
+                      <select value={form.max_slots} onChange={e => setForm(f => ({ ...f, max_slots: Number(e.target.value) }))} className={inp}>
+                        {[2, 3, 4, 5, 6, 8, 10, 12, 16, 20].map(n => <option key={n} value={n}>{n} citas</option>)}
+                      </select>
+                    </Campo>
+                  ) : (
+                    <Campo label="Servicio">
+                      <input value={form.service_type} onChange={e => setForm(f => ({ ...f, service_type: e.target.value }))} className={inp} />
+                    </Campo>
+                  )}
+                  {form.plan_type === 'mensual' && (
+                    <Campo label="Servicio">
+                      <input value={form.service_type} onChange={e => setForm(f => ({ ...f, service_type: e.target.value }))} className={inp} />
+                    </Campo>
+                  )}
                   <Campo label="Vence en (días)">
                     <input type="number" value={form.expires_in_days} onChange={e => setForm(f => ({ ...f, expires_in_days: Number(e.target.value) }))} className={inp} />
                   </Campo>

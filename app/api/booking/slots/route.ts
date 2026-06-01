@@ -42,8 +42,6 @@ export async function GET(req: NextRequest) {
       .from('booking_config').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle()
     if (!config) return NextResponse.json({ error: 'El centro aún no configuró su disponibilidad.' }, { status: 400 })
 
-    const dur = Number(config.session_duration_min) || 45
-    const step = Number(config.slot_step_min) || 60
     const workingHours = config.working_hours || {}
     const closedDates: string[] = config.closed_dates || []
     const maxDays = Math.min(Number(config.max_advance_days) || 30, 60)
@@ -81,18 +79,18 @@ export async function GET(req: NextRequest) {
       const cfgDia = workingHours[String(dow)]
       if (!cfgDia || !cfgDia.activo || !Array.isArray(cfgDia.bloques) || cfgDia.bloques.length === 0) continue
 
+      // Cada bloque configurado = UN turno que el padre puede elegir.
       const slots: { time: string; label: string }[] = []
       for (const bloque of cfgDia.bloques) {
+        if (!bloque?.inicio) continue
         const ini = hhmmToMin(bloque.inicio)
-        const fin = hhmmToMin(bloque.fin)
-        for (let t = ini; t + dur <= fin; t += step) {
-          const time = minToHHMM(t)
-          // Excluir slots pasados de hoy
-          if (d === 0 && t <= ahoraMin + 30) continue // al menos 30 min de anticipación
-          // Excluir ocupados
-          if (ocupados.has(`${fechaStr}_${time}`)) continue
-          slots.push({ time, label: `${time} – ${minToHHMM(t + dur)}` })
-        }
+        const time = minToHHMM(ini)
+        // Excluir turnos pasados de hoy (al menos 30 min de anticipación)
+        if (d === 0 && ini <= ahoraMin + 30) continue
+        // Excluir ocupados
+        if (ocupados.has(`${fechaStr}_${time}`)) continue
+        const label = bloque.fin ? `${bloque.inicio} – ${bloque.fin}` : bloque.inicio
+        slots.push({ time, label })
       }
       if (slots.length > 0) {
         dias.push({
@@ -106,7 +104,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       dias,
-      duracion: dur,
       maxSlots: link.max_slots,
       slotsUsados: link.slots_used,
       slotsRestantes: link.max_slots - link.slots_used,
