@@ -110,6 +110,17 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
     cargarLinks()
   }
 
+  const eliminarLink = async (id: string) => {
+    if (!confirm('¿Eliminar este link de reserva? Esta acción no se puede deshacer. (Las citas ya reservadas con él NO se borran.)')) return
+    try {
+      const r = await fetch(`/api/booking/links?id=${id}`, { method: 'DELETE' })
+      const d = await r.json()
+      if (d.error) throw new Error(d.error)
+      toast.success('Link eliminado')
+      setLinks(prev => prev.filter(l => l.id !== id))
+    } catch (e: any) { toast.error('Error: ' + e.message) }
+  }
+
   const urlDe = (token: string) => `${typeof window !== 'undefined' ? window.location.origin : ''}/reservar/${token}`
   const copiar = (token: string) => {
     navigator.clipboard?.writeText(urlDe(token))
@@ -348,8 +359,12 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                                 {copiado === l.token ? <><CheckCircle2 size={13} /> Copiado</> : <><Copy size={13} /> Copiar link</>}
                               </button>
                               <button onClick={() => toggleLink(l.id, l.active)} title={l.active ? 'Desactivar' : 'Activar'}
-                                className="p-1.5 rounded-lg" style={{ color: l.active ? '#dc2626' : '#16a34a', background: 'var(--card)' }}>
+                                className="p-1.5 rounded-lg" style={{ color: l.active ? '#d97706' : '#16a34a', background: 'var(--card)' }}>
                                 <Power size={14} />
+                              </button>
+                              <button onClick={() => eliminarLink(l.id)} title="Eliminar link"
+                                className="p-1.5 rounded-lg" style={{ color: '#dc2626', background: 'var(--card)' }}>
+                                <Trash2 size={14} />
                               </button>
                             </div>
                           </div>

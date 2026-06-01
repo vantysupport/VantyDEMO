@@ -120,7 +120,15 @@ function useFolderState(childId: string) {
     save({ ...state, docFolder: { ...state.docFolder, [docId]: carpetaId } })
   }
 
-  return { state, crearCarpeta, renombrarCarpeta, eliminarCarpeta, moverDoc }
+  // Asigna VARIOS documentos a una carpeta en una sola operación (evita el bug
+  // de closure obsoleto cuando se llamaba moverDoc en un loop y solo guardaba el último).
+  const moverDocs = (docIds: string[], carpetaId: string | null) => {
+    const next = { ...state.docFolder }
+    docIds.forEach(id => { next[id] = carpetaId })
+    save({ ...state, docFolder: next })
+  }
+
+  return { state, crearCarpeta, renombrarCarpeta, eliminarCarpeta, moverDoc, moverDocs }
 }
 
 // ── Main Component ──────────────────────────────────────────────────────────
@@ -143,8 +151,9 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
   const [showUpload, setShowUpload] = useState(false)
 
   // Folder navigation
-  const { state: fs, crearCarpeta, renombrarCarpeta, eliminarCarpeta, moverDoc } = useFolderState(childId)
+  const { state: fs, crearCarpeta, renombrarCarpeta, eliminarCarpeta, moverDoc, moverDocs } = useFolderState(childId)
   const [currentFolder, setCurrentFolder] = useState<string | null>(null) // null = raíz
+  const [uploadFolder, setUploadFolder] = useState<string | null>(null)   // carpeta destino al subir
   const [showNewFolder, setShowNewFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [newFolderEmoji, setNewFolderEmoji] = useState('📁')
@@ -248,7 +257,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           }).select('id').single()
           if (dbErr) throw dbErr
 
-          if (inserted?.id && currentFolder) newIds.push(inserted.id)
+          if (inserted?.id) newIds.push(inserted.id)
           // 🧠 Auto-extraer texto en background para que la IA lo conozca
           if (inserted?.id) {
             fetch('/api/patient-documents/extract', {
@@ -263,13 +272,16 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
         }
       }
 
-      // Asignar los subidos a la carpeta actual
-      if (currentFolder && newIds.length > 0) {
-        newIds.forEach(id => moverDoc(id, currentFolder))
+      // Asignar TODOS los subidos a la carpeta destino elegida (en una sola operación)
+      if (newIds.length > 0) {
+        moverDocs(newIds, uploadFolder)
+        // Si subiste a una carpeta distinta a la que estás viendo, navegá a ella
+        if (uploadFolder !== currentFolder) setCurrentFolder(uploadFolder)
       }
 
       if (uploaded > 0 && fallidos.length === 0) {
-        toast.success(`✅ ${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} correctamente`)
+        const destino = uploadFolder ? (fs.carpetas.find(c => c.id === uploadFolder)?.name || 'la carpeta') : 'Inicio'
+        toast.success(`✅ ${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} en "${destino}"`)
       } else if (uploaded > 0 && fallidos.length > 0) {
         toast.warning(`Se subieron ${uploaded}, pero fallaron ${fallidos.length}: ${fallidos.join(', ')}`)
       } else {
@@ -396,7 +408,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </button>
           )}
           {canUpload && (
-            <button onClick={() => setShowUpload(!showUpload)}
+            <button onClick={() => { setUploadFolder(currentFolder); setShowUpload(!showUpload) }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-sm">
               <Plus size={14} /> Subir documento
             </button>
@@ -513,13 +525,23 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       {showUpload && (
         <div className={`${card} border rounded-2xl p-5 space-y-4`}>
           <div className="flex items-center justify-between">
-            <p className={`text-sm font-black ${txt1}`}>
-              Subir en: {currentFolder ? (fs.carpetas.find(c => c.id === currentFolder)?.name || 'Carpeta') : 'Inicio'}
-            </p>
+            <p className={`text-sm font-black ${txt1}`}>Subir documento</p>
             <button onClick={() => { setShowUpload(false); setSelectedFiles([]) }}
               className={`p-1.5 rounded-lg ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-100'}`}>
               <X size={14} className={txt3} />
             </button>
+          </div>
+
+          {/* Selector de carpeta destino */}
+          <div>
+            <label className={`block text-[11px] font-black uppercase tracking-widest mb-1.5 ${txt3}`}>Guardar en carpeta</label>
+            <select value={uploadFolder ?? ''} onChange={e => setUploadFolder(e.target.value || null)}
+              className={`w-full px-3 py-2.5 rounded-xl text-sm border outline-none focus:border-blue-500 ${inputCls}`}>
+              <option value="">📁 Inicio (sin carpeta)</option>
+              {fs.carpetas.map(c => (
+                <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+              ))}
+            </select>
           </div>
           <div
             onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
