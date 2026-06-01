@@ -95,17 +95,16 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await query
     if (error) {
-      // Si la tabla no existe (42P01) o cualquier otro error de schema → devolver vacío
-      // en lugar de 500, para que el dashboard del padre no se rompa.
-      if (error.code === '42P01' || /does not exist|relation/.test(String(error.message))) {
-        console.warn('[parent-wellbeing] tabla parent_wellbeing_checkins no existe, devolviendo vacío')
-        return NextResponse.json({ data: [], _warning: 'tabla no inicializada' })
-      }
-      throw error
+      // Cualquier error (tabla inexistente, schema, etc.) → devolver vacío con 200.
+      // Es un widget de lectura del dashboard: nunca debe romper ni mostrar 500.
+      console.warn('[parent-wellbeing] lectura falló, devolviendo vacío:', error.message)
+      return NextResponse.json({ data: [] })
     }
 
     return NextResponse.json({ data: data || [] })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message, data: [] }, { status: 500 })
+    // Failsafe: jamás devolver 500 en un widget de lectura
+    console.warn('[parent-wellbeing] excepción, devolviendo vacío:', e?.message)
+    return NextResponse.json({ data: [] })
   }
 }

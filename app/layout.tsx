@@ -65,6 +65,30 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SANTI" />
         <meta name="mobile-web-app-capable" content="yes" />
+
+        {/*
+          🔒 SILENCIADOR DE CONSOLA EN PRODUCCIÓN
+          Neutraliza console.log/info/debug/warn/error en el navegador para que NO
+          se filtren detalles internos (respuestas, IDs, errores) por la consola.
+          Solo aplica en producción — en desarrollo la consola funciona normal.
+          NOTA: esto no oculta la pestaña Red (eso es propio del navegador), pero
+          sí elimina toda la información que la app imprimía en consola.
+        */}
+        {process.env.NODE_ENV === 'production' && (
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                try {
+                  var noop = function(){};
+                  ['log','info','debug','warn','error','trace','table','dir','group','groupEnd','count','time','timeEnd'].forEach(function(m){
+                    if (window.console) window.console[m] = noop;
+                  });
+                } catch(e) {}
+              })();
+            `
+          }} />
+        )}
+
         {/*
           Script de pre-hidratación: aplica la clase `dark` ANTES del primer paint
           para evitar el "flash" de modo claro cuando el usuario tiene modo oscuro
@@ -98,14 +122,8 @@ export default function RootLayout({
           </ToastProvider>
         </ThemeProvider>
 
-        {/* Footer con links legales para Google OAuth */}
-        <footer className="text-center text-sm text-gray-400 py-6 border-t mt-auto">
-          <div className="flex justify-center gap-6">
-            <a href="/privacy" className="hover:underline">Política de Privacidad</a>
-            <a href="/terms" className="hover:underline">Términos de Servicio</a>
-          </div>
-          <p className="mt-2">© 2026 Neuropsicología y Terapias SANTI</p>
-        </footer>
+        {/* El footer legal vive en la página de login (y landing). Se quitó del
+            layout global porque aparecía molestando en todas las pantallas. */}
 
         <script dangerouslySetInnerHTML={{
           __html: `

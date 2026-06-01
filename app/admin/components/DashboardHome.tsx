@@ -213,12 +213,9 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
           body: JSON.stringify({}),
           cache: 'no-store',
         })
-        const refData = await refRes.json().catch(() => null)
-        if (refData) {
-          console.log('[Dashboard] refrescar-alertas:', refData)
-        }
-      } catch (e) {
-        console.warn('[Dashboard] refrescar-alertas falló:', e)
+        await refRes.json().catch(() => null)
+      } catch {
+        /* silencioso — no bloquea el render */
       }
 
       // 1. API de métricas (usa agenda_sesiones, agente_alertas, etc.)
