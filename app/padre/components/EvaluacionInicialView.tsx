@@ -523,6 +523,46 @@ const SECCIONES_NEURO: Seccion[] = [
   },
 ]
 
+// ─── Render del razonamiento de la IA (convierte **negritas** y --- a formato) ──
+function RazonRecomendacion({ texto }: { texto: string }) {
+  // Parte por líneas. Los "---" se vuelven separadores; el resto, párrafos
+  // con soporte de **negritas** (markdown sencillo que devuelve el modelo).
+  const lineas = (texto || '').split('\n')
+
+  const renderInline = (linea: string, key: number) => {
+    // Divide en segmentos: los que están entre ** ** se renderizan en negrita.
+    const partes = linea.split(/(\*\*[^*]+\*\*)/g)
+    return (
+      <p key={key} className="text-sm leading-relaxed mb-2 last:mb-0" style={{ color: 'var(--text-secondary)' }}>
+        {partes.map((p, i) => {
+          if (p.startsWith('**') && p.endsWith('**')) {
+            return (
+              <strong key={i} style={{ color: 'var(--text-primary)', fontWeight: 800 }}>
+                {p.slice(2, -2)}
+              </strong>
+            )
+          }
+          return <span key={i}>{p}</span>
+        })}
+      </p>
+    )
+  }
+
+  return (
+    <div>
+      {lineas.map((ln, i) => {
+        const t = ln.trim()
+        if (t === '') return null
+        // Línea separadora (---, —, ***, etc.)
+        if (/^[-—*_]{2,}$/.test(t)) {
+          return <hr key={i} className="my-3 border-0 h-px" style={{ background: 'rgba(168,85,247,0.25)' }} />
+        }
+        return renderInline(ln, i)
+      })}
+    </div>
+  )
+}
+
 // ═════════════════════════════════════════════════════════════════════════
 export default function EvaluacionInicialView({ child, profile }: Props) {
   const [loading, setLoading] = useState(true)
@@ -934,12 +974,10 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
                   </div>
                 </div>
 
-                {/* Razonamiento general de la IA */}
+                {/* Razonamiento general de la IA (formateado) */}
                 {evaluacion.terapias_recomendadas_razon && (
                   <div className="rounded-2xl p-5 my-4 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.2)' }}>
-                    <div className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                      {evaluacion.terapias_recomendadas_razon}
-                    </div>
+                    <RazonRecomendacion texto={evaluacion.terapias_recomendadas_razon} />
                   </div>
                 )}
 
