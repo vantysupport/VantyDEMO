@@ -231,7 +231,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
             {meta?.planType ? ` · ${meta.planType}` : ''}
           </p>
           <p className="text-white/80 text-xs mt-1">
-            Podés elegir {restantes} horario{restantes > 1 ? 's' : ''} para tu{restantes > 1 ? 's' : ''} cita{restantes > 1 ? 's' : ''}
+            Podés elegir {restantes} horario{restantes > 1 ? 's' : ''}{meta?.duracion ? ` · cada cita dura ${meta.duracion} min` : ''}
           </p>
         </div>
 

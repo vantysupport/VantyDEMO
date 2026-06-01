@@ -70,8 +70,10 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
     setSavingCfg(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      // Turnos seguidos: el paso = la duración de la sesión
-      const payload = { ...cfg, slot_step_min: Number(cfg.session_duration_min) || 45, updated_by: user?.id }
+      // El paso entre turnos = duración + descanso. Si no hay paso válido, usar la duración.
+      const dur = Number(cfg.session_duration_min) || 45
+      const step = Number(cfg.slot_step_min) >= dur ? Number(cfg.slot_step_min) : dur
+      const payload = { ...cfg, session_duration_min: dur, slot_step_min: step, updated_by: user?.id }
       const r = await fetch('/api/booking/config', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -163,10 +165,36 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
           {tab === 'config' && (
             loadingCfg || !cfg ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" /></div> : (
               <div className="space-y-5">
-                <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--text-secondary)' }}>
-                  💡 Agregá los <strong>horarios de atención</strong> de cada día (ej. 09:00 a 13:00). Cada bloque que pongas es un turno que el padre podrá elegir.
-                  &nbsp;Para abrir <strong>sábados o domingos</strong>, tildá el día y agregale un bloque. Marcá los días cerrados en el calendario.
-                </div>
+                {/* Duración + descanso → el sistema arma los turnos solo */}
+                {(() => {
+                  const dur = Number(cfg.session_duration_min) || 45
+                  const descanso = Math.max(0, (Number(cfg.slot_step_min) || dur) - dur)
+                  const setDur = (v: number) => setCfg((c: any) => ({ ...c, session_duration_min: v, slot_step_min: v + descanso }))
+                  const setDescanso = (v: number) => setCfg((c: any) => ({ ...c, slot_step_min: dur + Math.max(0, v) }))
+                  // Vista previa de turnos en un bloque ejemplo 09:00–13:00
+                  const preview: string[] = []
+                  for (let t = 9 * 60; t + dur <= 13 * 60 && preview.length < 5; t += (dur + descanso)) {
+                    preview.push(`${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`)
+                  }
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Campo label="Duración de cada cita (min)">
+                          <input type="number" min={5} value={dur} onChange={e => setDur(Number(e.target.value))} className={inp} />
+                        </Campo>
+                        <Campo label="Descanso entre citas (min)">
+                          <input type="number" min={0} value={descanso} onChange={e => setDescanso(Number(e.target.value))} className={inp} />
+                        </Campo>
+                      </div>
+                      <div className="rounded-lg p-3 text-xs leading-relaxed" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--text-secondary)' }}>
+                        💡 Solo poné los <strong>rangos de atención</strong> abajo (ej. 09:00 a 13:00) y el sistema arma los turnos automáticamente.
+                        Con cita de {dur} min{descanso > 0 ? ` y ${descanso} min de descanso` : ''}, en un bloque 09:00–13:00 saldrían:
+                        &nbsp;<strong>{preview.join(' · ')}…</strong>
+                        &nbsp;·&nbsp; Para <strong>sábados o domingos</strong>, tildá el día y agregale un bloque. Marcá los días cerrados en el calendario.
+                      </div>
+                    </>
+                  )
+                })()}
 
                 {/* Horario por día */}
                 <div>
