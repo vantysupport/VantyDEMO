@@ -158,9 +158,39 @@ export default function LoginPage(props: PageProps) {
 
         @keyframes heroIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .lp-hero-anim { opacity: 0; animation: heroIn .8s cubic-bezier(.22,1,.36,1) forwards; }
+        .lp-line { display: block; opacity: 0; animation: heroIn .85s cubic-bezier(.22,1,.36,1) forwards; }
+
+        /* Brillo ambiental que recorre el panel — muy sutil, da sensación premium */
+        .lp-left::before {
+          content: ''; position: absolute; inset: -20%; z-index: 1; pointer-events: none;
+          background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.05) 48%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.05) 52%, transparent 62%);
+          background-size: 220% 220%;
+          animation: sheen 12s ease-in-out infinite;
+        }
+        @keyframes sheen { 0% { background-position: 130% 0; } 55%, 100% { background-position: -30% 0; } }
+
+        /* Lema con flujo de color continuo (acento de marca) */
+        .lp-accent-line {
+          background: linear-gradient(90deg,#f472b6,#fbbf24,#38bdf8,#a3e635,#f472b6);
+          background-size: 200% 100%;
+          animation: rainbowShift 7s linear infinite;
+        }
+        @keyframes rainbowShift { to { background-position: -200% 0; } }
+
+        /* Destello periódico del botón principal (CTA premium) */
+        .lp-btn { position: relative; overflow: hidden; }
+        .lp-btn::after {
+          content: ''; position: absolute; top: 0; bottom: 0; left: -70%; width: 45%;
+          background: linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent);
+          transform: skewX(-20deg); pointer-events: none;
+          animation: btnShine 5.5s ease-in-out infinite;
+        }
+        @keyframes btnShine { 0% { left: -70%; } 32%, 100% { left: 130%; } }
 
         @media (prefers-reduced-motion: reduce) {
-          .lp-orb, .lp-hero-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
+          .lp-orb, .lp-hero-anim, .lp-line { animation: none !important; opacity: 1 !important; transform: none !important; }
+          .lp-left::before, .lp-accent-line, .lp-btn::after { animation: none !important; }
+          .lp-left::before { opacity: 0; }
         }
         .lp-right {
           flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -223,16 +253,17 @@ export default function LoginPage(props: PageProps) {
 
           {/* Contenido central — minimalista, mucho aire */}
           <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 540 }}>
-            <h2 className="lp-hero-anim" style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(46px, 4.2vw, 66px)', lineHeight: 1.0, letterSpacing: '-0.035em', marginBottom: 26, animationDelay: '.05s' }}>
-              Tu hijo merece<br/><span style={{ color: '#a5b4fc' }}>lo mejor.</span>
+            <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(46px, 4.2vw, 66px)', lineHeight: 1.0, letterSpacing: '-0.035em', marginBottom: 26 }}>
+              <span className="lp-line" style={{ animationDelay: '.05s' }}>Tu hijo merece</span>
+              <span className="lp-line" style={{ animationDelay: '.2s', color: '#a5b4fc' }}>lo mejor.</span>
             </h2>
-            <p className="lp-hero-anim" style={{ color: 'rgba(255,255,255,.62)', fontSize: 17, lineHeight: 1.7, maxWidth: 400, animationDelay: '.16s' }}>
+            <p className="lp-hero-anim" style={{ color: 'rgba(255,255,255,.62)', fontSize: 17, lineHeight: 1.7, maxWidth: 400, animationDelay: '.38s' }}>
               Acompañamiento clínico ABA con inteligencia artificial, para seguir de cerca cada paso de su desarrollo.
             </p>
 
-            {/* Lema de marca con acento arcoíris sutil */}
-            <div className="lp-hero-anim" style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 56, animationDelay: '.28s' }}>
-              <span style={{ width: 40, height: 3, borderRadius: 99, background: 'linear-gradient(90deg,#f472b6,#fbbf24,#38bdf8,#a3e635)' }} />
+            {/* Lema de marca con acento arcoíris animado */}
+            <div className="lp-hero-anim" style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 56, animationDelay: '.52s' }}>
+              <span className="lp-accent-line" style={{ width: 40, height: 3, borderRadius: 99 }} />
               <span style={{ color: 'rgba(255,255,255,.78)', fontSize: 16, fontStyle: 'italic', letterSpacing: '0.01em' }}>Todos somos diferentes</span>
             </div>
           </div>
