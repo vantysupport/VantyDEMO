@@ -51,17 +51,18 @@ function Donut({ value, total, color, size = 56 }: any) {
 function KPI({ label, value, sub, icon: Icon, bar, urgent, onClick }: any) {
   return (
     <div onClick={onClick}
-      className={`rounded-xl p-5 relative overflow-hidden transition-all ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
-      style={{ background: 'var(--card)', border: urgent ? `1px solid ${bar}60` : '1px solid var(--card-border)' }}>
-      <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
-      <div className="flex items-start justify-between pl-3 mb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</p>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${bar}12` }}>
-          <Icon size={14} style={{ color: bar }} />
+      className={`rounded-2xl p-5 relative overflow-hidden transition-all duration-200 ${onClick ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : ''}`}
+      style={{ background: 'var(--card)', border: urgent ? `1px solid ${bar}55` : '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+      {/* glow sutil del color en la esquina (en vez de barra lateral genérica) */}
+      <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full pointer-events-none" style={{ background: bar, opacity: 0.08, filter: 'blur(8px)' }} />
+      <div className="flex items-start justify-between mb-3 relative">
+        <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${bar}16` }}>
+          <Icon size={16} style={{ color: bar }} />
         </div>
       </div>
-      <p className="text-4xl font-black leading-none pl-3 mb-1" style={{ color: urgent ? bar : 'var(--text-primary)' }}>{value}</p>
-      <p className="text-xs pl-3" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+      <p className="text-4xl font-bold leading-none mb-1 tabular-nums relative tracking-tight" style={{ color: urgent ? bar : 'var(--text-primary)' }}>{value}</p>
+      <p className="text-xs relative" style={{ color: 'var(--text-muted)' }}>{sub}</p>
     </div>
   )
 }
@@ -99,17 +100,18 @@ function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick, onDismiss }: a
 
   return (
     <div
-      className="w-full flex items-center gap-2 px-4 py-3 rounded-lg transition-all"
+      className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all"
       style={{
         background: esLogro ? 'rgba(46,122,86,0.06)' : 'var(--muted-bg)',
         border: '1px solid var(--card-border)',
-        borderLeft: `3px solid ${bar}`,
       }}>
-      {esLogro && (
+      {esLogro ? (
         <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(46,122,86,0.15)' }}>
           <Trophy size={14} style={{ color: '#2e7a56' }} />
         </div>
+      ) : (
+        <div className="flex-shrink-0 w-2 h-2 rounded-full" style={{ background: bar }} />
       )}
       <button onClick={onClick} className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
         {tipo && (
@@ -153,7 +155,7 @@ function CitaRow({ cita }: any) {
       <div className="w-10 h-10 rounded-lg flex flex-col items-center justify-center flex-shrink-0"
         style={{ background: esHoy ? '#3a68a0' : 'var(--muted-bg)', color: esHoy ? '#fff' : 'var(--text-secondary)' }}>
         <span className="text-[8px] font-bold leading-none">{mes}</span>
-        <span className="text-sm font-black leading-none">{dia}</span>
+        <span className="text-sm font-bold leading-none">{dia}</span>
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{nombre}</p>
@@ -494,12 +496,12 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
     <div className="space-y-5">
 
       {/* ── HERO ── */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #3a68a0, #6355a0, #2e7a56)' }} />
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="h-1" style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899)' }} />
         <div className="p-5 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs capitalize mb-0.5" style={{ color: 'var(--text-muted)' }}>{diaStr}</p>
-            <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{saludo}, Directora 👋</h2>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{saludo}, Directora 👋</h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="text-xs px-2.5 py-0.5 rounded-full font-medium"
                 style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
@@ -520,7 +522,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-5xl font-black tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <p className="text-5xl font-bold tabular-nums tracking-tight" style={{ color: 'var(--text-primary)' }}>
               {horaActual ? horaActual.toLocaleTimeString(toBCP47(locale), { hour: '2-digit', minute: '2-digit' }) : '--:--'}
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -542,17 +544,17 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
 
         {/* Sesiones 7 días + Retención — combinados en fila */}
-        <div className="rounded-xl p-5 flex flex-col justify-between" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="rounded-2xl p-5 flex flex-col justify-between" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[11px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Sesiones — últimos 7 días</p>
-            <span className="text-lg font-black" style={{ color: '#3a68a0' }}>{totalSes7d}</span>
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Sesiones — últimos 7 días</p>
+            <span className="text-lg font-bold" style={{ color: '#3a68a0' }}>{totalSes7d}</span>
           </div>
           <BarChart values={sesSemanales} labels={diasLabels} color="#3a68a0" />
           <div className="mt-4 pt-4 border-t flex items-center gap-4" style={{ borderColor: 'var(--card-border)' }}>
             <Donut value={totalPacientes - sinSesion.length} total={totalPacientes} color="#2e7a56" size={56} />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Retención activa</p>
-              <p className="text-base font-black leading-none" style={{ color: 'var(--text-primary)' }}>
+              <p className="text-[11px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Retención activa</p>
+              <p className="text-base font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
                 {totalPacientes - sinSesion.length}
                 <span className="text-sm font-medium ml-1" style={{ color: 'var(--text-muted)' }}>/ {totalPacientes}</span>
               </p>
@@ -562,9 +564,9 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         </div>
 
         {/* Programas ABA activos */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Programas ABA Activos</p>
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Programas ABA Activos</p>
             <button onClick={() => navigateTo('ninos')} className="text-[10px] font-semibold" style={{ color: '#3a68a0' }}>Ver todos →</button>
           </div>
           {programasActivos.length > 0 ? (
@@ -591,7 +593,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
                         <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{p.titulo}</p>
                         <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{p.nombre}</p>
                       </div>
-                      <span className="text-sm font-black flex-shrink-0" style={{ color }}>
+                      <span className="text-sm font-bold flex-shrink-0" style={{ color }}>
                         {p.ultimoPct !== null ? `${p.ultimoPct}%` : '—'}
                       </span>
                     </div>
@@ -618,14 +620,14 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {/* Alertas clínicas */}
-        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
             <div className="flex items-center gap-2">
               <Bell size={13} style={{ color: 'var(--text-muted)' }} />
-              <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Alertas Clínicas</p>
+              <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Alertas Clínicas</p>
             </div>
             {alertasClinicas.length > 0 && (
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{ background: 'rgba(176,120,48,0.12)', color: '#b07830', border: '1px solid rgba(176,120,48,0.25)' }}>
                 {alertasClinicas.length}
               </span>
@@ -655,11 +657,11 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         </div>
 
         {/* Próximas citas */}
-        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
             <div className="flex items-center gap-2">
               <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
-              <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Próximas Citas</p>
+              <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Próximas Citas</p>
             </div>
             <div className="flex items-center gap-2">
               <button
