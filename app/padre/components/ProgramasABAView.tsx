@@ -43,19 +43,19 @@ interface Programa {
 interface Props { childId: string; childName: string }
 
 const AREA_CFG: Record<string, { color: string; bg: string; emoji: string }> = {
-  'comunicacion':   { color: '#2563eb', bg: 'rgba(37,99,235,0.1)',    emoji: '💬' },
+  'comunicacion':   { color: '#0284c7', bg: 'rgba(2,132,199,0.1)',    emoji: '💬' },
   'conducta':       { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',   emoji: '⚡' },
-  'habilidades':    { color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)',   emoji: '🧠' },
+  'habilidades':    { color: '#0ea5e9', bg: 'rgba(139,92,246,0.1)',   emoji: '🧠' },
   'socializacion':  { color: '#10b981', bg: 'rgba(16,185,129,0.1)',   emoji: '👥' },
   'autonomia':      { color: '#ec4899', bg: 'rgba(236,72,153,0.1)',   emoji: '⭐' },
   'imitacion':      { color: '#06b6d4', bg: 'rgba(6,182,212,0.1)',    emoji: '🎭' },
-  'lenguaje':       { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)',   emoji: '🗣️' },
+  'lenguaje':       { color: '#0284c7', bg: 'rgba(59,130,246,0.1)',   emoji: '🗣️' },
 }
 const AREA_DEFAULT = { color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '📌' }
 
 const FASE_CFG: Record<string, { label: string; color: string }> = {
   'linea_base':   { label: 'Línea base',    color: '#64748b' },
-  'intervencion': { label: 'Intervención',  color: '#2563eb' },
+  'intervencion': { label: 'Intervención',  color: '#0284c7' },
   'mantenimiento':{ label: 'Mantenimiento', color: '#10b981' },
   'dominado':     { label: 'Dominado ✓',    color: '#059669' },
 }
@@ -132,13 +132,13 @@ function WeekTracker({ programaId, childId, objetivos }: { programaId: string; c
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                 padding: '6px 4px', borderRadius: 10, border: 'none',
                 cursor: isPast ? 'pointer' : 'default',
-                background: done ? 'rgba(16,185,129,0.15)' : isToday ? 'rgba(37,99,235,0.1)' : 'var(--c-surface)',
+                background: done ? 'rgba(16,185,129,0.15)' : isToday ? 'rgba(2,132,199,0.1)' : 'var(--c-surface)',
                 transition: 'all .15s', opacity: isPast ? 1 : 0.4
               }}>
-              <span style={{ fontSize: 9, fontWeight: 700, color: isToday ? '#2563eb' : 'var(--c-text-muted)' }}>{DAYS[i]}</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: isToday ? '#0284c7' : 'var(--c-text-muted)' }}>{DAYS[i]}</span>
               {done
                 ? <CheckCircle size={18} color="#10b981" />
-                : <Circle size={18} color={isToday ? '#2563eb' : 'var(--c-border)'} />
+                : <Circle size={18} color={isToday ? '#0284c7' : 'var(--c-border)'} />
               }
             </button>
           )
@@ -154,8 +154,8 @@ function WeekTracker({ programaId, childId, objetivos }: { programaId: string; c
           {objetivos!.map(obj => (
             <button key={obj.id} onClick={() => toggle(showSetPicker, obj.id)}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: 'var(--c-surface)', borderRadius: 10, border: '1.5px solid var(--c-border)', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(37,99,235,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 900, color: '#2563eb' }}>{obj.numero_set}</span>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(2,132,199,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 900, color: '#0284c7' }}>{obj.numero_set}</span>
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-text-primary)' }}>{obj.descripcion || obj.nombre || `Set ${obj.numero_set}`}</span>
             </button>
@@ -232,18 +232,18 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
           {/* Instrucciones generales del programa (no del set) — solo si existen */}
           {(prog.instrucciones_casa || prog.reforzadores) && (
             <div style={{ background: 'var(--c-stat-blue)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '12px 14px', marginTop: 14, marginBottom: 12 }}>
-              <p style={{ fontSize: 12, fontWeight: 800, color: '#2563eb', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <p style={{ fontSize: 12, fontWeight: 800, color: '#0284c7', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <BookOpen size={13} /> Indicaciones generales del programa
               </p>
               {prog.instrucciones_casa && (
                 <div style={{ marginBottom: prog.reforzadores ? 8 : 0 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>📋 Instrucciones</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#0284c7', textTransform: 'uppercase', letterSpacing: 0.5 }}>📋 Instrucciones</span>
                   <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{prog.instrucciones_casa}</p>
                 </div>
               )}
               {prog.reforzadores && (
                 <div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5 }}>🎁 Reforzadores</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#0284c7', textTransform: 'uppercase', letterSpacing: 0.5 }}>🎁 Reforzadores</span>
                   <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{prog.reforzadores}</p>
                 </div>
               )}
@@ -281,7 +281,7 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
                         </span>
                         {/* Status badge */}
                         {obj.estado === 'en_progreso' && (
-                          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(37,99,235,0.12)', color: '#2563eb', flexShrink: 0, border: '1px solid rgba(37,99,235,0.2)' }}>EN CURSO</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(2,132,199,0.12)', color: '#0284c7', flexShrink: 0, border: '1px solid rgba(2,132,199,0.2)' }}>EN CURSO</span>
                         )}
                         {/* Expand chevron */}
                         <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', marginLeft: 4, color: 'var(--c-text-muted)', transform: isExpObj ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s' }}>
@@ -412,8 +412,8 @@ export default function ProgramasABAView({ childId, childName }: Props) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, paddingBottom: 16, borderBottom: '1px solid var(--c-border)' }}>
         <div>
           <h2 style={{ fontWeight: 900, fontSize: 20, color: 'var(--c-text-primary)', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(37,99,235,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BookOpen size={18} color="#2563eb" />
+            <div style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(2,132,199,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BookOpen size={18} color="#0284c7" />
             </div>
             Programas ABA
           </h2>
@@ -425,7 +425,7 @@ export default function ProgramasABAView({ childId, childName }: Props) {
 
       {/* Info card */}
       <div style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', borderRadius: 16, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-        <Info size={16} color="#2563eb" style={{ flexShrink: 0, marginTop: 1 }} />
+        <Info size={16} color="#0284c7" style={{ flexShrink: 0, marginTop: 1 }} />
         <p style={{ fontSize: 12, color: 'var(--c-text-secondary)', margin: 0, lineHeight: 1.6 }}>
           Estos son los programas que tu terapeuta trabaja con <strong style={{ color: 'var(--c-text-primary)' }}>{childName}</strong>. Practicarlos en casa refuerza el aprendizaje. Marca los días que lo practicaron para hacer seguimiento.
         </p>
@@ -436,7 +436,7 @@ export default function ProgramasABAView({ childId, childName }: Props) {
         {(['activos', 'todos'] as const).map(f => (
           <button key={f} onClick={() => setFiltro(f)}
             style={{ padding: '7px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all .15s',
-              background: filtro === f ? '#2563eb' : 'var(--c-surface)',
+              background: filtro === f ? '#0284c7' : 'var(--c-surface)',
               color: filtro === f ? '#fff' : 'var(--c-text-muted)' }}>
             {f === 'activos' ? `Activos (${activos.length})` : `Todos (${programas.length})`}
           </button>

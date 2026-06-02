@@ -124,7 +124,7 @@ export default function NotifWhatsAppPanel({ profile, onUpdated }: Props) {
           </p>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block">
+            <label className="text-xs font-bold text-slate-500 block">
               Número WhatsApp
             </label>
             <input

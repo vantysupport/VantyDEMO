@@ -28,11 +28,11 @@ const MESES_S = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','No
 const DIAS    = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']
 
 const STATUS_CFG: Record<string, { label: string; pill: string; badge: string; bar: string; dot: string }> = {
-  confirmed: { label: 'Confirmada',    pill: 'bg-blue-500',   badge: 'bg-blue-50 text-blue-700 border-blue-200',   bar: '#3b82f6', dot: 'bg-blue-500'   },
+  confirmed: { label: 'Confirmada',    pill: 'bg-sky-500',   badge: 'bg-sky-50 text-sky-700 border-sky-200',   bar: '#0284c7', dot: 'bg-sky-500'   },
   pending:   { label: 'Por confirmar', pill: 'bg-amber-400',  badge: 'bg-amber-50 text-amber-700 border-amber-200', bar: '#f59e0b', dot: 'bg-amber-400'  },
   cancelled: { label: 'Cancelada',     pill: 'bg-red-400',    badge: 'bg-red-50 text-red-700 border-red-200',       bar: '#ef4444', dot: 'bg-red-400'    },
-  completed: { label: 'Realizada',     pill: 'bg-violet-500', badge: 'bg-violet-50 text-violet-700 border-violet-200', bar: '#8b5cf6', dot: 'bg-violet-500' },
-  realizada: { label: 'Realizada',     pill: 'bg-violet-500', badge: 'bg-violet-50 text-violet-700 border-violet-200', bar: '#8b5cf6', dot: 'bg-violet-500' },
+  completed: { label: 'Realizada',     pill: 'bg-sky-500', badge: 'bg-sky-50 text-sky-700 border-sky-200', bar: '#0ea5e9', dot: 'bg-sky-500' },
+  realizada: { label: 'Realizada',     pill: 'bg-sky-500', badge: 'bg-sky-50 text-sky-700 border-sky-200', bar: '#0ea5e9', dot: 'bg-sky-500' },
 }
 
 function fmt(t: string) {
@@ -125,11 +125,11 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
       {/* HEADER */}
       <div className="flex flex-row items-center justify-between gap-3 mb-4 sm:mb-6">
         <div>
-          <h2 className="font-black text-xl md:text-3xl tracking-tight flex items-center gap-2 sm:gap-3"
+          <h2 className="font-bold text-xl md:text-3xl tracking-tight flex items-center gap-2 sm:gap-3"
             style={{ color: V.tp }}>
             <div className="hidden sm:flex p-2.5 rounded-2xl flex-shrink-0 items-center justify-center"
               style={{ background: 'rgba(59,130,246,0.12)' }}>
-              <Calendar className="text-blue-500" size={26}/>
+              <Calendar className="text-sky-500" size={26}/>
             </div>
             Mis sesiones
           </h2>
@@ -140,14 +140,14 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
         </div>
         <div className="flex gap-2 flex-shrink-0">
           {([
-            { n: upcoming,            label: 'Próximas',   color: '#2563eb' },
-            { n: completed,           label: 'Realizadas', color: '#7c3aed' },
+            { n: upcoming,            label: 'Próximas',   color: '#0284c7' },
+            { n: completed,           label: 'Realizadas', color: '#0284c7' },
             { n: appointments.length, label: 'Total',      color: V.tm },
           ] as const).map(({ n, label, color }) => (
             <div key={label} className="rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 text-center"
               style={{ background: V.card, border: `1px solid ${V.border}` }}>
-              <div className="text-lg sm:text-xl font-black leading-none" style={{ color }}>{n}</div>
-              <div className="text-[9px] font-bold uppercase tracking-wide mt-0.5" style={{ color: V.tm }}>{label}</div>
+              <div className="text-lg sm:text-xl font-bold leading-none" style={{ color }}>{n}</div>
+              <div className="text-[9px] font-bold mt-0.5" style={{ color: V.tm }}>{label}</div>
             </div>
           ))}
         </div>
@@ -168,7 +168,7 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
               style={{ color: V.tm, background: V.muted }}>
               <ChevronLeft size={18}/>
             </button>
-            <h3 className="font-black text-lg" style={{ color: V.tp }}>
+            <h3 className="font-bold text-lg" style={{ color: V.tp }}>
               {MESES[mesN]} <span className="font-semibold" style={{ color: V.tm }}>{año}</span>
             </h3>
             <button onClick={() => setMes(new Date(año, mesN + 1, 1))}
@@ -181,7 +181,7 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
           {/* Day headers */}
           <div className="grid grid-cols-7" style={{ borderBottom: `1px solid ${V.border}` }}>
             {DIAS.map((d, i) => (
-              <div key={d} className="text-center py-3 text-[10px] font-black uppercase tracking-widest"
+              <div key={d} className="text-center py-3 text-[10px] font-bold"
                 style={{ color: i === 0 || i === 6 ? V.tm : V.ts }}>
                 {d}
               </div>
@@ -191,7 +191,7 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
           {/* Calendar cells */}
           {loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 size={22} className="animate-spin text-blue-500"/>
+              <Loader2 size={22} className="animate-spin text-sky-500"/>
             </div>
           ) : (
             <div className="grid grid-cols-7">
@@ -213,11 +213,11 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
                     style={{
                       borderBottom: `1px solid ${V.border}`,
                       borderRight: `1px solid ${V.border}`,
-                      background: esSel ? 'rgba(37,99,235,0.12)' : esHoy ? 'rgba(37,99,235,0.06)' : 'transparent',
+                      background: esSel ? 'rgba(2,132,199,0.12)' : esHoy ? 'rgba(2,132,199,0.06)' : 'transparent',
                     }}>
-                    <span className="w-5 h-5 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black flex-shrink-0"
+                    <span className="w-5 h-5 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0"
                       style={{
-                        background: esSel || esHoy ? '#2563eb' : 'transparent',
+                        background: esSel || esHoy ? '#0284c7' : 'transparent',
                         color: esSel || esHoy ? '#fff' : hasCitas ? V.tp : V.tm,
                       }}>
                       {dia}
@@ -255,19 +255,19 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
             <div className="px-5 py-4 flex items-center gap-3" style={{ borderBottom: `1px solid ${V.border}` }}>
               <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: 'rgba(59,130,246,0.12)' }}>
-                <Calendar size={15} className="text-blue-500"/>
+                <Calendar size={15} className="text-sky-500"/>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: V.tm }}>
+                <p className="text-[10px] font-bold" style={{ color: V.tm }}>
                   {diaSeleccionado === hoy ? 'HOY' : 'DÍA SELECCIONADO'}
                 </p>
-                <p className="text-sm font-black capitalize truncate" style={{ color: V.tp }}>
+                <p className="text-sm font-bold capitalize truncate" style={{ color: V.tp }}>
                   {diaSeleccionado
                     ? new Date(diaSeleccionado + 'T00:00:00').toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })
                     : 'Selecciona un día'}
                 </p>
               </div>
-              <span className="text-xs font-black px-2.5 py-1 rounded-full flex-shrink-0"
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0"
                 style={{ background: V.muted, color: V.tm, border: `1px solid ${V.border}` }}>
                 {citasDelDia.length} citas
               </span>
@@ -277,7 +277,7 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: V.muted }}>
                   <CalendarDays size={22} style={{ color: V.tm }}/>
                 </div>
-                <p className="text-sm font-black" style={{ color: V.tm }}>Sin sesiones este día</p>
+                <p className="text-sm font-bold" style={{ color: V.tm }}>Sin sesiones este día</p>
                 <p className="text-xs mt-1" style={{ color: V.tm, opacity: 0.6 }}>Selecciona un día con citas</p>
               </div>
             ) : (
@@ -292,17 +292,17 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
                         <div className="flex items-center gap-3">
                           <div className="w-0.5 h-10 rounded-full flex-shrink-0" style={{ background: s.bar }}/>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black truncate" style={{ color: V.tp }}>{c.service_type || c.type || 'Terapia ABA'}</p>
+                            <p className="text-sm font-bold truncate" style={{ color: V.tp }}>{c.service_type || c.type || 'Terapia ABA'}</p>
                             <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: V.tm }}>
                               <Clock size={9}/> {fmt(c.appointment_time)}
                               {c.children?.name && <><Baby size={9}/> {c.children.name}</>}
                             </p>
                           </div>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border flex-shrink-0 ${s.badge}`}>{s.label}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ${s.badge}`}>{s.label}</span>
                         </div>
                         {roomUrl && (c.status === 'confirmed' || c.status === 'pending') && (
                           <a href={roomUrl} target="_blank" rel="noopener noreferrer"
-                            className="mt-2 ml-3 flex items-center justify-center gap-2 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+                            className="mt-2 ml-3 flex items-center justify-center gap-2 py-2 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-700 transition-colors"
                             style={{ textDecoration: 'none' }}>
                             <Video size={12}/> Unirse a videollamada
                           </a>
@@ -322,20 +322,20 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
                 style={{ background: 'rgba(16,185,129,0.12)' }}>
                 <Clock size={15} className="text-emerald-500"/>
               </div>
-              <h3 className="font-black text-sm flex-1" style={{ color: V.tp }}>Próximas sesiones</h3>
-              <span className="text-xs font-black px-2 py-0.5 rounded-full"
+              <h3 className="font-bold text-sm flex-1" style={{ color: V.tp }}>Próximas sesiones</h3>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                 style={{ background: V.muted, color: V.tm, border: `1px solid ${V.border}` }}>
                 {proximasCitas.length}
               </span>
             </div>
             {loading ? (
-              <div className="flex justify-center py-10"><Loader2 size={18} className="animate-spin text-blue-500"/></div>
+              <div className="flex justify-center py-10"><Loader2 size={18} className="animate-spin text-sky-500"/></div>
             ) : proximasCitas.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 px-5 text-center">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: V.muted }}>
                   <Users size={22} style={{ color: V.tm }}/>
                 </div>
-                <p className="text-sm font-black" style={{ color: V.tm }}>Sin sesiones próximas</p>
+                <p className="text-sm font-bold" style={{ color: V.tm }}>Sin sesiones próximas</p>
                 <p className="text-xs mt-1" style={{ color: V.tm, opacity: 0.6 }}>Las citas las programa el centro</p>
               </div>
             ) : (
@@ -350,15 +350,15 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
                       className="w-full px-4 py-3 flex items-center gap-3 text-left transition-colors"
                       style={{ borderBottom: `1px solid ${V.border}` }}>
                       <div className="w-10 h-10 rounded-xl flex flex-col items-center justify-center flex-shrink-0"
-                        style={{ background: esHoyC ? '#2563eb' : V.muted, color: esHoyC ? '#fff' : V.ts }}>
+                        style={{ background: esHoyC ? '#0284c7' : V.muted, color: esHoyC ? '#fff' : V.ts }}>
                         <span className="text-[8px] font-bold leading-none uppercase">{MESES_S[fecha.getMonth()]}</span>
-                        <span className="text-sm font-black leading-tight">{fecha.getDate()}</span>
+                        <span className="text-sm font-bold leading-tight">{fecha.getDate()}</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black truncate" style={{ color: V.tp }}>{c.service_type || c.type || 'Terapia ABA'}</p>
+                        <p className="text-sm font-bold truncate" style={{ color: V.tp }}>{c.service_type || c.type || 'Terapia ABA'}</p>
                         <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: V.tm }}>
                           <Clock size={9}/> {fmt(c.appointment_time)}
-                          {esHoyC && <span className="font-black text-blue-500">· Hoy</span>}
+                          {esHoyC && <span className="font-bold text-sky-500">· Hoy</span>}
                         </p>
                       </div>
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`}/>
@@ -378,7 +378,7 @@ export default function MisCitasView({ profile, selectedChild, onCancelAppointme
                 <MessageSquare size={16} className="text-white"/>
               </div>
               <div>
-                <p className="font-black text-sm">Gestionar sesiones</p>
+                <p className="font-bold text-sm">Gestionar sesiones</p>
                 <p className="text-[11px] text-white/60">Cambios · Cancelaciones · Nuevas citas</p>
               </div>
             </div>

@@ -17,14 +17,14 @@ type Props = { child: any; profile: any }
 
 // Paleta para tarjetas de terapia (debe coincidir con CatalogoTerapiasView del admin)
 const TERAPIA_COLORES: Record<string, { gradient: string; accent: string; accentDark: string }> = {
-  indigo:   { gradient: 'from-indigo-500 to-blue-500',     accent: '#6366f1', accentDark: '#818cf8' },
-  purple:   { gradient: 'from-purple-500 to-fuchsia-500',  accent: '#a855f7', accentDark: '#c084fc' },
-  pink:     { gradient: 'from-pink-500 to-rose-500',       accent: '#ec4899', accentDark: '#f472b6' },
+  indigo:   { gradient: 'from-sky-500 to-cyan-500',     accent: '#0284c7', accentDark: '#38bdf8' },
+  purple:   { gradient: 'from-sky-500 to-fuchsia-500',  accent: '#0ea5e9', accentDark: '#c084fc' },
+  pink:     { gradient: 'from-rose-500 to-rose-500',       accent: '#ec4899', accentDark: '#f472b6' },
   rose:     { gradient: 'from-rose-500 to-red-500',        accent: '#f43f5e', accentDark: '#fb7185' },
   amber:    { gradient: 'from-amber-500 to-orange-500',    accent: '#f59e0b', accentDark: '#fbbf24' },
   emerald:  { gradient: 'from-emerald-500 to-teal-500',    accent: '#10b981', accentDark: '#34d399' },
   cyan:     { gradient: 'from-cyan-500 to-sky-500',        accent: '#06b6d4', accentDark: '#22d3ee' },
-  blue:     { gradient: 'from-blue-500 to-indigo-500',     accent: '#3b82f6', accentDark: '#60a5fa' },
+  blue:     { gradient: 'from-sky-500 to-cyan-500',     accent: '#0284c7', accentDark: '#60a5fa' },
   orange:   { gradient: 'from-orange-500 to-red-500',      accent: '#f97316', accentDark: '#fb923c' },
   slate:    { gradient: 'from-slate-600 to-slate-700',     accent: '#64748b', accentDark: '#94a3b8' },
 }
@@ -655,7 +655,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
     return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Selecciona un hijo/a.</div>
   }
   if (loading) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue-500" size={40} /></div>
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-sky-500" size={40} /></div>
   }
 
   const estado = evaluacion?.estado || 'pendiente_intake'
@@ -696,16 +696,16 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
   if (estado === 'analizando') {
     return (
       <div className="max-w-2xl mx-auto py-20 text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white mb-6 animate-pulse">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white mb-6 animate-pulse">
           <Brain size={48} />
         </div>
-        <h2 className="text-2xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
           Estamos revisando tu información…
         </h2>
         <p className="mb-8" style={{ color: 'var(--text-muted)' }}>
           Esto toma unos segundos. Si tarda más, vuelve en un momentito.
         </p>
-        <button onClick={cargar} className="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold flex items-center gap-2 mx-auto">
+        <button onClick={cargar} className="px-5 py-3 rounded-xl bg-sky-600 text-white font-bold flex items-center gap-2 mx-auto">
           <Loader2 className="animate-spin" size={18} /> Verificar de nuevo
         </button>
       </div>
@@ -721,7 +721,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
     const recTitulo = rec === 'psicologica' ? 'Evaluación Psicológica Emocional'
                     : rec === 'neuropsicologica' ? 'Evaluación Neuropsicológica'
                     : 'Evaluación Integral'
-    const recColor = rec === 'psicologica' ? 'from-pink-500 to-rose-500' : 'from-indigo-500 to-blue-500'
+    const recColor = rec === 'psicologica' ? 'from-rose-500 to-rose-500' : 'from-sky-500 to-cyan-500'
 
     return (
       <div className="max-w-2xl mx-auto pb-12">
@@ -739,13 +739,13 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
         </div>
 
         <div className="rounded-2xl p-5 mb-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-          <h3 className="font-black text-sm mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <h3 className="font-bold text-sm mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <Star size={16} className="text-amber-500" /> ¿Qué sigue si aceptas?
           </h3>
           <ol className="space-y-2.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <li className="flex gap-3"><span className="font-black text-indigo-600">1.</span> Completas una ficha un poco más detallada (5-7 minutos).</li>
-            <li className="flex gap-3"><span className="font-black text-indigo-600">2.</span> Te mostramos las terapias que podrían ayudar a {child.name}.</li>
-            <li className="flex gap-3"><span className="font-black text-indigo-600">3.</span> Eliges la que prefieras y nuestro equipo te contactará para coordinar.</li>
+            <li className="flex gap-3"><span className="font-bold text-sky-600">1.</span> Completas una ficha un poco más detallada (5-7 minutos).</li>
+            <li className="flex gap-3"><span className="font-bold text-sky-600">2.</span> Te mostramos las terapias que podrían ayudar a {child.name}.</li>
+            <li className="flex gap-3"><span className="font-bold text-sky-600">3.</span> Eliges la que prefieras y nuestro equipo te contactará para coordinar.</li>
           </ol>
         </div>
 
@@ -765,7 +765,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
               finally { setConfirmando(false) }
             }}
             disabled={confirmando}
-            className="flex-1 px-6 py-4 rounded-2xl font-black text-base bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-xl hover:scale-[1.01] transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-6 py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-xl hover:scale-[1.01] transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {confirmando ? <Loader2 className="animate-spin" size={20} /> : <ThumbsUp size={20} />}
             Estoy de acuerdo, continuar
@@ -782,7 +782,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
         {showRechazoModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur" onClick={() => setShowRechazoModal(false)}>
             <div className="max-w-md w-full rounded-2xl shadow-2xl p-6" style={{ background: 'var(--card)' }} onClick={e => e.stopPropagation()}>
-              <h3 className="font-black mb-2" style={{ color: 'var(--text-primary)' }}>Cuéntanos tus dudas</h3>
+              <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Cuéntanos tus dudas</h3>
               <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
                 Nuestro equipo te contactará por WhatsApp para conversar.
               </p>
@@ -938,8 +938,8 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
 
     return (
       <div className="max-w-4xl mx-auto pb-12">
-        <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }}>
-          <h1 className="text-2xl font-black mb-2">🎉 ¡Casi terminamos!</h1>
+        <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#0284c7,#ec4899)' }}>
+          <h1 className="text-2xl font-bold mb-2">🎉 ¡Casi terminamos!</h1>
           <p className="text-white/95">
             {recomendadas.length > 0
               ? <>Revisamos con cuidado lo que nos contaste sobre <strong>{nombreCorto}</strong>. Más abajo verás <strong>nuestra recomendación personalizada</strong> y, debajo, <strong>todo nuestro catálogo</strong> por si quieres explorar otras opciones. Marca la(s) que te interese conocer más.</>
@@ -950,7 +950,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
 
         {terapias.length === 0 || generandoRec ? (
           <div className="text-center py-16 rounded-2xl border" style={{ color: 'var(--text-muted)', background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-            <Loader2 className="animate-spin mx-auto mb-3 text-purple-500" size={32} />
+            <Loader2 className="animate-spin mx-auto mb-3 text-sky-500" size={32} />
             <p className="font-bold" style={{ color: 'var(--text-primary)' }}>
               {generandoRec ? `Estamos preparando la recomendación para ${nombreCorto}…` : 'Cargando terapias…'}
             </p>
@@ -962,7 +962,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
             {recomendadas.length > 0 && (
               <section className="mb-8">
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center text-white shadow-md">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-fuchsia-500 flex items-center justify-center text-white shadow-md">
                     <Sparkles size={18} />
                   </div>
                   <div>
@@ -1021,7 +1021,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
             onChange={e => setMensajeEspecialista(e.target.value)}
             rows={3}
             placeholder="Horarios preferidos, dudas, comentarios…"
-            className="w-full px-4 py-3 rounded-xl border outline-none focus:border-indigo-500 resize-none"
+            className="w-full px-4 py-3 rounded-xl border outline-none focus:border-sky-500 resize-none"
             style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
           />
         </div>
@@ -1046,7 +1046,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
             finally { setEnviandoSeleccion(false) }
           }}
           disabled={terapiasElegidas.length === 0 || enviandoSeleccion}
-          className="w-full px-6 py-4 rounded-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl disabled:opacity-40 flex items-center justify-center gap-2"
+          className="w-full px-6 py-4 rounded-2xl font-bold bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-xl disabled:opacity-40 flex items-center justify-center gap-2"
         >
           {enviandoSeleccion ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
           Enviar al especialista ({terapiasElegidas.length} terapia{terapiasElegidas.length === 1 ? '' : 's'})
@@ -1064,7 +1064,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white mb-5 animate-pulse">
             <Clock size={40} />
           </div>
-          <h2 className="text-2xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
             Tu solicitud está en revisión
           </h2>
           <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
@@ -1141,7 +1141,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
       <div className="max-w-xl mx-auto py-10 px-4">
         <div className="rounded-3xl p-7 text-center shadow-xl border-2 border-amber-300 bg-amber-50">
           <AlertCircle size={48} className="text-amber-500 mx-auto mb-4" />
-          <h2 className="text-xl font-black mb-3 text-amber-900">Recibimos tus dudas</h2>
+          <h2 className="text-xl font-bold mb-3 text-amber-900">Recibimos tus dudas</h2>
           <p className="text-amber-800 mb-5">
             Nuestro equipo se va a comunicar contigo para conversar sobre tu caso y resolver cualquier inquietud.
           </p>
@@ -1167,10 +1167,10 @@ function WizardIntake({ child, seccionIdx, setSeccionIdx, respuestas, setRespues
 
   return (
     <div className="max-w-3xl mx-auto pb-12">
-      <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)' }}>
+      <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#0284c7,#0ea5e9)' }}>
         <div className="flex items-center gap-3 mb-2">
           <ClipboardCheck size={28} />
-          <h1 className="text-2xl font-black">Ficha inicial para papás</h1>
+          <h1 className="text-2xl font-bold">Ficha inicial para papás</h1>
         </div>
         <p className="text-white/90 text-sm mb-2">
           Documento necesario para la entrevista inicial / primera consulta de <strong>{child.name}</strong>.
@@ -1214,8 +1214,8 @@ function WizardAnamnesis({ child, tipo, secciones, seccionIdx, setSeccionIdx, re
 
   return (
     <div className="max-w-3xl mx-auto pb-12">
-      <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: tipo === 'neuropsicologica' ? 'linear-gradient(135deg,#3b82f6,#6366f1)' : 'linear-gradient(135deg,#ec4899,#f43f5e)' }}>
-        <h1 className="text-2xl font-black mb-1">{titulo}</h1>
+      <div className="rounded-3xl p-6 mb-6 text-white shadow-xl" style={{ background: tipo === 'neuropsicologica' ? 'linear-gradient(135deg,#0284c7,#0284c7)' : 'linear-gradient(135deg,#ec4899,#f43f5e)' }}>
+        <h1 className="text-2xl font-bold mb-1">{titulo}</h1>
         <p className="text-white/90 text-sm">
           Algunas preguntas más para entender mejor a <strong>{child.name}</strong>.
         </p>
@@ -1254,7 +1254,7 @@ function BarraProgreso({ paso, total, progreso }: { paso: number; total: number;
         <span>{Math.round(progreso)}%</span>
       </div>
       <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
-        <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all" style={{ width: `${progreso}%` }} />
+        <div className="h-full bg-gradient-to-r from-sky-500 to-cyan-500 transition-all" style={{ width: `${progreso}%` }} />
       </div>
     </div>
   )
@@ -1271,7 +1271,7 @@ function NavWizard({ idx, total, onPrev, onNext, onSubmit, enviando, textoEnvian
       </button>
       {!last ? (
         <button onClick={onNext}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+          className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-lg">
           Siguiente <ChevronRight size={18} />
         </button>
       ) : (
@@ -1295,7 +1295,7 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
     <div className="rounded-2xl p-6 shadow-lg border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
       <div className="flex items-center gap-3 mb-1">
         <span className="text-3xl">{seccion.icono}</span>
-        <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{seccion.titulo}</h2>
+        <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{seccion.titulo}</h2>
       </div>
       {seccion.descripcion && <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>{seccion.descripcion}</p>}
 
@@ -1312,18 +1312,18 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                 value={respuestas[p.id] || ''}
                 placeholder={(p as any).placeholder}
                 onChange={e => setCampo(p.id, e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border outline-none focus:border-indigo-500"
+                className="w-full px-4 py-3 rounded-xl border outline-none focus:border-sky-500"
                 style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
               />
             )}
             {p.type === 'textarea' && (
               <textarea value={respuestas[p.id] || ''} placeholder={(p as any).placeholder} onChange={e => setCampo(p.id, e.target.value)} rows={3}
-                className="w-full px-4 py-3 rounded-xl border outline-none focus:border-indigo-500 resize-none"
+                className="w-full px-4 py-3 rounded-xl border outline-none focus:border-sky-500 resize-none"
                 style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
             )}
             {p.type === 'select' && (
               <select value={respuestas[p.id] || ''} onChange={e => setCampo(p.id, e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border outline-none focus:border-indigo-500"
+                className="w-full px-4 py-3 rounded-xl border outline-none focus:border-sky-500"
                 style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
                 <option value="">— Selecciona —</option>
                 {(p as any).options.map((o: string) => <option key={o} value={o}>{o}</option>)}
@@ -1334,7 +1334,7 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                 {(p as any).options.map((o: string) => (
                   <button key={o} type="button" onClick={() => setCampo(p.id, o)}
                     className={`px-4 py-3 rounded-xl text-sm font-semibold border-2 text-left transition-all ${
-                      respuestas[p.id] === o ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'hover:border-indigo-300'
+                      respuestas[p.id] === o ? 'border-sky-500 bg-sky-50 text-sky-700' : 'hover:border-sky-300'
                     }`}
                     style={respuestas[p.id] === o ? {} : { background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
                     {o}
@@ -1349,10 +1349,10 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                   return (
                     <button key={o} type="button" onClick={() => toggleCheck(p.id, o)}
                       className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold border-2 text-left transition-all ${
-                        checked ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'hover:border-indigo-300'
+                        checked ? 'border-sky-500 bg-sky-50 text-sky-700' : 'hover:border-sky-300'
                       }`}
                       style={checked ? {} : { background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${checked ? 'bg-indigo-600 border-indigo-600' : 'border-slate-400'}`}>
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${checked ? 'bg-sky-600 border-sky-600' : 'border-slate-400'}`}>
                         {checked && <CheckCircle2 size={12} className="text-white" />}
                       </div>
                       {o}
@@ -1398,7 +1398,7 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                             <label className="block text-[11px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{col.label}</label>
                             {col.options ? (
                               <select value={fila[col.id] || ''} onChange={e => setFila(idx, col.id, e.target.value)}
-                                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-indigo-500"
+                                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-sky-500"
                                 style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
                                 <option value="">—</option>
                                 {col.options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -1406,7 +1406,7 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                             ) : (
                               <input type={col.type || 'text'} value={fila[col.id] || ''} placeholder={col.placeholder}
                                 onChange={e => setFila(idx, col.id, e.target.value)}
-                                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-indigo-500"
+                                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-sky-500"
                                 style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
                             )}
                           </div>
@@ -1415,7 +1415,7 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                     </div>
                   ))}
                   <button type="button" onClick={addFila}
-                    className="w-full py-2.5 rounded-xl border-2 border-dashed text-sm font-bold flex items-center justify-center gap-2 hover:border-indigo-400 transition-colors"
+                    className="w-full py-2.5 rounded-xl border-2 border-dashed text-sm font-bold flex items-center justify-center gap-2 hover:border-sky-400 transition-colors"
                     style={{ borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}>
                     <span className="text-lg leading-none">+</span> {(p as any).addLabel || 'Agregar fila'}
                   </button>

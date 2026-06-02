@@ -184,23 +184,23 @@ function RobotAvatar({ size = 36, animated = false }: { size?: number; animated?
     <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"
       style={animated ? { animation: 'robotBob 2s ease-in-out infinite' } : {}}>
       {/* Antena */}
-      <line x1="40" y1="6" x2="40" y2="16" stroke="#6366f1" strokeWidth="3" strokeLinecap="round"/>
-      <circle cx="40" cy="4" r="4" fill="#818cf8"/>
+      <line x1="40" y1="6" x2="40" y2="16" stroke="#0284c7" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="40" cy="4" r="4" fill="#38bdf8"/>
       {/* Cabeza */}
       <rect x="16" y="16" width="48" height="36" rx="12" fill="url(#robotHead)"/>
       {/* Ojos */}
       <circle cx="29" cy="32" r="7" fill="white"/>
       <circle cx="51" cy="32" r="7" fill="white"/>
-      <circle cx="31" cy="32" r="3.5" fill="#4f46e5" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite' } : {}}/>
-      <circle cx="53" cy="32" r="3.5" fill="#4f46e5" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite .2s' } : {}}/>
+      <circle cx="31" cy="32" r="3.5" fill="#0369a1" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite' } : {}}/>
+      <circle cx="53" cy="32" r="3.5" fill="#0369a1" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite .2s' } : {}}/>
       <circle cx="32" cy="31" r="1.2" fill="white"/>
       <circle cx="54" cy="31" r="1.2" fill="white"/>
       {/* Boca */}
       <rect x="26" y="42" width="28" height="5" rx="2.5" fill="white" opacity=".6"/>
-      <rect x="29" y="43" width="6" height="3" rx="1.5" fill="#818cf8"/>
-      <rect x="37" y="43" width="6" height="3" rx="1.5" fill="#818cf8"/>
+      <rect x="29" y="43" width="6" height="3" rx="1.5" fill="#38bdf8"/>
+      <rect x="37" y="43" width="6" height="3" rx="1.5" fill="#38bdf8"/>
       {/* Cuello */}
-      <rect x="34" y="52" width="12" height="6" rx="3" fill="#6366f1"/>
+      <rect x="34" y="52" width="12" height="6" rx="3" fill="#0284c7"/>
       {/* Cuerpo */}
       <rect x="20" y="58" width="40" height="20" rx="8" fill="url(#robotBody)"/>
       {/* Pecho indicador */}
@@ -208,12 +208,12 @@ function RobotAvatar({ size = 36, animated = false }: { size?: number; animated?
       {/* Gradientes */}
       <defs>
         <linearGradient id="robotHead" x1="16" y1="16" x2="64" y2="52" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#6366f1"/>
-          <stop offset="1" stopColor="#4f46e5"/>
+          <stop stopColor="#0284c7"/>
+          <stop offset="1" stopColor="#0369a1"/>
         </linearGradient>
         <linearGradient id="robotBody" x1="20" y1="58" x2="60" y2="78" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#818cf8"/>
-          <stop offset="1" stopColor="#6366f1"/>
+          <stop stopColor="#38bdf8"/>
+          <stop offset="1" stopColor="#0284c7"/>
         </linearGradient>
         <radialGradient id="chestLight" cx="50%" cy="50%" r="50%">
           <stop stopColor="#a5f3fc"/>
@@ -237,17 +237,17 @@ function renderMarkdown(text: string) {
     if (!line.trim()) { elements.push(<div key={i} className="h-2"/>); i++; continue }
     // H3 ### 
     if (line.startsWith('### ')) {
-      elements.push(<p key={i} className="font-black text-sm mt-3 mb-1" style={{ color: "var(--c-text-primary)" }}>{parseInline(line.slice(4))}</p>); i++; continue
+      elements.push(<p key={i} className="font-bold text-sm mt-3 mb-1" style={{ color: "var(--c-text-primary)" }}>{parseInline(line.slice(4))}</p>); i++; continue
     }
     // Bold line **text** alone
     if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
-      elements.push(<p key={i} className="font-black text-sm mt-2 mb-0.5" style={{ color: "var(--c-text-primary)" }}>{line.slice(2, -2)}</p>); i++; continue
+      elements.push(<p key={i} className="font-bold text-sm mt-2 mb-0.5" style={{ color: "var(--c-text-primary)" }}>{line.slice(2, -2)}</p>); i++; continue
     }
     // Bullet
     if (line.startsWith('- ') || line.startsWith('• ')) {
       elements.push(
         <div key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: "var(--c-text-secondary)" }}>
-          <span className="text-indigo-400 font-black mt-0.5 flex-shrink-0">·</span>
+          <span className="text-sky-400 font-bold mt-0.5 flex-shrink-0">·</span>
           <span>{parseInline(line.slice(2))}</span>
         </div>
       ); i++; continue
@@ -257,7 +257,7 @@ function renderMarkdown(text: string) {
     if (numMatch) {
       elements.push(
         <div key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: "var(--c-text-secondary)" }}>
-          <span className="text-indigo-500 font-black text-xs mt-0.5 flex-shrink-0 w-4">{numMatch[1]}.</span>
+          <span className="text-sky-500 font-bold text-xs mt-0.5 flex-shrink-0 w-4">{numMatch[1]}.</span>
           <span>{parseInline(numMatch[2])}</span>
         </div>
       ); i++; continue
@@ -276,7 +276,7 @@ function parseInline(text: string): ReactNode {
   return (
     <>
       {parts.map((p, i) =>
-        i % 2 === 1 ? <strong key={i} className="font-black" style={{ color: "var(--c-text-primary)" }}>{p}</strong> : p
+        i % 2 === 1 ? <strong key={i} className="font-bold" style={{ color: "var(--c-text-primary)" }}>{p}</strong> : p
       )}
     </>
   )
@@ -291,7 +291,7 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
     return (
       <div className="flex justify-end mb-3">
         <div className="max-w-[78%] px-5 py-3.5 rounded-3xl rounded-br-lg text-sm font-medium leading-relaxed text-white shadow-lg"
-          style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', boxShadow: '0 4px 18px rgba(79,70,229,.35)' }}>
+          style={{ background: 'linear-gradient(135deg,#0369a1,#0284c7)', boxShadow: '0 4px 18px rgba(79,70,229,.35)' }}>
           {m.text}
         </div>
       </div>
@@ -308,7 +308,7 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
         <div className="max-w-[82%] rounded-3xl rounded-tl-lg overflow-hidden shadow-sm border border-pink-100"
           style={{ background: 'var(--c-surface)' }}>
           <div className="px-5 pt-4 pb-2">
-            <p className="text-xs font-black text-pink-500 uppercase tracking-widest mb-2">{t('ui.checkBienestar')}</p>
+            <p className="text-xs font-bold text-pink-500 mb-2">{t('ui.checkBienestar')}</p>
             <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--c-text-secondary)" }}>
               ¿Cómo te has sentido tú esta semana acompañando el proceso de tu hijo/a?
             </p>
@@ -331,7 +331,7 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
     <div className="flex gap-3 mb-4 items-start">
       {/* Avatar del robot */}
       <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow-md"
-        style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', padding: 4 }}>
+        style={{ background: 'linear-gradient(135deg,#0369a1,#0284c7)', padding: 4 }}>
         <RobotAvatar size={28} />
       </div>
 
@@ -339,7 +339,7 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
         {/* Burbuja principal */}
         <div className={`rounded-3xl rounded-tl-lg px-5 py-4 shadow-sm text-sm font-medium leading-relaxed
           ${m.type === 'emotional'
-            ? 'border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 text-slate-700 dark:text-slate-200'
+            ? 'border-2 border-sky-200 dark:border-sky-700 bg-gradient-to-br from-sky-50 to-cyan-50 dark:from-sky-900/30 dark:to-sky-900/30 text-slate-700 dark:text-slate-200'
             : 'text-slate-700 dark:text-slate-100'
           }`}
           style={{
@@ -348,9 +348,9 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
             boxShadow: '0 2px 16px rgba(0,0,0,.06)'
           }}>
           {m.type === 'emotional' && (
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-blue-100 dark:border-blue-800/50">
-              <Heart size={13} className="text-blue-500 dark:text-blue-400 fill-blue-500" />
-              <span className="text-xs font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest">{t('ui.from_therapist')}</span>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-sky-100 dark:border-sky-800/50">
+              <Heart size={13} className="text-sky-500 dark:text-sky-400 fill-sky-500" />
+              <span className="text-xs font-bold text-sky-500 dark:text-sky-400">{t('ui.from_therapist')}</span>
             </div>
           )}
           {renderMarkdown(m.text)}
@@ -363,7 +363,7 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
             <div className="flex items-center gap-2 px-4 py-2.5"
               style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
               <ShoppingBag size={14} className="text-white" />
-              <span className="text-xs font-black text-white uppercase tracking-wider">{t('ui.disponibleTienda')}</span>
+              <span className="text-xs font-bold text-white">{t('ui.disponibleTienda')}</span>
             </div>
             <div className="flex gap-3 p-4 items-center">
               <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-amber-100 flex items-center justify-center text-3xl border border-amber-200">
@@ -373,16 +373,16 @@ function MessageBubble({ m, onNavigateToStore, onWellbeingAnswer }: { m: any; on
                 }
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-black text-amber-900 text-sm leading-tight mb-1">{m.producto.nombre}</p>
+                <p className="font-bold text-amber-900 text-sm leading-tight mb-1">{m.producto.nombre}</p>
                 {(m.producto.razon || m.producto.descripcion) && (
                   <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed mb-2 line-clamp-2">
                     💡 {m.producto.razon || m.producto.descripcion}
                   </p>
                 )}
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-black text-amber-600 dark:text-amber-400">S/ {Number(m.producto.precio_soles).toFixed(2)}</span>
+                  <span className="text-lg font-bold text-amber-600 dark:text-amber-400">S/ {Number(m.producto.precio_soles).toFixed(2)}</span>
                   <button onClick={onNavigateToStore}
-                    className="px-3.5 py-1.5 text-xs font-black text-white rounded-xl transition-all hover:scale-105 active:scale-95"
+                    className="px-3.5 py-1.5 text-xs font-bold text-white rounded-xl transition-all hover:scale-105 active:scale-95"
                     style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 3px 10px rgba(217,119,6,.35)' }}>
                     Ver en tienda →
                   </button>
@@ -402,12 +402,12 @@ function TypingIndicator() {
   return (
     <div className="flex gap-3 mb-4 items-center">
       <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center shadow-md"
-        style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', padding: 4 }}>
+        style={{ background: 'linear-gradient(135deg,#0369a1,#0284c7)', padding: 4 }}>
         <RobotAvatar size={28} animated />
       </div>
       <div className="rounded-3xl rounded-tl-lg px-5 py-3.5 shadow-sm flex items-center gap-1.5" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)" }}>
         {[0, .2, .4].map(d => (
-          <div key={d} className="w-2 h-2 rounded-full bg-indigo-400 dark:bg-indigo-500"
+          <div key={d} className="w-2 h-2 rounded-full bg-sky-400 dark:bg-sky-500"
             style={{ animation: `typingDot 1.2s ease-in-out infinite`, animationDelay: `${d}s` }} />
         ))}
         <span className="text-xs font-medium ml-2" style={{ color: "var(--c-text-muted)" }}>{t('common.analizando')}</span>
@@ -421,7 +421,7 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
   const { t } = useI18n()
 
   const quick = [
-    { icon: '📋', text: '¿Cómo le fue en la última sesión?', accent: '#6366f1' },
+    { icon: '📋', text: '¿Cómo le fue en la última sesión?', accent: '#0284c7' },
     { icon: '🏠', text: 'Dame consejos para casa',             accent: '#10b981' },
     { icon: '🎯', text: '¿Qué objetivos está trabajando?',    accent: '#f59e0b' },
     { icon: '💙', text: 'Necesito apoyo emocional',           accent: '#ec4899' },
@@ -430,12 +430,12 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
     <div className="flex flex-col items-center justify-center px-5 py-8 text-center" style={{ animation: 'fadeUp .4s ease', flex: 1 }}>
       {/* Avatar compacto */}
       <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
-        style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)', padding: 8 }}>
+        style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1)', padding: 8 }}>
         <RobotAvatar size={36} />
       </div>
 
-      <h3 className="text-xl font-black mb-1" style={{ color: "var(--c-text-primary)" }}>
-        Hola, soy <span className="text-indigo-600">ARIA</span>
+      <h3 className="text-xl font-bold mb-1" style={{ color: "var(--c-text-primary)" }}>
+        Hola, soy <span className="text-sky-600">ARIA</span>
       </h3>
       <p className="text-sm mb-1" style={{ color: "var(--c-text-muted)" }}>Asistente clínico de Neuropsicología y Terapias SANTI</p>
       <p className="text-xs mb-6 leading-relaxed max-w-[280px]" style={{ color: "var(--c-text-muted)" }}>
@@ -445,7 +445,7 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
 
       {/* Quick actions — cleaner */}
       <div className="flex flex-col gap-2 w-full max-w-[320px]">
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--c-text-muted)" }}>¿Por dónde empezamos?</p>
+        <p className="text-[10px] font-bold mb-1" style={{ color: "var(--c-text-muted)" }}>¿Por dónde empezamos?</p>
         {(quick as any[]).map(({ icon, text, accent }: any) => (
           <button key={text} onClick={() => onQuickSend(text)}
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all active:scale-[.98] relative overflow-hidden"
@@ -672,18 +672,18 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
         {/* ── Header — clean, professional ── */}
         <div className="shrink-0 px-4 py-3 flex items-center gap-3 border-b" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)', padding: 5 }}>
+            style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1)', padding: 5 }}>
             <RobotAvatar size={24} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="font-black text-sm" style={{ color: "var(--c-text-primary)" }}>ARIA</p>
+              <p className="font-bold text-sm" style={{ color: "var(--c-text-primary)" }}>ARIA</p>
               <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 px-1.5 py-0.5 rounded-full">
                 <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
                 En línea
               </span>
               {speaking && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded-full">
+                <span className="flex items-center gap-1 text-[10px] font-bold text-sky-500 bg-sky-50 dark:bg-sky-900/20 px-1.5 py-0.5 rounded-full">
                   <Volume2 size={9} /> Hablando...
                 </span>
               )}
@@ -693,7 +693,7 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
             </p>
           </div>
           <button onClick={toggleVoice} title={voiceEnabled ? 'Silenciar' : 'Activar voz'}
-            className="p-2 rounded-xl transition-all" style={{ background: "var(--muted-bg)", color: voiceEnabled ? '#6366f1' : 'var(--c-text-muted)' }}>
+            className="p-2 rounded-xl transition-all" style={{ background: "var(--muted-bg)", color: voiceEnabled ? '#0284c7' : 'var(--c-text-muted)' }}>
             {voiceEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
           </button>
           <button onClick={handleReset} title="Nueva conversación"
@@ -711,7 +711,7 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
               <Mic size={14} className="text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-black text-red-700 dark:text-red-300">Escuchando...</p>
+              <p className="text-sm font-bold text-red-700 dark:text-red-300">Escuchando...</p>
               <p className="text-xs text-red-500 font-medium">{t('aria.hablaAhora')}</p>
             </div>
             <button onClick={stopListening}
@@ -778,7 +778,7 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
                 onFocus={e => {
                   if (!listening) {
                     e.target.style.background = 'var(--c-card)'
-                    e.target.style.borderColor = '#6366f1'
+                    e.target.style.borderColor = '#0284c7'
                     e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,.08)'
                   }
                 }}
@@ -822,7 +822,7 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
                 title={t('aria.detenerVoz')}
                 className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
                 style={{
-                  background: 'linear-gradient(135deg,#6366f1,#7c3aed)',
+                  background: 'linear-gradient(135deg,#0284c7,#0284c7)',
                   boxShadow: '0 4px 18px rgba(99,102,241,.45)',
                   animation: 'speakerPulse 1.5s ease-in-out infinite',
                 }}>
@@ -833,7 +833,7 @@ function ChatInterface({ childId, childName, onNavigateToStore, parentId }: any)
                 onClick={() => send()}
                 disabled={typing || !input.trim() || listening}
                 className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-40 hover:scale-105 active:scale-95"
-                style={{ background: 'linear-gradient(135deg,#6366f1,#7c3aed)', boxShadow: '0 4px 18px rgba(99,102,241,.45)' }}>
+                style={{ background: 'linear-gradient(135deg,#0284c7,#0284c7)', boxShadow: '0 4px 18px rgba(99,102,241,.45)' }}>
                 <Send size={18} className="text-white" style={{ transform: 'translateX(1px)' }} />
               </button>
             )}

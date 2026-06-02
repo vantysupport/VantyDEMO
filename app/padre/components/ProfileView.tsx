@@ -83,7 +83,7 @@ function MenuItem({ icon, label, sub, onClick, danger=false, badge='' }: any) {
         {sub&&<p style={{ fontSize:12,color:'var(--c-text-muted)',margin:'2px 0 0' }}>{sub}</p>}
       </div>
       <div style={{ display:'flex',alignItems:'center',gap:6 }}>
-        {badge&&<span style={{ background:'#7c3aed',color:'#fff',fontSize:10,fontWeight:800,padding:'2px 8px',borderRadius:20 }}>{badge}</span>}
+        {badge&&<span style={{ background:'#0284c7',color:'#fff',fontSize:10,fontWeight:800,padding:'2px 8px',borderRadius:20 }}>{badge}</span>}
         {!danger&&<ChevronRight size={16} color="var(--c-text-muted)"/>}
       </div>
     </button>
@@ -145,7 +145,7 @@ function WhatsAppSection({ profile, onUpdated }: { profile: any; onUpdated: (p: 
               <p style={{ fontSize:12,color:'#16a34a',margin:'2px 0 0',fontWeight:600 }}>{profile?.phone}</p>
             </div>
             <div style={{ display:'flex',gap:6 }}>
-              <button onClick={() => setEditing(true)} style={{ fontSize:11,fontWeight:700,color:'#6d28d9',background:'var(--c-stat-purple)',border:'1px solid var(--c-border)',borderRadius:10,padding:'6px 10px',cursor:'pointer' }}>Cambiar</button>
+              <button onClick={() => setEditing(true)} style={{ fontSize:11,fontWeight:700,color:'#0369a1',background:'var(--c-stat-purple)',border:'1px solid var(--c-border)',borderRadius:10,padding:'6px 10px',cursor:'pointer' }}>Cambiar</button>
               <button onClick={handleRemove} disabled={saving} style={{ fontSize:11,fontWeight:700,color:'#dc2626',background:'rgba(239,68,68,0.10)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:10,padding:'6px 10px',cursor:'pointer' }}>Quitar</button>
             </div>
           </div>
@@ -232,7 +232,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
 
       {/* ── HERO CARD ── */}
       <div className="pv-card relative rounded-3xl overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#4f46e5 100%)', minHeight: 180 }}>
+        style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#0369a1 100%)', minHeight: 180 }}>
         {/* Decorative circles */}
         <div style={{ position:'absolute',top:-40,right:-40,width:200,height:200,background:'rgba(255,255,255,.07)',borderRadius:'50%',pointerEvents:'none' }}/>
         <div style={{ position:'absolute',bottom:-30,left:20,width:120,height:120,background:'rgba(99,102,241,.25)',borderRadius:'50%',pointerEvents:'none' }}/>
@@ -244,7 +244,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Foto" className="w-20 h-20 rounded-2xl object-cover shadow-xl" style={{ border:'3px solid rgba(255,255,255,.3)' }}/>
               ) : (
-                <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-xl" style={{ background:'rgba(255,255,255,.2)', border:'3px solid rgba(255,255,255,.3)', backdropFilter:'blur(8px)' }}>
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl" style={{ background:'rgba(255,255,255,.2)', border:'3px solid rgba(255,255,255,.3)', backdropFilter:'blur(8px)' }}>
                   {initial}
                 </div>
               )}
@@ -261,7 +261,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
               {/* Camera badge */}
               {!uploadingPhoto && (
                 <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-white dark:bg-[#0d1117] rounded-full flex items-center justify-center shadow-lg">
-                  <Camera size={13} className="text-indigo-600"/>
+                  <Camera size={13} className="text-sky-600"/>
                 </div>
               )}
             </div>
@@ -270,7 +270,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
 
           {/* Info */}
           <div className="flex-1 min-w-0 pb-1">
-            <h2 className="font-black text-xl text-white leading-tight tracking-tight">{name}</h2>
+            <h2 className="font-bold text-xl text-white leading-tight tracking-tight">{name}</h2>
             <p className="text-sm mt-1 flex items-center gap-1.5" style={{ color:'rgba(255,255,255,.65)' }}>
               <Mail size={12}/>{email}
             </p>
@@ -279,7 +279,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
                 <Phone size={12}/>{phone}
               </p>
             )}
-            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest" style={{ color:'rgba(255,255,255,.4)' }}>
+            <p className="text-[10px] mt-2 font-bold" style={{ color:'rgba(255,255,255,.4)' }}>
               Portal Familias · Neuropsicología y Terapias SANTI
             </p>
           </div>
@@ -297,20 +297,20 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
       {/* ── MI CUENTA ── */}
       <div className="pv-card bg-white dark:bg-[#0d1117] rounded-2xl border border-slate-100 dark:border-[#21262d] shadow-sm overflow-hidden">
         <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--c-border)" }}>
-          <div className="w-1 h-4 bg-indigo-500 rounded-full"/>
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--c-text-muted)" }}>Mi cuenta</p>
+          <div className="w-1 h-4 bg-sky-500 rounded-full"/>
+          <p className="text-[10px] font-bold" style={{ color: "var(--c-text-muted)" }}>Mi cuenta</p>
         </div>
-        <MenuItem icon={<User size={17} color="#7c3aed"/>} label="Editar perfil" sub="Nombre y teléfono" onClick={onEditProfile}/>
-        <MenuItem icon={<Lock size={17} color="#3b82f6"/>} label="Cambiar contraseña" sub="Actualizar acceso" onClick={onChangePass}/>
-        <MenuItem icon={<Shield size={17} color="#8b5cf6"/>} label="Privacidad y seguridad" sub="Gestión de datos" onClick={onPrivacy}/>
+        <MenuItem icon={<User size={17} color="#0284c7"/>} label="Editar perfil" sub="Nombre y teléfono" onClick={onEditProfile}/>
+        <MenuItem icon={<Lock size={17} color="#0284c7"/>} label="Cambiar contraseña" sub="Actualizar acceso" onClick={onChangePass}/>
+        <MenuItem icon={<Shield size={17} color="#0ea5e9"/>} label="Privacidad y seguridad" sub="Gestión de datos" onClick={onPrivacy}/>
         <MenuItem icon={<HelpCircle size={17} color="#10b981"/>} label="Centro de ayuda" sub="Guías y soporte" onClick={onHelp}/>
       </div>
 
       {/* ── CALENDARIOS ── */}
       <div className="pv-card bg-white dark:bg-[#0d1117] rounded-2xl border border-slate-100 dark:border-[#21262d] shadow-sm overflow-hidden">
         <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--c-border)" }}>
-          <div className="w-1 h-4 bg-blue-500 rounded-full"/>
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--c-text-muted)" }}>Calendarios vinculados</p>
+          <div className="w-1 h-4 bg-sky-500 rounded-full"/>
+          <p className="text-[10px] font-bold" style={{ color: "var(--c-text-muted)" }}>Calendarios vinculados</p>
         </div>
         <CalBtn label="Google Calendar" icon="📅" grad="linear-gradient(135deg,#4285f4,#1a73e8)" profile={profile} apiBase="google-calendar" paramKey="gcal"/>
         <CalBtn label="Outlook Calendar" icon={<svg width="16" height="16" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>} grad="linear-gradient(135deg,#0078d4,#106ebe)" profile={profile} apiBase="microsoft-calendar" paramKey="mscal"/>

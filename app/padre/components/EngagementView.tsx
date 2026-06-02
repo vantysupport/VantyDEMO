@@ -22,9 +22,9 @@ interface Plan {
 }
 
 const AREA_CFG: Record<string,{bg:string;text:string;border:string;emoji:string;grad:string}> = {
-  comunicacion: { bg:'var(--c-stat-blue)',   text:'#3b82f6', border:'var(--c-border)', emoji:'💬', grad:'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  comunicacion: { bg:'var(--c-stat-blue)',   text:'#0284c7', border:'var(--c-border)', emoji:'💬', grad:'linear-gradient(135deg,#0284c7,#0369a1)' },
   conducta:     { bg:'rgba(249,115,22,0.1)', text:'#f97316', border:'var(--c-border)', emoji:'⚡', grad:'linear-gradient(135deg,#f97316,#c2410c)' },
-  habilidades:  { bg:'var(--c-stat-purple)', text:'#8b5cf6', border:'var(--c-border)', emoji:'🧠', grad:'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
+  habilidades:  { bg:'var(--c-stat-purple)', text:'#0ea5e9', border:'var(--c-border)', emoji:'🧠', grad:'linear-gradient(135deg,#0ea5e9,#0369a1)' },
   socializacion:{ bg:'var(--c-stat-green)',  text:'#10b981', border:'var(--c-border)', emoji:'👥', grad:'linear-gradient(135deg,#22c55e,#15803d)' },
   autonomia:    { bg:'var(--c-stat-amber)',   text:'#f59e0b', border:'var(--c-border)', emoji:'⭐', grad:'linear-gradient(135deg,#eab308,#b45309)' },
 }
@@ -240,7 +240,7 @@ export default function EngagementView({ childId }: { childId: string }) {
       `}</style>
 
       {/* HERO */}
-      <div className="eng-card" style={{ background:'linear-gradient(135deg,#be185d,#9333ea,#7c3aed)',borderRadius:24,padding:'22px 22px 18px',color:'#ffffff',boxShadow:'0 16px 50px rgba(147,51,234,.3)',position:'relative',overflow:'hidden' }}>
+      <div className="eng-card" style={{ background:'linear-gradient(135deg,#be185d,#9333ea,#0284c7)',borderRadius:24,padding:'22px 22px 18px',color:'#ffffff',boxShadow:'0 16px 50px rgba(147,51,234,.3)',position:'relative',overflow:'hidden' }}>
         <div style={{ position:'absolute',top:-20,right:-20,width:130,height:130,background:'rgba(255,255,255,.07)',borderRadius:'50%' }}/>
         <div style={{ position:'relative',zIndex:1 }}>
           <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
@@ -284,7 +284,7 @@ export default function EngagementView({ childId }: { childId: string }) {
           </div>
           <p style={{ fontWeight:800,fontSize:16,color:'var(--c-text-primary)',margin:'0 0 8px' }}>Sin plan esta semana</p>
           <p style={{ fontSize:13,color:'var(--c-text-placeholder)',lineHeight:1.6,maxWidth:280,margin:'0 auto 24px' }}>La IA generará actividades personalizadas basadas en el progreso terapéutico.</p>
-          <button onClick={generar} disabled={generando} style={{ display:'inline-flex',alignItems:'center',gap:8,background:'linear-gradient(135deg,#be185d,#7c3aed)',color:'#ffffff',border:'none',padding:'13px 24px',borderRadius:16,fontSize:14,fontWeight:700,cursor:generando?'not-allowed':'pointer',boxShadow:'0 6px 20px rgba(147,51,234,.3)',fontFamily:'inherit' }}>
+          <button onClick={generar} disabled={generando} style={{ display:'inline-flex',alignItems:'center',gap:8,background:'linear-gradient(135deg,#be185d,#0284c7)',color:'#ffffff',border:'none',padding:'13px 24px',borderRadius:16,fontSize:14,fontWeight:700,cursor:generando?'not-allowed':'pointer',boxShadow:'0 6px 20px rgba(147,51,234,.3)',fontFamily:'inherit' }}>
             <Sparkles size={16}/>{generando ? 'Generando...' : 'Generar actividades con IA'}
           </button>
         </div>
@@ -292,7 +292,7 @@ export default function EngagementView({ childId }: { childId: string }) {
         <>
           {/* Mensaje motivacional */}
           <div className="eng-card" style={{ background:'var(--c-surface)',border:'1.5px solid var(--c-border)',borderRadius:16,padding:'12px 16px',display:'flex',alignItems:'flex-start',gap:10 }}>
-            <Sparkles size={16} color="#7c3aed" style={{ flexShrink:0,marginTop:2 }}/>
+            <Sparkles size={16} color="#0284c7" style={{ flexShrink:0,marginTop:2 }}/>
             <p style={{ fontSize:13,color:'var(--c-text-primary)',fontWeight:600,lineHeight:1.6,margin:0 }}>{plan.mensaje_motivacional}</p>
           </div>
 
@@ -391,7 +391,7 @@ export default function EngagementView({ childId }: { childId: string }) {
                           </p>
                           <div style={{ display:'flex',gap:5,flexWrap:'wrap' }}>
                             {act.dias_recomendados.map((d: string, j: number) => (
-                              <span key={j} style={{ fontSize:11,fontWeight:700,background:'var(--c-stat-blue)',color:'#2563eb',padding:'4px 10px',borderRadius:20,border:'1px solid var(--c-border)',textTransform:'capitalize' }}>{d}</span>
+                              <span key={j} style={{ fontSize:11,fontWeight:700,background:'var(--c-stat-blue)',color:'#0284c7',padding:'4px 10px',borderRadius:20,border:'1px solid var(--c-border)',textTransform:'capitalize' }}>{d}</span>
                             ))}
                           </div>
                         </div>
@@ -399,7 +399,7 @@ export default function EngagementView({ childId }: { childId: string }) {
 
                       {/* Botón de acción principal en panel expandido */}
                       <button onClick={e => { e.stopPropagation(); toggle(i) }}
-                        style={{ width:'100%',padding:'11px',background:done?'var(--c-surface)':'linear-gradient(135deg,#be185d,#7c3aed)',color:done?'var(--c-text-muted)':'var(--c-card)',border:done?'1.5px solid var(--c-border)':'none',borderRadius:14,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:'inherit',transition:'all .2s' }}>
+                        style={{ width:'100%',padding:'11px',background:done?'var(--c-surface)':'linear-gradient(135deg,#be185d,#0284c7)',color:done?'var(--c-text-muted)':'var(--c-card)',border:done?'1.5px solid var(--c-border)':'none',borderRadius:14,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:'inherit',transition:'all .2s' }}>
                         {done
                           ? <><Circle size={15}/>Marcar como pendiente</>
                           : <><CheckCircle size={15}/>Marcar como completada</>
@@ -427,16 +427,16 @@ export default function EngagementView({ childId }: { childId: string }) {
           {historial.length > 1 && (
             <div className="eng-card" style={{ background:'var(--c-card)',borderRadius:20,border:'1.5px solid var(--c-border-light)',padding:'16px 18px',boxShadow:'0 4px 20px rgba(0,0,0,.04)' }}>
               <p style={{ fontSize:11,fontWeight:800,color:'var(--c-text-muted)',margin:'0 0 14px',display:'flex',alignItems:'center',gap:6,textTransform:'uppercase',letterSpacing:.5 }}>
-                <TrendingUp size={13} color="#7c3aed"/>Historial de semanas
+                <TrendingUp size={13} color="#0284c7"/>Historial de semanas
               </p>
               <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
                 {historial.slice(0, 5).map((h: any, i: number) => (
                   <div key={i} style={{ display:'flex',alignItems:'center',gap:12 }}>
                     <span style={{ fontSize:11,color:'var(--c-text-placeholder)',width:72,flexShrink:0,fontWeight:600 }}>Sem. {h.semana}</span>
                     <div style={{ flex:1,height:8,background:'var(--c-border-light)',borderRadius:20,overflow:'hidden' }}>
-                      <div style={{ height:'100%',width:`${h.completadas_pct||0}%`,background:'linear-gradient(90deg,#be185d,#7c3aed)',borderRadius:20,transition:'width .8s ease' }}/>
+                      <div style={{ height:'100%',width:`${h.completadas_pct||0}%`,background:'linear-gradient(90deg,#be185d,#0284c7)',borderRadius:20,transition:'width .8s ease' }}/>
                     </div>
-                    <span style={{ fontSize:12,fontWeight:800,color:h.completadas_pct===100?'#16a34a':'#7c3aed',width:38,textAlign:'right' }}>{h.completadas_pct||0}%</span>
+                    <span style={{ fontSize:12,fontWeight:800,color:h.completadas_pct===100?'#16a34a':'#0284c7',width:38,textAlign:'right' }}>{h.completadas_pct||0}%</span>
                   </div>
                 ))}
               </div>

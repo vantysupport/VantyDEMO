@@ -14,7 +14,7 @@ const ST: Record<string,{label:string;dot:string;bg:string;text:string;border:st
   confirmed: { label:'Confirmada', dot:'#10b981', bg:'var(--c-stat-green)', text:'#15803d', border:'#bbf7d0', Icon:CheckCircle2 },
   pending:   { label:'Pendiente',  dot:'#f59e0b', bg:'var(--c-stat-amber)', text:'#b45309', border:'#fde68a', Icon:AlertCircle },
   cancelled: { label:'Cancelada',  dot:'#ef4444', bg:'#fef2f2', text:'#dc2626', border:'#fecaca', Icon:XCircle },
-  completed: { label:'Completada', dot:'#6366f1', bg:'var(--c-stat-purple)', text:'#4338ca', border:'#ddd6fe', Icon:CheckCircle2 },
+  completed: { label:'Completada', dot:'#0284c7', bg:'var(--c-stat-purple)', text:'#4338ca', border:'#ddd6fe', Icon:CheckCircle2 },
 }
 const MONTHS_S = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
@@ -79,7 +79,7 @@ export default function AgendaView({ selectedChild, onChangeView }: { selectedCh
 `}</style>
 
       {/* Hero */}
-      <div className="av-card" style={{ background:'linear-gradient(135deg,#4f46e5,#7c3aed,#8b5cf6)',borderRadius:28,padding:'22px 24px',color:'#ffffff',boxShadow:'0 16px 50px rgba(79,70,229,.3)',position:'relative',overflow:'hidden' }}>
+      <div className="av-card" style={{ background:'linear-gradient(135deg,#0369a1,#0284c7,#0ea5e9)',borderRadius:28,padding:'22px 24px',color:'#ffffff',boxShadow:'0 16px 50px rgba(79,70,229,.3)',position:'relative',overflow:'hidden' }}>
         <div style={{ position:'absolute',top:-20,right:-20,width:120,height:120,background:'rgba(255,255,255,.08)',borderRadius:'50%' }}/>
         <div style={{ position:'relative',zIndex:1 }}>
           <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:4 }}>
@@ -115,7 +115,7 @@ export default function AgendaView({ selectedChild, onChangeView }: { selectedCh
           <p style={{ fontWeight:700,fontSize:14,color:'var(--c-text-placeholder)',margin:0 }}>Seleccioná un niño/a para ver sus citas</p>
         </div>
       ) : loading ? (
-        <div style={{ display:'flex',justifyContent:'center',padding:'40px 0' }}><div style={{ width:32,height:32,borderRadius:'50%',border:'3px solid #e2e8f0',borderTop:'3px solid #7c3aed',animation:'spin 1s linear infinite' }}/></div>
+        <div style={{ display:'flex',justifyContent:'center',padding:'40px 0' }}><div style={{ width:32,height:32,borderRadius:'50%',border:'3px solid #e2e8f0',borderTop:'3px solid #0284c7',animation:'spin 1s linear infinite' }}/></div>
       ) : (
         <>
           {/* Próximas */}
@@ -134,7 +134,7 @@ export default function AgendaView({ selectedChild, onChangeView }: { selectedCh
                   const fecha=new Date(cita.appointment_date+'T12:00:00')
                   return (
                     <div key={cita.id} style={{ background:'var(--c-card)',borderRadius:20,border:`1.5px solid ${s.border}`,padding:'14px 16px',display:'flex',alignItems:'center',gap:14,boxShadow:'0 2px 12px rgba(0,0,0,.04)' }}>
-                      <div style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)',color:'#ffffff',borderRadius:14,padding:'10px 12px',textAlign:'center',flexShrink:0,boxShadow:'0 4px 12px rgba(124,58,237,.25)'  }}>
+                      <div style={{ background:'linear-gradient(135deg,#0284c7,#0369a1)',color:'#ffffff',borderRadius:14,padding:'10px 12px',textAlign:'center',flexShrink:0,boxShadow:'0 4px 12px rgba(2,132,199,.25)'  }}>
                         <div style={{ fontSize:10,fontWeight:700,opacity:.8,textTransform:'uppercase' }}>{MONTHS_S[fecha.getMonth()]}</div>
                         <div style={{ fontSize:22,fontWeight:900,lineHeight:1.1 }}>{fecha.getDate()}</div>
                         <div style={{ fontSize:9,opacity:.7 }}>{DAYS[fecha.getDay()]}</div>

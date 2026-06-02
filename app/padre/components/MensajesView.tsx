@@ -18,12 +18,12 @@ interface Notification {
 
 // ── Source type config ──────────────────────────────────────────────────────
 const TYPE_CFG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string; border: string }> = {
-  session_report: { label: 'Reporte de sesión',    icon: <FileText size={14}/>,     color: '#8b5cf6', bg: 'var(--c-stat-purple)', border: 'var(--c-border)' },
+  session_report: { label: 'Reporte de sesión',    icon: <FileText size={14}/>,     color: '#0ea5e9', bg: 'var(--c-stat-purple)', border: 'var(--c-border)' },
   evaluacion:     { label: 'Evaluación clínica',   icon: <ClipboardList size={14}/>, color: '#0891b2', bg: 'var(--c-stat-blue)',   border: 'var(--c-border)' },
-  parent_form:    { label: 'Formulario',            icon: <CheckCircle2 size={14}/>,  color: '#2563eb', bg: 'var(--c-stat-blue)',   border: 'var(--c-border)' },
-  neuroforma:     { label: 'NeuroForma',            icon: <Brain size={14}/>,         color: '#6366f1', bg: 'var(--c-stat-purple)', border: 'var(--c-border)' },
+  parent_form:    { label: 'Formulario',            icon: <CheckCircle2 size={14}/>,  color: '#0284c7', bg: 'var(--c-stat-blue)',   border: 'var(--c-border)' },
+  neuroforma:     { label: 'NeuroForma',            icon: <Brain size={14}/>,         color: '#0284c7', bg: 'var(--c-stat-purple)', border: 'var(--c-border)' },
   entorno_hogar:  { label: 'Entorno del hogar',     icon: <Home size={14}/>,          color: '#059669', bg: 'var(--c-stat-green)',  border: 'var(--c-border)' },
-  parent_message: { label: 'Mensaje del terapeuta', icon: <MessageCircle size={14}/>, color: '#8b5cf6', bg: 'var(--c-stat-purple)', border: 'var(--c-border)' },
+  parent_message: { label: 'Mensaje del terapeuta', icon: <MessageCircle size={14}/>, color: '#0ea5e9', bg: 'var(--c-stat-purple)', border: 'var(--c-border)' },
   video_call:     { label: 'Videollamada',          icon: <Video size={14}/>,         color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  border: 'var(--c-border)' },
 }
 const DEFAULT_TYPE = TYPE_CFG.parent_message
@@ -37,7 +37,7 @@ function AnalysisCard({ analysis }: { analysis: any }) {
     <div className="flex flex-col gap-3 mt-4">
       {resumen_ejecutivo && (
         <div className="rounded-2xl p-4" style={{ background: "var(--c-stat-blue)", border: "1px solid var(--c-border)" }}>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 text-blue-500">
+          <p className="text-[10px] font-bold mb-2 flex items-center gap-1.5 text-sky-500">
             <Info size={11}/> Resumen clínico
           </p>
           <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed">{resumen_ejecutivo}</p>
@@ -46,13 +46,13 @@ function AnalysisCard({ analysis }: { analysis: any }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {areas_fortaleza?.length > 0 && (
           <div className="rounded-2xl p-4" style={{ background: "var(--c-stat-green)", border: "1px solid var(--c-border)" }}>
-            <p className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 text-emerald-500">
+            <p className="text-[10px] font-bold mb-2 flex items-center gap-1.5 text-emerald-500">
               <Star size={11}/> Fortalezas
             </p>
             <div className="flex flex-col gap-1.5">
               {areas_fortaleza.slice(0, 4).map((f: string, i: number) => (
                 <div key={i} className="rounded-xl px-3 py-2 text-sm flex items-start gap-2" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)", color: "var(--c-text-secondary)" }}>
-                  <span className="text-emerald-500 font-black shrink-0 mt-0.5">✓</span>{f}
+                  <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>{f}
                 </div>
               ))}
             </div>
@@ -60,13 +60,13 @@ function AnalysisCard({ analysis }: { analysis: any }) {
         )}
         {areas_trabajo?.length > 0 && (
           <div className="bg-orange-50 rounded-2xl border border-orange-100 p-4">
-            <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <p className="text-[10px] font-bold text-orange-600 mb-2 flex items-center gap-1.5">
               <Target size={11}/> En desarrollo
             </p>
             <div className="flex flex-col gap-1.5">
               {areas_trabajo.slice(0, 4).map((a: string, i: number) => (
                 <div key={i} className="rounded-xl px-3 py-2 text-sm flex items-start gap-2" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)", color: "var(--c-text-secondary)" }}>
-                  <span className="text-orange-500 font-black shrink-0 mt-0.5">→</span>{a}
+                  <span className="text-orange-500 font-bold shrink-0 mt-0.5">→</span>{a}
                 </div>
               ))}
             </div>
@@ -75,13 +75,13 @@ function AnalysisCard({ analysis }: { analysis: any }) {
       </div>
       {actividades_en_casa?.length > 0 && (
         <div className="rounded-2xl p-4" style={{ background: "var(--c-stat-blue)", border: "1px solid var(--c-border)" }}>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 text-blue-500">
+          <p className="text-[10px] font-bold mb-2 flex items-center gap-1.5 text-sky-500">
             <Home size={11}/> Actividades para casa
           </p>
           <div className="flex flex-col gap-1.5">
             {actividades_en_casa.map((a: string, i: number) => (
               <div key={i} className="rounded-xl px-3 py-2 text-sm flex items-start gap-2.5" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)", color: "var(--c-text-secondary)" }}>
-                <span className="w-5 h-5 bg-blue-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>{a}
+                <span className="w-5 h-5 bg-sky-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>{a}
               </div>
             ))}
           </div>
@@ -89,7 +89,7 @@ function AnalysisCard({ analysis }: { analysis: any }) {
       )}
       {recomendaciones?.length > 0 && (
         <div className="rounded-2xl p-4" style={{ background: "var(--c-stat-purple)", border: "1px solid var(--c-border)" }}>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 text-violet-500">
+          <p className="text-[10px] font-bold mb-2 flex items-center gap-1.5 text-sky-500">
             <BookOpen size={11}/> Recomendaciones
           </p>
           <div className="flex flex-col gap-1.5">
@@ -132,7 +132,7 @@ function NotifCard({ noti, expanded, onToggle, locale }: { noti: Notification; e
               {meta.source_title || noti.title || 'Notificación'}
             </p>
             {isNew && (
-              <span className="text-[9px] font-black bg-violet-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
+              <span className="text-[9px] font-bold bg-sky-600 text-white px-2 py-0.5 rounded-full">
                 Nuevo
               </span>
             )}
@@ -151,7 +151,7 @@ function NotifCard({ noti, expanded, onToggle, locale }: { noti: Notification; e
         <div className="flex flex-col items-center gap-2 flex-shrink-0">
           {noti.is_read
             ? <CheckCircle2 size={14} className="text-emerald-400"/>
-            : <div className="w-2.5 h-2.5 rounded-full bg-violet-500"/>
+            : <div className="w-2.5 h-2.5 rounded-full bg-sky-500"/>
           }
           <div className="p-1 rounded-lg" style={{ background: "var(--c-surface)", color: "var(--c-text-muted)" }}>
             {expanded ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
@@ -163,7 +163,7 @@ function NotifCard({ noti, expanded, onToggle, locale }: { noti: Notification; e
       {expanded && (
         <div className="px-4 py-4" style={{ borderTop: "1px solid var(--c-border)", background: "var(--c-surface)" }}>
           <div className="rounded-2xl p-4 mb-3" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)" }}>
-            <p className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5"
+            <p className="text-[10px] font-bold mb-2 flex items-center gap-1.5"
               style={{ color: cfg.color }}>
               {cfg.icon} {cfg.label}
             </p>
@@ -213,9 +213,9 @@ export default function MensajesView({ profile }: { profile: any }) {
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: "var(--c-border)" }}>
         <div>
-          <h1 className="text-xl font-black flex items-center gap-2.5 tracking-tight" style={{ color: "var(--c-text-primary)" }}>
+          <h1 className="text-xl font-bold flex items-center gap-2.5 tracking-tight" style={{ color: "var(--c-text-primary)" }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--c-stat-purple)", border: "1px solid var(--c-border)" }}>
-              <Bell size={18} className="text-violet-600 dark:text-violet-400"/>
+              <Bell size={18} className="text-sky-600 dark:text-sky-400"/>
             </div>
             Notificaciones
           </h1>
@@ -225,7 +225,7 @@ export default function MensajesView({ profile }: { profile: any }) {
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
-            <span className="bg-violet-600 text-white text-xs font-black px-3 py-1 rounded-full">
+            <span className="bg-sky-600 text-white text-xs font-bold px-3 py-1 rounded-full">
               {unreadCount} nuevo{unreadCount !== 1 ? 's' : ''}
             </span>
           )}
@@ -238,13 +238,13 @@ export default function MensajesView({ profile }: { profile: any }) {
       {/* ── CONTENT ── */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid #e2e8f0', borderTop: '2.5px solid #7c3aed', animation: 'nspin 1s linear infinite' }}/>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid #e2e8f0', borderTop: '2.5px solid #0284c7', animation: 'nspin 1s linear infinite' }}/>
           <p className="text-sm" style={{ color: "var(--c-text-muted)" }}>Cargando notificaciones...</p>
         </div>
       ) : notifications.length === 0 ? (
         <div className="rounded-2xl p-12 text-center flex flex-col items-center gap-3" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)" }}>
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "var(--c-stat-purple)", border: "1px solid var(--c-border)" }}>
-            <Bell size={24} className="text-violet-400"/>
+            <Bell size={24} className="text-sky-400"/>
           </div>
           <p className="font-bold text-slate-600 dark:text-slate-300">Sin notificaciones</p>
           <p className="text-sm text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">

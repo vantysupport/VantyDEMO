@@ -357,66 +357,68 @@ export default function ParentDashboard() {
   }
 
   if (loading) return (
-    <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 gap-4">
+    <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-sky-50 via-cyan-50 to-sky-100 gap-4">
       <div className="relative">
-        <Loader2 className="animate-spin text-blue-600" size={56}/>
+        <Loader2 className="animate-spin text-sky-600" size={56}/>
         <div className="absolute inset-0 animate-ping">
-          <Loader2 className="text-blue-300 opacity-40" size={56}/>
+          <Loader2 className="text-sky-300 opacity-40" size={56}/>
         </div>
       </div>
-      <p className="text-slate-500 font-bold text-sm tracking-widest uppercase animate-pulse">{t('familias.cargandoInfo')}</p>
+      <p className="text-slate-500 font-bold text-sm animate-pulse">{t('familias.cargandoInfo')}</p>
     </div>
   )
 
   // ── ONBOARDING para primer acceso (sin hijos registrados) ─────────────────
   if (!loading && myChildren.length === 0 && profile && !showAddChild) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-blue-50 to-indigo-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-cyan-50 to-sky-100 flex items-center justify-center p-6">
         <div className="max-w-lg w-full">
           {/* Progress steps */}
           <div className="flex items-center justify-center gap-3 mb-10">
             {[t('familias.bienvenida'), t('familias.tuHijoA'), t('familias.primeraCita')].map((step, i) => (
               <div key={step} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${i === 0 ? 'bg-violet-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${i === 0 ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
                   {i + 1}
                 </div>
-                <span className={`text-xs font-bold ${i === 0 ? 'text-violet-600' : 'text-slate-400'}`}>{step}</span>
+                <span className={`text-xs font-bold ${i === 0 ? 'text-sky-600' : 'text-slate-400'}`}>{step}</span>
                 {i < 2 && <div className="w-8 h-px bg-slate-200" />}
               </div>
             ))}
           </div>
 
-          <div className="bg-white rounded-3xl p-8 shadow-2xl shadow-violet-100 border border-violet-100 text-center">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl shadow-sky-100 border border-sky-100 text-center">
             {/* Avatar */}
-            <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-[22px] flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-violet-200 mx-auto mb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-sky-500 to-sky-600 rounded-[22px] flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-sky-200 mx-auto mb-6">
               {profile?.full_name?.charAt(0) || 'F'}
             </div>
 
-            <h1 className="text-2xl font-black text-slate-800 mb-3">
+            <h1 className="text-2xl font-bold text-slate-800 mb-3">
               ¡Bienvenido/a, {profile?.full_name?.split(' ')[0]}! 🎉
             </h1>
             <p className="text-slate-500 text-base leading-relaxed mb-8">
-              Estamos felices de tenerte en <strong className="text-violet-600">Neuropsicología y Terapias SANTI</strong>.
+              Estamos felices de tenerte en <strong className="text-sky-600">Neuropsicología y Terapias SANTI</strong>.
               Para comenzar, necesitamos registrar a tu hijo/a y podrás acceder a todo el sistema de seguimiento con IA.
             </p>
 
             {/* Features preview */}
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
-                { icon: '📊', label: 'Progreso en tiempo real' },
-                { icon: '🤖', label: 'Asistente IA 24/7' },
-                { icon: '📅', label: 'Citas con 1 click' },
-              ].map(({ icon, label }) => (
-                <div key={label} className="bg-violet-50 rounded-2xl p-4 border border-violet-100">
-                  <div className="text-2xl mb-2">{icon}</div>
-                  <p className="text-xs font-bold text-violet-700 leading-tight">{label}</p>
+                { Icon: TrendingUp, label: 'Progreso en tiempo real' },
+                { Icon: Sparkles,   label: 'Asistente IA 24/7' },
+                { Icon: Calendar,   label: 'Citas con 1 click' },
+              ].map(({ Icon, label }) => (
+                <div key={label} className="bg-sky-50 rounded-2xl p-4 border border-sky-100">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ background: 'rgba(2,132,199,0.12)', color: '#0284c7' }}>
+                    <Icon size={18} />
+                  </div>
+                  <p className="text-xs font-bold text-sky-700 leading-tight">{label}</p>
                 </div>
               ))}
             </div>
 
             <button
               onClick={() => setShowAddChild(true)}
-              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-violet-200 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[.98] flex items-center justify-center gap-3"
+              className="w-full bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-sky-200 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[.98] flex items-center justify-center gap-3"
             >
               <Baby size={20} /> Registrar a mi hijo/a ahora
             </button>
@@ -429,7 +431,7 @@ export default function ParentDashboard() {
           {/* Help contact */}
           <p className="text-center text-sm text-slate-400 mt-6">
             ¿Tienes dudas? Escríbenos:{' '}
-            <a href="https://wa.me/51991070734" className="text-violet-600 font-bold hover:underline">
+            <a href="https://wa.me/51991070734" className="text-sky-600 font-bold hover:underline">
               +51 991 070 734
             </a>
           </p>
@@ -439,11 +441,11 @@ export default function ParentDashboard() {
         {showAddChild && (
           <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-50"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-sky-100 to-sky-100 rounded-full blur-3xl opacity-50"></div>
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
                       <Baby size={24} className="text-white"/>
                     </div>
                     <div>
@@ -457,25 +459,25 @@ export default function ParentDashboard() {
                 </div>
                 <form onSubmit={handleAddChild} className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">{t('familias.nombreCompletoStar')}</label>
-                    <input name="name" required className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-blue-400 transition-all" placeholder={t('familias.ejNombre')}/>
+                    <label className="text-xs font-bold text-slate-500 mb-2 block">{t('familias.nombreCompletoStar')}</label>
+                    <input name="name" required className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-sky-400 transition-all" placeholder={t('familias.ejNombre')}/>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">{t('familias.fechaNacStar')}</label>
-                    <input name="dob" type="date" required className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-blue-400 transition-all"/>
+                    <label className="text-xs font-bold text-slate-500 mb-2 block">{t('familias.fechaNacStar')}</label>
+                    <input name="dob" type="date" required className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-sky-400 transition-all"/>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">{t('familias.diagOpcional')}</label>
-                    <input name="diagnosis" className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-blue-400 transition-all" placeholder="Ej: TEA Nivel 2"/>
+                    <label className="text-xs font-bold text-slate-500 mb-2 block">{t('familias.diagOpcional')}</label>
+                    <input name="diagnosis" className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-sky-400 transition-all" placeholder="Ej: TEA Nivel 2"/>
                   </div>
-                  <div className="bg-violet-50 border-2 border-violet-100 rounded-2xl p-4">
-                    <p className="text-xs text-violet-700 font-bold flex items-center gap-2">
+                  <div className="bg-sky-50 border-2 border-sky-100 rounded-2xl p-4">
+                    <p className="text-xs text-sky-700 font-bold flex items-center gap-2">
                       <Sparkles size={14}/> La edad se calculará automáticamente
                     </p>
                   </div>
                   <div className="flex gap-3 pt-2">
                     <button type="button" onClick={()=>setShowAddChild(false)} className="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-50 rounded-2xl transition-all">{t('common.cancelar')}</button>
-                    <button type="submit" className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                    <button type="submit" className="flex-1 bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
                       <CheckCircle2 size={18}/> {t('familias.guardarContinuar')}
                     </button>
                   </div>
@@ -522,7 +524,7 @@ export default function ParentDashboard() {
                             <PartyPopper size={80} className="text-green-500 animate-pulse"/>
                             <div className="absolute inset-0 bg-green-400 blur-3xl opacity-50 animate-ping"></div>
                         </div>
-                        <h2 className="text-4xl font-black text-slate-800 text-center">{celebrationMessage}</h2>
+                        <h2 className="text-4xl font-bold text-slate-800 text-center">{celebrationMessage}</h2>
                         <div className="flex gap-3">
                             <Star size={32} className="text-yellow-400 animate-spin"/>
                             <Star size={32} className="text-yellow-400 animate-spin" style={{animationDelay: '0.2s'}}/>
@@ -538,20 +540,20 @@ export default function ParentDashboard() {
 
             {/* Logo header */}
             <div className="flex items-center gap-3 px-5 h-[60px] flex-shrink-0" style={{ borderBottom: "1px solid var(--sidebar-border)" }}>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-base shadow-md shadow-blue-200/50">
+                <div className="w-8 h-8 bg-gradient-to-br from-sky-600 to-cyan-600 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-md shadow-sky-200/50">
                     {profile?.full_name?.charAt(0) || 'F'}
                 </div>
                 <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5" style={{ color: "var(--text-muted)" }}>Bienvenido/a</p>
-                    <p className="font-black text-[13px] truncate" style={{ color: "var(--text-primary)", fontSize: "12px", fontWeight: 700 }}>Portal Familias</p>
+                    <p className="text-[10px] font-bold leading-none mb-0.5" style={{ color: "var(--text-muted)" }}>Bienvenido/a</p>
+                    <p className="font-bold text-[13px] truncate" style={{ color: "var(--text-primary)", fontSize: "12px", fontWeight: 700 }}>Portal Familias</p>
                 </div>
             </div>
 
             {/* Role badge */}
             <div className="px-4 pt-4 pb-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(37,99,235,0.1)", border: "1px solid rgba(37,99,235,0.2)" }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
-                    <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: "#2563eb" }}>Portal Familias</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(2,132,199,0.1)", border: "1px solid rgba(2,132,199,0.2)" }}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse flex-shrink-0" />
+                    <span className="text-[10px] font-bold" style={{ color: "#0284c7" }}>Portal Familias</span>
                 </div>
             </div>
 
@@ -572,8 +574,8 @@ export default function ParentDashboard() {
 
             {/* Bottom section */}
             <div className="p-3 space-y-2 flex-shrink-0" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
-                <div className="px-4 py-3 rounded-xl" style={{ background: "rgba(37,99,235,0.08)", border: "1px solid rgba(37,99,235,0.15)" }}>
-                    <p className="text-[10px] font-black flex items-center gap-1.5 mb-1" style={{ color: "#2563eb" }}>
+                <div className="px-4 py-3 rounded-xl" style={{ background: "rgba(2,132,199,0.08)", border: "1px solid rgba(2,132,199,0.15)" }}>
+                    <p className="text-[10px] font-bold flex items-center gap-1.5 mb-1" style={{ color: "#0284c7" }}>
                         <Calendar size={10}/> Tus citas
                     </p>
                     <p className="text-[10px] leading-relaxed" style={{ color: "var(--text-muted)" }}>Programadas por el equipo del centro. Para cambios contactá a recepción.</p>
@@ -586,7 +588,7 @@ export default function ParentDashboard() {
                     <Bell size={14}/>
                     Ver Notificaciones
                     {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
                             {unreadCount}
                         </span>
                     )}
@@ -600,7 +602,7 @@ export default function ParentDashboard() {
             {/* 🖥️ HEADER DESKTOP */}
             <header className="hidden lg:flex h-14 items-center justify-between px-6 flex-shrink-0 border-b" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
                 <div>
-                    <h1 className="text-sm font-black" style={{ color: "var(--text-primary)" }}>
+                    <h1 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
                         {PAGE_TITLES_MOBILE[activeView as keyof typeof PAGE_TITLES_MOBILE] || 'Inicio'}
                     </h1>
                     <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Neuropsicología y Terapias SANTI · Portal Familias</p>
@@ -624,7 +626,7 @@ export default function ParentDashboard() {
             <header className="lg:hidden h-14 flex items-center justify-between px-3 flex-shrink-0 border-b" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
                 <div className="flex items-center gap-2">
                     <div>
-                        <h1 className="text-sm font-black" style={{ color: "var(--text-primary)" }}>
+                        <h1 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
                             {PAGE_TITLES_MOBILE[activeView as keyof typeof PAGE_TITLES_MOBILE] || 'Inicio'}
                         </h1>
                         <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Portal Familias</p>
@@ -647,7 +649,7 @@ export default function ParentDashboard() {
 
             {/* 👶 SELECTOR DE HIJOS MEJORADO */}
             <div className="backdrop-blur-sm border-b py-4 px-4 md:px-8 flex gap-3 overflow-x-auto items-center scrollbar-hide" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0 mr-2 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-400 shrink-0 mr-2 flex items-center gap-2">
                     <User size={12}/> {t('ui.viendo')}
                 </span>
                 {myChildren.length > 0 ? myChildren.map(child => (
@@ -655,14 +657,14 @@ export default function ParentDashboard() {
                         key={child.id} onClick={()=>setSelectedChild(child)}
                         className={`flex items-center gap-3 px-5 py-2.5 rounded-2xl transition-all whitespace-nowrap border-2 shadow-sm hover:shadow-md group ${
                             selectedChild?.id === child.id 
-                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-500 text-white shadow-blue-200 scale-105' 
-                            : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                            ? 'bg-gradient-to-r from-sky-600 to-cyan-600 border-sky-500 text-white shadow-sky-200 scale-105' 
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'
                         }`}
                     >
-                        <div className={`w-2.5 h-2.5 rounded-full ${selectedChild?.id === child.id ? 'bg-white animate-pulse' : 'bg-slate-300 group-hover:bg-blue-400'}`}></div>
+                        <div className={`w-2.5 h-2.5 rounded-full ${selectedChild?.id === child.id ? 'bg-white animate-pulse' : 'bg-slate-300 group-hover:bg-sky-400'}`}></div>
                         <div className="text-left">
                             <span className="font-bold text-sm block">{child.name.split(' ')[0]}</span>
-                            <span className={`text-[10px] font-semibold flex items-center gap-1 ${selectedChild?.id === child.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                            <span className={`text-[10px] font-semibold flex items-center gap-1 ${selectedChild?.id === child.id ? 'text-sky-100' : 'text-slate-400'}`}>
                                 <Baby size={10}/> {calculateAge(child.birth_date)} años
                             </span>
                         </div>
@@ -670,7 +672,7 @@ export default function ParentDashboard() {
                 )) : <span className="text-xs text-slate-400 italic">{t('ui.no_patients')}</span>}
                 <button 
                     onClick={()=>setShowAddChild(true)} 
-                    className="w-10 h-10 rounded-2xl bg-blue-50 border-2 border-dashed border-blue-200 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shrink-0 hover:scale-110 active:scale-95 hover:rotate-90"
+                    className="w-10 h-10 rounded-2xl bg-sky-50 border-2 border-dashed border-sky-200 flex items-center justify-center text-sky-600 hover:bg-sky-600 hover:text-white hover:border-sky-600 transition-all shrink-0 hover:scale-110 active:scale-95 hover:rotate-90"
                 >
                     <Plus size={18}/>
                 </button>
@@ -757,19 +759,19 @@ export default function ParentDashboard() {
                       onClick={()=>setActiveView('chat')} 
                       className={`w-14 h-14 rounded-[1.75rem] flex items-center justify-center shadow-xl border-4 transition-all active:scale-95 relative group ${
                           activeView==='chat'
-                          ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-purple-300' 
-                          : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-indigo-300'
+                          ? 'bg-gradient-to-br from-sky-600 to-cyan-600 text-white shadow-sky-300' 
+                          : 'bg-gradient-to-br from-sky-600 to-cyan-600 text-white shadow-sky-300'
                       }`}
                       style={{ borderColor: "var(--card)", marginTop: "-1.75rem" }}
                     >
                       <Sparkles size={24} className="group-hover:animate-spin"/>
                       {activeView !== 'chat' && (
-                          <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full animate-bounce">
+                          <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full animate-bounce">
                               IA
                           </span>
                       )}
                     </button>
-                    <span className="block text-center text-[10px] font-medium mt-0.5" style={{ color: activeView==='chat' ? '#7c3aed' : 'var(--text-muted)' }}>Asistente</span>
+                    <span className="block text-center text-[10px] font-medium mt-0.5" style={{ color: activeView==='chat' ? '#0284c7' : 'var(--text-muted)' }}>Asistente</span>
                   </div>
                 </div>
                 {/* Perfil */}
@@ -780,7 +782,7 @@ export default function ParentDashboard() {
                 <div className="flex justify-center relative">
                   <button
                     onClick={()=>setShowMoreMenu(v=>!v)}
-                    className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all ${showMoreMenu ? 'text-purple-600' : 'text-slate-500'}`}
+                    className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all ${showMoreMenu ? 'text-sky-600' : 'text-slate-500'}`}
                   >
                     <MoreHorizontal size={22}/>
                     <span className="text-[10px] font-medium">Más</span>
@@ -796,11 +798,11 @@ export default function ParentDashboard() {
                         { id: 'misformularios',icon: <FileText size={18}/>,       label: 'Recursos adicionales', badge: pendingFormsCount > 0 ? pendingFormsCount : null },
                       ].map(item => (
                         <button key={item.id} onClick={()=>{setActiveView(item.id);setShowMoreMenu(false)}}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative ${activeView===item.id ? 'bg-purple-50 text-purple-700' : 'text-slate-700 hover:bg-slate-50'}`}>
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative ${activeView===item.id ? 'bg-sky-50 text-sky-700' : 'text-slate-700 hover:bg-slate-50'}`}>
                           {item.icon}
                           <span className="flex-1 text-left">{item.label}</span>
                           {(item as any).badge && (
-                            <span className="ml-auto min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+                            <span className="ml-auto min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                               {(item as any).badge}
                             </span>
                           )}
@@ -818,13 +820,13 @@ export default function ParentDashboard() {
             <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
                 <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-2xl animate-scale-in relative overflow-hidden">
                     {/* Decoración de fondo */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-50"></div>
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-pink-100 to-yellow-100 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-sky-100 to-sky-100 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-rose-100 to-yellow-100 rounded-full blur-3xl opacity-50"></div>
                     
                     <div className="relative z-10">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                                <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
                                     <Baby size={24} className="text-white"/>
                                 </div>
                                 <div>
@@ -839,42 +841,42 @@ export default function ParentDashboard() {
 
                         <form onSubmit={handleAddChild} className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block flex items-center gap-2">
+                                <label className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-2">
                                     <User size={14}/> Nombre Completo <span className="text-red-500">*</span>
                                 </label>
                                 <input 
                                     name="name" 
                                     required 
-                                    className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-blue-400 transition-all hover:bg-white" 
+                                    className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-sky-400 transition-all hover:bg-white" 
                                     placeholder="Ej: María Fernanda López"
                                 />
                             </div>
                             
                             <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block flex items-center gap-2">
+                                <label className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-2">
                                     <Calendar size={14}/> Fecha de Nacimiento <span className="text-red-500">*</span>
                                 </label>
                                 <input 
                                     name="dob" 
                                     type="date" 
                                     required 
-                                    className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-blue-400 transition-all hover:bg-white"
+                                    className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-sky-400 transition-all hover:bg-white"
                                 />
                             </div>
                             
                             <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block flex items-center gap-2">
+                                <label className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-2">
                                     <Stethoscope size={14}/> Diagnóstico (Opcional)
                                 </label>
                                 <input 
                                     name="diagnosis" 
-                                    className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-blue-400 transition-all hover:bg-white" 
+                                    className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:bg-white focus:border-sky-400 transition-all hover:bg-white" 
                                     placeholder="Ej: TEA Nivel 2"
                                 />
                             </div>
 
-                            <div className="bg-blue-50 border-2 border-blue-100 rounded-2xl p-4">
-                                <p className="text-xs text-blue-700 font-bold flex items-center gap-2">
+                            <div className="bg-sky-50 border-2 border-sky-100 rounded-2xl p-4">
+                                <p className="text-xs text-sky-700 font-bold flex items-center gap-2">
                                     <Sparkles size={14}/> La edad se calculará automáticamente
                                 </p>
                             </div>
@@ -889,7 +891,7 @@ export default function ParentDashboard() {
                                 </button>
                                 <button 
                                     type="submit" 
-                                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                                    className="flex-1 bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <CheckCircle2 size={18}/> Guardar
                                 </button>
@@ -906,7 +908,7 @@ export default function ParentDashboard() {
                 <div className="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl animate-scale-in">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
                                 <Lock size={24} className="text-white"/>
                             </div>
                             <div>
@@ -920,7 +922,7 @@ export default function ParentDashboard() {
                     </div>
                     <form onSubmit={handleChangePassword} className="space-y-4">
                         <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">
+                            <label className="text-xs font-bold text-slate-500 mb-2 block">
                                 Nueva Contraseña
                             </label>
                             <input 
@@ -928,12 +930,12 @@ export default function ParentDashboard() {
                                 type="password" 
                                 required 
                                 minLength={6}
-                                className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:border-purple-400 focus:bg-white transition-all" 
+                                className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:border-sky-400 focus:bg-white transition-all" 
                                 placeholder={t('familias.minimo6')}
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">
+                            <label className="text-xs font-bold text-slate-500 mb-2 block">
                                 Confirmar Contraseña
                             </label>
                             <input 
@@ -941,7 +943,7 @@ export default function ParentDashboard() {
                                 type="password" 
                                 required 
                                 minLength={6}
-                                className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:border-purple-400 focus:bg-white transition-all" 
+                                className="w-full p-4 bg-slate-50 rounded-2xl font-semibold outline-none border-2 border-transparent focus:border-sky-400 focus:bg-white transition-all" 
                                 placeholder={t('familias.repitePass')}
                             />
                         </div>
@@ -955,7 +957,7 @@ export default function ParentDashboard() {
                             </button>
                             <button 
                                 type="submit" 
-                                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-purple-700 transition-all hover:scale-105 active:scale-95"
+                                className="flex-1 bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-sky-700 transition-all hover:scale-105 active:scale-95"
                             >
                                 Actualizar
                             </button>
@@ -985,7 +987,7 @@ export default function ParentDashboard() {
                     </div>
                     <form onSubmit={handleUpdateProfile} className="space-y-4">
                         <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block flex items-center gap-2">
+                            <label className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-2">
                                 <User size={14}/> Nombre Completo
                             </label>
                             <input 
@@ -996,7 +998,7 @@ export default function ParentDashboard() {
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">
+                            <label className="text-xs font-bold text-slate-500 mb-2 block">
                                 <span className="flex items-center gap-2">
                                   <span>📱</span> Número WhatsApp
                                 </span>
@@ -1013,7 +1015,7 @@ export default function ParentDashboard() {
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block flex items-center gap-2">
+                            <label className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-2">
                                 <Mail size={14}/> Email (no editable)
                             </label>
                             <input 
@@ -1046,14 +1048,14 @@ export default function ParentDashboard() {
         {showNotifications && (
             <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in" onClick={()=>{ setShowNotifications(false); setSelectedNoti(null) }}>
                 <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl animate-scale-in overflow-hidden max-h-[85vh] flex flex-col" onClick={e=>e.stopPropagation()}>
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white flex justify-between items-center">
+                    <div className="bg-gradient-to-r from-sky-600 to-cyan-600 p-6 text-white flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
                                 <Bell size={24}/>
                             </div>
                             <div>
                                 <h3 className="font-bold text-lg">{t('familias.centrNotif')}</h3>
-                                <p className="text-xs text-blue-100">{notifications.length} notificacion{notifications.length!==1?'es':''} · {unreadCount > 0 ? `${unreadCount} sin leer` : 'todas leídas'}</p>
+                                <p className="text-xs text-sky-100">{notifications.length} notificacion{notifications.length!==1?'es':''} · {unreadCount > 0 ? `${unreadCount} sin leer` : 'todas leídas'}</p>
                             </div>
                         </div>
                         <button onClick={()=>{ setShowNotifications(false); setSelectedNoti(null) }} className="p-2 hover:bg-white/10 rounded-xl transition-all hover:rotate-90">
@@ -1070,22 +1072,22 @@ export default function ParentDashboard() {
                             {(()=>{
                                 const ft = selectedNoti.metadata?.form_type || selectedNoti.metadata?.source || selectedNoti.type || ''
                                 const cfg =
-                                    ft==='aba'            ? {icon:<Activity size={20}/>,      bg:'bg-indigo-100', text:'text-indigo-700', border:'border-indigo-200', label:'Sesión ABA'} :
-                                    ft==='anamnesis'      ? {icon:<FileText size={20}/>,      bg:'bg-blue-100',   text:'text-blue-700',   border:'border-blue-200',   label:'Historia Clínica'} :
+                                    ft==='aba'            ? {icon:<Activity size={20}/>,      bg:'bg-sky-100', text:'text-sky-700', border:'border-sky-200', label:'Sesión ABA'} :
+                                    ft==='anamnesis'      ? {icon:<FileText size={20}/>,      bg:'bg-sky-100',   text:'text-sky-700',   border:'border-sky-200',   label:'Historia Clínica'} :
                                     ft==='entorno_hogar'  ? {icon:<Home size={20}/>,          bg:'bg-green-100',  text:'text-green-700',  border:'border-green-200',  label:'Entorno del Hogar'} :
-                                    ['brief2','ados2','vineland3','wiscv','basc3'].includes(ft) ? {icon:<Brain size={20}/>, bg:'bg-purple-100', text:'text-purple-700', border:'border-purple-200', label:'Evaluación Clínica'} :
-                                    selectedNoti.type==='video_call'      ? {icon:<Video size={20}/>,         bg:'bg-indigo-100', text:'text-indigo-700', border:'border-indigo-200', label:'Videollamada'} :
+                                    ['brief2','ados2','vineland3','wiscv','basc3'].includes(ft) ? {icon:<Brain size={20}/>, bg:'bg-sky-100', text:'text-sky-700', border:'border-sky-200', label:'Evaluación Clínica'} :
+                                    selectedNoti.type==='video_call'      ? {icon:<Video size={20}/>,         bg:'bg-sky-100', text:'text-sky-700', border:'border-sky-200', label:'Videollamada'} :
                                     selectedNoti.type==='form_request'    ? {icon:<FileText size={20}/>,      bg:'bg-orange-100', text:'text-orange-700', border:'border-orange-200', label:'Nuevo formulario'} :
-                                    selectedNoti.type==='parent_message'  ? {icon:<MessageCircle size={20}/>, bg:'bg-blue-100',   text:'text-blue-700',   border:'border-blue-200',   label:'Mensaje del terapeuta'} :
+                                    selectedNoti.type==='parent_message'  ? {icon:<MessageCircle size={20}/>, bg:'bg-sky-100',   text:'text-sky-700',   border:'border-sky-200',   label:'Mensaje del terapeuta'} :
                                     selectedNoti.type==='success'         ? {icon:<Star size={20}/>,          bg:'bg-yellow-100', text:'text-yellow-700', border:'border-yellow-200', label:'¡Buenas noticias!'} :
                                     selectedNoti.type==='warning'         ? {icon:<AlertCircle size={20}/>,   bg:'bg-red-100',    text:'text-red-700',    border:'border-red-200',    label:'Aviso'} :
-                                                                             {icon:<Bell size={20}/>,           bg:'bg-blue-100',   text:'text-blue-700',   border:'border-blue-200',   label:'Notificación'}
+                                                                             {icon:<Bell size={20}/>,           bg:'bg-sky-100',   text:'text-sky-700',   border:'border-sky-200',   label:'Notificación'}
                                 return (
                                     <div className="space-y-4">
                                         <div className={`flex items-center gap-3 p-4 rounded-2xl border ${cfg.border}`}>
                                             <div className={`${cfg.bg} ${cfg.text} p-3 rounded-xl`}>{cfg.icon}</div>
                                             <div>
-                                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{cfg.label}</p>
+                                                <p className="text-xs font-semibold text-slate-400">{cfg.label}</p>
                                                 <p className="font-bold text-slate-800 text-sm">{selectedNoti.title}</p>
                                             </div>
                                         </div>
@@ -1100,19 +1102,19 @@ export default function ParentDashboard() {
                                               setShowNotifications(false)
                                               setSelectedNoti(null)
                                             }}
-                                            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-white text-base shadow-xl transition-all hover:scale-[1.02] active:scale-[.98]"
-                                            style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',boxShadow:'0 8px 30px rgba(99,102,241,0.4)'}}
+                                            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-white text-base shadow-xl transition-all hover:scale-[1.02] active:scale-[.98]"
+                                            style={{background:'linear-gradient(135deg,#0284c7,#0ea5e9)',boxShadow:'0 8px 30px rgba(99,102,241,0.4)'}}
                                           >
                                             <Video size={20}/> Unirse a la videollamada
                                           </button>
                                         )}
 
                                         {selectedNoti.metadata?.source_title && (
-                                            <div className="bg-blue-50 rounded-xl p-3 flex items-center gap-2">
-                                                <FileText size={14} className="text-blue-500 flex-shrink-0"/>
+                                            <div className="bg-sky-50 rounded-xl p-3 flex items-center gap-2">
+                                                <FileText size={14} className="text-sky-500 flex-shrink-0"/>
                                                 <div>
-                                                    <p className="text-xs text-blue-400">{t('familias.generadoPor')}</p>
-                                                    <p className="text-sm font-semibold text-blue-700">{selectedNoti.metadata.source_title}</p>
+                                                    <p className="text-xs text-sky-400">{t('familias.generadoPor')}</p>
+                                                    <p className="text-sm font-semibold text-sky-700">{selectedNoti.metadata.source_title}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -1129,16 +1131,16 @@ export default function ParentDashboard() {
                         {notifications.filter(n => n.type==='video_call' && n.metadata?.room_url).map(n => (
                           <button key={`vcall-${n.id}`}
                             onClick={() => { setVideoCallSession({roomUrl:n.metadata.room_url, sessionId:n.metadata.session_id||''}); setShowNotifications(false) }}
-                            className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-indigo-300 text-left transition-all hover:scale-[1.01] active:scale-[.99]"
+                            className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-sky-300 text-left transition-all hover:scale-[1.01] active:scale-[.99]"
                             style={{background:'linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1))'}}>
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 animate-pulse" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)'}}>
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 animate-pulse" style={{background:'linear-gradient(135deg,#0284c7,#0ea5e9)'}}>
                               <Video size={20} className="text-white"/>
                             </div>
                             <div className="flex-1 text-left">
-                              <p className="font-black text-indigo-700 text-sm">📹 Videollamada activa</p>
-                              <p className="text-xs text-indigo-500 font-semibold">{t('familias.terapeutaEspera')}</p>
+                              <p className="font-bold text-sky-700 text-sm">📹 Videollamada activa</p>
+                              <p className="text-xs text-sky-500 font-semibold">{t('familias.terapeutaEspera')}</p>
                             </div>
-                            <ChevronRight size={18} className="text-indigo-400 shrink-0"/>
+                            <ChevronRight size={18} className="text-sky-400 shrink-0"/>
                           </button>
                         ))}
                         {notifications.length === 0 ? (
@@ -1153,16 +1155,16 @@ export default function ParentDashboard() {
                             notifications.map((noti) => {
                                 const ft = noti.metadata?.form_type || noti.metadata?.source || noti.type || ''
                                 const iconConfig =
-                                    ft==='aba'            ? {icon:<Activity size={20}/>,      bg:'bg-indigo-100', text:'text-indigo-600', border:'border-indigo-200', label:'Sesión ABA'} :
-                                    ft==='anamnesis'      ? {icon:<FileText size={20}/>,      bg:'bg-blue-100',   text:'text-blue-600',   border:'border-blue-200',   label:'Historia Clínica'} :
+                                    ft==='aba'            ? {icon:<Activity size={20}/>,      bg:'bg-sky-100', text:'text-sky-600', border:'border-sky-200', label:'Sesión ABA'} :
+                                    ft==='anamnesis'      ? {icon:<FileText size={20}/>,      bg:'bg-sky-100',   text:'text-sky-600',   border:'border-sky-200',   label:'Historia Clínica'} :
                                     ft==='entorno_hogar'  ? {icon:<Home size={20}/>,          bg:'bg-green-100',  text:'text-green-600',  border:'border-green-200',  label:'Entorno del Hogar'} :
-                                    ['brief2','ados2','vineland3','wiscv','basc3'].includes(ft) ? {icon:<Brain size={20}/>, bg:'bg-purple-100', text:'text-purple-600', border:'border-purple-200', label:'Evaluación Clínica'} :
-                                    noti.type==='video_call'     ? {icon:<Video size={20}/>,         bg:'bg-indigo-100', text:'text-indigo-600', border:'border-indigo-200', label:'Videollamada'} :
+                                    ['brief2','ados2','vineland3','wiscv','basc3'].includes(ft) ? {icon:<Brain size={20}/>, bg:'bg-sky-100', text:'text-sky-600', border:'border-sky-200', label:'Evaluación Clínica'} :
+                                    noti.type==='video_call'     ? {icon:<Video size={20}/>,         bg:'bg-sky-100', text:'text-sky-600', border:'border-sky-200', label:'Videollamada'} :
                                     noti.type==='form_request'   ? {icon:<FileText size={20}/>,      bg:'bg-orange-100', text:'text-orange-600', border:'border-orange-200', label:'Nuevo formulario'} :
-                                    noti.type==='parent_message' ? {icon:<MessageCircle size={20}/>, bg:'bg-blue-100',   text:'text-blue-600',   border:'border-blue-200',   label:'Mensaje del terapeuta'} :
+                                    noti.type==='parent_message' ? {icon:<MessageCircle size={20}/>, bg:'bg-sky-100',   text:'text-sky-600',   border:'border-sky-200',   label:'Mensaje del terapeuta'} :
                                     noti.type==='success'        ? {icon:<Star size={20}/>,          bg:'bg-yellow-100', text:'text-yellow-600', border:'border-yellow-200', label:'¡Buenas noticias!'} :
                                     noti.type==='warning'        ? {icon:<AlertCircle size={20}/>,   bg:'bg-red-100',    text:'text-red-600',    border:'border-red-200',    label:'Aviso'} :
-                                                                   {icon:<Bell size={20}/>,           bg:'bg-blue-100',   text:'text-blue-600',   border:'border-blue-200',   label:'Notificación'}
+                                                                   {icon:<Bell size={20}/>,           bg:'bg-sky-100',   text:'text-sky-600',   border:'border-sky-200',   label:'Notificación'}
                                 return (
                                     <button key={noti.id} onClick={()=>setSelectedNoti(noti)}
                                         className={`w-full text-left bg-slate-50 rounded-2xl border ${iconConfig.border} overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all`}>
@@ -1179,7 +1181,7 @@ export default function ParentDashboard() {
                                                 <p className="text-slate-500 text-xs leading-relaxed line-clamp-2">{noti.message}</p>
                                                 <p className="text-slate-300 text-[10px] font-bold mt-2 flex items-center gap-1">
                                                     <Clock size={10}/> {new Date(noti.created_at).toLocaleDateString(toBCP47(locale),{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
-                                                    <span className="ml-1 text-blue-400">{t('familias.tocaParaLeer')}</span>
+                                                    <span className="ml-1 text-sky-400">{t('familias.tocaParaLeer')}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -1202,7 +1204,7 @@ export default function ParentDashboard() {
                     onClick={e => e.stopPropagation()}
                 >
                     {/* Header — gradiente Vanty con badges de cumplimiento */}
-                    <div className="relative overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#db2777 100%)' }}>
+                    <div className="relative overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg,#0369a1 0%,#0284c7 50%,#db2777 100%)' }}>
                         <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, background: 'rgba(255,255,255,.08)', borderRadius: '50%' }}/>
                         <div style={{ position: 'absolute', bottom: -30, left: 30, width: 100, height: 100, background: 'rgba(255,255,255,.06)', borderRadius: '50%' }}/>
 
@@ -1213,7 +1215,7 @@ export default function ParentDashboard() {
                                         <Shield size={24} strokeWidth={2.5}/>
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-lg leading-tight">Privacidad y Seguridad</h3>
+                                        <h3 className="font-bold text-lg leading-tight">Privacidad y Seguridad</h3>
                                         <p className="text-xs text-white/80 font-medium">Cómo Vanty protege los datos clínicos de tu familia</p>
                                     </div>
                                 </div>
@@ -1242,9 +1244,9 @@ export default function ParentDashboard() {
                     <div className="p-5 md:p-6 space-y-3 overflow-y-auto" style={{ background: 'var(--c-card)' }}>
                         {/* 1. Cifrado y arquitectura */}
                         <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.15)' }}>
-                                    <KeyRound size={13} className="text-violet-500"/>
+                            <h4 className="font-bold text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(2,132,199,0.15)' }}>
+                                    <KeyRound size={13} className="text-sky-500"/>
                                 </div>
                                 Cifrado y arquitectura
                             </h4>
@@ -1255,9 +1257,9 @@ export default function ParentDashboard() {
 
                         {/* 2. Quién accede */}
                         <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(37,99,235,0.15)' }}>
-                                    <UserCog size={13} className="text-blue-500"/>
+                            <h4 className="font-bold text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(2,132,199,0.15)' }}>
+                                    <UserCog size={13} className="text-sky-500"/>
                                 </div>
                                 Quién puede acceder
                             </h4>
@@ -1274,7 +1276,7 @@ export default function ParentDashboard() {
 
                         {/* 3. Inteligencia Artificial (ARIA) */}
                         <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                            <h4 className="font-bold text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
                                 <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(219,39,119,0.15)' }}>
                                     <Brain size={13} className="text-pink-500"/>
                                 </div>
@@ -1287,7 +1289,7 @@ export default function ParentDashboard() {
 
                         {/* 4. Tus derechos */}
                         <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                            <h4 className="font-bold text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
                                 <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
                                     <ScrollText size={13} className="text-emerald-500"/>
                                 </div>
@@ -1310,7 +1312,7 @@ export default function ParentDashboard() {
                             </div>
                             <p className="text-[10px] mt-2.5" style={{ color: 'var(--c-text-muted)' }}>
                                 Para ejercer cualquier derecho:{' '}
-                                <a href="mailto:aprendizaje.santi@gmail.com" className="font-bold underline" style={{ color: '#7c3aed' }}>
+                                <a href="mailto:aprendizaje.santi@gmail.com" className="font-bold underline" style={{ color: '#0284c7' }}>
                                     aprendizaje.santi@gmail.com
                                 </a>
                             </p>
@@ -1318,7 +1320,7 @@ export default function ParentDashboard() {
 
                         {/* 5. Retención */}
                         <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                            <h4 className="font-black text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
+                            <h4 className="font-bold text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--c-text-primary)' }}>
                                 <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.15)' }}>
                                     <Database size={13} className="text-amber-500"/>
                                 </div>
@@ -1336,7 +1338,7 @@ export default function ParentDashboard() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg transition-all hover:shadow-xl active:scale-[.98]"
-                                style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed,#db2777)' }}
+                                style={{ background: 'linear-gradient(135deg,#0369a1,#0284c7,#db2777)' }}
                             >
                                 <ScrollText size={15}/> Leer Política Completa <ExternalLink size={12}/>
                             </a>
@@ -1377,12 +1379,12 @@ export default function ParentDashboard() {
                     </div>
                     <div className="p-6 space-y-3 overflow-y-auto">
                         <HelpItem 
-                            icon={<Calendar className="text-blue-600"/>}
+                            icon={<Calendar className="text-sky-600"/>}
                             title="¿Cómo ver mis citas?"
                             description="En la sección 'Agenda' podés ver todas las citas programadas por el centro. Para cambios o cancelaciones, contactá a recepción directamente."
                         />
                         <HelpItem 
-                            icon={<MessageCircle className="text-purple-600"/>}
+                            icon={<MessageCircle className="text-sky-600"/>}
                             title="¿Cómo usar el Asistente IA?"
                             description="El asistente puede responder dudas sobre el progreso de tu hijo/a, dar consejos y explicar los reportes de las sesiones."
                         />

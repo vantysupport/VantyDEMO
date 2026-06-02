@@ -7,7 +7,7 @@ import { supabase as supabaseClient } from '@/lib/supabase'
 import {
   CalendarDays, Clock, CheckCircle, XCircle, RefreshCw,
   TrendingUp, Target, Activity, Award, ChevronRight,
-  Sparkles, Baby, BarChart3, AlertCircle,
+  Sparkles, Baby, BarChart3, AlertCircle, Users, BookOpen, Lightbulb, Hand,
   Heart, Trophy, PartyPopper, X,
   MessageCircle, Brain
 } from 'lucide-react'
@@ -65,7 +65,7 @@ function GoalCelebration({ childName, goalsAchieved, onClose }: { childName: str
   useEffect(() => { const t = setTimeout(onClose, 6000); return () => clearTimeout(t) }, [onClose])
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(10px)' }}>
-      <div style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5,#0ea5e9)', borderRadius: 32, padding: '48px 40px', textAlign: 'center', maxWidth: 400, width: '90%', boxShadow: '0 0 80px rgba(79,70,229,.6)', position: 'relative', overflow: 'hidden', animation: 'celebIn .5s cubic-bezier(.175,.885,.32,1.275)' }}>
+      <div style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1,#0ea5e9)', borderRadius: 32, padding: '48px 40px', textAlign: 'center', maxWidth: 400, width: '90%', boxShadow: '0 0 80px rgba(79,70,229,.6)', position: 'relative', overflow: 'hidden', animation: 'celebIn .5s cubic-bezier(.175,.885,.32,1.275)' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: 10, padding: '6px 10px', cursor: 'pointer', color: 'var(--c-card)', fontSize: 18 }}>×</button>
         <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
         <h2 style={{ fontWeight: 900, fontSize: 30, color: 'var(--c-card)', marginBottom: 8 }}>¡Gran logro!</h2>
@@ -322,7 +322,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
       const dbg = apiStats._debug
       console.log(
         `%c[stats:${child?.name || 'paciente'}]`,
-        'background:#7c3aed;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold',
+        'background:#0284c7;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold',
         `\n  Total mostrado al padre: ${dbg.total_sesiones_final}`,
         `\n    · Previas (configurado en admin):  ${dbg.sesiones_previas_manuales || 0}`,
         `\n    · En plataforma:                   ${(dbg.total_sesiones_final || 0) - (dbg.sesiones_previas_manuales || 0)}`,
@@ -414,9 +414,16 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
   const age = child ? calcAge(child.birth_date) : 0
   const firstName = child?.name?.split(' ')[0] || 'tu hijo/a'
 
-  const AREA_EMOJI: Record<string, string> = {
-    comunicacion: '🗣️', conducta: '🧘', cognitivo: '🧠',
-    social: '🤝', autonomia: '🌟', academico: '📚', sensorial: '🎨', imitacion: '🪞', default: '💡'
+  const AREA_ICON: Record<string, { Icon: any; color: string }> = {
+    comunicacion: { Icon: MessageCircle, color: '#0284c7' },
+    conducta:     { Icon: Target,        color: '#e11d48' },
+    cognitivo:    { Icon: Brain,         color: '#0891b2' },
+    social:       { Icon: Users,         color: '#059669' },
+    autonomia:    { Icon: Sparkles,      color: '#d97706' },
+    academico:    { Icon: BookOpen,      color: '#2563eb' },
+    sensorial:    { Icon: Hand,          color: '#db2777' },
+    imitacion:    { Icon: Activity,      color: '#0ea5e9' },
+    default:      { Icon: Lightbulb,     color: '#0284c7' },
   }
 
   return (
@@ -449,21 +456,21 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
 
       {/* ── GOOGLE CALENDAR BANNER ── */}
       {gcalConnected===false && !gcalBannerDismissed && (
-        <div className="hv-card" style={{ background:'linear-gradient(135deg,#2563eb,#1d4ed8)', borderRadius:18, padding:'14px 18px', display:'flex', alignItems:'center', gap:12, boxShadow:'0 4px 16px rgba(37,99,235,.25)' }}>
+        <div className="hv-card" style={{ background:'linear-gradient(135deg,#0284c7,#0369a1)', borderRadius:18, padding:'14px 18px', display:'flex', alignItems:'center', gap:12, boxShadow:'0 4px 16px rgba(2,132,199,.25)' }}>
           <span style={{ fontSize:24, flexShrink:0 }}>📅</span>
           <div style={{ flex:1 }}>
             <p style={{ color:'#ffffff', fontWeight:700, fontSize:13, margin:0 }}>Recibe tus citas en Google Calendar</p>
             <p style={{ color:'rgba(255,255,255,.75)', fontSize:11, margin:'2px 0 0' }}>Conecta tu cuenta y las citas aparecerán automáticamente.</p>
           </div>
           <div style={{ display:'flex', gap:6, flexShrink:0 }}>
-            <button onClick={()=>onChangeView('profile')} className="hv-btn" style={{ background:'var(--c-card)', color:'#2563eb', border:'none', borderRadius:10, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer' }}>Conectar</button>
+            <button onClick={()=>onChangeView('profile')} className="hv-btn" style={{ background:'var(--c-card)', color:'#0284c7', border:'none', borderRadius:10, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer' }}>Conectar</button>
             <button onClick={()=>{sessionStorage.setItem('gcal_banner_dismissed','1');setGcalBannerDismissed(true)}} style={{ background:'rgba(255,255,255,.2)', color:'#ffffff', border:'none', borderRadius:10, padding:'7px 10px', fontSize:13, cursor:'pointer', lineHeight:1 }}>✕</button>
           </div>
         </div>
       )}
 
       {/* ── HERO ── */}
-      <div className="hv-card" style={{ borderRadius:24, overflow:'hidden', position:'relative', background:'linear-gradient(135deg,#1d4ed8 0%,#4f46e5 50%,#7c3aed 100%)', boxShadow:'0 12px 40px rgba(79,70,229,.3)' }}>
+      <div className="hv-card" style={{ borderRadius:24, overflow:'hidden', position:'relative', background:'linear-gradient(135deg,#0369a1 0%,#0369a1 50%,#0284c7 100%)', boxShadow:'0 12px 40px rgba(79,70,229,.3)' }}>
         {/* decorative circles */}
         <div style={{ position:'absolute', top:-50, right:-50, width:200, height:200, background:'rgba(255,255,255,.07)', borderRadius:'50%', pointerEvents:'none' }}/>
         <div style={{ position:'absolute', bottom:-40, left:-20, width:150, height:150, background:'rgba(255,255,255,.05)', borderRadius:'50%', pointerEvents:'none' }}/>
@@ -496,7 +503,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
               <div style={{ width:56, height:56, background:'rgba(255,255,255,.2)', backdropFilter:'blur(10px)', borderRadius:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:900, color:'#ffffff', border:'2px solid rgba(255,255,255,.3)' }}>
                 {child?.name?.[0]?.toUpperCase() || '?'}
               </div>
-              {stats.sessions > 0 && <div style={{ position:'absolute', bottom:-2, right:-2, width:16, height:16, background:'#10b981', borderRadius:'50%', border:'2.5px solid #4f46e5' }}/>}
+              {stats.sessions > 0 && <div style={{ position:'absolute', bottom:-2, right:-2, width:16, height:16, background:'#10b981', borderRadius:'50%', border:'2.5px solid #0369a1' }}/>}
             </div>
           </div>
 
@@ -532,9 +539,9 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
       {/* ── STATS ROW ── */}
       <div className="hv-card" style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
         {[
-          { val: loading ? '…' : stats.sessions,                    label:'Sesiones',        sub: stats.monthSessions > 0 ? `+${stats.monthSessions} este mes` : (stats.sessions === 0 ? (nextAppt ? 'Próxima cita programada' : 'Aún ninguna realizada') : 'Realizadas hasta hoy'), color:'#2563eb' },
+          { val: loading ? '…' : stats.sessions,                    label:'Sesiones',        sub: stats.monthSessions > 0 ? `+${stats.monthSessions} este mes` : (stats.sessions === 0 ? (nextAppt ? 'Próxima cita programada' : 'Aún ninguna realizada') : 'Realizadas hasta hoy'), color:'#0284c7' },
           { val: loading ? '…' : `${stats.goalsAchieved}/${stats.totalGoals||'?'}`, label:'Objetivos logrados', sub:'Con dominio ≥80%', color:'#059669' },
-          { val: loading ? '…' : (stats.hoursTotal > 0 ? `${stats.hoursTotal}h` : '—'),             label:'Horas de terapia', sub: stats.hoursTotal > 0 ? `~${Math.round(stats.hoursTotal/Math.max(stats.sessions,1)*10)/10}h por sesión` : 'Cuando haya sesiones', color:'#7c3aed' },
+          { val: loading ? '…' : (stats.hoursTotal > 0 ? `${stats.hoursTotal}h` : '—'),             label:'Horas de terapia', sub: stats.hoursTotal > 0 ? `~${Math.round(stats.hoursTotal/Math.max(stats.sessions,1)*10)/10}h por sesión` : 'Cuando haya sesiones', color:'#0284c7' },
           { val: loading ? '…' : `${stats.masteryRate}%`,              label:'Dominio',          sub:'Promedio de objetivos', color:'#d97706' },
         ].map(({ val, label, sub, color }) => (
           <div key={label} style={{ background:'var(--c-card)', borderRadius:18, padding:'18px 16px', border:`1px solid var(--c-border)`, display:'flex', flexDirection:'column', gap:6, position:'relative', overflow:'hidden' }}>
@@ -568,7 +575,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
             return (
               <div className="hv-card" style={{ background:'var(--c-surface)', border:'1.5px solid var(--c-border)', borderRadius:22, padding:'18px 20px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-                  <div style={{ width:38, height:38, background:'linear-gradient(135deg,#0ea5e9,#2563eb)', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <div style={{ width:38, height:38, background:'linear-gradient(135deg,#0ea5e9,#0284c7)', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                     <Sparkles size={18} color="var(--c-card)"/>
                   </div>
                   <div>
@@ -594,7 +601,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
           {/* PRÓXIMA CITA */}
           <div className="hv-card" style={{ background:'var(--c-card)', borderRadius:22, border:'1.5px solid var(--c-border-light)', overflow:'hidden', boxShadow:'0 2px 16px rgba(0,0,0,.04)' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 18px 12px', borderBottom:'1px solid var(--c-border-light)' }}>
-              <CalendarDays size={15} color="#7c3aed"/>
+              <CalendarDays size={15} color="#0284c7"/>
               <h2 style={{ fontWeight:800, fontSize:12, color:'var(--c-text-muted)', textTransform:'uppercase', letterSpacing:0.8, margin:0 }}>Próxima sesión</h2>
             </div>
             {loading ? (
@@ -606,7 +613,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
               return (
                 <div style={{ padding:'16px 18px' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                    <div style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', color:'#ffffff', borderRadius:16, padding:'10px 14px', textAlign:'center', flexShrink:0, boxShadow:'0 6px 16px rgba(124,58,237,.28)' }}>
+                    <div style={{ background:'linear-gradient(135deg,#0284c7,#0369a1)', color:'#ffffff', borderRadius:16, padding:'10px 14px', textAlign:'center', flexShrink:0, boxShadow:'0 6px 16px rgba(2,132,199,.28)' }}>
                       <div style={{ fontSize:26, fontWeight:900, lineHeight:1 }}>{d.day}</div>
                       <div style={{ fontSize:11, fontWeight:700, opacity:.8, marginTop:1, textTransform:'uppercase' }}>{d.month}</div>
                     </div>
@@ -620,7 +627,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
                     </div>
                   </div>
                   <div style={{ display:'flex', gap:8, marginTop:14, paddingTop:14, borderTop:'1px solid var(--c-border-light)' }}>
-                    <button onClick={()=>onCancelAppointment(nextAppt.id,true)} className="hv-btn" style={{ flex:1, padding:'8px 10px', background:'var(--c-stat-purple)', color:'#7c3aed', border:'1.5px solid var(--c-border)', borderRadius:12, fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}><RefreshCw size={12}/>Reprogramar</button>
+                    <button onClick={()=>onCancelAppointment(nextAppt.id,true)} className="hv-btn" style={{ flex:1, padding:'8px 10px', background:'var(--c-stat-purple)', color:'#0284c7', border:'1.5px solid var(--c-border)', borderRadius:12, fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}><RefreshCw size={12}/>Reprogramar</button>
                     <button onClick={()=>onCancelAppointment(nextAppt.id,false)} className="hv-btn" style={{ flex:1, padding:'8px 10px', background:'#fef2f2', color:'#dc2626', border:'1.5px solid #fecaca', borderRadius:12, fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}><XCircle size={12}/>Cancelar</button>
                     <button onClick={()=>onChangeView('miscitas')} className="hv-btn" style={{ padding:'8px 12px', background:'var(--c-text-primary)', color:'#ffffff', border:'none', borderRadius:12, fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>Ver todas<ChevronRight size={12}/></button>
                   </div>
@@ -631,17 +638,17 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
                 <div style={{ width:56, height:56, background:'var(--c-stat-purple)', borderRadius:16, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}><CalendarDays size={24} color="#a78bfa"/></div>
                 <p style={{ fontWeight:800, fontSize:14, color:'var(--c-text-primary)', margin:'0 0 6px' }}>Sin citas programadas</p>
                 <p style={{ fontSize:12, color:'var(--c-text-placeholder)', lineHeight:1.6, margin:'0 auto 14px', maxWidth:260 }}>La constancia es clave. Contacta al centro para agendar la próxima cita.</p>
-                <button onClick={()=>onChangeView('miscitas')} className="hv-btn" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#7c3aed,#4f46e5)', color:'#ffffff', border:'none', padding:'9px 18px', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', boxShadow:'0 4px 14px rgba(124,58,237,.3)' }}><CalendarDays size={14}/>Ver mis citas</button>
+                <button onClick={()=>onChangeView('miscitas')} className="hv-btn" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#0284c7,#0369a1)', color:'#ffffff', border:'none', padding:'9px 18px', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', boxShadow:'0 4px 14px rgba(2,132,199,.3)' }}><CalendarDays size={14}/>Ver mis citas</button>
               </div>
             )}
           </div>
 
           {/* MENSAJES DEL TERAPEUTA */}
           {parentMessages.length > 0 && (
-            <div className="hv-card" style={{ background:'var(--c-card)', borderRadius:22, border:'1.5px solid #ede9fe', overflow:'hidden', boxShadow:'0 2px 16px rgba(124,58,237,.06)' }}>
+            <div className="hv-card" style={{ background:'var(--c-card)', borderRadius:22, border:'1.5px solid #ede9fe', overflow:'hidden', boxShadow:'0 2px 16px rgba(2,132,199,.06)' }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px 12px', borderBottom:'1px solid var(--c-border-light)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}><MessageCircle size={15} color="#7c3aed"/><h2 style={{ fontWeight:800, fontSize:12, color:'var(--c-text-muted)', textTransform:'uppercase', letterSpacing:0.8, margin:0 }}>Mensajes del terapeuta</h2></div>
-                <span style={{ background:'var(--c-stat-purple)', color:'#7c3aed', fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:20, border:'1px solid var(--c-border)' }}>{parentMessages.length} nuevo{parentMessages.length!==1?'s':''}</span>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}><MessageCircle size={15} color="#0284c7"/><h2 style={{ fontWeight:800, fontSize:12, color:'var(--c-text-muted)', textTransform:'uppercase', letterSpacing:0.8, margin:0 }}>Mensajes del terapeuta</h2></div>
+                <span style={{ background:'var(--c-stat-purple)', color:'#0284c7', fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:20, border:'1px solid var(--c-border)' }}>{parentMessages.length} nuevo{parentMessages.length!==1?'s':''}</span>
               </div>
               {parentMessages.map((msg:any, idx:number) => (
                 <div key={idx} style={{ padding:'12px 18px', borderBottom: idx < parentMessages.length-1 ? '1px solid #faf5ff' : 'none' }}>
@@ -651,7 +658,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
                 </div>
               ))}
               <div style={{ padding:'10px 14px' }}>
-                <button onClick={()=>onChangeView('mensajes')} className="hv-btn" style={{ width:'100%', padding:'9px', background:'var(--c-stat-purple)', color:'#7c3aed', border:'1.5px solid var(--c-border)', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}><MessageCircle size={13}/>Ver todos los mensajes</button>
+                <button onClick={()=>onChangeView('mensajes')} className="hv-btn" style={{ width:'100%', padding:'9px', background:'var(--c-stat-purple)', color:'#0284c7', border:'1.5px solid var(--c-border)', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}><MessageCircle size={13}/>Ver todos los mensajes</button>
               </div>
             </div>
           )}
@@ -666,14 +673,15 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
             <div className="hv-card" style={{ background:'var(--c-card)', borderRadius:22, border:'1.5px solid var(--c-border-light)', overflow:'hidden', boxShadow:'0 2px 16px rgba(0,0,0,.04)' }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px 12px', borderBottom:'1px solid var(--c-border-light)' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <span style={{ fontSize:16 }}>🎯</span>
-                  <h2 style={{ fontWeight:800, fontSize:12, color:'var(--c-text-muted)', textTransform:'uppercase', letterSpacing:0.8, margin:0 }}>¿En qué está trabajando?</h2>
+                  <Target size={15} color="#0284c7"/>
+                  <h2 style={{ fontWeight:700, fontSize:13, color:'var(--c-text-primary)', margin:0 }}>¿En qué está trabajando?</h2>
                 </div>
-                <span style={{ background:'var(--c-stat-blue)', color:'#2563eb', fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:20, border:'1px solid var(--c-border)' }}>{programas.length} activos</span>
+                <span style={{ background:'var(--c-stat-blue)', color:'#0284c7', fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:20, border:'1px solid var(--c-border)' }}>{programas.length} activos</span>
               </div>
               <div style={{ padding:'10px 14px', display:'flex', flexDirection:'column', gap:8 }}>
                 {programas.map((prog:any, i:number) => {
-                  const emoji = AREA_EMOJI[(prog.area||'').toLowerCase()] || AREA_EMOJI.default
+                  const ac = AREA_ICON[(prog.area||'').toLowerCase()] || AREA_ICON.default
+                  const AIcon = ac.Icon
                   return (
                     <button
                       key={prog.id||i}
@@ -690,7 +698,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
                       }}
                       onMouseEnter={e => {
                         const el = e.currentTarget as HTMLButtonElement
-                        el.style.borderColor = 'var(--c-accent, #7c3aed)'
+                        el.style.borderColor = 'var(--c-accent, #0284c7)'
                         el.style.transform = 'translateY(-1px)'
                       }}
                       onMouseLeave={e => {
@@ -699,19 +707,19 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
                         el.style.transform = 'translateY(0)'
                       }}
                     >
-                      <div style={{ width:36, height:36, background:'var(--c-card)', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, border:'1px solid var(--c-border)', boxShadow:'0 1px 4px rgba(0,0,0,.05)' }}>{emoji}</div>
+                      <div style={{ width:36, height:36, background:`${ac.color}18`, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color: ac.color }}><AIcon size={18}/></div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <p style={{ fontWeight:700, fontSize:13, color:'var(--c-text-primary)', margin:0, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{prog.nombre || prog.titulo || 'Programa'}</p>
                         {prog.area && <p style={{ fontSize:11, color:'var(--c-text-placeholder)', margin:'1px 0 0', textTransform:'capitalize' }}>{prog.area}</p>}
                       </div>
-                      <span style={{ fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:10, flexShrink:0, ...(prog.estado==='activo'?{background:'var(--c-stat-green)',color:'#16a34a'}:prog.estado==='completado'?{background:'var(--c-stat-purple)',color:'#7c3aed'}:{background:'var(--c-stat-amber)',color:'#d97706'}) }}>{prog.estado||'activo'}</span>
+                      <span style={{ fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:10, flexShrink:0, ...(prog.estado==='activo'?{background:'var(--c-stat-green)',color:'#16a34a'}:prog.estado==='completado'?{background:'var(--c-stat-purple)',color:'#0284c7'}:{background:'var(--c-stat-amber)',color:'#d97706'}) }}>{prog.estado||'activo'}</span>
                       <ChevronRight size={14} color="var(--c-text-placeholder)" style={{ flexShrink: 0 }}/>
                     </button>
                   )
                 })}
               </div>
               <div style={{ padding:'10px 14px', paddingTop:4 }}>
-                <button onClick={()=>onChangeView('chat')} className="hv-btn" style={{ width:'100%', padding:'9px', background:'var(--c-stat-blue)', color:'#2563eb', border:'1.5px solid var(--c-border)', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+                <button onClick={()=>onChangeView('chat')} className="hv-btn" style={{ width:'100%', padding:'9px', background:'var(--c-stat-blue)', color:'#0284c7', border:'1.5px solid var(--c-border)', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
                   <Sparkles size={13}/>Pregúntale a ARIA cómo practicarlos
                 </button>
               </div>
@@ -721,13 +729,13 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
           {/* PROGRESO GENERAL */}
           <div className="hv-card" style={{ background:'var(--c-card)', borderRadius:22, border:'1.5px solid var(--c-border-light)', padding:'16px 18px', boxShadow:'0 2px 16px rgba(0,0,0,.04)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}><TrendingUp size={15} color="#7c3aed"/><h3 style={{ fontWeight:800, fontSize:12, color:'var(--c-text-muted)', textTransform:'uppercase', letterSpacing:0.8, margin:0 }}>Progreso general</h3></div>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}><TrendingUp size={15} color="#0284c7"/><h3 style={{ fontWeight:800, fontSize:12, color:'var(--c-text-muted)', textTransform:'uppercase', letterSpacing:0.8, margin:0 }}>Progreso general</h3></div>
               {stats.goalsAchieved > 0 && <button onClick={()=>setShowCelebration(true)} className="hv-btn" style={{ display:'flex', alignItems:'center', gap:5, background:'var(--c-stat-amber)', color:'#d97706', border:'1.5px solid var(--c-border)', borderRadius:20, fontSize:10, fontWeight:700, padding:'4px 10px', cursor:'pointer' }}><Trophy size={11}/>Ver logro 🎉</button>}
             </div>
 
             {stats.sessions === 0 ? (
               <div style={{ textAlign:'center', padding:'16px 0' }}>
-                <div style={{ width:52, height:52, background:'linear-gradient(135deg,#f8fafc,#f5f3ff)', borderRadius:16, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}><BarChart3 size={24} color="#c4b5fd"/></div>
+                <div style={{ width:52, height:52, background:'linear-gradient(135deg,#f8fafc,#f5f3ff)', borderRadius:16, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}><BarChart3 size={24} color="#7dd3fc"/></div>
                 <p style={{ fontWeight:700, fontSize:13, color:'var(--c-text-muted)', margin:'0 0 4px' }}>El progreso aparecerá aquí</p>
                 <p style={{ fontSize:11, color:'var(--c-text-placeholder)', lineHeight:1.6, maxWidth:240, margin:'0 auto' }}>Después de las primeras sesiones verás los avances y objetivos logrados.</p>
               </div>
@@ -735,8 +743,8 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
               <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                 {[
                   { label:'Dominio de objetivos', value:stats.masteryRate, color:'#059669', track:'#dcfce7' },
-                  { label:'Asistencia este mes',  value:Math.min(100,stats.monthSessions*25), color:'#2563eb', track:'var(--c-border)' },
-                  { label:'Horas de terapia',     value:Math.min(100,Math.round(stats.hoursTotal/20*100)), color:'#7c3aed', track:'#ede9fe' },
+                  { label:'Asistencia este mes',  value:Math.min(100,stats.monthSessions*25), color:'#0284c7', track:'var(--c-border)' },
+                  { label:'Horas de terapia',     value:Math.min(100,Math.round(stats.hoursTotal/20*100)), color:'#0284c7', track:'#ede9fe' },
                 ].map(({ label, value, color, track }) => (
                   <div key={label}>
                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>

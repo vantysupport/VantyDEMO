@@ -36,8 +36,8 @@ interface Order {
 
 const ESTADO_CFG: Record<string, any> = {
   pendiente:  { label: 'Pendiente de confirmación', icon: Clock,       color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200' },
-  confirmado: { label: 'Confirmado',                icon: CheckCircle, color: 'text-blue-600',    bg: 'bg-blue-50',    border: 'border-blue-200'  },
-  listo:      { label: '¡Listo para recoger!',      icon: Package,     color: 'text-violet-600',  bg: 'bg-violet-50',  border: 'border-violet-200'},
+  confirmado: { label: 'Confirmado',                icon: CheckCircle, color: 'text-sky-600',    bg: 'bg-sky-50',    border: 'border-sky-200'  },
+  listo:      { label: '¡Listo para recoger!',      icon: Package,     color: 'text-sky-600',  bg: 'bg-sky-50',  border: 'border-sky-200'},
   entregado:  { label: 'Entregado',                 icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200'},
   cancelado:  { label: 'Cancelado',                 icon: XCircle,     color: 'text-red-500',     bg: 'bg-red-50',     border: 'border-red-200'   },
 }
@@ -63,9 +63,9 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
       <div className="relative w-full max-w-md h-full flex flex-col shadow-2xl" style={{ background: "var(--c-card)" }} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid var(--c-border)" }}>
-          <h3 className="font-black text-lg flex items-center gap-2" style={{ color: "var(--c-text-primary)" }}>
-            <ShoppingCart size={20} className="text-blue-600 dark:text-blue-400" /> Mi carrito
-            {cart.length > 0 && <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">{cart.length}</span>}
+          <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: "var(--c-text-primary)" }}>
+            <ShoppingCart size={20} className="text-sky-600 dark:text-sky-400" /> Mi carrito
+            {cart.length > 0 && <span className="text-xs bg-sky-600 text-white px-2 py-0.5 rounded-full">{cart.length}</span>}
           </h3>
           <button onClick={onClose} className="p-2 rounded-xl transition-all" style={{ background: "var(--c-surface)" }}>
             <X size={20} className="text-slate-500 dark:text-slate-400 dark:text-slate-500" />
@@ -77,7 +77,7 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-5">
               <CheckCircle size={40} className="text-emerald-600" />
             </div>
-            <h3 className="text-2xl font-black mb-2" style={{ color: "var(--c-text-primary)" }}>{t('tienda.pedidoEnviado')}</h3>
+            <h3 className="text-2xl font-bold mb-2" style={{ color: "var(--c-text-primary)" }}>{t('tienda.pedidoEnviado')}</h3>
             <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--c-text-muted)" }}>
               Tu pedido fue registrado. Nos pondremos en contacto contigo para confirmar el pago y la entrega.
             </p>
@@ -108,14 +108,14 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm leading-tight truncate" style={{ color: "var(--c-text-primary)" }}>{p.nombre}</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 font-black mt-0.5">S/ {(p.precio_soles * cantidad).toFixed(2)}</p>
+                    <p className="text-xs text-sky-600 dark:text-sky-400 font-bold mt-0.5">S/ {(p.precio_soles * cantidad).toFixed(2)}</p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button onClick={() => onUpdate(p.id, cantidad - 1)}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-all" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)" }}>
                       <Minus size={12} className="text-slate-500 dark:text-slate-400 dark:text-slate-500" />
                     </button>
-                    <span className="w-6 text-center font-black text-sm" style={{ color: "var(--c-text-primary)" }}>{cantidad}</span>
+                    <span className="w-6 text-center font-bold text-sm" style={{ color: "var(--c-text-primary)" }}>{cantidad}</span>
                     <button onClick={() => onUpdate(p.id, cantidad + 1)}
                       disabled={p.tipo === 'fisico' && cantidad >= p.stock}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-all disabled:opacity-30" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)" }}>
@@ -127,7 +127,7 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
 
               {/* Nota */}
               <div className="pt-2">
-                <label className="block text-xs font-black uppercase tracking-widest mb-2" style={{ color: "var(--c-text-muted)" }}>{t('familias.notaCentro')}</label>
+                <label className="block text-xs font-bold mb-2" style={{ color: "var(--c-text-muted)" }}>{t('familias.notaCentro')}</label>
                 <textarea
                   value={nota} onChange={e => setNota(e.target.value)}
                   rows={2} placeholder={t("tienda.pedidoGuardar")}
@@ -137,8 +137,8 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
 
               {/* Info pago */}
               <div className="rounded-xl p-4" style={{ background: "var(--c-stat-blue)", border: "1px solid var(--c-border)" }}>
-                <p className="text-xs font-black text-blue-500 mb-1">{t('tienda.comoPaga')}</p>
-                <p className="text-xs text-blue-500 leading-relaxed">
+                <p className="text-xs font-bold text-sky-500 mb-1">{t('tienda.comoPaga')}</p>
+                <p className="text-xs text-sky-500 leading-relaxed">
                   El pago se realiza al recoger el pedido en el centro (efectivo o yape). Para artículos digitales te enviaremos el archivo por WhatsApp tras confirmar el pago.
                 </p>
               </div>
@@ -148,10 +148,10 @@ function CartDrawer({ cart, onClose, onUpdate, onCheckout }: any) {
             <div className="p-5 space-y-3" style={{ borderTop: "1px solid var(--c-border)" }}>
               <div className="flex justify-between items-center">
                 <span className="font-bold" style={{ color: "var(--c-text-secondary)" }}>{t('ui.total_to_pay')}</span>
-                <span className="text-2xl font-black text-blue-600 dark:text-blue-400">S/ {total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-sky-600 dark:text-sky-400">S/ {total.toFixed(2)}</span>
               </div>
               <button onClick={handleCheckout} disabled={placing}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-base rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+                className="w-full py-4 bg-sky-600 hover:bg-sky-700 text-white font-bold text-base rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-sky-200">
                 {placing ? <Loader2 size={18} className="animate-spin" /> : <ShoppingBag size={18} />}
                 {placing ? 'Enviando pedido...' : 'Confirmar pedido'}
               </button>
@@ -278,7 +278,7 @@ export default function StoreView({ profile }: { profile: any }) {
 
   if (loading) return (
     <div className="flex items-center justify-center py-32">
-      <Loader2 size={32} className="animate-spin text-blue-600 dark:text-blue-400" />
+      <Loader2 size={32} className="animate-spin text-sky-600 dark:text-sky-400" />
     </div>
   )
 
@@ -297,9 +297,9 @@ export default function StoreView({ profile }: { profile: any }) {
       {/* ── Clean header with tabs ── */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4" style={{ borderBottom: "1px solid var(--c-border)" }}>
         <div>
-          <h2 className="text-lg font-black flex items-center gap-2" style={{ color: "var(--c-text-primary)" }}>
+          <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: "var(--c-text-primary)" }}>
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--c-stat-blue)", border: "1px solid var(--c-border)" }}>
-              <ShoppingBag size={15} className="text-blue-600 dark:text-blue-400"/>
+              <ShoppingBag size={15} className="text-sky-600 dark:text-sky-400"/>
             </div>
             {view === 'catalogo' ? 'Tienda' : 'Mis pedidos'}
           </h2>
@@ -311,7 +311,7 @@ export default function StoreView({ profile }: { profile: any }) {
           {/* Cart button */}
           {view === 'catalogo' && cartCount > 0 && (
             <button onClick={() => setShowCart(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors">
+              className="flex items-center gap-2 px-3 py-2 bg-sky-600 text-white rounded-xl text-sm font-bold hover:bg-sky-700 transition-colors">
               <ShoppingCart size={15}/> {cartCount}
             </button>
           )}
@@ -325,7 +325,7 @@ export default function StoreView({ profile }: { profile: any }) {
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5`} style={{ background: view === "mis-pedidos" ? "var(--c-card)" : "transparent", color: view === "mis-pedidos" ? "var(--c-text-primary)" : "var(--c-text-muted)" }}>
               📦 Pedidos
               {orders.length > 0 && (
-                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ background: view === 'mis-pedidos' ? '#2563eb' : 'var(--c-surface)', color: view === 'mis-pedidos' ? '#fff' : 'var(--c-text-muted)' }}>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: view === 'mis-pedidos' ? '#0284c7' : 'var(--c-surface)', color: view === 'mis-pedidos' ? '#fff' : 'var(--c-text-muted)' }}>
                   {orders.length}
                 </span>
               )}
@@ -342,13 +342,13 @@ export default function StoreView({ profile }: { profile: any }) {
             <div className="relative">
               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               <input value={search} onChange={e => setSearch(e.target.value)} {...{placeholder: t('ui.search_material')}}
-                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-medium outline-none focus:border-blue-400 transition-all shadow-sm" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)", color: "var(--c-text-primary)" }}
+                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all shadow-sm" style={{ background: "var(--c-card)", border: "1px solid var(--c-border)", color: "var(--c-text-primary)" }}
               />
             </div>
             <div className="flex gap-2 flex-wrap">
               {['todos', 'fisico', 'digital'].map(f => (
                 <button key={f} onClick={() => setFilterTipo(f)}
-                  className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${filterTipo === f ? 'bg-blue-600 text-white border-blue-600' : 'hover:border-blue-300'}`} style={filterTipo === f ? {} : { background: 'var(--c-card)', color: 'var(--c-text-muted)', borderColor: 'var(--c-border)' }}>
+                  className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${filterTipo === f ? 'bg-sky-600 text-white border-sky-600' : 'hover:border-sky-300'}`} style={filterTipo === f ? {} : { background: 'var(--c-card)', color: 'var(--c-text-muted)', borderColor: 'var(--c-border)' }}>
                   {f === 'todos' ? 'Todo' : f === 'fisico' ? '📦 Físicos' : '📄 Digitales'}
                 </button>
               ))}
@@ -365,7 +365,7 @@ export default function StoreView({ profile }: { profile: any }) {
           {/* Destacados */}
           {destacados.length > 0 && search === '' && filterTipo === 'todos' && filterCat === 'todos' && (
             <div>
-              <p className="text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: "var(--c-text-muted)" }}>
+              <p className="text-xs font-bold mb-3 flex items-center gap-2" style={{ color: "var(--c-text-muted)" }}>
                 <Star size={12} className="text-amber-400 fill-amber-400" /> Destacados
               </p>
               <div className="sv-featured-grid">
@@ -380,7 +380,7 @@ export default function StoreView({ profile }: { profile: any }) {
           {resto.length > 0 || (filtered.length > 0 && destacados.length === 0) ? (
             <div>
               {destacados.length > 0 && search === '' && filterTipo === 'todos' && filterCat === 'todos' && (
-                <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">{t('ui.all_items')}</p>
+                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-3">{t('ui.all_items')}</p>
               )}
               <div className="sv-products-grid">
                 {(destacados.length > 0 && search === '' && filterTipo === 'todos' && filterCat === 'todos' ? resto : filtered).map(p => (
@@ -393,20 +393,20 @@ export default function StoreView({ profile }: { profile: any }) {
               <ShoppingBag size={36} className="text-slate-200 mx-auto mb-3" />
               <p className="font-bold text-slate-400 dark:text-slate-500">{t('ui.no_items_found')}</p>
               <button onClick={() => { setSearch(''); setFilterTipo('todos'); setFilterCat('todos') }}
-                className="mt-3 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
+                className="mt-3 text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline">
                 Limpiar filtros
               </button>
             </div>
           ) : null}
 
           {/* Info tienda */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 dark:border-blue-800/50 p-5 flex gap-4 items-start">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center shrink-0">
-              <Package size={18} className="text-blue-600 dark:text-blue-400" />
+          <div className="bg-gradient-to-r from-sky-50 to-cyan-50 rounded-2xl border border-sky-100 dark:border-sky-800/50 p-5 flex gap-4 items-start">
+            <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/30 rounded-xl flex items-center justify-center shrink-0">
+              <Package size={18} className="text-sky-600 dark:text-sky-400" />
             </div>
             <div>
-              <p className="font-bold text-blue-800 text-sm mb-1">{t('tienda.comoFuncTienda')}</p>
-              <p className="text-xs text-blue-500 leading-relaxed">
+              <p className="font-bold text-sky-800 text-sm mb-1">{t('tienda.comoFuncTienda')}</p>
+              <p className="text-xs text-sky-500 leading-relaxed">
                 {t('ui.physical_items_note')}
                 Los <strong>{t('ui.digitales')}</strong> te los enviamos por WhatsApp tras confirmar el pago.
                 ¿Dudas? Escríbenos al <a href="https://wa.me/51991070734" className="underline font-bold">+51 991 070 734</a>.
@@ -425,7 +425,7 @@ export default function StoreView({ profile }: { profile: any }) {
               <p className="font-bold mb-1" style={{ color: "var(--c-text-muted)" }}>{t('tienda.sinPedidos')}</p>
               <p className="text-sm text-slate-400 dark:text-slate-500 mb-4">{t('tienda.exploraCompra')}</p>
               <button onClick={() => setView('catalogo')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-all">
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 text-white font-bold text-sm rounded-xl hover:bg-sky-700 transition-all">
                 Ir a la tienda →
               </button>
             </div>
@@ -437,7 +437,7 @@ export default function StoreView({ profile }: { profile: any }) {
                 <div className={`${cfg.bg} px-5 py-3 flex items-center justify-between`}>
                   <div className="flex items-center gap-2">
                     <StatusIcon size={15} className={cfg.color} />
-                    <span className={`text-xs font-black ${cfg.color}`}>{cfg.label}</span>
+                    <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
                   </div>
                   <span className="text-xs text-slate-400 dark:text-slate-500">
                     {new Date(order.created_at).toLocaleDateString(toBCP47(locale), { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -456,12 +456,12 @@ export default function StoreView({ profile }: { profile: any }) {
                         <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{item.product_nombre}</p>
                         <p className="text-xs text-slate-400 dark:text-slate-500">x{item.cantidad} · S/ {Number(item.precio_unitario).toFixed(2)} c/u</p>
                       </div>
-                      <p className="font-black text-slate-700 dark:text-slate-200">S/ {Number(item.subtotal).toFixed(2)}</p>
+                      <p className="font-bold text-slate-700 dark:text-slate-200">S/ {Number(item.subtotal).toFixed(2)}</p>
                     </div>
                   ))}
                   <div className="pt-3 border-t border-slate-100 dark:border-[#21262d] flex items-center justify-between">
                     <span className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 font-medium">Total pagado</span>
-                    <span className="text-xl font-black text-blue-600 dark:text-blue-400">S/ {Number(order.total_soles).toFixed(2)}</span>
+                    <span className="text-xl font-bold text-sky-600 dark:text-sky-400">S/ {Number(order.total_soles).toFixed(2)}</span>
                   </div>
                   {order.notas && (
                     <p className="text-xs text-slate-400 dark:text-slate-500 italic">Tu nota: "{order.notas}"</p>
@@ -499,28 +499,28 @@ function ProductCard({ product: p, onAdd, onDetail, justAdded, inCart, featured 
           : <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImageIcon size={28} className="text-slate-300" /></div>
         }
         <div className="absolute top-3 left-3 flex gap-1.5">
-          <span className={`text-xs font-black px-2 py-0.5 rounded-full text-white ${p.tipo === 'digital' ? 'bg-violet-600' : 'bg-slate-700'}`}>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${p.tipo === 'digital' ? 'bg-sky-600' : 'bg-slate-700'}`}>
             {p.tipo === 'digital' ? '📄' : '📦'}
           </span>
-          {featured && <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-400 text-white">⭐</span>}
+          {featured && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-400 text-white">⭐</span>}
         </div>
         {sinStock && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-full">Sin stock</span>
+            <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">Sin stock</span>
           </div>
         )}
         {p.tipo === 'fisico' && p.stock > 0 && p.stock <= 3 && (
-          <div className="absolute bottom-2 right-2 bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">Solo {p.stock}</div>
+          <div className="absolute bottom-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Solo {p.stock}</div>
         )}
       </div>
 
       <div className="p-3 sm:p-4">
-        <p className="font-black text-xs sm:text-sm leading-tight mb-1 line-clamp-2" style={{ color: "var(--c-text-primary)" }} onClick={() => onDetail(p)}>{p.nombre}</p>
+        <p className="font-bold text-xs sm:text-sm leading-tight mb-1 line-clamp-2" style={{ color: "var(--c-text-primary)" }} onClick={() => onDetail(p)}>{p.nombre}</p>
         <p className="text-[10px] sm:text-xs line-clamp-2 mb-2 sm:mb-3 leading-relaxed" style={{ color: "var(--c-text-muted)" }}>{p.descripcion}</p>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm sm:text-lg font-black text-blue-500">S/ {Number(p.precio_soles).toFixed(2)}</span>
+          <span className="text-sm sm:text-lg font-bold text-sky-500">S/ {Number(p.precio_soles).toFixed(2)}</span>
           <button onClick={() => !sinStock && onAdd(p)} disabled={sinStock}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${justAdded ? 'bg-emerald-600 text-white scale-95' : sinStock ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-200'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${justAdded ? 'bg-emerald-600 text-white scale-95' : sinStock ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sm shadow-sky-200'}`}>
             {justAdded ? <><CheckCircle size={13} /> {t('ui.added_short')}</> : <><ShoppingCart size={13} /> {inCart > 0 ? `${t('ui.in_cart')} (${inCart})` : t('common.agregar')}</>}
           </button>
         </div>
@@ -547,7 +547,7 @@ function ProductDetail({ product: p, onClose, onAdd, inCart, justAdded }: any) {
             <X size={16} color="var(--c-text-primary)" />
           </button>
           <div style={{ position:'absolute', top:12, left:12, display:'flex', gap:6 }}>
-            <span style={{ fontSize:10, fontWeight:800, padding:'3px 10px', borderRadius:20, color:'#fff', background: p.tipo === 'digital' ? '#7c3aed' : '#475569' }}>
+            <span style={{ fontSize:10, fontWeight:800, padding:'3px 10px', borderRadius:20, color:'#fff', background: p.tipo === 'digital' ? '#0284c7' : '#475569' }}>
               {p.tipo === 'digital' ? '📄 Digital' : '📦 Físico'}
             </span>
           </div>
@@ -557,7 +557,7 @@ function ProductDetail({ product: p, onClose, onAdd, inCart, justAdded }: any) {
         <div style={{ padding:'16px 20px 20px', overflowY:'auto', flex:1 }}>
           <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:8 }}>
             <h3 style={{ fontWeight:900, fontSize:17, color:'var(--c-text-primary)', margin:0, lineHeight:1.3, flex:1 }}>{p.nombre}</h3>
-            <span style={{ fontWeight:900, fontSize:20, color:'#2563eb', flexShrink:0 }}>S/ {Number(p.precio_soles).toFixed(2)}</span>
+            <span style={{ fontWeight:900, fontSize:20, color:'#0284c7', flexShrink:0 }}>S/ {Number(p.precio_soles).toFixed(2)}</span>
           </div>
 
           <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:12 }}>
@@ -565,21 +565,21 @@ function ProductDetail({ product: p, onClose, onAdd, inCart, justAdded }: any) {
             {p.tipo === 'fisico' && <span style={{ fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20, background: p.stock > 3 ? 'rgba(16,185,129,0.12)' : p.stock > 0 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)', color: p.stock > 3 ? '#10b981' : p.stock > 0 ? '#f59e0b' : '#ef4444' }}>
               {p.stock === 0 ? 'Sin stock' : `${p.stock} disponibles`}
             </span>}
-            {p.tipo === 'digital' && <span style={{ fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20, background:'var(--c-stat-purple)', color:'#8b5cf6' }}>Descarga inmediata</span>}
+            {p.tipo === 'digital' && <span style={{ fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20, background:'var(--c-stat-purple)', color:'#0ea5e9' }}>Descarga inmediata</span>}
           </div>
 
           <p style={{ fontSize:13, color:'var(--c-text-secondary)', lineHeight:1.6, marginBottom:14 }}>{p.descripcion || 'Sin descripción disponible.'}</p>
 
           {p.tipo === 'digital' && (
             <div style={{ background:'var(--c-stat-purple)', border:'1px solid var(--c-border)', borderRadius:12, padding:'10px 14px', marginBottom:14 }}>
-              <p style={{ fontSize:11, fontWeight:800, color:'#8b5cf6', margin:'0 0 4px' }}>📄 {t('tienda.articuloDigital')}</p>
+              <p style={{ fontSize:11, fontWeight:800, color:'#0ea5e9', margin:'0 0 4px' }}>📄 {t('tienda.articuloDigital')}</p>
               <p style={{ fontSize:11, color:'var(--c-text-muted)', margin:0, lineHeight:1.5 }}>Al confirmar tu pedido y pagar, recibirás el archivo por WhatsApp en menos de 24 horas.</p>
             </div>
           )}
 
           <button onClick={() => !sinStock && onAdd(p)} disabled={sinStock}
             style={{ width:'100%', padding:'14px', borderRadius:16, border:'none', cursor: sinStock ? 'not-allowed' : 'pointer', fontWeight:900, fontSize:15, display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all .2s',
-              background: justAdded ? '#10b981' : sinStock ? 'var(--c-surface)' : '#2563eb',
+              background: justAdded ? '#10b981' : sinStock ? 'var(--c-surface)' : '#0284c7',
               color: sinStock ? 'var(--c-text-muted)' : '#fff' }}>
             {justAdded ? <><CheckCircle size={16} /> {t('ui.added_to_cart')}</> : sinStock ? t('ui.out_of_stock') : <><ShoppingCart size={16} /> {inCart > 0 ? `${t('ui.add_another')} (${inCart})` : t('ui.add_to_cart')}</>}
           </button>

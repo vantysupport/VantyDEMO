@@ -13,12 +13,12 @@ interface Msg {
 interface Props { childId: string; childName: string; profile: any }
 
 const ROLE_CFG: Record<string, { label: string; color: string; bg: string; grad: string }> = {
-  jefe:         { label: 'Director(a)',  color: '#7c3aed', bg: '#f5f3ff', grad: 'linear-gradient(135deg,#7c3aed,#6d28d9)' },
-  admin:        { label: 'Admin',        color: '#2563eb', bg: '#eff6ff', grad: 'linear-gradient(135deg,#2563eb,#1d4ed8)' },
+  jefe:         { label: 'Director(a)',  color: '#0284c7', bg: '#f5f3ff', grad: 'linear-gradient(135deg,#0284c7,#0369a1)' },
+  admin:        { label: 'Admin',        color: '#0284c7', bg: '#eff6ff', grad: 'linear-gradient(135deg,#0284c7,#0369a1)' },
   especialista: { label: 'Terapeuta ABA',color: '#059669', bg: '#f0fdf4', grad: 'linear-gradient(135deg,#059669,#047857)' },
   terapeuta:    { label: 'Terapeuta ABA',color: '#059669', bg: '#f0fdf4', grad: 'linear-gradient(135deg,#059669,#047857)' },
   secretaria:   { label: 'Secretaría',   color: '#d97706', bg: '#fffbeb', grad: 'linear-gradient(135deg,#d97706,#b45309)' },
-  padre:        { label: 'Tú',           color: '#2563eb', bg: '#eff6ff', grad: 'linear-gradient(135deg,#2563eb,#1d4ed8)' },
+  padre:        { label: 'Tú',           color: '#0284c7', bg: '#eff6ff', grad: 'linear-gradient(135deg,#0284c7,#0369a1)' },
 }
 
 function formatTime(iso: string) {
@@ -214,7 +214,7 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
       {/* ── HEADER ── */}
       <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--c-card)', flexShrink: 0 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#eff6ff,#dbeafe)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#2563eb', flexShrink: 0, border: '2px solid #bfdbfe' }}>
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0284c7', flexShrink: 0, border: '2px solid #bfdbfe' }}>
           {childName?.[0]?.toUpperCase() || 'E'}
         </div>
         <div style={{ flex: 1 }}>
@@ -239,7 +239,7 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
         ) : messages.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 12, padding: '60px 20px', textAlign: 'center' }}>
             <div style={{ width: 60, height: 60, background: '#eff6ff', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #bfdbfe' }}>
-              <MessageCircle size={26} color="#2563eb"/>
+              <MessageCircle size={26} color="#0284c7"/>
             </div>
             <div>
               <p style={{ fontWeight: 800, fontSize: 15, color: 'var(--c-text-primary)', margin: '0 0 6px' }}>¡Escríbenos!</p>
@@ -289,17 +289,17 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
                     <div style={{
                       maxWidth: '68%', padding: '9px 13px',
                       borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: isMe ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : 'var(--c-card)',
+                      background: isMe ? 'linear-gradient(135deg,#0284c7,#0369a1)' : 'var(--c-card)',
                       color: isMe ? '#fff' : 'var(--c-text-primary)',
                       fontSize: 13, lineHeight: 1.6, wordBreak: 'break-word',
                       border: isMe ? 'none' : '1px solid var(--c-border)',
-                      boxShadow: isMe ? '0 2px 12px rgba(37,99,235,.25)' : '0 1px 4px rgba(0,0,0,.06)',
+                      boxShadow: isMe ? '0 2px 12px rgba(2,132,199,.25)' : '0 1px 4px rgba(0,0,0,.06)',
                     }}>
                       {msg.content.startsWith('🎤 [Audio] ') ? (
                         <audio controls src={msg.content.replace('🎤 [Audio] ','')} style={{ maxWidth:'200px', height:32 }}/>
                       ) : msg.content.startsWith('📎 [') ? (() => {
                         const m = msg.content.match(/^📎 \[(.+?)\] (.+)$/)
-                        return m ? <a href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? '#bfdbfe' : '#2563eb', fontSize:12, display:'flex', alignItems:'center', gap:6 }}><FileIcon size={13}/>{m[1]}</a> : <p style={{ margin:0 }}>{msg.content}</p>
+                        return m ? <a href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? '#bfdbfe' : '#0284c7', fontSize:12, display:'flex', alignItems:'center', gap:6 }}><FileIcon size={13}/>{m[1]}</a> : <p style={{ margin:0 }}>{msg.content}</p>
                       })() : (
                         <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.content}</p>
                       )}
@@ -330,8 +330,8 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
         {(audioBlob || attachFile) && (
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', marginBottom:8, background:'var(--c-surface)', borderRadius:12, border:'1px solid var(--c-border)' }}>
             {audioBlob
-              ? <><FileAudio size={16} color="#2563eb"/><span style={{ flex:1, fontSize:12, color:'var(--c-text-secondary)' }}>Audio listo para enviar</span></>
-              : <><FileIcon size={16} color="#2563eb"/><span style={{ flex:1, fontSize:12, color:'var(--c-text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{attachFile?.name}</span></>
+              ? <><FileAudio size={16} color="#0284c7"/><span style={{ flex:1, fontSize:12, color:'var(--c-text-secondary)' }}>Audio listo para enviar</span></>
+              : <><FileIcon size={16} color="#0284c7"/><span style={{ flex:1, fontSize:12, color:'var(--c-text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{attachFile?.name}</span></>
             }
             <button onClick={cancelRecording} style={{ background:'none', border:'none', cursor:'pointer', padding:2 }}>
               <X size={14} color="var(--c-text-muted)"/>
@@ -344,7 +344,7 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
           <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', marginBottom:8, background:'rgba(239,68,68,0.1)', borderRadius:12, border:'1px solid rgba(239,68,68,0.25)' }}>
             <div style={{ width:8, height:8, borderRadius:'50%', background:'#ef4444', animation:'cfspin 1s ease infinite' }}/>
             <span style={{ flex:1, fontSize:12, fontWeight:700, color:'#ef4444' }}>Grabando... {recordSecs}s</span>
-            <button onClick={stopRecording} style={{ fontSize:11, fontWeight:700, color:'#2563eb', background:'var(--c-card)', border:'1px solid var(--c-border)', borderRadius:8, padding:'4px 10px', cursor:'pointer' }}>
+            <button onClick={stopRecording} style={{ fontSize:11, fontWeight:700, color:'#0284c7', background:'var(--c-card)', border:'1px solid var(--c-border)', borderRadius:8, padding:'4px 10px', cursor:'pointer' }}>
               Detener
             </button>
             <button onClick={cancelRecording} style={{ background:'none', border:'none', cursor:'pointer', padding:2 }}>
@@ -385,8 +385,8 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
               }}
               disabled={sending || uploading}
               style={{ width:36, height:36, borderRadius:12, border:'none', cursor:'pointer', flexShrink:0,
-                background:'linear-gradient(135deg,#2563eb,#1d4ed8)', display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:'0 2px 8px rgba(37,99,235,.3)' }}>
+                background:'linear-gradient(135deg,#0284c7,#0369a1)', display:'flex', alignItems:'center', justifyContent:'center',
+                boxShadow:'0 2px 8px rgba(2,132,199,.3)' }}>
               {(sending || uploading)
                 ? <Loader2 size={16} color="#fff" style={{ animation:'cfspin 1s linear infinite' }}/>
                 : <Send size={16} color="#fff"/>
