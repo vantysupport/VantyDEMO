@@ -9,7 +9,7 @@ import {
   Search, RefreshCw, Users, Circle, Paperclip, Mic,
   MicOff, X, FileText, Play, Pause, Square,
   Reply, Copy, Forward, Pin, Star, Flag, Trash2,
-  MoreVertical, Camera, Smile, ChevronLeft
+  MoreVertical, Camera, Smile, ChevronLeft, Heart
 } from 'lucide-react'
 import ChatFamilias from './ChatFamilias'
 
@@ -75,7 +75,7 @@ function Avatar({
         />
       ) : (
         <div
-          className={`${sz} bg-gradient-to-br from-blue-500 to-sky-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm`}
+          className={`${sz} bg-gradient-to-br from-sky-500 to-sky-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm`}
         >
           {name.charAt(0).toUpperCase()}
         </div>
@@ -729,11 +729,11 @@ export default function ChatEspecialistas({
       <div className={`flex items-center gap-1 mb-3 p-1 rounded-xl w-fit flex-shrink-0 ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
         {(['equipo', 'familias'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveMainTab(tab)}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeMainTab === tab
-              ? isDark ? 'bg-[#161b22] text-slate-100 shadow-sm' : 'bg-white text-slate-800 shadow-sm'
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeMainTab === tab
+              ? isDark ? 'bg-[#161b22] text-sky-400 shadow-sm' : 'bg-white text-sky-700 shadow-sm'
               : isDark ? 'text-slate-500' : 'text-slate-500'
             }`}>
-            {tab === 'equipo' ? '👥 Chat Equipo' : '👨‍👩‍👧 Chat Familias'}
+            {tab === 'equipo' ? <><Users size={14} /> Chat Equipo</> : <><Heart size={14} /> Chat Familias</>}
           </button>
         ))}
       </div>
@@ -772,7 +772,7 @@ export default function ChatEspecialistas({
 
             <div className="flex items-center justify-between mb-2">
               <h2 className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                <Users size={13} className="text-blue-500" /> Contactos
+                <Users size={13} className="text-sky-500" /> Contactos
               </h2>
             </div>
             <div className="relative">
@@ -781,7 +781,7 @@ export default function ChatEspecialistas({
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar..."
-                className={`w-full pl-8 pr-3 py-2 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${isDark ? 'bg-[#0d1117] border border-[#30363d] text-slate-300 placeholder-slate-600' : 'bg-white border border-slate-200 text-slate-700'}`}
+                className={`w-full pl-8 pr-3 py-2 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-400 shadow-sm ${isDark ? 'bg-[#0d1117] border border-[#30363d] text-slate-300 placeholder-slate-600' : 'bg-white border border-slate-200 text-slate-700'}`}
               />
             </div>
           </div>
@@ -790,7 +790,7 @@ export default function ChatEspecialistas({
           <div className="flex-1 overflow-y-auto">
             {loadingEsp ? (
               <div className="flex justify-center py-10">
-                <Loader2 size={18} className="animate-spin text-blue-400" />
+                <Loader2 size={18} className="animate-spin text-sky-400" />
               </div>
             ) : filtrados.length === 0 ? (
               <div className="text-center py-10 px-4">
@@ -855,7 +855,7 @@ export default function ChatEspecialistas({
                   <>
                     <div className={`px-4 py-2 border-b sticky top-0 z-10 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-slate-100/80 border-slate-200/60'}`}>
                       <p className={`text-[10px] font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" />
+                        <span className="w-1.5 h-1.5 bg-sky-500 rounded-full inline-block" />
                         Especialistas
                       </p>
                     </div>
@@ -865,7 +865,7 @@ export default function ChatEspecialistas({
                         onClick={() => { setSeleccionado(esp); setMobileShowChat(true) }}
                         className={`w-full text-left px-4 py-3.5 border-b transition-colors relative
                           ${seleccionado?.id === esp.id
-                            ? isDark ? 'bg-blue-900/30 border-l-[3px] border-l-blue-500 border-[#21262d]' : 'bg-blue-50 border-l-[3px] border-l-blue-500 border-slate-100/70'
+                            ? isDark ? 'bg-sky-900/30 border-l-[3px] border-l-sky-500 border-[#21262d]' : 'bg-sky-50 border-l-[3px] border-l-sky-500 border-slate-100/70'
                             : isDark ? 'hover:bg-[#21262d] border-[#21262d]' : 'hover:bg-white/80 border-slate-100/70'
                           }`}
                       >
@@ -909,9 +909,9 @@ export default function ChatEspecialistas({
         {/* ── Panel derecho ── */}
         <div className={`${mobileShowChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0`}>
           {!seleccionado ? (
-            <div className={`flex-1 flex flex-col items-center justify-center gap-5 text-center px-8 ${isDark ? 'bg-[#0d1117]' : 'bg-gradient-to-br from-slate-50 to-blue-50/30'}`}>
+            <div className={`flex-1 flex flex-col items-center justify-center gap-5 text-center px-8 ${isDark ? 'bg-[#0d1117]' : 'bg-gradient-to-br from-slate-50 to-sky-50/30'}`}>
               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-sm border ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-100'}`}>
-                <MessageCircle size={40} className="text-blue-200" />
+                <MessageCircle size={40} className="text-sky-200" />
               </div>
               <div>
                 <p className={`font-bold text-base ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Selecciona un contacto</p>
@@ -957,15 +957,15 @@ export default function ChatEspecialistas({
 
               {/* Banner reply */}
               {replyTo && (
-                <div className={`border-b px-4 py-2 flex items-start gap-2 ${isDark ? 'bg-blue-900/20 border-blue-800/40' : 'bg-blue-50 border-blue-100'}`}>
-                  <Reply size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                <div className={`border-b px-4 py-2 flex items-start gap-2 ${isDark ? 'bg-sky-900/20 border-sky-800/40' : 'bg-sky-50 border-sky-100'}`}>
+                  <Reply size={14} className="text-sky-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-blue-500">{replyTo.sender_name}</p>
+                    <p className="text-[10px] font-bold text-sky-500">{replyTo.sender_name}</p>
                     <p className={`text-[11px] truncate ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{replyTo.content.slice(0, 80)}</p>
                   </div>
                   <button
                     onClick={() => setReplyTo(null)}
-                    className={`p-1 rounded-lg ${isDark ? 'hover:bg-blue-900/40 text-blue-400' : 'hover:bg-blue-100 text-blue-400'}`}
+                    className={`p-1 rounded-lg ${isDark ? 'hover:bg-sky-900/40 text-sky-400' : 'hover:bg-sky-100 text-sky-400'}`}
                   >
                     <X size={12} />
                   </button>
@@ -983,12 +983,12 @@ export default function ChatEspecialistas({
               >
                 {loadingMsg ? (
                   <div className="flex justify-center py-10">
-                    <Loader2 size={20} className="animate-spin text-blue-400" />
+                    <Loader2 size={20} className="animate-spin text-sky-400" />
                   </div>
                 ) : mensajes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm border ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-100'}`}>
-                      <MessageCircle size={24} className="text-blue-300" />
+                      <MessageCircle size={24} className="text-sky-300" />
                     </div>
                     <p className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Sin mensajes aún con este especialista</p>
                   </div>
@@ -1043,7 +1043,7 @@ export default function ChatEspecialistas({
                                 onContextMenu={(e) => openContextMenu(e, msg.id)}
                               >
                                 {!mismoEmisor && !esMio && (
-                                  <p className="text-[10px] font-bold text-blue-500 mb-1 ml-1">
+                                  <p className="text-[10px] font-bold text-sky-500 mb-1 ml-1">
                                     {msg.sender_name}
                                   </p>
                                 )}
@@ -1072,14 +1072,14 @@ export default function ChatEspecialistas({
                                     rel="noreferrer"
                                     className={`flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-sm hover:opacity-80 transition-opacity
                                       ${esMio
-                                        ? 'bg-blue-600 text-white border-blue-500'
+                                        ? 'bg-sky-600 text-white border-sky-500'
                                         : isDark
                                           ? 'bg-[#21262d] text-slate-200 border-[#30363d]'
                                           : 'bg-white text-slate-800 border-slate-200'
                                       }`}
                                   >
                                     <div
-                                      className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${esMio ? 'bg-blue-500' : isDark ? 'bg-[#30363d]' : 'bg-slate-100'}`}
+                                      className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${esMio ? 'bg-sky-500' : isDark ? 'bg-[#30363d]' : 'bg-slate-100'}`}
                                     >
                                       <FileText size={16} className={esMio ? 'text-white' : isDark ? 'text-slate-400' : 'text-slate-500'} />
                                     </div>
@@ -1087,7 +1087,7 @@ export default function ChatEspecialistas({
                                       <p className="text-xs font-bold truncate max-w-[150px]">
                                         {msg.file_name}
                                       </p>
-                                      <p className={`text-[10px] ${esMio ? 'text-blue-200' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                      <p className={`text-[10px] ${esMio ? 'text-sky-200' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                         Toca para abrir
                                       </p>
                                     </div>
@@ -1099,7 +1099,7 @@ export default function ChatEspecialistas({
                                   <div
                                     className={`flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-sm min-w-[200px]
                                       ${esMio
-                                        ? 'bg-blue-600 border-blue-500'
+                                        ? 'bg-sky-600 border-sky-500'
                                         : isDark
                                           ? 'bg-[#21262d] border-[#30363d]'
                                           : 'bg-white border-slate-200'
@@ -1108,22 +1108,22 @@ export default function ChatEspecialistas({
                                     <button
                                       onClick={() => toggleAudio(msg.id, msg.file_url!)}
                                       className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors
-                                        ${esMio ? 'bg-blue-500 hover:bg-blue-400' : 'bg-blue-100 hover:bg-blue-200'}`}
+                                        ${esMio ? 'bg-sky-500 hover:bg-sky-400' : 'bg-sky-100 hover:bg-sky-200'}`}
                                     >
                                       {reproduciendo === msg.id ? (
-                                        <Pause size={15} className={esMio ? 'text-white' : 'text-blue-600'} />
+                                        <Pause size={15} className={esMio ? 'text-white' : 'text-sky-600'} />
                                       ) : (
-                                        <Play size={15} className={esMio ? 'text-white' : 'text-blue-600'} />
+                                        <Play size={15} className={esMio ? 'text-white' : 'text-sky-600'} />
                                       )}
                                     </button>
                                     <div className="flex-1">
-                                      <div className={`h-1.5 rounded-full ${esMio ? 'bg-blue-400' : isDark ? 'bg-[#30363d]' : 'bg-slate-200'}`}>
+                                      <div className={`h-1.5 rounded-full ${esMio ? 'bg-sky-400' : isDark ? 'bg-[#30363d]' : 'bg-slate-200'}`}>
                                         <div
-                                          className={`h-full rounded-full transition-all ${esMio ? 'bg-white/60' : 'bg-blue-400'}`}
+                                          className={`h-full rounded-full transition-all ${esMio ? 'bg-white/60' : 'bg-sky-400'}`}
                                           style={{ width: reproduciendo === msg.id ? '60%' : '0%' }}
                                         />
                                       </div>
-                                      <p className={`text-[10px] mt-1 ${esMio ? 'text-blue-200' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                      <p className={`text-[10px] mt-1 ${esMio ? 'text-sky-200' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                         Nota de voz
                                       </p>
                                     </div>
@@ -1136,7 +1136,7 @@ export default function ChatEspecialistas({
                                     <div
                                       className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm
                                         ${esMio
-                                          ? 'bg-blue-600 text-white rounded-br-sm'
+                                          ? 'bg-sky-600 text-white rounded-br-sm'
                                           : isDark
                                             ? 'bg-[#21262d] text-slate-200 border border-[#30363d] rounded-bl-sm'
                                             : 'bg-white text-slate-800 border border-slate-100 rounded-bl-sm shadow-sm'
@@ -1161,7 +1161,7 @@ export default function ChatEspecialistas({
                                   </span>
                                   {esMio &&
                                     (msg.read_at ? (
-                                      <CheckCheck size={11} className="text-blue-400" />
+                                      <CheckCheck size={11} className="text-sky-400" />
                                     ) : (
                                       <Check size={11} className={isDark ? 'text-slate-600' : 'text-slate-300'} />
                                     ))}
@@ -1186,19 +1186,19 @@ export default function ChatEspecialistas({
 
               {/* Preview audio grabado */}
               {audioUrl && !grabando && (
-                <div className={`border-t px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-blue-900/20 border-blue-800/40' : 'bg-blue-50 border-blue-100'}`}>
-                  <Mic size={16} className="text-blue-500 flex-shrink-0" />
+                <div className={`border-t px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-sky-900/20 border-sky-800/40' : 'bg-sky-50 border-sky-100'}`}>
+                  <Mic size={16} className="text-sky-500 flex-shrink-0" />
                   <audio src={audioUrl} controls className="flex-1 h-8" style={{ minWidth: 0 }} />
                   <button
                     onClick={cancelarAudio}
-                    className={`p-1.5 rounded-lg flex-shrink-0 ${isDark ? 'hover:bg-blue-900/40 text-blue-400' : 'hover:bg-blue-100 text-blue-400'}`}
+                    className={`p-1.5 rounded-lg flex-shrink-0 ${isDark ? 'hover:bg-sky-900/40 text-sky-400' : 'hover:bg-sky-100 text-sky-400'}`}
                   >
                     <X size={14} />
                   </button>
                   <button
                     onClick={enviarAudio}
                     disabled={subiendo}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 disabled:opacity-50 flex-shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 disabled:opacity-50 flex-shrink-0"
                   >
                     {subiendo ? (
                       <Loader2 size={12} className="animate-spin" />
@@ -1250,7 +1250,7 @@ export default function ChatEspecialistas({
                     accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
                   />
 
-                  <div className={`flex-1 rounded-2xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500/60 transition-all ${isDark ? 'bg-[#21262d] border border-[#21262d] focus-within:border-blue-500/50' : 'bg-slate-50 border border-slate-200 focus-within:border-blue-400'}`}>
+                  <div className={`flex-1 rounded-2xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-sky-500/60 transition-all ${isDark ? 'bg-[#21262d] border border-[#21262d] focus-within:border-sky-500/50' : 'bg-slate-50 border border-slate-200 focus-within:border-sky-400'}`}>
                     <textarea
                       ref={textareaRef}
                       value={texto}
@@ -1283,7 +1283,7 @@ export default function ChatEspecialistas({
                     <button
                       onClick={enviar}
                       disabled={enviando}
-                      className="w-9 h-9 flex-shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white flex items-center justify-center transition-all shadow-sm shadow-blue-200"
+                      className="w-9 h-9 flex-shrink-0 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 text-white flex items-center justify-center transition-all shadow-sm shadow-sky-200"
                     >
                       {enviando ? (
                         <Loader2 size={16} className="animate-spin" />

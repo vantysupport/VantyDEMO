@@ -30,7 +30,7 @@ interface Order {
 
 const ESTADO_CFG: Record<string, any> = {
   pendiente:  { label: 'Pendiente',  icon: Clock,       bg: 'bg-amber-50',   border: 'border-amber-200',  text: 'text-amber-700',   dot: 'bg-amber-400',   ring: 'ring-amber-300',  gradient: 'from-amber-400 to-orange-500'  },
-  confirmado: { label: 'Confirmado', icon: CheckCircle, bg: 'bg-sky-50',     border: 'border-sky-200',    text: 'text-sky-700',     dot: 'bg-sky-400',     ring: 'ring-sky-300',    gradient: 'from-sky-400 to-blue-500'      },
+  confirmado: { label: 'Confirmado', icon: CheckCircle, bg: 'bg-sky-50',     border: 'border-sky-200',    text: 'text-sky-700',     dot: 'bg-sky-400',     ring: 'ring-sky-300',    gradient: 'from-sky-400 to-sky-500'      },
   listo:      { label: 'Listo',      icon: Package,     bg: 'bg-sky-50',  border: 'border-sky-200', text: 'text-sky-700',  dot: 'bg-sky-400',  ring: 'ring-sky-300', gradient: 'from-sky-400 to-sky-500' },
   entregado:  { label: 'Entregado',  icon: BadgeCheck,  bg: 'bg-emerald-50', border: 'border-emerald-200',text: 'text-emerald-700', dot: 'bg-emerald-400', ring: 'ring-emerald-300',gradient: 'from-emerald-400 to-teal-500'  },
   cancelado:  { label: 'Cancelado',  icon: XCircle,     bg: 'bg-red-50',     border: 'border-red-200',    text: 'text-red-700',     dot: 'bg-red-400',     ring: 'ring-red-300',    gradient: 'from-red-400 to-rose-500'      },
@@ -103,14 +103,14 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
     finally { setSaving(false) }
   }
 
-  const inp = `w-full px-4 py-3 rounded-xl text-sm font-medium outline-none transition-all border-2 ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-200 focus:border-blue-500' : 'bg-white border-slate-200 text-slate-800 focus:border-blue-400 shadow-sm'}`
+  const inp = `w-full px-4 py-3 rounded-xl text-sm font-medium outline-none transition-all border-2 ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-200 focus:border-sky-500' : 'bg-white border-slate-200 text-slate-800 focus:border-sky-400 shadow-sm'}`
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
       <div className={`rounded-3xl w-full max-w-2xl max-h-[94vh] overflow-y-auto shadow-2xl ${isDark ? 'bg-[#161b22] border border-[#30363d]' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
         <div className={`sticky top-0 z-10 px-7 py-5 border-b flex items-center justify-between ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-100'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-lg shadow-blue-200">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-200">
               <ShoppingBag size={18} className="text-white" />
             </div>
             <div>
@@ -125,7 +125,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
           <div>
             <label className={`block text-xs font-bold mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Imagen del producto</label>
             <div
-              className={`relative border-2 border-dashed rounded-2xl transition-all cursor-pointer overflow-hidden group ${dragOver ? 'border-blue-400 bg-blue-50/50 scale-[0.99]' : isDark ? 'border-[#30363d] hover:border-blue-500' : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50/50'}`}
+              className={`relative border-2 border-dashed rounded-2xl transition-all cursor-pointer overflow-hidden group ${dragOver ? 'border-sky-400 bg-sky-50/50 scale-[0.99]' : isDark ? 'border-[#30363d] hover:border-sky-500' : 'border-slate-200 hover:border-sky-300 hover:bg-slate-50/50'}`}
               style={{ minHeight: 180 }}
               onDragOver={e => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
@@ -172,10 +172,10 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
               {([['fisico','📦','Físico','Se retira en el centro'],['digital','📄','Digital','PDF o archivo descargable']] as const).map(([val,emoji,lbl,desc]) => (
                 <button key={val} type="button" onClick={() => setForm((f:any) => ({ ...f, tipo: val }))}
                   className={`p-4 rounded-2xl border-2 text-left transition-all ${form.tipo === val
-                    ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100'
+                    ? 'border-sky-500 bg-sky-50 shadow-md shadow-sky-100'
                     : isDark ? 'border-[#30363d] hover:border-[#4a5568]' : 'border-slate-200 hover:border-slate-300 bg-white'}`}>
                   <span className="text-2xl block mb-2">{emoji}</span>
-                  <p className={`font-bold text-sm ${form.tipo===val ? 'text-blue-700' : isDark ? 'text-slate-300' : 'text-slate-800'}`}>{lbl}</p>
+                  <p className={`font-bold text-sm ${form.tipo===val ? 'text-sky-700' : isDark ? 'text-slate-300' : 'text-slate-800'}`}>{lbl}</p>
                   <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{desc}</p>
                 </button>
               ))}
@@ -207,7 +207,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
               {CATEGORIAS.map(cat => (
                 <button key={cat} type="button" onClick={() => setForm((f:any) => ({ ...f, categoria: cat }))}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 text-sm font-bold capitalize transition-all ${form.categoria===cat
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-sky-500 bg-sky-50 text-sky-700'
                     : isDark ? 'border-[#30363d] text-slate-400 hover:border-[#4a5568]' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white'}`}>
                   {CAT_EMOJI[cat]} {cat}
                 </button>
@@ -241,7 +241,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
         <div className={`sticky bottom-0 px-7 py-5 border-t flex gap-3 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white/95 backdrop-blur-sm border-slate-100'}`}>
           <button onClick={onClose} className={`flex-1 py-3.5 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-[#21262d] text-slate-300 hover:bg-[#30363d]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>Cancelar</button>
           <button onClick={handleSave} disabled={saving}
-            className="flex-1 py-3.5 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+            className="flex-1 py-3.5 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-sky-200">
             {saving ? <Loader2 size={16} className="animate-spin"/> : <Save size={16}/>}
             {saving ? 'Guardando…' : product ? 'Guardar cambios' : 'Crear producto'}
           </button>
@@ -258,7 +258,7 @@ function ProductCard({ p, onEdit, onToggle, onDelete }: { p:Product; onEdit:()=>
   return (
     <div className={`group relative rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isDark
       ? 'bg-[#161b22] border border-[#21262d] hover:border-[#30363d]'
-      : p.activo ? 'bg-white border border-slate-200/80 hover:border-blue-200 shadow-sm' : 'bg-slate-50 border border-slate-200 opacity-60'}`}>
+      : p.activo ? 'bg-white border border-slate-200/80 hover:border-sky-200 shadow-sm' : 'bg-slate-50 border border-slate-200 opacity-60'}`}>
 
       <div className="relative h-52 overflow-hidden">
         {p.imagen_url ? (
@@ -301,7 +301,7 @@ function ProductCard({ p, onEdit, onToggle, onDelete }: { p:Product; onEdit:()=>
         <p className={`text-xs leading-relaxed line-clamp-2 mb-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{p.descripcion||'Sin descripción'}</p>
 
         <div className={`flex items-center justify-between mb-4 pb-4 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          <span className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>S/ {Number(p.precio_soles).toFixed(2)}</span>
+          <span className={`text-2xl font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>S/ {Number(p.precio_soles).toFixed(2)}</span>
           <p className={`text-xs font-bold ${
             p.tipo==='digital' ? (isDark ? 'text-sky-400' : 'text-sky-600') :
             p.stock===0 ? 'text-red-500' : p.stock<=3 ? 'text-orange-500' :
@@ -319,7 +319,7 @@ function ProductCard({ p, onEdit, onToggle, onDelete }: { p:Product; onEdit:()=>
             {p.activo ? <><ToggleRight size={13}/> Activo</> : <><ToggleLeft size={13}/> Inactivo</>}
           </button>
           <button onClick={onEdit}
-            className={`px-3.5 py-2.5 rounded-xl border transition-all ${isDark ? 'bg-blue-900/20 text-blue-400 border-blue-800/50 hover:bg-blue-900/30' : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'}`}>
+            className={`px-3.5 py-2.5 rounded-xl border transition-all ${isDark ? 'bg-sky-900/20 text-sky-400 border-sky-800/50 hover:bg-sky-900/30' : 'bg-sky-50 text-sky-600 border-sky-200 hover:bg-sky-100'}`}>
             <Edit2 size={13}/>
           </button>
           <button onClick={onDelete}
@@ -393,8 +393,8 @@ export default function StoreManagementView() {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40 gap-4">
-      <div className="w-16 h-16 rounded-2xl bg-blue-600/10 flex items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-blue-600"/>
+      <div className="w-16 h-16 rounded-2xl bg-sky-600/10 flex items-center justify-center">
+        <Loader2 size={28} className="animate-spin text-sky-600"/>
       </div>
       <p className={`text-sm font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Cargando tienda…</p>
     </div>
@@ -404,7 +404,7 @@ export default function StoreManagementView() {
     <div className="w-full space-y-5">
 
       {/* HEADER */}
-      <div className={`w-full rounded-2xl overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-[#1a1f2e] via-[#161b22] to-[#0d1117] border border-[#21262d]' : 'bg-gradient-to-br from-blue-600 via-blue-700 to-sky-700'}`}>
+      <div className={`w-full rounded-2xl overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-[#1a1f2e] via-[#161b22] to-[#0d1117] border border-[#21262d]' : 'bg-gradient-to-br from-sky-600 via-sky-700 to-sky-700'}`}>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32 pointer-events-none"/>
         <div className="absolute bottom-0 left-24 w-40 h-40 bg-white/5 rounded-full translate-y-16 pointer-events-none"/>
         <div className="relative px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
@@ -414,11 +414,11 @@ export default function StoreManagementView() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">Gestión de Tienda</h2>
-              <p className="text-sm text-blue-200/80 mt-0.5 font-medium">Productos, stock y pedidos de las familias</p>
+              <p className="text-sm text-sky-200/80 mt-0.5 font-medium">Productos, stock y pedidos de las familias</p>
             </div>
           </div>
           <button onClick={() => { setEditProduct(null); setShowModal(true) }}
-            className="flex items-center gap-2 bg-white text-blue-700 font-bold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-sm active:scale-95">
+            className="flex items-center gap-2 bg-white text-sky-700 font-bold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-sm active:scale-95">
             <Plus size={15}/> Nuevo producto
           </button>
         </div>
@@ -427,7 +427,7 @@ export default function StoreManagementView() {
       {/* STATS */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
-          { label:'Productos',  value: stats.total,    sub:`${stats.activos} activos`,  icon: Boxes,         grad:'from-blue-500 to-blue-600',     txt: isDark?'text-blue-400':'text-blue-600' },
+          { label:'Productos',  value: stats.total,    sub:`${stats.activos} activos`,  icon: Boxes,         grad:'from-sky-500 to-sky-600',     txt: isDark?'text-sky-400':'text-sky-600' },
           { label:'Activos',    value: stats.activos,  sub:'Visibles para padres',      icon: BadgeCheck,    grad:'from-emerald-500 to-emerald-600',txt: isDark?'text-emerald-400':'text-emerald-600' },
           { label:'Stock bajo', value: stats.stockBajo,sub:'≤ 3 unidades',              icon: AlertTriangle, grad: stats.stockBajo>0?'from-orange-500 to-orange-600':'from-slate-400 to-slate-500', txt: stats.stockBajo>0?(isDark?'text-orange-400':'text-orange-600'):(isDark?'text-slate-500':'text-slate-400') },
           { label:'Pendientes', value: stats.pendientes,sub:'Por atender',              icon: ShoppingCart,  grad: stats.pendientes>0?'from-amber-500 to-amber-600':'from-slate-400 to-slate-500',  txt: stats.pendientes>0?(isDark?'text-amber-400':'text-amber-600'):(isDark?'text-slate-500':'text-slate-400') },
@@ -452,7 +452,7 @@ export default function StoreManagementView() {
         ].map(({ id, label, count, icon: Icon, badge }: any) => (
           <button key={id} onClick={() => setTab(id)}
             className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab===id
-              ? 'bg-blue-600 text-white shadow-md'
+              ? 'bg-sky-600 text-white shadow-md'
               : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
             <Icon size={15}/>
             {label}
@@ -469,12 +469,12 @@ export default function StoreManagementView() {
             <div className="relative flex-1 min-w-52">
               <Search size={15} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}/>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar producto…"
-                className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all border-2 ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-300 placeholder-slate-600 focus:border-blue-500' : 'bg-slate-50 border-transparent text-slate-700 focus:border-blue-400 focus:bg-white'}`}/>
+                className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all border-2 ${isDark ? 'bg-[#0d1117] border-[#30363d] text-slate-300 placeholder-slate-600 focus:border-sky-500' : 'bg-slate-50 border-transparent text-slate-700 focus:border-sky-400 focus:bg-white'}`}/>
             </div>
             <div className={`flex items-center gap-1 p-1 rounded-xl ${isDark ? 'bg-[#0d1117]' : 'bg-slate-100'}`}>
               {[['todos','Todos'],['fisico','📦 Físicos'],['digital','📄 Digitales']].map(([f,lbl]) => (
                 <button key={f} onClick={() => setFilterTipo(f)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${filterTipo===f ? 'bg-blue-600 text-white shadow-sm' : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${filterTipo===f ? 'bg-sky-600 text-white shadow-sm' : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
                   {lbl}
                 </button>
               ))}
@@ -483,14 +483,14 @@ export default function StoreManagementView() {
           </div>
 
           {filteredProducts.length===0 ? (
-            <div className={`rounded-3xl border py-24 flex flex-col items-center gap-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-gradient-to-br from-slate-50 to-blue-50/30 border-slate-200/80'}`}>
+            <div className={`rounded-3xl border py-24 flex flex-col items-center gap-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-gradient-to-br from-slate-50 to-sky-50/30 border-slate-200/80'}`}>
               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center text-5xl ${isDark ? 'bg-[#21262d]' : 'bg-white shadow-sm'}`}>🛍️</div>
               <div className="text-center">
                 <p className={`font-bold text-xl ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>No hay productos</p>
                 <p className={`text-sm mt-1.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Crea el primer artículo de la tienda</p>
               </div>
               <button onClick={() => { setEditProduct(null); setShowModal(true) }}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 active:scale-95">
+                className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-200 transition-all hover:-translate-y-0.5 active:scale-95">
                 <Plus size={16}/> Crear primer producto
               </button>
             </div>
@@ -517,7 +517,7 @@ export default function StoreManagementView() {
               return (
                 <button key={e} onClick={() => setFilterEstado(e)}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${active
-                    ? cfg ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm` : 'bg-blue-600 text-white border-blue-600'
+                    ? cfg ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm` : 'bg-sky-600 text-white border-sky-600'
                     : isDark ? 'bg-[#0d1117] text-slate-400 border-[#30363d] hover:border-[#4a5568]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>
                   {cfg && <span className={`w-2 h-2 rounded-full ${cfg.dot}`}/>}
                   {e==='todos' ? 'Todos' : cfg?.label}
@@ -528,7 +528,7 @@ export default function StoreManagementView() {
           </div>
 
           {filteredOrders.length===0 ? (
-            <div className={`rounded-3xl border py-24 flex flex-col items-center gap-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-gradient-to-br from-slate-50 to-blue-50/30 border-slate-200/80'}`}>
+            <div className={`rounded-3xl border py-24 flex flex-col items-center gap-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-gradient-to-br from-slate-50 to-sky-50/30 border-slate-200/80'}`}>
               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center text-5xl ${isDark ? 'bg-[#21262d]' : 'bg-white shadow-sm'}`}>📭</div>
               <div className="text-center">
                 <p className={`font-bold text-xl ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>Sin pedidos</p>
@@ -541,7 +541,7 @@ export default function StoreManagementView() {
                 const cfg=ESTADO_CFG[order.estado]||ESTADO_CFG.pendiente; const StatusIcon=cfg.icon; const open=expandedOrder===order.id
                 return (
                   <div key={order.id} className={`rounded-2xl border overflow-hidden transition-all ${open
-                    ? isDark ? 'border-blue-800 bg-[#161b22] shadow-xl shadow-blue-900/20' : 'border-blue-200 bg-white shadow-xl shadow-blue-100'
+                    ? isDark ? 'border-sky-800 bg-[#161b22] shadow-xl shadow-sky-900/20' : 'border-sky-200 bg-white shadow-xl shadow-sky-100'
                     : isDark ? 'bg-[#161b22] border-[#21262d] hover:border-[#30363d]' : 'bg-white border-slate-200/80 hover:border-slate-300 shadow-sm'}`}>
 
                     <div className="p-5 flex items-center gap-4 flex-wrap cursor-pointer" onClick={() => setExpandedOrder(open?null:order.id)}>
@@ -560,7 +560,7 @@ export default function StoreManagementView() {
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`text-xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>S/ {Number(order.total_soles).toFixed(2)}</p>
+                        <p className={`text-xl font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>S/ {Number(order.total_soles).toFixed(2)}</p>
                         <p className={`text-[10px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>total del pedido</p>
                       </div>
                       <div className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-100'}`}>
@@ -600,7 +600,7 @@ export default function StoreManagementView() {
                           <textarea defaultValue={order.admin_notas||''} rows={2}
                             placeholder="Ej: Pagado en efectivo, entregado el lunes…"
                             onBlur={e => updateAdminNota(order.id, e.target.value)}
-                            className={`w-full px-4 py-3 rounded-xl text-sm font-medium outline-none transition-all resize-none border-2 ${isDark ? 'bg-[#161b22] border-[#30363d] text-slate-300 placeholder-slate-600 focus:border-blue-500' : 'bg-white border-slate-200 text-slate-700 focus:border-blue-400'}`}/>
+                            className={`w-full px-4 py-3 rounded-xl text-sm font-medium outline-none transition-all resize-none border-2 ${isDark ? 'bg-[#161b22] border-[#30363d] text-slate-300 placeholder-slate-600 focus:border-sky-500' : 'bg-white border-slate-200 text-slate-700 focus:border-sky-400'}`}/>
                         </div>
 
                         <div>

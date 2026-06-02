@@ -41,16 +41,16 @@ const MODALIDADES: { id: string; label: string; icon: any }[] = [
 
 // Paleta de colores: cada tema → gradiente, accent, banner sólido y badge soft.
 const COLORES: Record<string, { gradient: string; accent: string; accentDark: string; soft: string; softDark: string; nombre: string; emoji: string }> = {
-  indigo:   { gradient: 'from-sky-500 to-blue-500',     accent: '#0284c7', accentDark: '#38bdf8', soft: '#eef2ff', softDark: '#082f49', nombre: 'Índigo',   emoji: '💙' },
-  purple:   { gradient: 'from-sky-500 to-cyan-500',  accent: '#0ea5e9', accentDark: '#7dd3fc', soft: '#f0f9ff', softDark: '#3b0764', nombre: 'Púrpura',  emoji: '💜' },
-  pink:     { gradient: 'from-pink-500 to-rose-500',       accent: '#ec4899', accentDark: '#f472b6', soft: '#fdf2f8', softDark: '#500724', nombre: 'Rosa',     emoji: '🌸' },
-  rose:     { gradient: 'from-rose-500 to-red-500',        accent: '#f43f5e', accentDark: '#fb7185', soft: '#fff1f2', softDark: '#4c0519', nombre: 'Coral',    emoji: '🌹' },
-  amber:    { gradient: 'from-amber-500 to-orange-500',    accent: '#f59e0b', accentDark: '#fbbf24', soft: '#fffbeb', softDark: '#451a03', nombre: 'Ámbar',    emoji: '☀️' },
-  emerald:  { gradient: 'from-emerald-500 to-teal-500',    accent: '#10b981', accentDark: '#34d399', soft: '#ecfdf5', softDark: '#022c22', nombre: 'Esmeralda',emoji: '🌿' },
-  cyan:     { gradient: 'from-cyan-500 to-sky-500',        accent: '#06b6d4', accentDark: '#22d3ee', soft: '#ecfeff', softDark: '#083344', nombre: 'Cian',     emoji: '🌊' },
-  blue:     { gradient: 'from-blue-500 to-sky-500',     accent: '#3b82f6', accentDark: '#60a5fa', soft: '#eff6ff', softDark: '#172554', nombre: 'Azul',     emoji: '🌀' },
-  orange:   { gradient: 'from-orange-500 to-red-500',      accent: '#f97316', accentDark: '#fb923c', soft: '#fff7ed', softDark: '#431407', nombre: 'Naranja',  emoji: '🔥' },
-  slate:    { gradient: 'from-slate-600 to-slate-700',     accent: '#64748b', accentDark: '#94a3b8', soft: '#f8fafc', softDark: '#0f172a', nombre: 'Gris',     emoji: '⚪' },
+  indigo:   { gradient: 'from-indigo-500 to-blue-500',    accent: '#6366f1', accentDark: '#818cf8', soft: '#eef2ff', softDark: '#082f49', nombre: 'Índigo',   emoji: '' },
+  purple:   { gradient: 'from-purple-500 to-fuchsia-500', accent: '#a855f7', accentDark: '#c084fc', soft: '#faf5ff', softDark: '#3b0764', nombre: 'Púrpura',  emoji: '' },
+  pink:     { gradient: 'from-pink-500 to-rose-500',       accent: '#ec4899', accentDark: '#f472b6', soft: '#fdf2f8', softDark: '#500724', nombre: 'Rosa',     emoji: '' },
+  rose:     { gradient: 'from-rose-500 to-red-500',        accent: '#f43f5e', accentDark: '#fb7185', soft: '#fff1f2', softDark: '#4c0519', nombre: 'Coral',    emoji: '' },
+  amber:    { gradient: 'from-amber-500 to-orange-500',    accent: '#f59e0b', accentDark: '#fbbf24', soft: '#fffbeb', softDark: '#451a03', nombre: 'Ámbar',    emoji: '' },
+  emerald:  { gradient: 'from-emerald-500 to-teal-500',    accent: '#10b981', accentDark: '#34d399', soft: '#ecfdf5', softDark: '#022c22', nombre: 'Esmeralda',emoji: '' },
+  cyan:     { gradient: 'from-cyan-500 to-sky-500',        accent: '#06b6d4', accentDark: '#22d3ee', soft: '#ecfeff', softDark: '#083344', nombre: 'Cian',     emoji: '' },
+  blue:     { gradient: 'from-blue-500 to-indigo-500',     accent: '#3b82f6', accentDark: '#60a5fa', soft: '#eff6ff', softDark: '#172554', nombre: 'Azul',     emoji: '' },
+  orange:   { gradient: 'from-orange-500 to-red-500',      accent: '#f97316', accentDark: '#fb923c', soft: '#fff7ed', softDark: '#431407', nombre: 'Naranja',  emoji: '' },
+  slate:    { gradient: 'from-slate-600 to-slate-700',     accent: '#64748b', accentDark: '#94a3b8', soft: '#f8fafc', softDark: '#0f172a', nombre: 'Gris',     emoji: '' },
 }
 
 const colorDe = (key?: string | null) => COLORES[key || 'indigo'] || COLORES.indigo
@@ -136,7 +136,7 @@ export default function CatalogoTerapiasView() {
   })
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue-500" size={36} /></div>
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-sky-500" size={36} /></div>
   }
 
   return (
@@ -282,7 +282,7 @@ function TerapiaCard({
           <button onClick={onEdit}
             title="Editar"
             className="w-8 h-8 rounded-lg backdrop-blur bg-white/90 dark:bg-slate-800/90 flex items-center justify-center hover:scale-110 transition">
-            <Edit3 size={14} className="text-blue-600" />
+            <Edit3 size={14} className="text-sky-600" />
           </button>
           <button onClick={onDelete}
             title="Eliminar"
@@ -315,8 +315,8 @@ function TerapiaCard({
               color: 'var(--text-secondary)',
             }}
           >
-            <p className="text-[10px] font-bold mb-1" style={{ color: c.accent }}>
-              ✨ ¿Por qué llevarla?
+            <p className="text-[10px] font-bold mb-1 flex items-center gap-1" style={{ color: c.accent }}>
+              <Sparkles size={11} /> ¿Por qué llevarla?
             </p>
             <p>{t.por_que}</p>
           </div>
@@ -382,7 +382,7 @@ function EditorModal({
             </div>
             <div>
               <h3 className="font-bold text-lg">{editing.id ? 'Editar terapia' : 'Nueva terapia'}</h3>
-              <p className="text-xs opacity-90">{c.nombre} {c.emoji}</p>
+              <p className="text-xs opacity-90">{c.nombre}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg">

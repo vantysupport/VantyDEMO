@@ -14,7 +14,7 @@ import { useToast } from '@/components/Toast'
 
 const ROLES = [
   { value: 'jefe',        label: 'Director',      description: 'Acceso total al sistema',  icon: Crown,         dotColor: 'bg-sky-500', badgeClass: 'role-director'    },
-  { value: 'especialista',label: 'Especialista',  description: 'Terapeuta / Clínico',      icon: Stethoscope,   dotColor: 'bg-blue-500',   badgeClass: 'role-especialista' },
+  { value: 'especialista',label: 'Especialista',  description: 'Terapeuta / Clínico',      icon: Stethoscope,   dotColor: 'bg-sky-500',   badgeClass: 'role-especialista' },
   { value: 'padre',       label: 'Padre / Tutor', description: 'Portal de familias',       icon: Heart,         dotColor: 'bg-pink-500',   badgeClass: 'role-padre'       },
   { value: 'secretaria',  label: 'Secretaria(o)', description: 'Apoyo administrativo',     icon: ClipboardList, dotColor: 'bg-sky-500', badgeClass: 'role-secretaria'  },
 ]
@@ -123,7 +123,7 @@ function RoleSelector({ currentRole, onSelect, disabled }: {
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{r.label}</p>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{r.description}</p>
                   </div>
-                  {isSelected && <CheckCircle2 size={13} className="text-blue-500 flex-shrink-0" />}
+                  {isSelected && <CheckCircle2 size={13} className="text-sky-500 flex-shrink-0" />}
                 </button>
               )
             })}
@@ -492,7 +492,7 @@ export default function UserManagementView() {
 
   if (isLoading) return (
     <div className="flex items-center justify-center h-64">
-      <Loader2 className="animate-spin text-blue-500" size={32} />
+      <Loader2 className="animate-spin text-sky-500" size={32} />
     </div>
   )
 
@@ -520,7 +520,7 @@ export default function UserManagementView() {
             <RefreshCw size={16} />
           </button>
           <button onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+            className="flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
             <Plus size={16} /> {t('usuarios.nuevo')}
           </button>
         </div>
@@ -531,7 +531,7 @@ export default function UserManagementView() {
         {[
           { id: 'todos',       label: t('common.todos'),        count: users.length,        icon: Users,       color: 'text-slate-500' },
           { id: 'jefe',        label: 'Directores',   count: totalJefes,          icon: Crown,       color: 'text-sky-600' },
-          { id: 'especialista',label: 'Especialistas', count: totalEspecialistas,  icon: Stethoscope, color: 'text-blue-600' },
+          { id: 'especialista',label: 'Especialistas', count: totalEspecialistas,  icon: Stethoscope, color: 'text-sky-600' },
           { id: 'padre',       label: 'Padres',       count: totalPadres,         icon: Heart,       color: 'text-pink-600' },
           { id: 'secretaria',  label: 'Secretarias', count: totalSecretarias,    icon: ClipboardList, color: 'text-sky-600' },
         ].map(tab => {
@@ -540,7 +540,7 @@ export default function UserManagementView() {
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-1.5 px-3 py-2.5 text-xs md:text-sm font-bold rounded-t-xl border-b-2 transition-all whitespace-nowrap flex-shrink-0 ${
-                isActive ? `border-blue-600 ${tab.color}` : 'border-transparent'
+                isActive ? `border-sky-600 ${tab.color}` : 'border-transparent'
               }`}
               style={{ color: isActive ? undefined : 'var(--text-muted)', background: isActive ? 'rgba(37,99,235,0.07)' : 'transparent' }}>
               <Icon size={13} />
@@ -558,7 +558,7 @@ export default function UserManagementView() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard value={totalActivos}       label="Activos"       icon={UserCheck}   color="bg-emerald-500" />
         <StatCard value={totalJefes}         label="Directores"    icon={Crown}        color="bg-sky-500" />
-        <StatCard value={totalEspecialistas} label="Especialistas" icon={Stethoscope}  color="bg-blue-500" />
+        <StatCard value={totalEspecialistas} label="Especialistas" icon={Stethoscope}  color="bg-sky-500" />
         <StatCard value={totalPadres}        label="Padres"        icon={Heart}        color="bg-pink-500" />
         <StatCard value={totalSecretarias}   label="Secretarias"  icon={ClipboardList}color="bg-sky-500" />
       </div>
@@ -569,14 +569,14 @@ export default function UserManagementView() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
             {...{placeholder: t('ui.search_user')}}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
             style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
         </div>
         {especialidadesEquipo.length > 0 && (
           <div className="relative sm:w-64">
             <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <select value={filterSpecialty} onChange={e => setFilterSpecialty(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all appearance-none"
               style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}>
               <option value="">Todas las especialidades</option>
               {especialidadesEquipo.map(sp => <option key={sp} value={sp}>{sp}</option>)}
@@ -610,7 +610,7 @@ export default function UserManagementView() {
                 {/* Avatar */}
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0
                   ${isDirector ? 'bg-gradient-to-br from-sky-500 to-sky-700'
-                    : role === 'especialista' ? 'bg-gradient-to-br from-blue-500 to-blue-700'
+                    : role === 'especialista' ? 'bg-gradient-to-br from-sky-500 to-sky-700'
                     : 'bg-gradient-to-br from-pink-500 to-pink-700'}`}>
                   {(user.profile?.full_name || user.email).charAt(0).toUpperCase()}
                 </div>
@@ -630,7 +630,7 @@ export default function UserManagementView() {
                       </span>
                     )}
                     {isSelf && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">TÚ</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700">TÚ</span>
                     )}
                     {!isActive && (
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">{t('usuarios.inactivo2')}</span>
@@ -642,7 +642,7 @@ export default function UserManagementView() {
                 {/* Acciones rápidas */}
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   {savingRole === user.id ? (
-                    <Loader2 size={16} className="animate-spin text-blue-500" />
+                    <Loader2 size={16} className="animate-spin text-sky-500" />
                   ) : (
                     <RoleSelector
                       currentRole={role}
@@ -690,7 +690,7 @@ export default function UserManagementView() {
                               onChange={e => setNewSpecialty(e.target.value)}
                               onKeyDown={e => { if (e.key === 'Enter') handleUpdateSpecialty(user.id); if (e.key === 'Escape') setEditingSpecialtyFor(null) }}
                               placeholder="Elegí una o escribí la tuya…"
-                              className="flex-1 px-2 py-1 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="flex-1 px-2 py-1 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
                               style={{ background: 'var(--card)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
                             <button onClick={() => handleUpdateSpecialty(user.id)} disabled={savingSpecialty}
                               className="p-1 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 disabled:opacity-50" title="Guardar">
@@ -708,7 +708,7 @@ export default function UserManagementView() {
                               : <span className="italic">Sin especialidad asignada</span>}
                             <button
                               onClick={() => { setEditingSpecialtyFor(user.id); setNewSpecialty(user.profile?.specialty || '') }}
-                              className="ml-1 text-blue-500 hover:underline font-semibold">
+                              className="ml-1 text-sky-500 hover:underline font-semibold">
                               {user.profile?.specialty ? 'editar' : 'asignar'}
                             </button>
                           </p>
@@ -733,10 +733,10 @@ export default function UserManagementView() {
                       {editingTokensFor === user.id ? (
                         <div className="flex items-center gap-2">
                           <input type="number" value={newTokens} onChange={e => setNewTokens(parseInt(e.target.value) || 0)}
-                            className="w-20 px-2 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-20 px-2 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                             style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
                           <button onClick={() => handleUpdateTokens(user.id)} disabled={savingTokens}
-                            className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50">
+                            className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold hover:bg-sky-700 disabled:opacity-50">
                             {savingTokens ? <Loader2 size={12} className="animate-spin" /> : t('common.guardar')}
                           </button>
                           <button onClick={() => setEditingTokensFor(null)} className="px-2 py-1.5 rounded-lg hover:text-red-500 transition-colors" style={{ color: 'var(--text-muted)' }}>
@@ -806,18 +806,18 @@ export default function UserManagementView() {
             <div className="space-y-3">
               <div className="relative">
                 <input type={showPwd ? 'text' : 'password'} {...{placeholder: t('ui.new_password')}} value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                  className="w-full pr-10 pl-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pr-10 pl-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                   style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
                 <button onClick={() => setShowPwd(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
                   {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
               <input type={showPwd ? 'text' : 'password'} {...{placeholder: t('ui.confirm_password')}} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
             </div>
             <button onClick={handleChangePassword} disabled={savingPassword}
-              className="mt-4 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              className="mt-4 w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {savingPassword ? <Loader2 size={16} className="animate-spin" /> : <Key size={16} />}
               Actualizar contraseña
             </button>
@@ -831,7 +831,7 @@ export default function UserManagementView() {
           <div className="rounded-2xl shadow-2xl p-6 w-full max-w-md animate-scale-in" style={{ background: 'var(--card)' }}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                <Plus size={18} className="text-blue-500" /> Crear nuevo usuario
+                <Plus size={18} className="text-sky-500" /> Crear nuevo usuario
               </h3>
               <button onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg hover:opacity-80" style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
             </div>
@@ -840,11 +840,11 @@ export default function UserManagementView() {
                 <input key={i} placeholder={ph} type={i === 2 ? 'password' : i === 1 ? 'email' : 'text'}
                   value={i === 0 ? createForm.full_name : i === 1 ? createForm.email : createForm.password}
                   onChange={e => setCreateForm(f => ({ ...f, [i === 0 ? 'full_name' : i === 1 ? 'email' : 'password']: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                   style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
               ))}
               <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}>
                 <option value="jefe">👑 Director — Acceso total</option>
                 <option value="especialista">{t('ui.specialist_role')}</option>
@@ -854,12 +854,12 @@ export default function UserManagementView() {
               {createForm.role !== 'padre' && (
                 <input list="specialty-suggestions" placeholder="Especialidad / área (elegí una o escribí la tuya)" value={createForm.specialty}
                   onChange={e => setCreateForm(f => ({ ...f, specialty: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                   style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }} />
               )}
             </div>
             <button onClick={handleCreateUser} disabled={creatingUser}
-              className="mt-4 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              className="mt-4 w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
               {creatingUser ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
               Crear usuario
             </button>

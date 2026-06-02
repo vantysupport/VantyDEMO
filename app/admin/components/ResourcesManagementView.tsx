@@ -14,7 +14,7 @@ import { useToast } from '@/components/Toast'
 
 const RESOURCE_TYPES = [
   { id: 'video', label: 'Video', icon: Video, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', hint: 'YouTube, Vimeo, URL de video...' },
-  { id: 'pdf', label: 'PDF / Doc', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', hint: 'URL de PDF o documento en Google Drive' },
+  { id: 'pdf', label: 'PDF / Doc', icon: FileText, color: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-200', hint: 'URL de PDF o documento en Google Drive' },
   { id: 'link', label: 'Enlace web', icon: LinkIcon, color: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-200', hint: 'Cualquier página web útil...' },
   { id: 'image', label: 'Imagen', icon: ImageIcon, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', hint: 'URL de imagen...' },
   { id: 'document', label: 'Material', icon: BookOpen, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', hint: 'Guías, artículos, materiales...' },
@@ -365,7 +365,7 @@ export default function ResourcesManagementView() {
                 <label className="text-xs font-bold text-slate-400 block mb-3">{t('recursos.paraQuien')}</label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <button onClick={() => setNewResource(p => ({ ...p, is_global: true, parent_id: '' }))}
-                    className={`p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${newResource.is_global ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200' : 'text-slate-600 border-slate-200 hover:border-blue-300'}`} style={newResource.is_global ? {} : { background: 'var(--muted-bg)' }}>
+                    className={`p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${newResource.is_global ? 'bg-sky-600 text-white border-sky-600 shadow-lg shadow-sky-200' : 'text-slate-600 border-slate-200 hover:border-sky-300'}`} style={newResource.is_global ? {} : { background: 'var(--muted-bg)' }}>
                     <Globe size={18}/><span className="font-bold text-sm">{t('ui.all_families')}</span>
                   </button>
                   <button onClick={() => setNewResource(p => ({ ...p, is_global: false }))}
