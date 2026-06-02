@@ -130,7 +130,7 @@ export default function LoginPage(props: PageProps) {
           overflow: hidden;
           padding: 60px 64px;
           flex-direction: column;
-          justify-content: space-between;
+          justify-content: center;
         }
         @media(min-width: 900px){ .lp-left { display: flex; } }
         /* Viñeta sutil para profundidad premium */
@@ -166,14 +166,14 @@ export default function LoginPage(props: PageProps) {
         }
         .lp-card {
           background: transparent; border: 1px solid transparent;
-          border-radius: 14px; padding: 11px 13px;
-          display: flex; align-items: center; gap: 14px;
+          border-radius: 15px; padding: 13px 15px;
+          display: flex; align-items: center; gap: 16px;
           transition: background .25s ease, border-color .25s ease, transform .25s ease;
           opacity: 0; animation: featIn .6s cubic-bezier(.22,1,.36,1) forwards;
         }
         .lp-card:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); transform: translateX(4px); }
-        .lp-card:hover .lp-card-icon { background: rgba(165,180,252,.22); border-color: rgba(165,180,252,.3); }
-        .lp-card-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); color: #c7d2fe; }
+        .lp-card:hover .lp-card-icon { background: rgba(165,180,252,.22); border-color: rgba(165,180,252,.32); }
+        .lp-card-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12); color: #c7d2fe; transition: background .25s ease, border-color .25s ease; }
         .lp-right {
           flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
           padding: 28px 20px 40px; position: relative; overflow: hidden;
@@ -223,13 +223,13 @@ export default function LoginPage(props: PageProps) {
           <div className="lp-grain" />
 
           <div style={{ position: 'relative', zIndex: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 52 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 13, background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Image src="/images/logo.png" alt="Logo" width={30} height={30} style={{ objectFit: 'contain' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 56 }}>
+              <div style={{ width: 60, height: 60, borderRadius: 17, background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Image src="/images/logo.png" alt="Logo SANTI" width={42} height={42} style={{ objectFit: 'contain' }} />
               </div>
               <div>
-                <p style={{ color: '#fff', fontWeight: 800, fontSize: 17, lineHeight: 1.1 }}>Neuropsicología y Terapias SANTI</p>
-                <p style={{ color: 'rgba(255,255,255,.45)', fontSize: 12 }}>{t('auth.centroTerapeutico')}</p>
+                <p style={{ color: '#fff', fontWeight: 800, fontSize: 19, lineHeight: 1.15, letterSpacing: '-0.01em' }}>Neuropsicología y Terapias SANTI</p>
+                <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 12.5, marginTop: 2 }}>{t('auth.centroTerapeutico')}</p>
               </div>
             </div>
 
@@ -240,7 +240,7 @@ export default function LoginPage(props: PageProps) {
               Plataforma de gestión clínica ABA potenciada con Inteligencia Artificial para el seguimiento real de tu hijo.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
                 { Icon: Puzzle, title: 'Formularios TEA y TDAH', desc: 'BRIEF-2, ADOS-2, WISC-V y más' },
                 { Icon: Sparkles, title: 'Análisis con IA Profesional', desc: 'Informes clínicos automáticos' },
@@ -248,18 +248,18 @@ export default function LoginPage(props: PageProps) {
                 { Icon: HeartHandshake, title: 'Portal para familias', desc: 'Citas, formularios y asistente IA' },
               ].map(({ Icon, title, desc }, i) => (
                 <div key={title} className="lp-card" style={{ animationDelay: `${(0.35 + i * 0.12).toFixed(2)}s` }}>
-                  <div className="lp-card-icon"><Icon size={19} strokeWidth={1.75} /></div>
+                  <div className="lp-card-icon"><Icon size={22} strokeWidth={1.75} /></div>
                   <div>
-                    <p style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{title}</p>
-                    <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 12.5 }}>{desc}</p>
+                    <p style={{ color: '#fff', fontWeight: 600, fontSize: 15.5, marginBottom: 3, letterSpacing: '-0.01em' }}>{title}</p>
+                    <p style={{ color: 'rgba(255,255,255,.58)', fontSize: 13 }}>{desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ position: 'relative', zIndex: 10, borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 22 }}>
-            <p style={{ color: 'rgba(255,255,255,.3)', fontSize: 12 }}>{t('auth.copyright')}</p>
+          <div style={{ position: 'absolute', zIndex: 10, left: 64, right: 64, bottom: 36, borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 20 }}>
+            <p style={{ color: 'rgba(255,255,255,.38)', fontSize: 12 }}>{t('auth.copyright')}</p>
           </div>
         </div>
 
