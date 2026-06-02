@@ -731,8 +731,8 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
               <RecIcon size={26} />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Nuestra sugerencia para {child.name}</p>
-              <h1 className="text-xl font-black">{recTitulo}</h1>
+              <p className="text-sm font-medium opacity-80">Nuestra sugerencia para {child.name}</p>
+              <h1 className="text-2xl font-bold tracking-tight">{recTitulo}</h1>
             </div>
           </div>
           <p className="text-white/95 leading-relaxed whitespace-pre-wrap">{mensaje}</p>
@@ -877,9 +877,9 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
           <div className={`h-1.5 bg-gradient-to-r ${colorTema.gradient}`} />
 
           {esRecomendada && (
-            <div className="absolute top-3.5 right-3 z-10 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1"
+            <div className="absolute top-3.5 right-3 z-10 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white shadow-lg flex items-center gap-1"
               style={{ background: `linear-gradient(135deg, ${colorTema.accent}, ${colorTema.accentDark})` }}>
-              <Sparkles size={10} /> Recomendada
+              <Sparkles size={11} /> Recomendada
             </div>
           )}
           {checked && (
@@ -899,17 +899,18 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
 
           <div className="p-5 space-y-3">
             {t.categoria && (
-              <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded text-white bg-gradient-to-r ${colorTema.gradient}`}>
+              <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-md"
+                style={{ background: `${colorTema.accent}1a`, color: colorTema.accent }}>
                 {t.categoria}
               </span>
             )}
-            <h4 className="font-black text-base leading-tight" style={{ color: 'var(--text-primary)' }}>{t.nombre}</h4>
+            <h4 className="font-bold text-lg leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>{t.nombre}</h4>
             {t.descripcion && <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{t.descripcion}</p>}
             {t.por_que && (
-              <div className="rounded-lg p-3 text-sm leading-relaxed border-l-4"
-                style={{ background: 'var(--muted-bg)', borderLeftColor: colorTema.accent, color: 'var(--text-secondary)' }}>
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: colorTema.accent }}>
-                  ✨ ¿Por qué llevarla?
+              <div className="rounded-xl p-3.5 text-sm leading-relaxed"
+                style={{ background: `${colorTema.accent}0d`, color: 'var(--text-secondary)' }}>
+                <p className="text-[13px] font-semibold mb-1 flex items-center gap-1.5" style={{ color: colorTema.accent }}>
+                  <Sparkles size={13} /> Por qué llevarla
                 </p>
                 <p>{t.por_que}</p>
               </div>
@@ -917,14 +918,14 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
             <div className="flex items-end justify-between pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
               {t.duracion && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Duración</p>
-                  <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{t.duracion}</p>
+                  <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Duración</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>{t.duracion}</p>
                 </div>
               )}
               {t.precio != null && (
                 <div className="text-right">
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Inversión</p>
-                  <p className="text-xl font-black" style={{ color: colorTema.accent }}>
+                  <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Inversión</p>
+                  <p className="text-xl font-bold tabular-nums" style={{ color: colorTema.accent }}>
                     S/. {Number(t.precio).toFixed(0)}
                   </p>
                 </div>
@@ -965,10 +966,10 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
                     <Sparkles size={18} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black leading-tight" style={{ color: 'var(--text-primary)' }}>
+                    <h2 className="text-xl font-bold leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>
                       Lo que te recomendamos para {nombreCorto}
                     </h2>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                       Basado en la información que nos diste
                     </p>
                   </div>
@@ -995,10 +996,10 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
                     <ClipboardCheck size={18} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black leading-tight" style={{ color: 'var(--text-primary)' }}>
+                    <h2 className="text-xl font-bold leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>
                       {recomendadas.length > 0 ? 'Todo nuestro catálogo de terapias' : 'Nuestras terapias'}
                     </h2>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                       {recomendadas.length > 0 ? 'Otras opciones que también ofrecemos' : 'Marca las que te interese conocer'}
                     </p>
                   </div>
@@ -1102,8 +1103,8 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
               <CheckCircle2 size={28} />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Respuesta del especialista</p>
-              <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>Mensaje para {child.name}</h2>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Respuesta del especialista</p>
+              <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Mensaje para {child.name}</h2>
             </div>
           </div>
 
@@ -1381,7 +1382,7 @@ function SeccionRender({ seccion, respuestas, setRespuestas }: any) {
                     <div key={idx} className="rounded-xl border-2 p-3 space-y-2 relative"
                       style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
                           {(p as any).addLabel?.replace(/^\+\s*/, '') || 'Fila'} {idx + 1}
                         </span>
                         {filasMostrar.length > minRows && (

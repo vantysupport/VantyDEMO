@@ -1,7 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { ToastProvider } from '@/components/Toast'
 import { ThemeProvider } from '@/components/ThemeContext'
 import "./globals.css";
+
+// Fuente principal: Plus Jakarta Sans — humanista, cálida y profesional.
+// Reemplaza a Arial en toda la app vía la variable --font-sans (ver globals.css).
+// Una sola familia con contraste de pesos > tres tipografías compitiendo.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   themeColor: "#5B3FC8",
@@ -55,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" className={jakarta.variable} suppressHydrationWarning>
       <head>
         <meta name="google-site-verification" content="xQbKWmWgeRRPlZbv5h7rEDXAOw0TPHC3140_cyWT9OI" />
         <meta name="google-site-verification" content="Vm989cC49i4_RMsZFi23exrJONLlBnEvu00C4Zs1Lm4" />
