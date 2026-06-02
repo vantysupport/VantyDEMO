@@ -7,7 +7,7 @@ import { supabase as supabasePublic } from '@/lib/supabase'
 import {
   Upload, Trash2, CheckCircle2, Clock, Loader2,
   FileText, Plus, X, Brain, Save, Search,
-  Sparkles, Cpu, BookMarked, RefreshCw,
+  Sparkles, Cpu, BookMarked, RefreshCw, Globe, Stethoscope,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useTheme } from '@/components/ThemeContext'
@@ -715,7 +715,7 @@ export default function KnowledgeBaseView() {
           {[
             { label: t('ui.documents'), value: documentos.length, color: 'text-sky-500' },
             { label: t('ui.fragments'), value: totalChunks.toLocaleString(), color: 'text-sky-500' },
-            { label: 'Auto-aprendidos', value: docsAuto.length, color: 'text-blue-500' },
+            { label: 'Auto-aprendidos', value: docsAuto.length, color: 'text-sky-500' },
           ].map(s => (
             <div key={s.label} className={`text-center px-2 py-2 rounded-xl border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-100'}`}>
               <p className={`text-lg md:text-xl font-bold ${s.color}`}>{s.value}</p>
@@ -739,7 +739,7 @@ export default function KnowledgeBaseView() {
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${tab === 'diagnosticos'
             ? isDark ? 'bg-[#161b22] text-sky-400 shadow border border-[#30363d]' : 'bg-white text-sky-700 shadow border border-slate-200'
             : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}>
-          <span>🏥</span>
+          <Stethoscope size={13} />
           <span className="hidden sm:inline">CIE-11 / DSM-5</span>
           <span className="sm:hidden">CIE-11</span>
         </button>
@@ -765,13 +765,15 @@ export default function KnowledgeBaseView() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
-                { icon: '🔍', t: 'Expande palabras clave', d: 'La IA genera 8-12 términos técnicos relacionados' },
-                { icon: '🌐', t: 'Busca en internet', d: 'Groq IA Web + PubMed + EuropePMC + OpenAlex + CORE + ERIC + CrossRef + BASE + Wikipedia + Semantic Scholar' },
-                { icon: '🤖', t: 'Sintetiza con IA', d: 'Genera resumen clínico estructurado para ABA' },
-                { icon: '🧠', t: 'Indexa en el Cerebro', d: 'ARIA y todos los agentes ya saben ese tema' },
+                { Icon: Search,   t: 'Expande palabras clave', d: 'La IA genera 8-12 términos técnicos relacionados' },
+                { Icon: Globe,    t: 'Busca en internet', d: 'Groq IA Web + PubMed + EuropePMC + OpenAlex + CORE + ERIC + CrossRef + BASE + Wikipedia + Semantic Scholar' },
+                { Icon: Sparkles, t: 'Sintetiza con IA', d: 'Genera resumen clínico estructurado para ABA' },
+                { Icon: Brain,    t: 'Indexa en el Cerebro', d: 'ARIA y todos los agentes ya saben ese tema' },
               ].map((s, i) => (
                 <div key={i} className={`rounded-xl p-3 border ${isDark ? 'bg-[#161b22] border-sky-900/30' : 'bg-white border-sky-100'}`}>
-                  <p className="text-xl mb-1">{s.icon}</p>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: 'rgba(2,132,199,0.12)', color: '#0284c7' }}>
+                    <s.Icon size={16} />
+                  </div>
                   <p className="text-xs font-bold text-sky-700">{s.t}</p>
                   <p className="text-[11px] text-slate-500 mt-0.5">{s.d}</p>
                 </div>
@@ -823,7 +825,7 @@ export default function KnowledgeBaseView() {
                   {(['completo', 'rapido'] as const).map(m => (
                     <button key={m} onClick={() => setModo(m)}
                       className={`flex-1 p-3 rounded-xl border text-left transition ${modo === m ? 'bg-sky-600 text-white border-sky-600' : 'border-slate-200 text-slate-500 hover:border-sky-200'}`}>
-                      <p className="text-xs font-bold">{m === 'completo' ? '🔬 Completo' : '⚡ Rápido'}</p>
+                      <p className="text-xs font-bold flex items-center gap-1.5">{m === 'completo' ? <><Sparkles size={12}/> Completo</> : <><Cpu size={12}/> Rápido</>}</p>
                       <p className={`text-[10px] mt-0.5 ${modo === m ? 'text-sky-200' : 'text-slate-400'}`}>
                         {m === 'completo' ? 'Más fuentes, más fragmentos, más rico' : 'Solo síntesis IA, más veloz'}
                       </p>
@@ -846,10 +848,10 @@ export default function KnowledgeBaseView() {
                   className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
                   disabled={aprendiendo}
                 />
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                  <p className="text-xs text-blue-700 font-bold mb-1">{t('ui.queTipoURLs')}</p>
-                  <p className="text-[11px] text-blue-600">{t('ui.urlsPublicas')}</p>
-                  <p className="text-[11px] text-blue-600">{t('ui.urlsOrg')}</p>
+                <div className="bg-sky-50 border border-sky-100 rounded-xl p-3">
+                  <p className="text-xs text-sky-700 font-bold mb-1">{t('ui.queTipoURLs')}</p>
+                  <p className="text-[11px] text-sky-600">{t('ui.urlsPublicas')}</p>
+                  <p className="text-[11px] text-sky-600">{t('ui.urlsOrg')}</p>
                   <p className="text-[11px] text-slate-400">{t('ui.urlsNoFuncionan')}</p>
                 </div>
               </div>
@@ -928,7 +930,9 @@ export default function KnowledgeBaseView() {
                 {docsAuto.map(doc => (
                   <div key={doc.id} className="flex items-center justify-between bg-sky-50 rounded-xl px-3 py-2 border border-sky-100">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-base">🧠</span>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(2,132,199,0.12)', color: '#0284c7' }}>
+                        <Brain size={14} />
+                      </div>
                       <div className="min-w-0">
                         <p className={`text-xs font-semibold truncate ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{doc.titulo.replace('[IA] ', '')}</p>
                         <p className="text-[10px] text-slate-400">{doc.total_chunks || 0} fragmentos · {new Date(doc.created_at).toLocaleDateString('es-ES')}</p>

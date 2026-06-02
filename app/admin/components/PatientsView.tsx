@@ -9,7 +9,7 @@ import {
   ArrowLeft, Baby, BarChart3, Brain, Calendar, Check, ChevronRight,
   ClipboardList, Edit, Link, Link2Off, Loader2, Mail, Plus, Save,
   Search, Stethoscope, User, UserCheck, Users, X,
-  FolderOpen, FileText, Heart, Trash2
+  FolderOpen, FileText, Heart, Trash2, Settings
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
@@ -931,13 +931,13 @@ function FichasTab({ childId, childName, currentRole }: {
         <div className={`flex rounded-2xl p-1.5 gap-1.5 border ${cc.bar}`}>
           {canManage && (
             <button onClick={() => setSubTab('plantillas')}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${subTab === 'plantillas' ? cc.active : cc.inactive}`}>
-              ⚙️ Gestionar fichas
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${subTab === 'plantillas' ? cc.active : cc.inactive}`}>
+              <Settings size={15} /> Gestionar fichas
             </button>
           )}
           <button onClick={() => setSubTab('rellenar')}
-            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${subTab === 'rellenar' ? cc.active : cc.inactive}`}>
-            📋 Fichas del paciente
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${subTab === 'rellenar' ? cc.active : cc.inactive}`}>
+            <ClipboardList size={15} /> Fichas del paciente
           </button>
         </div>
       </div>

@@ -52,13 +52,13 @@ interface TemplateResponse {
 }
 
 const FIELD_TYPES = [
-  { id: 'text',     label: 'Texto corto',  icon: '✏️' },
-  { id: 'textarea', label: 'Texto largo',  icon: '📝' },
-  { id: 'select',   label: 'Lista',        icon: '📋' },
-  { id: 'radio',    label: 'Opción única', icon: '🔘' },
-  { id: 'date',     label: 'Fecha',        icon: '📅' },
-  { id: 'number',   label: 'Número',       icon: '🔢' },
-  { id: 'checkbox', label: 'Casilla',      icon: '☑️' },
+  { id: 'text',     label: 'Texto corto' },
+  { id: 'textarea', label: 'Texto largo' },
+  { id: 'select',   label: 'Lista' },
+  { id: 'radio',    label: 'Opción única' },
+  { id: 'date',     label: 'Fecha' },
+  { id: 'number',   label: 'Número' },
+  { id: 'checkbox', label: 'Casilla' },
 ]
 
 const CATEGORIES = [
@@ -163,7 +163,7 @@ export function GestorPlantillas({ isDark: isDarkProp }: { isDark?: boolean }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className={`font-bold text-sm ${cc.txt1}`}>{t.name}</p>
-                    {t.is_default && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">Sistema</span>}
+                    {t.is_default && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700">Sistema</span>}
                     <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${t.is_active ? 'bg-emerald-100 text-emerald-700' : isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
                       {t.is_active ? '● Activa' : '○ Inactiva'}
                     </span>
@@ -408,7 +408,7 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
           })
         }}
           className={`px-2 py-2 rounded-lg text-xs font-bold border-2 outline-none cursor-pointer ${isDark ? 'bg-[#161b22] border-[#21262d] text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}>
-          {FIELD_TYPES.map(ft => <option key={ft.id} value={ft.id}>{ft.icon} {ft.label}</option>)}
+          {FIELD_TYPES.map(ft => <option key={ft.id} value={ft.id}>{ft.label}</option>)}
         </select>
         <label className="flex items-center gap-1 cursor-pointer flex-shrink-0" title="Campo obligatorio">
           <input type="checkbox" checked={field.required} onChange={e => onChange({ required: e.target.checked })} className="rounded accent-sky-500" />
@@ -605,8 +605,8 @@ export function RellenarFicha({
     txt1:  isDark ? 'text-slate-100' : 'text-slate-800',
     txt3:  isDark ? 'text-slate-500' : 'text-slate-400',
     input: isDark
-      ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600 focus:border-blue-500'
-      : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-400',
+      ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600 focus:border-sky-500'
+      : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-sky-400',
   }
   const inputCls = `w-full px-3 py-2.5 rounded-xl text-sm border-2 outline-none transition-all ${cc.input}`
 
@@ -667,7 +667,7 @@ export function RellenarFicha({
           {(field.options || []).map(o => (
             <button key={o} onClick={() => setAnswers(p => ({ ...p, [field.id]: o }))}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all
-                ${answers[field.id] === o ? 'bg-blue-600 border-blue-600 text-white' : isDark ? 'border-[#30363d] text-slate-400 hover:border-blue-700' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+                ${answers[field.id] === o ? 'bg-sky-600 border-sky-600 text-white' : isDark ? 'border-[#30363d] text-slate-400 hover:border-sky-700' : 'border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {o}
             </button>
           ))}
@@ -682,14 +682,14 @@ export function RellenarFicha({
     </div>
   )
 
-  if (loading) return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-blue-500" /></div>
+  if (loading) return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-sky-500" /></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h3 className={`font-bold text-base flex items-center gap-2 ${cc.txt1}`}>
-            <FileText size={16} className="text-blue-500" /> Fichas Clínicas
+            <FileText size={16} className="text-sky-500" /> Fichas Clínicas
           </h3>
           <p className={`text-xs mt-0.5 ${cc.txt3}`}>{selected ? selected.name : `Fichas de ${childName}`}</p>
         </div>
@@ -731,10 +731,10 @@ export function RellenarFicha({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {templates.map(t => (
               <button key={t.id} onClick={() => { setSelected(t); setAnswers({}) }}
-                className={`${cc.card} border rounded-2xl p-4 text-left hover:border-blue-400 transition-all`}>
+                className={`${cc.card} border rounded-2xl p-4 text-left hover:border-sky-400 transition-all`}>
                 <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
-                    <FileText size={18} className="text-blue-500" />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-sky-900/30' : 'bg-sky-50'}`}>
+                    <FileText size={18} className="text-sky-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={`font-bold text-sm ${cc.txt1}`}>{t.name}</p>
@@ -759,7 +759,7 @@ export function RellenarFicha({
           </div>
 
           {/* ── Header automatizado: Fecha / Alumno / Especialista ─────────────── */}
-          <div className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-blue-50/50 border-blue-100'}`}>
+          <div className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-sky-50/50 border-sky-100'}`}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <p className={`text-[10px] font-bold mb-1 ${cc.txt3}`}>📅 Fecha</p>
@@ -805,7 +805,7 @@ export function RellenarFicha({
             <textarea rows={3} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas del clínico..." className={`${inputCls} resize-none`} />
           </div>
           <button onClick={handleSave} disabled={saving}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-xl text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            className="w-full py-3 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold rounded-xl text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {saving ? 'Guardando...' : 'Guardar ficha'}
           </button>
@@ -845,7 +845,7 @@ function ResponseCard({ response, isDark }: { response: TemplateResponse; isDark
     <div className={`${cc.card} border rounded-2xl overflow-hidden`}>
       <div className="p-4 flex items-center gap-3">
         <button onClick={() => setOpen(!open)} className="flex-1 flex items-center gap-3 text-left min-w-0">
-          <FileText size={16} className="text-blue-500 flex-shrink-0" />
+          <FileText size={16} className="text-sky-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className={`text-sm font-bold ${cc.txt1}`}>{template?.name || 'Ficha'}</p>
             <p className={`text-xs ${cc.txt3}`}>{response.filler_name} · {new Date(response.created_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
@@ -853,7 +853,7 @@ function ResponseCard({ response, isDark }: { response: TemplateResponse; isDark
           {open ? <ChevronUp size={15} className={cc.txt3} /> : <ChevronDown size={15} className={cc.txt3} />}
         </button>
         <button onClick={handleWord} disabled={downloading}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all flex-shrink-0 disabled:opacity-50 ${isDark ? 'border-blue-700 text-blue-400 hover:bg-blue-900/20' : 'border-blue-200 text-blue-600 hover:bg-blue-50'}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all flex-shrink-0 disabled:opacity-50 ${isDark ? 'border-sky-700 text-sky-400 hover:bg-sky-900/20' : 'border-sky-200 text-sky-600 hover:bg-sky-50'}`}>
           {downloading ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
           {downloading ? '...' : 'Word'}
         </button>
