@@ -124,9 +124,9 @@ export default function LoginPage(props: PageProps) {
           display: none;
           width: 50%;
           position: relative;
-          background: linear-gradient(160deg, #1e1b4b 0%, #312e81 45%, #4f46e5 100%);
+          background: linear-gradient(158deg, #17143a 0%, #2a2668 48%, #4338ca 100%);
           overflow: hidden;
-          padding: 52px 56px;
+          padding: 56px 60px;
           flex-direction: column;
           justify-content: space-between;
         }
@@ -149,17 +149,27 @@ export default function LoginPage(props: PageProps) {
         }
         .lp-card:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.10); }
         .lp-card-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); color: #c7d2fe; }
-        .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px 40px; }
-        .lp-form-box { width: 100%; max-width: 430px; }
+        .lp-right {
+          flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 28px 20px 40px; position: relative; overflow: hidden;
+          background:
+            radial-gradient(90% 70% at 100% 0%, rgba(124,58,237,.10) 0%, rgba(124,58,237,0) 55%),
+            radial-gradient(80% 60% at 0% 100%, rgba(79,70,229,.08) 0%, rgba(79,70,229,0) 50%),
+            #f7f6fd;
+        }
+        .lp-form-box { width: 100%; max-width: 408px; position: relative; z-index: 2; }
         .lp-field { position: relative; margin-bottom: 12px; }
         .lp-field label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 7px; }
-        .lp-field input { width: 100%; padding: 13px 16px 13px 44px; background: #fff; border: 2px solid #e5e7eb; border-radius: 13px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; }
-        .lp-field input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79,70,229,.1); }
-        .lp-field .lp-icon { position: absolute; left: 14px; bottom: 14px; color: #9ca3af; pointer-events: none; }
-        .lp-field .lp-eye { position: absolute; right: 14px; bottom: 13px; color: #9ca3af; cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; display: flex; }
-        .lp-field .lp-eye:hover { color: #4f46e5; }
-        .lp-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border: none; border-radius: 13px; font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s, transform .15s, box-shadow .2s; box-shadow: 0 8px 24px rgba(79,70,229,.3); margin-top: 6px; }
-        .lp-btn:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(79,70,229,.35); }
+        .lp-field input { width: 100%; padding: 15px 16px 15px 46px; background: #fff; border: 1.5px solid #e7e6f0; border-radius: 14px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: 0 1px 2px rgba(30,27,75,.04); }
+        .lp-field input::placeholder { color: #b6b6c6; }
+        .lp-field input:hover { border-color: #d6d4e6; }
+        .lp-field input:focus { border-color: #6d28d9; box-shadow: 0 0 0 4px rgba(109,40,217,.12); }
+        .lp-field .lp-icon { position: absolute; left: 15px; bottom: 16px; color: #9ca3af; pointer-events: none; }
+        .lp-field .lp-eye { position: absolute; right: 14px; bottom: 15px; color: #9ca3af; cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; display: flex; }
+        .lp-field .lp-eye:hover { color: #6d28d9; }
+        .lp-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #5b21b6 0%, #6d28d9 55%, #7c3aed 100%); color: #fff; border: none; border-radius: 14px; font-size: 15.5px; font-weight: 700; letter-spacing: .01em; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .15s ease, box-shadow .25s ease, filter .2s; box-shadow: 0 10px 28px rgba(91,33,182,.32); margin-top: 8px; }
+        .lp-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 36px rgba(91,33,182,.4); }
+        .lp-btn:active:not(:disabled) { transform: translateY(0); }
         .lp-btn:disabled { opacity: .6; cursor: not-allowed; }
         .lp-error { display: flex; align-items: center; gap: 10px; background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 14px; }
         .lp-sep { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #d1d5db; font-size: 12px; }
@@ -168,7 +178,7 @@ export default function LoginPage(props: PageProps) {
         .lp-forgot p { font-size: 13px; color: #3730a3; line-height: 1.6; margin-bottom: 11px; }
         .lp-forgot a { display: flex; align-items: center; justify-content: center; gap: 8px; background: #16a34a; color: #fff; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 700; text-decoration: none; transition: background .2s; }
         .lp-forgot a:hover { background: #15803d; }
-        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(79,70,229,.08); border: 1px solid rgba(79,70,229,.15); color: #4f46e5; border-radius: 99px; padding: 5px 13px; font-size: 12px; font-weight: 700; margin-bottom: 14px; }
+        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(109,40,217,.07); border: 1px solid rgba(109,40,217,.16); color: #6d28d9; border-radius: 99px; padding: 6px 14px; font-size: 12px; font-weight: 600; margin-bottom: 18px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
         @media(min-width:900px) { .mobile-logo { display: none !important; } }
@@ -199,10 +209,10 @@ export default function LoginPage(props: PageProps) {
               </div>
             </div>
 
-            <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 36, lineHeight: 1.2, marginBottom: 14 }}>
+            <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(40px, 3.6vw, 54px)', lineHeight: 1.04, letterSpacing: '-0.025em', marginBottom: 18 }}>
               Tu hijo merece<br/><span style={{ color: '#a5b4fc' }}>lo mejor.</span>
             </h2>
-            <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 15, lineHeight: 1.75, marginBottom: 44, maxWidth: 340 }}>
+            <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 15.5, lineHeight: 1.7, marginBottom: 46, maxWidth: 360 }}>
               Plataforma de gestión clínica ABA potenciada con Inteligencia Artificial para el seguimiento real de tu hijo.
             </p>
 
@@ -243,10 +253,10 @@ export default function LoginPage(props: PageProps) {
 
             <div className="lp-pill">✦ {isSignUp ? 'Crea tu cuenta gratis' : 'Acceso seguro'}</div>
 
-            <h1 style={{ fontSize: 'clamp(22px, 6vw, 28px)', fontWeight: 800, color: '#111827', marginBottom: 6, lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: 'clamp(26px, 5vw, 33px)', fontWeight: 800, color: '#111827', marginBottom: 7, lineHeight: 1.12, letterSpacing: '-0.025em' }}>
               {isSignUp ? 'Bienvenido al equipo' : 'Ingresa a tu cuenta'}
             </h1>
-            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
+            <p style={{ fontSize: 14.5, color: '#6b7280', marginBottom: 24 }}>
               {isSignUp ? 'Completa los datos para comenzar' : 'Continúa el seguimiento de tu hijo'}
             </p>
 
