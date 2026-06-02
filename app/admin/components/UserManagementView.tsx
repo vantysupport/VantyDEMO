@@ -154,7 +154,7 @@ function StatCard({ value, label, icon: Icon, color }: any) {
   const { t } = useI18n()
 
   return (
-    <div className="rounded-2xl p-4 flex items-center gap-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+    <div className="rounded-2xl p-4 flex items-center gap-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className={`p-3 rounded-xl ${color}`}>
         <Icon size={18} className="text-white" />
       </div>
@@ -588,7 +588,7 @@ export default function UserManagementView() {
       {/* Lista de usuarios */}
       <div className="space-y-2">
         {filteredUsers.length === 0 && (
-          <div className="p-12 text-center rounded-2xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+          <div className="p-12 text-center rounded-2xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <Users size={36} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
             <p className="font-medium" style={{ color: 'var(--text-muted)' }}>{t('ui.no_patients')}</p>
           </div>
@@ -603,7 +603,7 @@ export default function UserManagementView() {
 
           return (
             <div key={user.id} className={`rounded-2xl transition-all duration-200 ${!isActive ? 'opacity-60' : ''}`}
-              style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+              style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
 
               {/* Fila principal */}
               <div className="px-4 py-3 flex items-center gap-3">

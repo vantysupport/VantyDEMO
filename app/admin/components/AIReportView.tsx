@@ -409,7 +409,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
     <div className="flex flex-col gap-3 animate-fade-in-up">
       {/* Solo mostrar el selector si NO viene pre-seleccionado desde PatientsView */}
       {!initialChildId && (
-        <div className="rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-shrink-0" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-shrink-0" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <h3 className="font-bold text-slate-700 dark:text-slate-200 text-lg md:text-xl flex items-center gap-2 md:gap-3 shrink-0">
             <div className="p-2 bg-sky-50 rounded-xl">
               <Brain size={24} className="text-sky-600"/>
@@ -785,7 +785,7 @@ function ReporteHistorialCard({ reporte }: { reporte: any; key?: any }) {
   const badge     = BADGE_REPORTE[reporte.tipo_reporte]   || 'bg-slate-100 text-slate-600 border-slate-200'
 
   return (
-    <div className="rounded-2xl overflow-hidden transition-all duration-200 group" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+    <div className="rounded-2xl overflow-hidden transition-all duration-200 group" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       {/* Barra superior con color del tipo */}
       <div className={`bg-gradient-to-r ${gradiente} p-4 flex items-center gap-3`}>
         <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">

@@ -122,7 +122,7 @@ export default function ParentSessionAnalytics() {
           { icon: <Clock size={15} />, label: 'Prom. por padre', value: formatDurationShort(avgPerParent), color: '#956020' },
         ].map(stat => (
           <div key={stat.label} className="rounded-2xl p-4 relative overflow-hidden"
-            style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+            style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ background: stat.color }} />
             <div className="flex items-center gap-1.5 mb-1 pl-1" style={{ color: stat.color }}>
               {stat.icon}
@@ -148,7 +148,7 @@ export default function ParentSessionAnalytics() {
       ) : (
         <>
           {/* ── Bar chart top 10 ── */}
-          <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+          <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <p className="text-xs font-bold mb-4" style={{ color: 'var(--text-muted)' }}>
               📊 Top padres por tiempo conectado (minutos)
             </p>
@@ -211,7 +211,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
 
   return (
     <div className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       {/* Row header */}
       <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggle}>
         {/* Avatar */}
@@ -277,7 +277,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
               { label: 'Última conexión',    value: parent.last_seen ? new Date(parent.last_seen).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—' },
             ].map(m => (
               <div key={m.label} className="rounded-xl p-3 text-center"
-                style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{m.value}</p>
                 <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
               </div>
@@ -290,7 +290,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
               <p className="text-[10px] font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
                 📅 Minutos conectado por día (últimas 2 semanas)
               </p>
-              <div className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+              <div className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <ResponsiveContainer width="100%" height={90}>
                   <LineChart data={sparkData} margin={{ top: 4, right: 8, bottom: 4, left: -30 }}>
                     <CartesianGrid strokeDasharray="2 2" stroke="var(--card-border)" />
@@ -318,7 +318,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
               <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
                 {parent.sessions.slice(0, 20).map((s: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 rounded-lg px-3 py-2 text-xs"
-                    style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                    style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                     <span style={{ color: 'var(--text-muted)', minWidth: '130px' }}>
                       {new Date(s.started_at).toLocaleString('es-PE', {
                         day: 'numeric', month: 'short', year: 'numeric',

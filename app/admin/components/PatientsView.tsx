@@ -23,8 +23,8 @@ import EvaluacionInicialAdmin from './EvaluacionInicialAdmin'
 
 // ── Color badge por diagnóstico ────────────────────────────────────────────
 const DX_BORDER: Record<string, string> = {
-  'TEA': '#7b5ea7', 'TDAH': '#3a68a0', 'Retraso': '#b07830', 'Autismo': '#7b5ea7',
-  'TDA': '#3a68a0', 'TDL': '#2e7a56',
+  'TEA': '#0284c7', 'TDAH': '#0891b2', 'Retraso': '#f59e0b', 'Autismo': '#0284c7',
+  'TDA': '#0891b2', 'TDL': '#10b981',
 }
 const getDxStyle = (dx: string) => {
   const k = Object.keys(DX_BORDER).find(k => dx?.includes(k))
@@ -48,6 +48,25 @@ function Avatar({ name, size = 'md' }: { name: string; size?: 'sm'|'md'|'lg' }) 
   return (
     <div className={`bg-gradient-to-br ${pal} ${sz} rounded-2xl flex items-center justify-center font-bold text-white flex-shrink-0 shadow-sm`}>
       {name.charAt(0).toUpperCase()}
+    </div>
+  )
+}
+
+// ── InfoCard premium (ícono en tile tintado + jerarquía) ───────────────────
+function InfoCard({ icon: Icon, label, color = '#0284c7', children }: {
+  icon: any; label: string; color?: string; children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl p-4 transition-all hover:shadow-md"
+      style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: `${color}18`, color }}>
+          <Icon size={13} />
+        </div>
+        <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      </div>
+      {children}
     </div>
   )
 }
@@ -142,7 +161,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
 
   return (
     <>
-      <div className="rounded-xl p-4 mt-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      <div className="rounded-xl p-4 mt-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             <UserCheck size={13} style={{ color: 'var(--text-muted)' }} />
@@ -308,7 +327,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
 
   if (loading) {
     return (
-      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
           <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
@@ -324,7 +343,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
 
   if (checkins.length === 0) {
     return (
-      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
           <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
@@ -343,7 +362,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
   const fechaUltimo = new Date(ultimo.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
@@ -474,7 +493,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
   }
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <BarChart3 size={12} style={{ color: 'var(--text-muted)' }} />
@@ -727,63 +746,33 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
 
           {/* Fila 1: Fecha nacimiento + Edad */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-              <div className="flex items-center gap-1.5 mb-2">
-                <Calendar size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                  {t('pacientes.fechaNacimiento')}
-                </p>
-              </div>
+            <InfoCard icon={Calendar} label={t('pacientes.fechaNacimiento')} color="#0284c7">
               <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {birthFormatted || '—'}
               </p>
-            </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-              <div className="flex items-center gap-1.5 mb-2">
-                <Baby size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                  {t('ui.age')}
-                </p>
-              </div>
+            </InfoCard>
+            <InfoCard icon={Baby} label={t('ui.age')} color="#06b6d4">
               <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{ageDisplay}</p>
-            </div>
+            </InfoCard>
           </div>
 
           {/* Fila 2: Diagnóstico + Apodo */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-              <div className="flex items-center gap-1.5 mb-2">
-                <Stethoscope size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                  {t('pacientes.diagnostico')}
-                </p>
-              </div>
+            <InfoCard icon={Stethoscope} label={t('pacientes.diagnostico')} color="#0ea5e9">
               <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {nino.diagnosis || '—'}
               </p>
-            </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-              <div className="flex items-center gap-1.5 mb-2">
-                <User size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                  Apodo
-                </p>
-              </div>
+            </InfoCard>
+            <InfoCard icon={User} label="Apodo" color="#0369a1">
               {nino.apodo
                 ? <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{nino.apodo}</p>
                 : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin apodo</p>
               }
-            </div>
+            </InfoCard>
           </div>
 
           {/* Fila 3: Especialista asignado */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-            <div className="flex items-center gap-1.5 mb-2">
-              <Stethoscope size={12} style={{ color: '#7b5ea7' }}/>
-              <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                Especialista asignado
-              </p>
-            </div>
+          <InfoCard icon={Stethoscope} label="Especialista asignado" color="#0284c7">
             {specialistName
               ? <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-lg bg-sky-500 flex items-center justify-center flex-shrink-0">
@@ -792,29 +781,23 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>{specialistName}</p>
                     {specialistSpecialty && (
-                      <p className="text-[11px] leading-tight truncate" style={{ color: '#7b5ea7' }}>{specialistSpecialty}</p>
+                      <p className="text-[11px] leading-tight truncate" style={{ color: '#0284c7' }}>{specialistSpecialty}</p>
                     )}
                   </div>
                 </div>
               : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin especialista asignado</p>
             }
-          </div>
+          </InfoCard>
 
           {/* Fila 4: Notas */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-            <div className="flex items-center gap-1.5 mb-2">
-              <ClipboardList size={12} style={{ color: '#3a68a0' }}/>
-              <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                Notas del paciente
-              </p>
-            </div>
+          <InfoCard icon={ClipboardList} label="Notas del paciente" color="#0284c7">
             {nino.notas
               ? <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
                   {nino.notas}
                 </p>
               : <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>Sin notas adicionales</p>
             }
-          </div>
+          </InfoCard>
 
           {/* ── Contador de sesiones (auto + previas manuales) ── */}
           <SessionCounterCard nino={nino} onSaved={onSaved} />
@@ -828,7 +811,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
 
       ) : (
         /* ───────────── EDICIÓN ───────────── */
-        <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+        <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           {/* Header edición */}
           <div className="flex items-center justify-between pb-2 mb-1" style={{ borderBottom: '1px solid var(--card-border)' }}>
             <p className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>

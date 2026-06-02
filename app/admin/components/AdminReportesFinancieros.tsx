@@ -23,7 +23,7 @@ const METHODS   = ['efectivo','yape','plin','transferencia','tarjeta','otro']
 function KPIBig({ label, value, sub, icon: Icon, bar, delta, deltaLabel }: any) {
   const up = delta >= 0
   return (
-    <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+    <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className="absolute top-0 left-0 w-1.5 h-full rounded-l-2xl" style={{ background: bar }} />
       <div className="flex items-start justify-between pl-4 mb-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${bar}18` }}>
@@ -47,7 +47,7 @@ function KPIBig({ label, value, sub, icon: Icon, bar, delta, deltaLabel }: any) 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-xl px-4 py-3 shadow-xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+    <div className="rounded-xl px-4 py-3 shadow-xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <p className="text-xs font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{label}</p>
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2 text-xs">
@@ -207,7 +207,7 @@ export default function AdminReportesFinancieros() {
     <div className="space-y-5">
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="h-1" style={{ background: 'linear-gradient(90deg, #10b981 0%, #3a68a0 40%, #f59e0b 70%, #0ea5e9 100%)' }} />
         <div className="px-6 py-4 flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -285,7 +285,7 @@ export default function AdminReportesFinancieros() {
             <div className="space-y-4">
 
               {/* Area chart — ingresos vs pendiente */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
                   <div>
                     <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Evolución de ingresos {anio}</h3>
@@ -327,7 +327,7 @@ export default function AdminReportesFinancieros() {
               {/* Bottom row: método pago + sesiones por mes */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Por método */}
-                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
                     <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Métodos de pago</h3>
                     <DollarSign size={15} style={{ color: '#f59e0b' }} />
@@ -376,7 +376,7 @@ export default function AdminReportesFinancieros() {
                 </div>
 
                 {/* Sesiones por mes */}
-                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
                     <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Sesiones pagadas por mes</h3>
                     <Activity size={15} style={{ color: '#3a68a0' }} />
@@ -396,7 +396,7 @@ export default function AdminReportesFinancieros() {
               </div>
 
               {/* Tabla resumen mes a mes */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
                   <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Resumen mensual {anio}</h3>
                   <button
@@ -476,7 +476,7 @@ export default function AdminReportesFinancieros() {
           {/* ── PACIENTES ── */}
           {tab === 'pacientes' && (
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
                   <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Ingresos por paciente {anio}</h3>
                   <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>{data.porPaciente.length} pacientes</span>
@@ -514,7 +514,7 @@ export default function AdminReportesFinancieros() {
           {tab === 'servicios' && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
                     <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Distribución por servicio</h3>
                   </div>
@@ -540,7 +540,7 @@ export default function AdminReportesFinancieros() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
                     <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Ranking por servicio</h3>
                   </div>

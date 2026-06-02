@@ -1220,7 +1220,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
         style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
         <div className="flex items-center gap-3 mb-2">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+            style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <Activity size={16} style={{ color: 'var(--text-secondary)' }} />
           </div>
           <div>
