@@ -76,7 +76,7 @@ function InfoPill({ label, value, icon }: { label: string; value: string; icon: 
   return (
     <div className="p-3 rounded-xl space-y-1" style={{ background: 'var(--muted-bg)' }}>
       <div className="flex items-center gap-1.5">
-        <span className="text-blue-500">{icon}</span>
+        <span className="text-sky-500">{icon}</span>
         <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{label}</p>
       </div>
       <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>{value || '—'}</p>
@@ -253,7 +253,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
                 />
               </div>
               <button onClick={handleSearch} disabled={searching || !emailSearch.trim()}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white disabled:opacity-50 flex items-center gap-1.5">
+                className="px-4 py-2.5 rounded-xl text-sm font-bold bg-sky-600 text-white disabled:opacity-50 flex items-center gap-1.5">
                 {searching ? <Loader2 size={13} className="animate-spin"/> : <Search size={13}/>}
                 Buscar
               </button>
@@ -263,7 +263,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
               <div className="space-y-1.5 max-h-56 overflow-y-auto">
                 {searchResults.map(u => (
                   <div key={u.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                    className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:bg-sky-50 dark:hover:bg-blue-900/20 transition-all"
                     style={{ borderColor: 'var(--card-border)' }}>
                     <div className="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
                       <User size={14} className="text-white"/>
@@ -275,7 +275,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
                       <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{u.email}</p>
                     </div>
                     <button onClick={() => handleLink(u)} disabled={linking}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-blue-600 text-white disabled:opacity-50 flex-shrink-0">
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-sky-600 text-white disabled:opacity-50 flex-shrink-0">
                       {linking ? <Loader2 size={10} className="animate-spin"/> : <Link size={10}/>}
                       Vincular
                     </button>
@@ -1148,7 +1148,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
             {t('nav.pacientes')} · <span className="font-normal">{filtrados.length}</span>
           </h2>
           <button onClick={()=>setShowNew(true)}
-            className="w-7 h-7 rounded-lg bg-blue-600 hover:bg-blue-700 flex items-center justify-center transition-all shadow-sm">
+            className="w-7 h-7 rounded-lg bg-sky-600 hover:bg-sky-700 flex items-center justify-center transition-all shadow-sm">
             <Plus size={14} className="text-white"/>
           </button>
         </div>
@@ -1176,7 +1176,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                 <button key={p.id} onClick={()=>selectPatient(p)}
                   className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all border
                     ${selected?.id===p.id
-                      ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30'
+                      ? 'bg-sky-50 border-sky-200 dark:bg-sky-900/30'
                       : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                   <Avatar name={p.name} size="sm"/>
                   <div className="flex-1 min-w-0">
@@ -1188,7 +1188,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                     </p>
                   </div>
                   {selected?.id===p.id
-                    ? <Check size={13} className="text-blue-500 flex-shrink-0"/>
+                    ? <Check size={13} className="text-sky-500 flex-shrink-0"/>
                     : <ChevronRight size={13} className="flex-shrink-0 opacity-30"/>}
                 </button>
               ))
@@ -1226,11 +1226,11 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                       onChange={e => setHeaderNameInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') saveHeaderName(); if (e.key === 'Escape') cancelEditHeaderName() }}
                       className="flex-1 min-w-0 text-base font-bold rounded-lg px-2 py-0.5 leading-tight outline-none"
-                      style={{ background: 'var(--muted-bg)', color: 'var(--text-primary)', border: '1.5px solid var(--accent, #3b82f6)' }}
+                      style={{ background: 'var(--muted-bg)', color: 'var(--text-primary)', border: '1.5px solid #0284c7' }}
                     />
                     <button onClick={saveHeaderName} disabled={savingHeaderName}
                       className="p-1 rounded-lg flex-shrink-0 transition-all"
-                      style={{ background: 'var(--accent, #3b82f6)', color: '#fff' }}>
+                      style={{ background: '#0284c7', color: '#fff' }}>
                       {savingHeaderName ? <Loader2 size={13} className="animate-spin"/> : <Check size={13}/>}
                     </button>
                     <button onClick={cancelEditHeaderName}
@@ -1264,28 +1264,38 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
               </div>
             </div>
 
-            {/* Tabs — etiqueta corta en móvil, etiqueta completa en desktop */}
-            <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <div className="flex w-full">
-              {TABS.map(tb => (
+            {/* Tabs premium — pill activo con tinte + indicador degradado */}
+            <div className="border-b px-2" style={{ borderColor: 'var(--card-border)' }}>
+              <div className="flex w-full gap-0.5">
+              {TABS.map(tb => {
+                const activo = tab===tb.id
+                return (
                 <button key={tb.id} onClick={()=>setTab(tb.id)}
-                  className={`flex flex-1 flex-col items-center gap-0.5 px-1 pt-2.5 pb-2 font-semibold border-b-2 transition-all
-                    ${tab===tb.id ? 'border-blue-500' : 'border-transparent'}`}
-                  style={{ color: tab===tb.id ? 'var(--accent, #3b82f6)' : 'var(--text-muted)' }}
+                  className="group relative flex flex-1 flex-col items-center gap-1.5 px-1 pt-3 pb-3 transition-all rounded-t-xl"
+                  style={{
+                    color: activo ? '#0284c7' : 'var(--text-muted)',
+                    background: activo ? 'rgba(2,132,199,0.06)' : 'transparent',
+                  }}
                   title={tb.label}>
-                  <span className="flex-shrink-0" style={{ opacity: tab===tb.id ? 1 : 0.6 }}>
-                    {tb.id === 'info'         && <User         size={16}/>}
-                    {tb.id === 'programas'    && <BarChart3    size={16}/>}
-                    {tb.id === 'evaluaciones' && <ClipboardList size={16}/>}
-                    {tb.id === 'eval-inicial' && <ClipboardList size={16}/>}
-                    {tb.id === 'historial'    && <Brain        size={16}/>}
-                    {tb.id === 'fichas'       && <FileText     size={16}/>}
-                    {tb.id === 'documentos'   && <FolderOpen   size={16}/>}
+                  <span className="flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 group-hover:scale-105"
+                    style={{ background: activo ? 'rgba(2,132,199,0.14)' : 'transparent' }}>
+                    {tb.id === 'info'         && <User         size={17}/>}
+                    {tb.id === 'programas'    && <BarChart3    size={17}/>}
+                    {tb.id === 'evaluaciones' && <ClipboardList size={17}/>}
+                    {tb.id === 'eval-inicial' && <ClipboardList size={17}/>}
+                    {tb.id === 'historial'    && <Brain        size={17}/>}
+                    {tb.id === 'fichas'       && <FileText     size={17}/>}
+                    {tb.id === 'documentos'   && <FolderOpen   size={17}/>}
                   </span>
-                  <span className="sm:hidden text-[9px] font-bold whitespace-nowrap">{tb.short}</span>
-                  <span className="hidden sm:block text-[10px] font-bold whitespace-nowrap">{tb.label}</span>
+                  <span className="sm:hidden text-[9px] font-semibold whitespace-nowrap">{tb.short}</span>
+                  <span className="hidden sm:block text-[10.5px] font-semibold whitespace-nowrap">{tb.label}</span>
+                  {activo && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-9 h-[3px] rounded-full"
+                      style={{ background: 'linear-gradient(90deg,#0284c7,#06b6d4)' }}/>
+                  )}
                 </button>
-              ))}
+                )
+              })}
               </div>
             </div>
           </div>
@@ -1324,15 +1334,15 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
       ) : (
         /* Empty state — solo visible en desktop */
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-4 p-8">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-50 to-sky-100 flex items-center justify-center">
-            <Users size={36} className="text-blue-400"/>
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-sky-50 to-cyan-100 flex items-center justify-center">
+            <Users size={36} className="text-sky-400"/>
           </div>
           <div className="text-center">
             <h3 className="font-bold text-lg mb-1" style={{ color:'var(--text-primary)' }}>{t('pacientes.seleccionaUno')}</h3>
             <p className="text-sm max-w-xs" style={{ color:'var(--text-muted)' }}>{t('pacientes.seleccionaDesc')}</p>
           </div>
           <button onClick={()=>setShowNew(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-sm">
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold shadow-sm">
             <Plus size={15}/> {t('pacientes.nuevo')}
           </button>
         </div>
@@ -1376,7 +1386,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
             {t('common.cancelar')}
           </button>
           <button onClick={handleCreate} disabled={saving||!newForm.name.trim()}
-            className="flex-1 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white disabled:opacity-50 flex items-center justify-center gap-2">
+            className="flex-1 py-3 rounded-xl font-bold text-sm bg-sky-600 text-white disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <Loader2 size={14} className="animate-spin"/> : <Plus size={14}/>}
             {t('pacientes.crear')}
           </button>
