@@ -19,8 +19,20 @@ import {
   Zap, MessageCircle, BarChart3, RefreshCw, BookOpen, Target, Heart,
   Activity, Star, ChevronDown, ChevronUp, Save, ClipboardList,
   Filter, Users, TrendingUp, Shield, Stethoscope, Home, Baby,
-  CalendarDays, Lock, Unlock, Download
+  CalendarDays, Lock, Unlock, Download, LayoutGrid, Puzzle, Gauge, Waves
 } from 'lucide-react'
+
+// ─── Mapeo categoría → ícono lucide + color clínico (no emojis) ─────────────
+const CAT_ICON: Record<string, any> = {
+  all: LayoutGrid, conductual: Target, familia: Home, clinico: Stethoscope,
+  tea: Puzzle, tdah: Zap, habilidades: Activity, cognitivo: Gauge, sensorial: Waves,
+}
+const CAT_ACCENT: Record<string, string> = {
+  all: '#64748b', conductual: '#0284c7', familia: '#06b6d4', clinico: '#0369a1',
+  tea: '#0ea5e9', tdah: '#2563eb', habilidades: '#10b981', cognitivo: '#0891b2', sensorial: '#0d9488',
+}
+const formIcon = (f: any) => CAT_ICON[f?.category] || FileText
+const formAccent = (f: any) => CAT_ACCENT[f?.category] || '#0284c7'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
 import {
@@ -1092,10 +1104,13 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
 
       <div className="flex-1 overflow-y-auto"><div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Form info card */}
-        <div className={`bg-gradient-to-r ${form.color || 'from-sky-600 to-cyan-600'} rounded-2xl p-5 text-white shadow-lg`}>
+        <div className="rounded-2xl p-5 text-white shadow-lg" style={{ background: `linear-gradient(120deg, ${formAccent(form)} 0%, #0369a1 100%)` }}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <p className="text-white/70 text-xs font-bold mb-1">{form.icon} {form.category?.toUpperCase()}</p>
+              <p className="text-white/80 text-xs font-bold mb-1 flex items-center gap-1.5">
+                {(() => { const FI = formIcon(form); return <FI size={13} /> })()}
+                {form.category?.toUpperCase()}
+              </p>
               <h2 className="font-bold text-xl">{form.title}</h2>
               <p className="text-white/80 text-sm mt-0.5">{form.subtitle}</p>
             </div>
@@ -1193,20 +1208,22 @@ function FormCard({ form, onStart, onSend, catInfo }: any) {
   const isExternal = (form as any).externalPlatform
   const isPro = form.formKey
   const isParent = form.targetRole === 'parent' || form.targetRole === 'both'
+  const Icon = formIcon(form)
+  const accent = formAccent(form)
 
   return (
-    <div className="rounded-2xl overflow-hidden transition-all hover:shadow-md group"
+    <div className="rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group"
       style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-      {/* Top accent bar - thin, tasteful */}
-      <div className="h-0.5" style={{ background: `linear-gradient(90deg, ${isExternal ? '#b07830' : isPro ? '#7a4a4a' : '#4a6eaa'}, transparent)` }} />
+      {/* Top accent bar — color de la categoría */}
+      <div className="h-1" style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }} />
 
       <div className="p-4">
         {/* Header row */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-              style={{ background: 'var(--muted-bg)' }}>
-              {form.icon}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+              style={{ background: `${accent}18`, color: accent }}>
+              <Icon size={18} />
             </div>
             <div className="min-w-0">
               <h3 className="font-bold text-sm leading-tight truncate" style={{ color: 'var(--text-primary)' }}>{form.title}</h3>
@@ -1216,19 +1233,19 @@ function FormCard({ form, onStart, onSend, catInfo }: any) {
           <div className="flex items-center gap-1 flex-shrink-0">
             {isParent && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                style={{ background: 'rgba(74,110,170,0.1)', color: '#4a6eaa', border: '1px solid rgba(74,110,170,0.2)' }}>
+                style={{ background: 'rgba(2,132,199,0.1)', color: '#0284c7', border: '1px solid rgba(2,132,199,0.2)' }}>
                 Padres
               </span>
             )}
             {isExternal && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                style={{ background: 'rgba(176,120,48,0.1)', color: '#b07830', border: '1px solid rgba(176,120,48,0.2)' }}>
+                style={{ background: 'rgba(245,158,11,0.12)', color: '#b45309', border: '1px solid rgba(245,158,11,0.25)' }}>
                 Ext.
               </span>
             )}
             {isPro && !isExternal && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                style={{ background: 'rgba(122,74,74,0.1)', color: '#7a4a4a', border: '1px solid rgba(122,74,74,0.2)' }}>
+                style={{ background: 'rgba(13,148,136,0.1)', color: '#0d9488', border: '1px solid rgba(13,148,136,0.2)' }}>
                 PRO
               </span>
             )}
@@ -1384,16 +1401,21 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
       {/* ── HEADER STATS ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Formularios',                      value: stats.total,     bar: '#5a6eaa' },
-          { label: t('evaluaciones.enviados_stat'),    value: stats.sent,      bar: '#3a7aaa' },
-          { label: 'Pendientes',                       value: stats.pending,   bar: '#9a7020' },
-          { label: 'Completados',                      value: stats.completed, bar: '#3a8a60' },
-        ].map(({ label, value, bar }) => (
-          <div key={label} className="rounded-2xl p-4 relative overflow-hidden"
-            style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-            <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
-            <p className="text-3xl font-bold pl-2 leading-none mb-1" style={{ color: bar }}>{value}</p>
-            <p className="text-[11px] font-semibold pl-2" style={{ color: 'var(--text-muted)' }}>{label}</p>
+          { label: 'Formularios',                      value: stats.total,     bar: '#0284c7', Icon: FileText },
+          { label: t('evaluaciones.enviados_stat'),    value: stats.sent,      bar: '#06b6d4', Icon: Send },
+          { label: 'Pendientes',                       value: stats.pending,   bar: '#f59e0b', Icon: Clock },
+          { label: 'Completados',                      value: stats.completed, bar: '#10b981', Icon: CheckCircle2 },
+        ].map(({ label, value, bar, Icon }) => (
+          <div key={label} className="group rounded-2xl p-4 relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+            style={{ background: `linear-gradient(157deg, ${bar}0d 0%, var(--card) 46%)`, border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+            <div className="flex items-start justify-between mb-2">
+              <p className="text-3xl font-extrabold tabular-nums tracking-tight leading-none" style={{ color: bar }}>{value}</p>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                style={{ background: `${bar}1a`, color: bar }}>
+                <Icon size={15} />
+              </div>
+            </div>
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
           </div>
         ))}
       </div>
@@ -1437,15 +1459,21 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
 
           {/* Category pills */}
           <div className="flex gap-2 flex-wrap">
-            {UNIFIED_CATEGORIES.map(cat => (
+            {UNIFIED_CATEGORIES.map(cat => {
+              const CatIcon = CAT_ICON[cat.id] || LayoutGrid
+              const activo = activeCategory === cat.id
+              const accent = CAT_ACCENT[cat.id] || '#0284c7'
+              return (
               <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
-                style={activeCategory === cat.id
+                className="px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2"
+                style={activo
                   ? { background: 'var(--text-primary)', color: 'var(--card)', border: '1px solid transparent' }
                   : { background: 'var(--card)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)' }}>
-                {cat.icon} {({all: t('evaluaciones.catTodas'), conductual: t('evaluaciones.catABA'), familia: t('evaluaciones.catFamilia'), clinico: t('evaluaciones.catClinico'), tea: t('evaluaciones.catTEA'), tdah: t('evaluaciones.catTDAH'), habilidades: t('evaluaciones.catAdaptativa'), cognitivo: t('evaluaciones.catCognitivo'), sensorial: t('evaluaciones.catSensorial')} as Record<string,string>)[cat.id] || cat.label}
+                <CatIcon size={14} style={{ color: activo ? undefined : accent }} />
+                {({all: t('evaluaciones.catTodas'), conductual: t('evaluaciones.catABA'), familia: t('evaluaciones.catFamilia'), clinico: t('evaluaciones.catClinico'), tea: t('evaluaciones.catTEA'), tdah: t('evaluaciones.catTDAH'), habilidades: t('evaluaciones.catAdaptativa'), cognitivo: t('evaluaciones.catCognitivo'), sensorial: t('evaluaciones.catSensorial')} as Record<string,string>)[cat.id] || cat.label}
               </button>
-            ))}
+              )
+            })}
           </div>
 
           {/* Forms grid */}

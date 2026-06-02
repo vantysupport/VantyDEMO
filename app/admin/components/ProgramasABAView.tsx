@@ -11,7 +11,8 @@ import {
 import {
   Plus, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
   Target, BarChart3, BarChart2, Edit3, CheckCircle2, AlertTriangle, Clock,
-  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight, Trash2, Search
+  Loader2, X, Save, Activity, Zap, Brain, BookOpen, ArrowRight, Trash2, Search,
+  MessageCircle, Users, Sparkles, Hand
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 
@@ -43,14 +44,14 @@ const AREA_COLOR: Record<string, { dot: string }> = {
   sensorial:    { dot: '#aa5a80' },
 }
 
-const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string }> = {
-  comunicacion: { color: 'text-blue-700 dark:text-blue-300',   bg: 'bg-blue-50 dark:bg-blue-900/25 border-blue-200 dark:border-blue-800',   label: 'Comunicación',   emoji: '💬' },
-  conducta:     { color: 'text-red-700 dark:text-red-300',     bg: 'bg-red-50 dark:bg-red-900/25 border-red-200 dark:border-red-800',       label: 'Conducta',       emoji: '🎯' },
-  cognitivo:    { color: 'text-sky-700 dark:text-sky-300', bg: 'bg-sky-50 dark:bg-sky-900/25 border-sky-200 dark:border-sky-800', label: 'Cognitivo', emoji: '🧠' },
-  social:       { color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-900/25 border-emerald-200 dark:border-emerald-800', label: 'Social', emoji: '👥' },
-  autonomia:    { color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/25 border-amber-200 dark:border-amber-800', label: 'Autonomía',    emoji: '🌟' },
-  academico:    { color: 'text-sky-700 dark:text-sky-300', bg: 'bg-sky-50 dark:bg-sky-900/25 border-sky-200 dark:border-sky-800', label: 'Académico', emoji: '📚' },
-  sensorial:    { color: 'text-pink-700 dark:text-pink-300',   bg: 'bg-pink-50 dark:bg-pink-900/25 border-pink-200 dark:border-pink-800',   label: 'Sensorial',      emoji: '✋' },
+const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string; Icon: any; accent: string }> = {
+  comunicacion: { color: 'text-sky-700 dark:text-sky-300',     bg: 'bg-sky-50 dark:bg-sky-900/25 border-sky-200 dark:border-sky-800',         label: 'Comunicación',   emoji: '💬', Icon: MessageCircle, accent: '#0284c7' },
+  conducta:     { color: 'text-rose-700 dark:text-rose-300',   bg: 'bg-rose-50 dark:bg-rose-900/25 border-rose-200 dark:border-rose-800',     label: 'Conducta',       emoji: '🎯', Icon: Target,        accent: '#e11d48' },
+  cognitivo:    { color: 'text-cyan-700 dark:text-cyan-300',   bg: 'bg-cyan-50 dark:bg-cyan-900/25 border-cyan-200 dark:border-cyan-800',     label: 'Cognitivo',      emoji: '🧠', Icon: Brain,         accent: '#0891b2' },
+  social:       { color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-900/25 border-emerald-200 dark:border-emerald-800', label: 'Social', emoji: '👥', Icon: Users,    accent: '#059669' },
+  autonomia:    { color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/25 border-amber-200 dark:border-amber-800', label: 'Autonomía',    emoji: '🌟', Icon: Sparkles,      accent: '#d97706' },
+  academico:    { color: 'text-blue-700 dark:text-blue-300',   bg: 'bg-blue-50 dark:bg-blue-900/25 border-blue-200 dark:border-blue-800',     label: 'Académico',      emoji: '📚', Icon: BookOpen,      accent: '#2563eb' },
+  sensorial:    { color: 'text-pink-700 dark:text-pink-300',   bg: 'bg-pink-50 dark:bg-pink-900/25 border-pink-200 dark:border-pink-800',     label: 'Sensorial',      emoji: '✋', Icon: Hand,          accent: '#db2777' },
 }
 
 // Removed 'seguimiento' — mantenimiento covers it
@@ -274,10 +275,10 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
   }
 
   const STAT_CFG = [
-    { label: t('programas.activos'),        value: stats.activos,        icon: '◉', lightBg: '#f0f4ff', lightNum: '#3d5a99', lightLabel: '#6b7a9a', darkBg: 'rgba(61,90,153,0.12)', darkNum: '#7b9cd4', darkLabel: '#6b7a9a', bar: '#3d5a99' },
-    { label: t('programas.dominados'),       value: stats.dominados,      icon: '✓', lightBg: '#f0faf5', lightNum: '#2d7a56', lightLabel: '#5a8a70', darkBg: 'rgba(45,122,86,0.12)',  darkNum: '#6ab890', darkLabel: '#5a8a70', bar: '#2d7a56' },
-    { label: t('programas.enIntervencion'),  value: stats.enIntervencion, icon: '▶', lightBg: '#f5f0ff', lightNum: '#5a3d99', lightLabel: '#7a6a9a', darkBg: 'rgba(90,61,153,0.12)',  darkNum: '#9d80d4', darkLabel: '#7a6a9a', bar: '#5a3d99' },
-    { label: t('programas.alertasIA'),       value: stats.alertas,        icon: '⚑', lightBg: '#fff8ee', lightNum: '#956020', lightLabel: '#9a7a4a', darkBg: 'rgba(149,96,32,0.12)',  darkNum: '#d4a060', darkLabel: '#9a7a4a', bar: '#956020' },
+    { label: t('programas.activos'),        value: stats.activos,        Icon: Activity,      color: '#0284c7' },
+    { label: t('programas.dominados'),       value: stats.dominados,      Icon: CheckCircle2,  color: '#10b981' },
+    { label: t('programas.enIntervencion'),  value: stats.enIntervencion, Icon: TrendingUp,    color: '#0ea5e9' },
+    { label: t('programas.alertasIA'),       value: stats.alertas,        Icon: AlertTriangle, color: '#f59e0b' },
   ]
 
   return (
@@ -321,14 +322,16 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {STAT_CFG.map(s => (
-          <div key={s.label} className="rounded-2xl p-4 relative overflow-hidden"
-            style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-            <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ background: s.bar }} />
-            <p className="text-3xl font-bold pl-1 leading-none mb-1"
-              style={{ color: s.bar }}>
-              {s.value}
-            </p>
-            <p className="text-[11px] font-semibold pl-1" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
+          <div key={s.label} className="group rounded-2xl p-4 relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+            style={{ background: `linear-gradient(157deg, ${s.color}0d 0%, var(--card) 46%)`, border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+            <div className="flex items-start justify-between mb-2">
+              <p className="text-3xl font-extrabold tabular-nums tracking-tight leading-none" style={{ color: s.color }}>{s.value}</p>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                style={{ background: `${s.color}1a`, color: s.color }}>
+                <s.Icon size={15} />
+              </div>
+            </div>
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -417,8 +420,9 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             <span key={area} className="group relative flex items-center gap-1 rounded-lg text-xs font-semibold transition-all cursor-pointer"
               style={isActive ? activeStyle : inactiveStyle}
               onClick={() => setFiltroArea(area)}>
-              <span className="pl-3 py-1.5">
-                {AREA_CONFIG[area]?.emoji} {getAreaLabel(area)}
+              <span className="flex items-center gap-1.5 pl-3 py-1.5">
+                {AREA_CONFIG[area]?.Icon && (() => { const AI = AREA_CONFIG[area].Icon; return <AI size={13} style={{ color: isActive ? undefined : AREA_CONFIG[area].accent }} /> })()}
+                {getAreaLabel(area)}
               </span>
               <button
                 title="Renombrar etiqueta"
@@ -1010,8 +1014,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
       {/* Header */}
       <div className="p-5 cursor-pointer" onClick={loadDetalle}>
         <div className="flex items-start gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${area.bg} border shrink-0`}>
-            {area.emoji}
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: `${area.accent}18`, color: area.accent }}>
+            {(() => { const AI = area.Icon; return <AI size={19} /> })()}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1050,8 +1055,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <button
                   onClick={e => { e.stopPropagation(); setEditingArea(v => !v); setEditingFase(false) }}
                   title="Cambiar área"
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all hover:opacity-80 ${AREA_CONFIG[localArea]?.bg || ''} ${AREA_CONFIG[localArea]?.color || ''}`}>
-                  {AREA_CONFIG[localArea]?.emoji} {AREA_CONFIG[localArea]?.label || localArea}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all hover:opacity-80 ${AREA_CONFIG[localArea]?.bg || ''} ${AREA_CONFIG[localArea]?.color || ''}`}>
+                  {AREA_CONFIG[localArea]?.Icon && (() => { const AI = AREA_CONFIG[localArea].Icon; return <AI size={11} /> })()}
+                  {AREA_CONFIG[localArea]?.label || localArea}
                 </button>
                 {editingArea && (
                   <div className="absolute top-6 left-0 z-50 rounded-2xl shadow-xl py-1 min-w-[160px]"
@@ -1066,7 +1072,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         }}
                         className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-left hover:bg-[var(--muted-bg)] transition-colors ${key === localArea ? 'font-bold' : ''}`}
                         style={{ color: key === localArea ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                        {cfg.emoji} {cfg.label}
+                        {(() => { const AI = cfg.Icon; return <AI size={13} style={{ color: cfg.accent }} /> })()}
+                        {cfg.label}
                         {key === localArea && <span className="ml-auto text-sky-500">✓</span>}
                       </button>
                     ))}
