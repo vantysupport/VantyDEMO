@@ -61,11 +61,11 @@ function SidebarLink({ icon: Icon, label, active, onClick, small, badge }: any) 
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 group text-left
         ${active
-          ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30'
-          : 'text-slate-500 dark:text-slate-400 hover:bg-indigo-50/70 dark:hover:bg-[#21262d] hover:text-slate-800 dark:hover:text-slate-200'
+          ? 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-md shadow-sky-500/30'
+          : 'text-slate-500 dark:text-slate-400 hover:bg-sky-50/70 dark:hover:bg-[#21262d] hover:text-slate-800 dark:hover:text-slate-200'
         } ${small ? 'text-xs' : 'text-sm'}`}
     >
-      <Icon size={small ? 15 : 17} className={`flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}`} />
+      <Icon size={small ? 15 : 17} className={`flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-slate-400 group-hover:text-sky-500'}`} />
       <span className={`font-semibold truncate flex-1 ${small ? 'text-xs' : ''}`}>{label}</span>
       {badge > 0 && (
         <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0
@@ -302,7 +302,7 @@ export default function AdminDashboard() {
             <p className={`font-bold text-[13px] leading-tight truncate tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
               Neuropsicología y Terapias SANTI
             </p>
-            <p className={`text-[10px] font-semibold tracking-wide ${isDark ? 'text-indigo-400' : 'text-indigo-500'}`}>
+            <p className={`text-[10px] font-semibold tracking-wide ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>
               Panel {roleName}
             </p>
           </div>
@@ -352,7 +352,7 @@ export default function AdminDashboard() {
               ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-50'}`}
             onClick={() => { setCurrentView('config'); setSidebarOpen(false) }}
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+            <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-cyan-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
               {userProfile?.avatar_url ? (
                 <img src={userProfile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
               ) : (
@@ -590,12 +590,12 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
                 {...{placeholder: t('ui.new_password')}}
-                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-500
+                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-sky-500
                   ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-200 placeholder-slate-600'
                     : 'bg-slate-50 border-slate-200 text-slate-800'}`} />
               <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                 {...{placeholder: t('ui.confirm_password')}}
-                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-500
+                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-sky-500
                   ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-200 placeholder-slate-600'
                     : 'bg-slate-50 border-slate-200 text-slate-800'}`} />
               <div className="flex gap-3 pt-2">
@@ -604,7 +604,7 @@ export default function AdminDashboard() {
                   Cancelar
                 </button>
                 <button onClick={handleChangePassword} disabled={changingPassword}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center gap-2">
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50 transition flex items-center justify-center gap-2">
                   {changingPassword ? <><Loader2 size={16} className="animate-spin" /> Actualizando...</> : 'Actualizar'}
                 </button>
               </div>

@@ -51,18 +51,21 @@ function Donut({ value, total, color, size = 56 }: any) {
 function KPI({ label, value, sub, icon: Icon, bar, urgent, onClick }: any) {
   return (
     <div onClick={onClick}
-      className={`rounded-2xl p-5 relative overflow-hidden transition-all duration-200 ${onClick ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : ''}`}
-      style={{ background: 'var(--card)', border: urgent ? `1px solid ${bar}55` : '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-      {/* glow sutil del color en la esquina (en vez de barra lateral genérica) */}
-      <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full pointer-events-none" style={{ background: bar, opacity: 0.08, filter: 'blur(8px)' }} />
-      <div className="flex items-start justify-between mb-3 relative">
-        <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${bar}16` }}>
-          <Icon size={16} style={{ color: bar }} />
+      className={`group rounded-2xl p-5 relative overflow-hidden transition-all duration-300 ${onClick ? 'cursor-pointer hover:-translate-y-1' : ''}`}
+      style={{
+        background: `linear-gradient(157deg, ${bar}0d 0%, var(--card) 44%)`,
+        border: urgent ? `1px solid ${bar}45` : '1px solid var(--card-border)',
+        boxShadow: 'var(--shadow-sm)',
+      }}>
+      <div className="flex items-start justify-between mb-4">
+        <p className="text-[11px] font-semibold tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</p>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+          style={{ background: `${bar}1a`, color: bar }}>
+          <Icon size={17} strokeWidth={2} />
         </div>
       </div>
-      <p className="text-4xl font-bold leading-none mb-1 tabular-nums relative tracking-tight" style={{ color: urgent ? bar : 'var(--text-primary)' }}>{value}</p>
-      <p className="text-xs relative" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+      <p className="font-extrabold leading-none mb-1.5 tabular-nums tracking-tight" style={{ fontSize: '2.7rem', color: urgent ? bar : 'var(--text-primary)' }}>{value}</p>
+      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub}</p>
     </div>
   )
 }
@@ -86,7 +89,7 @@ function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick, onDismiss }: a
   // Color de la barra: verde para logros, rojo/ámbar/azul para alertas negativas
   const bar = esLogro
     ? '#10b981'
-    : prioridadNum === 1 ? '#ef4444' : prioridadNum === 2 ? '#f59e0b' : '#6366f1'
+    : prioridadNum === 1 ? '#ef4444' : prioridadNum === 2 ? '#f59e0b' : '#0284c7'
 
   // Etiqueta legible del tipo
   const tipoLabel = (() => {
@@ -151,9 +154,9 @@ function CitaRow({ cita }: any) {
   const servicio = cita.service_type || cita.tipo || ''
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg transition-all"
-      style={{ background: esHoy ? 'rgba(99,102,241,0.06)' : 'transparent', border: esHoy ? '1px solid rgba(99,102,241,0.15)' : '1px solid transparent' }}>
+      style={{ background: esHoy ? 'rgba(2,132,199,0.06)' : 'transparent', border: esHoy ? '1px solid rgba(2,132,199,0.15)' : '1px solid transparent' }}>
       <div className="w-10 h-10 rounded-lg flex flex-col items-center justify-center flex-shrink-0"
-        style={{ background: esHoy ? '#6366f1' : 'var(--muted-bg)', color: esHoy ? '#fff' : 'var(--text-secondary)' }}>
+        style={{ background: esHoy ? '#0284c7' : 'var(--muted-bg)', color: esHoy ? '#fff' : 'var(--text-secondary)' }}>
         <span className="text-[8px] font-bold leading-none">{mes}</span>
         <span className="text-sm font-bold leading-none">{dia}</span>
       </div>
@@ -162,7 +165,7 @@ function CitaRow({ cita }: any) {
         <p className="text-[11px] flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
           {hora && <><Clock size={9} /> {hora.slice(0, 5)}</>}
           {servicio && <span className="truncate"> · {servicio}</span>}
-          {esHoy && <span className="font-bold flex-shrink-0" style={{ color: '#6366f1' }}> · Hoy</span>}
+          {esHoy && <span className="font-bold flex-shrink-0" style={{ color: '#0284c7' }}> · Hoy</span>}
         </p>
       </div>
     </div>
@@ -497,7 +500,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
 
       {/* ── HERO ── */}
       <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-        <div className="h-1" style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899)' }} />
+        <div className="h-1" style={{ background: 'linear-gradient(90deg, #0369a1, #0284c7, #06b6d4)' }} />
         <div className="p-5 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs capitalize mb-0.5" style={{ color: 'var(--text-muted)' }}>{diaStr}</p>
@@ -534,10 +537,10 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
 
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-        <KPI label="Pacientes" value={totalPacientes} sub="Total registrados" icon={Users} bar="#6366f1" onClick={() => navigateTo('ninos')} />
+        <KPI label="Pacientes" value={totalPacientes} sub="Total registrados" icon={Users} bar="#0284c7" onClick={() => navigateTo('ninos')} />
         <KPI label="Sesiones hoy" value={totalSesHoy} sub={`${realizadasHoy} realizadas`} icon={Calendar} bar="#10b981" onClick={() => navigateTo('agenda')} />
         <KPI label="Sin sesión 30d" value={sinSesion.length} sub="Requieren seguimiento" icon={AlertTriangle} bar="#f59e0b" urgent={sinSesion.length > 0} onClick={() => navigateTo('ninos')} />
-        <KPI label="Programas ABA" value={totalProgramasAba} sub="Activos" icon={ClipboardList} bar="#8b5cf6" onClick={() => navigateTo('ninos')} />
+        <KPI label="Programas ABA" value={totalProgramasAba} sub="Activos" icon={ClipboardList} bar="#0ea5e9" onClick={() => navigateTo('ninos')} />
       </div>
 
       {/* ── MÉTRICAS MEDIAS ── */}
@@ -546,10 +549,10 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         {/* Sesiones 7 días + Retención — combinados en fila */}
         <div className="rounded-2xl p-5 flex flex-col justify-between" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Sesiones — últimos 7 días</p>
-            <span className="text-lg font-bold" style={{ color: '#6366f1' }}>{totalSes7d}</span>
+            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Sesiones · últimos 7 días</p>
+            <span className="text-xl font-extrabold tabular-nums" style={{ color: '#0284c7' }}>{totalSes7d}</span>
           </div>
-          <BarChart values={sesSemanales} labels={diasLabels} color="#6366f1" />
+          <BarChart values={sesSemanales} labels={diasLabels} color="#0284c7" />
           <div className="mt-4 pt-4 border-t flex items-center gap-4" style={{ borderColor: 'var(--card-border)' }}>
             <Donut value={totalPacientes - sinSesion.length} total={totalPacientes} color="#10b981" size={56} />
             <div className="flex-1 min-w-0">
@@ -566,14 +569,14 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         {/* Programas ABA activos */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Programas ABA Activos</p>
-            <button onClick={() => navigateTo('ninos')} className="text-[10px] font-semibold" style={{ color: '#6366f1' }}>Ver todos →</button>
+            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Programas ABA Activos</p>
+            <button onClick={() => navigateTo('ninos')} className="text-[11px] font-semibold" style={{ color: '#0284c7' }}>Ver todos →</button>
           </div>
           {programasActivos.length > 0 ? (
             <div className="space-y-3 overflow-y-auto pr-1" style={{ maxHeight: '260px', scrollbarWidth: 'thin' }}>
               {programasActivos.map((p, i) => {
                 const pct = p.ultimoPct ?? 0
-                const color = pct >= p.criterio ? '#10b981' : pct >= 60 ? '#f59e0b' : '#6366f1'
+                const color = pct >= p.criterio ? '#10b981' : pct >= 60 ? '#f59e0b' : '#0284c7'
                 return (
                   <div
                     key={i}
@@ -608,7 +611,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
             <div className="flex flex-col items-center py-4">
               <Target size={20} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
               <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Sin programas activos</p>
-              <button onClick={() => navigateTo('ninos')} className="text-xs font-bold mt-2" style={{ color: '#6366f1' }}>
+              <button onClick={() => navigateTo('ninos')} className="text-xs font-bold mt-2" style={{ color: '#0284c7' }}>
                 Crear programa →
               </button>
             </div>
@@ -622,9 +625,11 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         {/* Alertas clínicas */}
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
-            <div className="flex items-center gap-2">
-              <Bell size={13} style={{ color: 'var(--text-muted)' }} />
-              <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Alertas Clínicas</p>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.14)' }}>
+                <Bell size={14} style={{ color: '#f59e0b' }} />
+              </div>
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Alertas Clínicas</p>
             </div>
             {alertasClinicas.length > 0 && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -659,9 +664,11 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
         {/* Próximas citas */}
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
-            <div className="flex items-center gap-2">
-              <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
-              <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Próximas Citas</p>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(2,132,199,0.14)' }}>
+                <Calendar size={14} style={{ color: '#0284c7' }} />
+              </div>
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Próximas Citas</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -674,7 +681,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
               </button>
               <button onClick={() => navigateTo('agenda')}
                 className="text-[10px] font-semibold flex items-center gap-1"
-                style={{ color: '#6366f1' }}>
+                style={{ color: '#0284c7' }}>
                 Ver agenda <ArrowUpRight size={10} />
               </button>
             </div>
@@ -686,7 +693,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
                 <div className="flex flex-col items-center py-12">
                   <Calendar size={24} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
                   <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Sin citas agendadas</p>
-                  <button onClick={() => navigateTo('agenda')} className="mt-3 text-xs font-bold" style={{ color: '#6366f1' }}>
+                  <button onClick={() => navigateTo('agenda')} className="mt-3 text-xs font-bold" style={{ color: '#0284c7' }}>
                     Agendar ahora →
                   </button>
                 </div>

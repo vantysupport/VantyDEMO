@@ -117,7 +117,7 @@ export default function LoginPage(props: PageProps) {
           font-family: 'Plus Jakarta Sans', sans-serif;
           min-height: 100svh;
           display: flex;
-          background: #f5f4fe;
+          background: #eef5fb;
           overflow-x: hidden;
         }
         .lp-left {
@@ -125,8 +125,8 @@ export default function LoginPage(props: PageProps) {
           width: 50%;
           position: relative;
           background:
-            radial-gradient(120% 90% at 18% 12%, #29265c 0%, rgba(41,38,92,0) 55%),
-            linear-gradient(164deg, #100e26 0%, #1a1740 50%, #2a2660 100%);
+            radial-gradient(120% 90% at 18% 12%, #15466e 0%, rgba(21,70,110,0) 55%),
+            linear-gradient(164deg, #07182a 0%, #0c2c47 50%, #114a73 100%);
           overflow: hidden;
           padding: 60px 64px;
           flex-direction: column;
@@ -136,7 +136,7 @@ export default function LoginPage(props: PageProps) {
         /* Viñeta sutil para profundidad premium */
         .lp-left::after {
           content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
-          box-shadow: inset 0 0 180px 40px rgba(8,6,24,.55);
+          box-shadow: inset 0 0 180px 40px rgba(3,12,22,.55);
         }
         /* Textura de grano fino — rompe la planitud digital (look premium) */
         .lp-grain {
@@ -146,9 +146,9 @@ export default function LoginPage(props: PageProps) {
           background-size: 180px 180px;
         }
         .lp-orb { position: absolute; border-radius: 50%; filter: blur(100px); animation: orbFloat 20s ease-in-out infinite; }
-        .lp-orb-1 { width: 440px; height: 440px; background: #4f46e5; opacity: .26; top: -150px; left: -110px; }
-        .lp-orb-2 { width: 340px; height: 340px; background: #7c3aed; opacity: .18; bottom: -60px; right: -80px; animation-delay: 6s; }
-        .lp-orb-3 { width: 240px; height: 240px; background: #38bdf8; opacity: .10; bottom: 220px; left: 40px; animation-delay: 10s; }
+        .lp-orb-1 { width: 440px; height: 440px; background: #0284c7; opacity: .28; top: -150px; left: -110px; }
+        .lp-orb-2 { width: 340px; height: 340px; background: #0ea5e9; opacity: .18; bottom: -60px; right: -80px; animation-delay: 6s; }
+        .lp-orb-3 { width: 240px; height: 240px; background: #38bdf8; opacity: .12; bottom: 220px; left: 40px; animation-delay: 10s; }
         @keyframes orbFloat {
           0%   { transform: translate(0,0) scale(1); }
           33%  { transform: translate(34px,-26px) scale(1.08); }
@@ -196,8 +196,8 @@ export default function LoginPage(props: PageProps) {
           flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
           padding: 28px 20px 40px; position: relative; overflow: hidden;
           background:
-            radial-gradient(100% 80% at 100% 0%, rgba(99,102,241,.05) 0%, rgba(99,102,241,0) 55%),
-            #fbfbfe;
+            radial-gradient(100% 80% at 100% 0%, rgba(2,132,199,.06) 0%, rgba(2,132,199,0) 55%),
+            #fbfdff;
         }
         .lp-form-box { width: 100%; max-width: 408px; position: relative; z-index: 2; }
         .lp-field { position: relative; margin-bottom: 12px; }
@@ -205,22 +205,22 @@ export default function LoginPage(props: PageProps) {
         .lp-field input { width: 100%; padding: 15px 16px 15px 46px; background: #fff; border: 1.5px solid #e7e6f0; border-radius: 14px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: 0 1px 2px rgba(30,27,75,.04); }
         .lp-field input::placeholder { color: #b6b6c6; }
         .lp-field input:hover { border-color: #d6d4e6; }
-        .lp-field input:focus { border-color: #6d28d9; box-shadow: 0 0 0 4px rgba(109,40,217,.12); }
+        .lp-field input:focus { border-color: #0284c7; box-shadow: 0 0 0 4px rgba(2,132,199,.14); }
         .lp-field .lp-icon { position: absolute; left: 15px; bottom: 16px; color: #9ca3af; pointer-events: none; }
         .lp-field .lp-eye { position: absolute; right: 14px; bottom: 15px; color: #9ca3af; cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; display: flex; }
-        .lp-field .lp-eye:hover { color: #6d28d9; }
-        .lp-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #5b21b6 0%, #6d28d9 55%, #7c3aed 100%); color: #fff; border: none; border-radius: 14px; font-size: 15.5px; font-weight: 700; letter-spacing: .01em; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .15s ease, box-shadow .25s ease, filter .2s; box-shadow: 0 10px 28px rgba(91,33,182,.32); margin-top: 8px; }
-        .lp-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 36px rgba(91,33,182,.4); }
+        .lp-field .lp-eye:hover { color: #0284c7; }
+        .lp-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #0369a1 0%, #0284c7 55%, #0ea5e9 100%); color: #fff; border: none; border-radius: 14px; font-size: 15.5px; font-weight: 700; letter-spacing: .01em; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .15s ease, box-shadow .25s ease, filter .2s; box-shadow: 0 10px 28px rgba(3,105,161,.34); margin-top: 8px; }
+        .lp-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 36px rgba(3,105,161,.42); }
         .lp-btn:active:not(:disabled) { transform: translateY(0); }
         .lp-btn:disabled { opacity: .6; cursor: not-allowed; }
         .lp-error { display: flex; align-items: center; gap: 10px; background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 14px; }
         .lp-sep { display: flex; align-items: center; gap: 12px; margin: 28px 0 20px; color: #9ca3af; font-size: 12px; }
         .lp-sep::before, .lp-sep::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
-        .lp-forgot { background: #eef2ff; border: 1.5px solid #c7d2fe; border-radius: 13px; padding: 15px 17px; margin-bottom: 14px; }
-        .lp-forgot p { font-size: 13px; color: #3730a3; line-height: 1.6; margin-bottom: 11px; }
+        .lp-forgot { background: #eff8ff; border: 1.5px solid #bae0fd; border-radius: 13px; padding: 15px 17px; margin-bottom: 14px; }
+        .lp-forgot p { font-size: 13px; color: #075985; line-height: 1.6; margin-bottom: 11px; }
         .lp-forgot a { display: flex; align-items: center; justify-content: center; gap: 8px; background: #16a34a; color: #fff; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 700; text-decoration: none; transition: background .2s; }
         .lp-forgot a:hover { background: #15803d; }
-        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(109,40,217,.07); border: 1px solid rgba(109,40,217,.16); color: #6d28d9; border-radius: 99px; padding: 6px 14px; font-size: 12px; font-weight: 600; margin-bottom: 18px; }
+        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(2,132,199,.08); border: 1px solid rgba(2,132,199,.18); color: #0369a1; border-radius: 99px; padding: 6px 14px; font-size: 12px; font-weight: 600; margin-bottom: 18px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
         @media(min-width:900px) { .mobile-logo { display: none !important; } }
@@ -231,7 +231,7 @@ export default function LoginPage(props: PageProps) {
         .login-root input { font-size: 16px; } /* evita zoom en iOS */
       `}</style>
 
-      <div className="login-root" style={{ background: '#f5f4fe', colorScheme: 'light' }}>
+      <div className="login-root" style={{ background: '#eef5fb', colorScheme: 'light' }}>
 
         {/* LEFT */}
         <div className="lp-left">
@@ -255,7 +255,7 @@ export default function LoginPage(props: PageProps) {
           <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 540 }}>
             <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(46px, 4.2vw, 66px)', lineHeight: 1.0, letterSpacing: '-0.035em', marginBottom: 26 }}>
               <span className="lp-line" style={{ animationDelay: '.05s' }}>Tu hijo merece</span>
-              <span className="lp-line" style={{ animationDelay: '.2s', color: '#a5b4fc' }}>lo mejor.</span>
+              <span className="lp-line" style={{ animationDelay: '.2s', color: '#7dd3fc' }}>lo mejor.</span>
             </h2>
             <p className="lp-hero-anim" style={{ color: 'rgba(255,255,255,.62)', fontSize: 17, lineHeight: 1.7, maxWidth: 400, animationDelay: '.38s' }}>
               Acompañamiento clínico ABA con inteligencia artificial, para seguir de cerca cada paso de su desarrollo.
@@ -280,7 +280,7 @@ export default function LoginPage(props: PageProps) {
             <div className="mobile-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
               <Image src="/images/logo.png" alt="Logo" width={40} height={40} style={{ objectFit: 'contain', flexShrink: 0 }} />
               <div>
-                <p style={{ fontWeight: 800, color: '#1e1b4b', fontSize: 14, lineHeight: 1.2, margin: 0 }}>Neuropsicología y Terapias SANTI</p>
+                <p style={{ fontWeight: 800, color: '#0c4a6e', fontSize: 14, lineHeight: 1.2, margin: 0 }}>Neuropsicología y Terapias SANTI</p>
                 <p style={{ color: '#6b7280', fontSize: 11, margin: 0 }}>Centro Terapéutico · Pueblo Libre</p>
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function LoginPage(props: PageProps) {
 
               {!isSignUp && (
                 <button type="button" onClick={() => setShowForgotInfo(!showForgotInfo)}
-                  style={{ background: 'none', border: 'none', color: '#4f46e5', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 14, padding: 0, fontFamily: 'inherit', display: 'block' }}>
+                  style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 14, padding: 0, fontFamily: 'inherit', display: 'block' }}>
                   ¿Olvidaste tu contraseña?
                 </button>
               )}
@@ -365,7 +365,7 @@ export default function LoginPage(props: PageProps) {
                 cursor: 'pointer', fontFamily: 'inherit', marginBottom: 10, transition: 'all .2s',
                 boxShadow: '0 1px 2px rgba(30,27,75,.04)',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#6d28d9'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(109,40,217,.12)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#0284c7'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(2,132,199,.14)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = '#e7e6f0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(30,27,75,.04)' }}
             >
               <svg width="18" height="18" viewBox="0 0 18 18">
@@ -404,7 +404,7 @@ export default function LoginPage(props: PageProps) {
             <div style={{ textAlign: 'center' }}>
               <span style={{ fontSize: 14, color: '#6b7280' }}>{isSignUp ? '¿Ya tienes cuenta? ' : '¿Primera vez? '}</span>
               <button onClick={() => { setIsSignUp(!isSignUp); setErrorMessage(''); setShowForgotInfo(false) }}
-                style={{ background: 'none', border: 'none', color: '#4f46e5', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {isSignUp ? 'Iniciar sesión' : 'Crear una cuenta'}
               </button>
             </div>
