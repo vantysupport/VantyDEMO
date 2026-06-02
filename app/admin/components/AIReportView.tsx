@@ -467,7 +467,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
                   <div className="max-w-[88%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm"
                     style={m.role === 'user'
-                      ? { background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff', borderRadius: '1.2rem 1.2rem 0.2rem 1.2rem' }
+                      ? { background: 'linear-gradient(135deg,#0284c7,#0369a1)', color: '#fff', borderRadius: '1.2rem 1.2rem 0.2rem 1.2rem' }
                       : { background: 'var(--muted-bg)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', borderRadius: '0.2rem 1.2rem 1.2rem 1.2rem' }
                     }>
                     {m.role === 'ai' ? (
@@ -481,7 +481,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
               {typing && (
                 <div className="flex justify-start">
                   <div className="px-4 py-2.5 rounded-2xl flex items-center gap-2" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
-                    <Loader2 className="animate-spin text-blue-500" size={14}/>
+                    <Loader2 className="animate-spin text-sky-500" size={14}/>
                     <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>{t('common.analizando')}</span>
                   </div>
                 </div>
@@ -490,7 +490,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
 
             <div className="p-3 flex gap-2 border-t" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
               <input
-                className="flex-1 border rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="flex-1 border rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 style={{ background: listening ? 'rgba(239,68,68,0.05)' : 'var(--input-bg)', borderColor: listening ? '#fca5a5' : 'var(--input-border)', color: 'var(--text-primary)' }}
                 placeholder={listening ? t('aria.escuchando') : t('aria.preguntaSobre')}
                 value={input} onChange={e => setInput(e.target.value)}
@@ -510,8 +510,8 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                 </button>
               ) : (
                 <button onClick={sendMessage} disabled={!input.trim() || listening}
-                  className="p-3 rounded-xl text-white transition-all disabled:opacity-40"
-                  style={{ background: 'linear-gradient(135deg,#1e293b,#0f172a)' }}>
+                  className="p-3 rounded-xl text-white transition-all disabled:opacity-40 hover:brightness-110"
+                  style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1)', boxShadow: '0 4px 14px rgba(2,132,199,.3)' }}>
                   <Send size={16}/>
                 </button>
               )}
@@ -549,7 +549,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                     </div>
                     {isExpanded && (
                       <div className="px-4 pb-4 border-t pt-3 animate-fade-in space-y-3" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
-                        <DetailBox title={t('ui.people_present')} content={d.personas_presentes} icon={<Users size={13}/>} color="bg-blue-50 border-blue-200 text-blue-700" full/>
+                        <DetailBox title={t('ui.people_present')} content={d.personas_presentes} icon={<Users size={13}/>} color="bg-sky-50 border-sky-200 text-sky-700" full/>
                         <DetailBox title={t('ui.behavior')} content={d.comportamiento_observado} icon={<Eye size={13}/>} color="bg-sky-50 border-sky-200 text-sky-700" full/>
                         <DetailBox title={t('ui.ai_impression')} content={d.impresion_general} icon={<Brain size={13}/>} color="bg-sky-50 border-sky-200 text-sky-700" full/>
                         <div className="grid grid-cols-2 gap-3">
@@ -580,7 +580,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                     </div>
                     {isExpanded && (
                       <div className="px-4 pb-4 border-t pt-3 animate-fade-in space-y-3" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
-                        <DetailBox title="Objetivo" content={d.objetivo_principal} icon={<Target size={13}/>} color="bg-blue-50 border-blue-200 text-blue-700" full/>
+                        <DetailBox title="Objetivo" content={d.objetivo_principal} icon={<Target size={13}/>} color="bg-sky-50 border-sky-200 text-sky-700" full/>
                         <DetailBox title={t('ui.observations')} content={d.observaciones_tecnicas} icon={<Eye size={13}/>} color="bg-slate-50 border-slate-200 text-slate-700" full/>
                         <div className="grid grid-cols-2 gap-3">
                           <DetailBox title="ABC" content={d.antecedente} icon={<Activity size={13}/>} color="bg-sky-50 border-sky-200 text-sky-700"/>
@@ -672,7 +672,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
             badge={historyData.anamnesis && selectedChild ? (
               <button
                 onClick={e => { e.stopPropagation(); setShowAnamnesisReport(true) }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-600 text-white hover:bg-sky-700 transition-colors shadow-sm"
               >
                 <FileText size={11}/> Generar reporte Word
               </button>
@@ -699,7 +699,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
             title="Reportes Word Generados"
             icon={<FileText size={17}/>}
             accent="#0891b2"
-            badge={reportesHistorial.length > 0 ? <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">{reportesHistorial.length}</span> : undefined}
+            badge={reportesHistorial.length > 0 ? <span className="text-xs bg-sky-600 text-white px-2 py-0.5 rounded-full font-bold">{reportesHistorial.length}</span> : undefined}
             defaultOpen={false}
           >
             <div className="p-4" style={{ background: 'var(--background)' }}>
@@ -799,7 +799,7 @@ function AccordionSection({ id, title, icon, badge, defaultOpen, accent = '#0284
 // ==============================================================================
 const COLORES_REPORTE: Record<string, string> = {
   aba:           'from-sky-500 to-sky-600',
-  anamnesis:     'from-blue-500 to-blue-600',
+  anamnesis:     'from-sky-500 to-sky-600',
   entorno_hogar: 'from-green-500 to-green-600',
   brief2:        'from-sky-500 to-sky-600',
   ados2:         'from-teal-500 to-teal-600',
@@ -810,7 +810,7 @@ const COLORES_REPORTE: Record<string, string> = {
 
 const BADGE_REPORTE: Record<string, string> = {
   aba:           'bg-sky-100 text-sky-700 border-sky-200',
-  anamnesis:     'bg-blue-100 text-blue-700 border-blue-200',
+  anamnesis:     'bg-sky-100 text-sky-700 border-sky-200',
   entorno_hogar: 'bg-green-100 text-green-700 border-green-200',
   brief2:        'bg-sky-100 text-sky-700 border-sky-200',
   ados2:         'bg-teal-100 text-teal-700 border-teal-200',
