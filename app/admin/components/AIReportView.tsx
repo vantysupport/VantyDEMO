@@ -7,7 +7,7 @@ import { toBCP47 } from '@/lib/i18n'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import ProgresoGraficas from '@/components/graficos/ProgresoGraficas'
 import {
-  Activity, Brain, CheckCircle2, ChevronDown, ChevronRight, Clock, Download, Eye, FileCheck, FileDown, FileText, History, Home, Loader2, MessageCircle, RefreshCw, Send, ShieldAlert, Sparkles, Target, User, Users, X, Zap, Mic, MicOff, Volume2, VolumeX, StopCircle
+  Activity, Brain, CheckCircle2, ChevronDown, ChevronRight, Clock, Download, Eye, FileCheck, FileDown, FileText, History, Home, Loader2, MessageCircle, RefreshCw, Send, ShieldAlert, Sparkles, Target, User, Users, X, Zap, Mic, MicOff, Volume2, VolumeX, StopCircle, BarChart3
 } from 'lucide-react'
 
 // ── Tipos Web Speech API ──────────────────────────────────────────────────────
@@ -434,7 +434,8 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
           <AccordionSection
             id="chat"
             title={t('ui.ai_assistant')}
-            icon={<Sparkles size={16} className="text-sky-400"/>}
+            icon={<Sparkles size={17}/>}
+            accent="#0284c7"
             badge={<span className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"/>{speaking ? 'Hablando' : 'Activa'}</span>}
             defaultOpen={true}
           >
@@ -519,7 +520,8 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
           <AccordionSection
             id="historial"
             title={t('ui.clinical_record')}
-            icon={<History size={16} className="text-orange-400"/>}
+            icon={<History size={17}/>}
+            accent="#f59e0b"
             badge={<span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>{(historyData.totalSesionesAba ?? historyData.aba.length) + historyData.entorno.length} registros</span>}
             defaultOpen={false}
           >
@@ -608,7 +610,8 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
           <AccordionSection
             id="anamnesis"
             title={t('ui.fichaIngreso')}
-            icon={<FileText size={16} className="text-blue-400"/>}
+            icon={<FileText size={17}/>}
+            accent="#0ea5e9"
             defaultOpen={false}
             badge={historyData.anamnesis && selectedChild ? (
               <button
@@ -638,7 +641,8 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
           <AccordionSection
             id="reportes"
             title="Reportes Word Generados"
-            icon={<FileText size={16} className="text-blue-400"/>}
+            icon={<FileText size={17}/>}
+            accent="#0891b2"
             badge={reportesHistorial.length > 0 ? <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">{reportesHistorial.length}</span> : undefined}
             defaultOpen={false}
           >
@@ -664,7 +668,8 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
           <AccordionSection
             id="graficas"
             title={t('ui.graficasABA')}
-            icon={<span className="text-base">📊</span>}
+            icon={<BarChart3 size={17}/>}
+            accent="#10b981"
             defaultOpen={true}
           >
             <div className="p-4" style={{ background: 'var(--background)' }}>
@@ -701,23 +706,27 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
 }
 
 // ── Componente acordeón reutilizable ──────────────────────────────────────────
-function AccordionSection({ id, title, icon, badge, defaultOpen, children }: {
+function AccordionSection({ id, title, icon, badge, defaultOpen, accent = '#0284c7', children }: {
   id: string
   title: string
   icon: React.ReactNode
   badge?: React.ReactNode
   defaultOpen?: boolean
+  accent?: string
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen ?? false)
   return (
-    <div className="rounded-2xl overflow-hidden shadow-sm" style={{ background: "var(--card)", border: "1px solid var(--card-border)" }}>
+    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: "var(--card)", border: "1px solid var(--card-border)", boxShadow: 'var(--shadow-sm)' }}>
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-5 py-4 transition-all hover:opacity-90"
       >
         <div className="flex items-center gap-3">
-          {icon}
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: `${accent}18`, color: accent }}>
+            {icon}
+          </div>
           <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{title}</span>
           {badge}
         </div>
