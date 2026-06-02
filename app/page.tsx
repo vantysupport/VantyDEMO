@@ -124,17 +124,31 @@ export default function LoginPage(props: PageProps) {
           display: none;
           width: 50%;
           position: relative;
-          background: linear-gradient(158deg, #17143a 0%, #2a2668 48%, #4338ca 100%);
+          background:
+            radial-gradient(120% 90% at 18% 12%, #29265c 0%, rgba(41,38,92,0) 55%),
+            linear-gradient(164deg, #100e26 0%, #1a1740 50%, #2a2660 100%);
           overflow: hidden;
-          padding: 56px 60px;
+          padding: 60px 64px;
           flex-direction: column;
           justify-content: space-between;
         }
         @media(min-width: 900px){ .lp-left { display: flex; } }
-        .lp-orb { position: absolute; border-radius: 50%; filter: blur(90px); animation: orbFloat 18s ease-in-out infinite; }
-        .lp-orb-1 { width: 420px; height: 420px; background: #6366f1; opacity: .3; top: -140px; left: -90px; }
-        .lp-orb-2 { width: 320px; height: 320px; background: #a78bfa; opacity: .22; bottom: -40px; right: -70px; animation-delay: 5s; }
-        .lp-orb-3 { width: 220px; height: 220px; background: #38bdf8; opacity: .16; bottom: 200px; left: 60px; animation-delay: 9s; }
+        /* Viñeta sutil para profundidad premium */
+        .lp-left::after {
+          content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+          box-shadow: inset 0 0 180px 40px rgba(8,6,24,.55);
+        }
+        /* Textura de grano fino — rompe la planitud digital (look premium) */
+        .lp-grain {
+          position: absolute; inset: 0; pointer-events: none; z-index: 3; opacity: .045;
+          mix-blend-mode: overlay;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          background-size: 180px 180px;
+        }
+        .lp-orb { position: absolute; border-radius: 50%; filter: blur(100px); animation: orbFloat 20s ease-in-out infinite; }
+        .lp-orb-1 { width: 440px; height: 440px; background: #4f46e5; opacity: .26; top: -150px; left: -110px; }
+        .lp-orb-2 { width: 340px; height: 340px; background: #7c3aed; opacity: .18; bottom: -60px; right: -80px; animation-delay: 6s; }
+        .lp-orb-3 { width: 240px; height: 240px; background: #38bdf8; opacity: .10; bottom: 220px; left: 40px; animation-delay: 10s; }
         @keyframes orbFloat {
           0%   { transform: translate(0,0) scale(1); }
           33%  { transform: translate(34px,-26px) scale(1.08); }
@@ -164,9 +178,8 @@ export default function LoginPage(props: PageProps) {
           flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
           padding: 28px 20px 40px; position: relative; overflow: hidden;
           background:
-            radial-gradient(90% 70% at 100% 0%, rgba(124,58,237,.10) 0%, rgba(124,58,237,0) 55%),
-            radial-gradient(80% 60% at 0% 100%, rgba(79,70,229,.08) 0%, rgba(79,70,229,0) 50%),
-            #f7f6fd;
+            radial-gradient(100% 80% at 100% 0%, rgba(99,102,241,.05) 0%, rgba(99,102,241,0) 55%),
+            #fbfbfe;
         }
         .lp-form-box { width: 100%; max-width: 408px; position: relative; z-index: 2; }
         .lp-field { position: relative; margin-bottom: 12px; }
@@ -183,7 +196,7 @@ export default function LoginPage(props: PageProps) {
         .lp-btn:active:not(:disabled) { transform: translateY(0); }
         .lp-btn:disabled { opacity: .6; cursor: not-allowed; }
         .lp-error { display: flex; align-items: center; gap: 10px; background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 14px; }
-        .lp-sep { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #d1d5db; font-size: 12px; }
+        .lp-sep { display: flex; align-items: center; gap: 12px; margin: 28px 0 20px; color: #9ca3af; font-size: 12px; }
         .lp-sep::before, .lp-sep::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
         .lp-forgot { background: #eef2ff; border: 1.5px solid #c7d2fe; border-radius: 13px; padding: 15px 17px; margin-bottom: 14px; }
         .lp-forgot p { font-size: 13px; color: #3730a3; line-height: 1.6; margin-bottom: 11px; }
@@ -207,6 +220,7 @@ export default function LoginPage(props: PageProps) {
           <div className="lp-orb lp-orb-1" />
           <div className="lp-orb lp-orb-2" />
           <div className="lp-orb lp-orb-3" />
+          <div className="lp-grain" />
 
           <div style={{ position: 'relative', zIndex: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 52 }}>
@@ -336,12 +350,13 @@ export default function LoginPage(props: PageProps) {
               disabled={isLoading}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 10, padding: '12px 20px', borderRadius: 12, border: '2px solid #e5e7eb',
-                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 700,
+                gap: 10, padding: '13px 20px', borderRadius: 14, border: '1.5px solid #e7e6f0',
+                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit', marginBottom: 10, transition: 'all .2s',
+                boxShadow: '0 1px 2px rgba(30,27,75,.04)',
               }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f46e5')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#6d28d9'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(109,40,217,.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e7e6f0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(30,27,75,.04)' }}
             >
               <svg width="18" height="18" viewBox="0 0 18 18">
                 <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
@@ -359,12 +374,13 @@ export default function LoginPage(props: PageProps) {
               disabled={isLoading}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 10, padding: '12px 20px', borderRadius: 12, border: '2px solid #e5e7eb',
-                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 700,
+                gap: 10, padding: '13px 20px', borderRadius: 14, border: '1.5px solid #e7e6f0',
+                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit', marginBottom: 12, transition: 'all .2s',
+                boxShadow: '0 1px 2px rgba(30,27,75,.04)',
               }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#0078d4')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#0078d4'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,120,212,.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e7e6f0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(30,27,75,.04)' }}
             >
               <svg width="18" height="18" viewBox="0 0 21 21">
                 <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
