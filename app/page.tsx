@@ -7,7 +7,7 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, Puzzle, Sparkles, LineChart, HeartHandshake, ShieldCheck } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, Puzzle, Sparkles, LineChart, HeartHandshake, ShieldCheck, TrendingUp } from 'lucide-react'
 
 interface PageProps {
   searchParams: Promise<{ mode?: string }>
@@ -174,6 +174,32 @@ export default function LoginPage(props: PageProps) {
         .lp-card:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); transform: translateX(4px); }
         .lp-card:hover .lp-card-icon { background: rgba(165,180,252,.22); border-color: rgba(165,180,252,.32); }
         .lp-card-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12); color: #c7d2fe; transition: background .25s ease, border-color .25s ease; }
+
+        /* ── Layout 2 columnas: contenido + vista previa del producto ── */
+        .lp-inner { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 40px; width: 100%; }
+        .lp-content { flex: 0 1 440px; min-width: 0; }
+        .lp-aside { flex: 0 0 260px; display: none; }
+        @media (min-width: 1680px) { .lp-aside { display: block; } }
+
+        /* Tarjeta de progreso (preview del producto) — llena el espacio y muestra valor real */
+        .lp-preview {
+          background: rgba(255,255,255,.98); border-radius: 22px; padding: 20px;
+          box-shadow: 0 40px 80px -24px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+          animation: floatCard 8s ease-in-out infinite;
+        }
+        @keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+        .lp-pv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .lp-pv-avatar { width: 42px; height: 42px; border-radius: 13px; background: linear-gradient(135deg,#6d28d9,#8b5cf6); color: #fff; font-weight: 800; font-size: 17px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-pv-name { font-weight: 700; font-size: 14.5px; color: #111827; line-height: 1.2; }
+        .lp-pv-sub { font-size: 12px; color: #6b7280; margin-top: 1px; }
+        .lp-pv-trend { font-size: 12px; font-weight: 700; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 9px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
+        .lp-pv-chartwrap { background: #faf9fe; border: 1px solid #efedf8; border-radius: 14px; padding: 12px 12px 8px; margin-bottom: 14px; }
+        .lp-pv-chart-label { font-size: 11px; color: #8b8a99; font-weight: 600; margin-bottom: 8px; }
+        .lp-pv-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .lp-pv-stat { background: #f6f5fb; border-radius: 13px; padding: 11px 6px; text-align: center; }
+        .lp-pv-num { font-weight: 800; font-size: 17px; color: #4c1d95; letter-spacing: -.02em; }
+        .lp-pv-lbl { font-size: 10.5px; color: #6b7280; margin-top: 2px; }
+        @media (prefers-reduced-motion: reduce) { .lp-preview { animation: none !important; } }
         .lp-right {
           flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
           padding: 28px 20px 40px; position: relative; overflow: hidden;
@@ -222,7 +248,8 @@ export default function LoginPage(props: PageProps) {
           <div className="lp-orb lp-orb-3" />
           <div className="lp-grain" />
 
-          <div style={{ position: 'relative', zIndex: 10 }}>
+          <div className="lp-inner">
+          <div className="lp-content">
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 56 }}>
               <div style={{ width: 60, height: 60, borderRadius: 17, background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Image src="/images/logo.png" alt="Logo SANTI" width={42} height={42} style={{ objectFit: 'contain' }} />
@@ -256,6 +283,40 @@ export default function LoginPage(props: PageProps) {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Vista previa del producto — llena el espacio y muestra el valor real */}
+          <aside className="lp-aside" aria-hidden="true">
+            <div className="lp-preview">
+              <div className="lp-pv-head">
+                <div className="lp-pv-avatar">M</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="lp-pv-name">Mateo G.</p>
+                  <p className="lp-pv-sub">Programa de lenguaje</p>
+                </div>
+                <span className="lp-pv-trend"><TrendingUp size={12} /> +18%</span>
+              </div>
+              <div className="lp-pv-chartwrap">
+                <div className="lp-pv-chart-label">Progreso · últimas 8 semanas</div>
+                <svg viewBox="0 0 256 92" width="100%" height="64" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="pvFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stopColor="#7c3aed" stopOpacity="0.26" />
+                      <stop offset="1" stopColor="#7c3aed" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,66 L36,60 L73,62 L109,46 L146,50 L182,33 L219,26 L248,12 L256,12 L256,92 L0,92 Z" fill="url(#pvFill)" />
+                  <path d="M0,66 L36,60 L73,62 L109,46 L146,50 L182,33 L219,26 L248,12" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="248" cy="12" r="4" fill="#fff" stroke="#7c3aed" strokeWidth="2.5" />
+                </svg>
+              </div>
+              <div className="lp-pv-stats">
+                <div className="lp-pv-stat"><div className="lp-pv-num">24</div><div className="lp-pv-lbl">Sesiones</div></div>
+                <div className="lp-pv-stat"><div className="lp-pv-num">8/10</div><div className="lp-pv-lbl">Objetivos</div></div>
+                <div className="lp-pv-stat"><div className="lp-pv-num">92%</div><div className="lp-pv-lbl">Dominio</div></div>
+              </div>
+            </div>
+          </aside>
           </div>
 
           <div style={{ position: 'absolute', zIndex: 10, left: 64, right: 64, bottom: 36, borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 20 }}>
