@@ -6,10 +6,20 @@ import {
   Eye, EyeOff, Plus, Loader2, X, Search, Filter,
   FolderOpen, CheckCircle, AlertCircle, ExternalLink,
   Folder, FolderPlus, ChevronRight, Home, MoreVertical,
-  Edit2, Move, FolderInput
+  Edit2, Move, FolderInput, FileSpreadsheet, Lock
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
+
+// ── Ícono + color clínico por tipo de archivo (no emojis) ───────────────────
+const FILE_ICON_CFG: Record<string, { Icon: any; color: string }> = {
+  pdf:   { Icon: FileText,        color: '#ef4444' },
+  image: { Icon: Image,          color: '#0ea5e9' },
+  word:  { Icon: FileText,        color: '#2563eb' },
+  excel: { Icon: FileSpreadsheet, color: '#10b981' },
+  other: { Icon: File,            color: '#64748b' },
+}
+const fileIconCfg = (t: string) => FILE_ICON_CFG[t] || FILE_ICON_CFG.other
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface Doc {
@@ -392,7 +402,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className={`font-bold text-base ${txt1}`}>
-            <FolderOpen size={16} className="inline mr-2 text-blue-500" />
+            <FolderOpen size={16} className="inline mr-2 text-sky-500" />
             Documentos
           </h3>
           <p className={`text-xs mt-0.5 ${txt3}`}>
@@ -409,7 +419,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           )}
           {canUpload && (
             <button onClick={() => { setUploadFolder(currentFolder); setShowUpload(!showUpload) }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-sm">
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white transition-all shadow-sm">
               <Plus size={14} /> Subir documento
             </button>
           )}
@@ -421,7 +431,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
         <button onClick={() => setCurrentFolder(null)}
           className={`flex items-center gap-1 px-2 py-1 rounded-lg font-semibold transition-colors
             ${currentFolder === null
-              ? 'bg-blue-600 text-white'
+              ? 'bg-sky-600 text-white'
               : isDark ? 'text-slate-400 hover:bg-[#21262d]' : 'text-slate-500 hover:bg-slate-100'}`}>
           <Home size={11} /> Inicio
         </button>
@@ -431,7 +441,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             <button onClick={() => setCurrentFolder(crumb.id)}
               className={`flex items-center gap-1 px-2 py-1 rounded-lg font-semibold transition-colors
                 ${currentFolder === crumb.id
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-sky-600 text-white'
                   : isDark ? 'text-slate-400 hover:bg-[#21262d]' : 'text-slate-500 hover:bg-slate-100'}`}>
               {crumb.emoji} {crumb.name}
             </button>
@@ -478,7 +488,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </button>
             <button onClick={editingFolder ? handleEditarCarpeta : handleCrearCarpeta}
               disabled={!newFolderName.trim()}
-              className="px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40">
+              className="px-4 py-1.5 rounded-lg text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white disabled:opacity-40">
               {editingFolder ? 'Guardar' : 'Crear'}
             </button>
           </div>
@@ -498,7 +508,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
               <button onClick={() => { moverDoc(movingDoc.id, null); setMovingDoc(null); toast.success('Movido a Inicio') }}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-left transition-colors
                   ${fs.docFolder[movingDoc.id] === null
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-sky-600 text-white'
                     : isDark ? 'hover:bg-[#21262d] text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}>
                 <Home size={14} /> Inicio (raíz)
               </button>
@@ -506,7 +516,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                 <button key={c.id} onClick={() => { moverDoc(movingDoc.id, c.id); setMovingDoc(null); toast.success(`Movido a ${c.name}`) }}
                   className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-left transition-colors
                     ${fs.docFolder[movingDoc.id] === c.id
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-sky-600 text-white'
                       : isDark ? 'hover:bg-[#21262d] text-slate-300' : 'hover:bg-slate-100 text-slate-700'}`}>
                   {c.emoji} {c.name}
                   {c.parentId && <span className={`text-[10px] ml-auto ${txt3}`}>subcarpeta</span>}
@@ -552,7 +562,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
               ${isDragging
                 ? isDark ? 'border-blue-500 bg-blue-900/20' : 'border-blue-400 bg-blue-50'
                 : isDark ? 'border-[#30363d] hover:border-blue-700 hover:bg-blue-900/10' : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'}`}>
-            <Upload size={28} className={`mx-auto mb-2 ${isDragging ? 'text-blue-500' : txt3}`} />
+            <Upload size={28} className={`mx-auto mb-2 ${isDragging ? 'text-sky-500' : txt3}`} />
             <p className={`text-sm font-bold ${txt1}`}>
               {isDragging ? 'Suelta los archivos aquí' : 'Arrastra archivos o haz clic para seleccionar'}
             </p>
@@ -581,7 +591,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
               {CATEGORIES.filter(c => c.id !== 'all').map(c => (
                 <button key={c.id} onClick={() => setNewCat(c.id)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all
-                    ${newCat === c.id ? 'bg-blue-600 text-white'
+                    ${newCat === c.id ? 'bg-sky-600 text-white'
                       : isDark ? 'bg-[#21262d] text-slate-400 hover:bg-[#30363d]' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                   {c.emoji} {c.label}
                 </button>
@@ -602,7 +612,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           {!isPadre && (
             <label className="flex items-center gap-3 cursor-pointer">
               <div onClick={() => setVisibleParent(!visibleParent)}
-                className={`w-10 h-5 rounded-full transition-all relative ${visibleParent ? 'bg-blue-600' : isDark ? 'bg-[#30363d]' : 'bg-slate-200'}`}>
+                className={`w-10 h-5 rounded-full transition-all relative ${visibleParent ? 'bg-sky-600' : isDark ? 'bg-[#30363d]' : 'bg-slate-200'}`}>
                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${visibleParent ? 'left-5' : 'left-0.5'}`} />
               </div>
               <span className={`text-sm ${txt1}`}>Visible para la familia</span>
@@ -634,7 +644,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-10"><Loader2 size={24} className="animate-spin text-blue-500" /></div>
+        <div className="flex justify-center py-10"><Loader2 size={24} className="animate-spin text-sky-500" /></div>
       ) : isEmpty ? (
         <div className={`${card} border rounded-2xl p-10 text-center`}>
           <FolderOpen size={36} className={`mx-auto mb-3 ${txt3}`} />
@@ -650,11 +660,11 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           {/* Sub-carpetas primero */}
           {subCarpetas.map(carpeta => (
             <div key={carpeta.id}
-              className={`${card} ${cardHover} border rounded-xl px-4 py-3 flex items-center gap-3 group cursor-pointer transition-all`}
+              className={`${card} ${cardHover} border rounded-2xl px-4 py-3 flex items-center gap-3 group cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5`}
               onClick={() => setCurrentFolder(carpeta.id)}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0
-                ${isDark ? 'bg-[#21262d]' : 'bg-amber-50'}`}>
-                {carpeta.emoji}
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                style={{ background: 'rgba(245,158,11,0.14)', color: '#d97706' }}>
+                <Folder size={20} fill="currentColor" fillOpacity={0.15} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-bold ${txt1}`}>{carpeta.name}</p>
@@ -691,12 +701,15 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           ))}
 
           {/* Documentos */}
-          {filtered.map(doc => (
+          {filtered.map(doc => {
+            const fic = fileIconCfg(doc.file_type)
+            const FIcon = fic.Icon
+            return (
             <div key={doc.id}
-              className={`${card} border rounded-xl p-4 flex items-center gap-3 group transition-all hover:shadow-sm`}>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg
-                ${isDark ? 'bg-[#21262d]' : 'bg-slate-50'}`}>
-                {FILE_ICONS[doc.file_type] || '📎'}
+              className={`${card} border rounded-2xl p-4 flex items-center gap-3 group transition-all hover:shadow-md hover:-translate-y-0.5`}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                style={{ background: `${fic.color}16`, color: fic.color }}>
+                <FIcon size={20} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -712,14 +725,14 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                   ) : (
                     <p className={`text-sm font-bold truncate ${txt1}`}>{doc.file_name}</p>
                   )}
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full
-                    ${isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
-                    {CATEGORIES.find(c => c.id === doc.category)?.emoji} {doc.category}
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full capitalize"
+                    style={{ background: 'rgba(2,132,199,0.1)', color: '#0369a1' }}>
+                    {doc.category}
                   </span>
                   {!doc.visible_to_parent && !isPadre && (
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full
-                      ${isDark ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
-                      🔒 Solo clínico
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                      style={{ background: 'rgba(245,158,11,0.12)', color: '#b45309' }}>
+                      <Lock size={9} /> Solo clínico
                     </span>
                   )}
                 </div>
@@ -757,7 +770,8 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                 )}
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

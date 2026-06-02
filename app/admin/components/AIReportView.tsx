@@ -229,9 +229,11 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
     // hubiera datos en los programas, lo que generaba la inconsistencia mostrada.
     const { data: progIdsRaw } = await supabase
       .from('programas_aba')
-      .select('id')
+      .select('id, titulo')
       .eq('child_id', childId)
     const progIds = (progIdsRaw || []).map((p: any) => p.id)
+    const progTitulos: Record<string, string> = {}
+    ;(progIdsRaw || []).forEach((p: any) => { progTitulos[p.id] = p.titulo })
 
     let sesionesDataAba: any[] = []
     if (progIds.length > 0) {
@@ -240,7 +242,7 @@ function AIReportView({ onChildSelect, initialChildId }: { onChildSelect?: (chil
         .select('id, programa_id, fecha, fase, set, porcentaje_exito, oportunidades_totales, respuestas_correctas, notas')
         .in('programa_id', progIds)
         .order('fecha', { ascending: false })
-      sesionesDataAba = sda || []
+      sesionesDataAba = (sda || []).map((s: any) => ({ ...s, _programaTitulo: progTitulos[s.programa_id] || 'Programa ABA' }))
     }
     console.log('📊 Sesiones de programas (sesiones_datos_aba):', sesionesDataAba.length)
 
@@ -597,7 +599,61 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                   </div>
                 )
               })}
-              {(historyData.aba.length === 0 && historyData.entorno.length === 0) && (
+
+              {/* Sesiones registradas en programas ABA (sesiones_datos_aba) */}
+              {(historyData.sesionesDataAba || []).map((ses: any) => {
+                const isExpanded = expandedCardId === `sda-${ses.id}`
+                const fechaObj = ses.fecha ? new Date(ses.fecha + 'T12:00:00') : null
+                const pct = ses.porcentaje_exito ?? null
+                const pctColor = pct == null ? '#94a3b8' : pct >= 90 ? '#10b981' : pct >= 70 ? '#0284c7' : pct >= 45 ? '#f59e0b' : '#ef4444'
+                return (
+                  <div key={`sda-${ses.id}`} className="rounded-2xl border-2 transition-all duration-200"
+                    style={{ background: 'var(--card)', borderColor: isExpanded ? '#0284c7' : 'var(--card-border)' }}>
+                    <div className="p-4 cursor-pointer flex items-center justify-between" onClick={() => toggleCard(`sda-${ses.id}`)}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex flex-col items-center justify-center text-white rounded-xl p-2.5 min-w-[56px] shadow"
+                          style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1)' }}>
+                          <span className="text-[9px] font-bold uppercase opacity-70">{fechaObj ? fechaObj.toLocaleString('default', { month: 'short' }) : '—'}</span>
+                          <span className="text-lg font-bold leading-none">{fechaObj ? fechaObj.getDate() : '·'}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{ses._programaTitulo}</p>
+                          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                            {ses.set ? `Set ${ses.set} · ` : ''}{ses.fase || 'Sesión'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        {pct != null && <span className="text-base font-extrabold tabular-nums" style={{ color: pctColor }}>{pct}%</span>}
+                        <ChevronDown size={18} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} style={{ color: isExpanded ? '#0284c7' : 'var(--text-muted)' }}/>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-4 border-t pt-3 animate-fade-in" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                          <div className="rounded-xl p-2.5 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                            <p className="text-lg font-extrabold tabular-nums" style={{ color: pctColor }}>{pct ?? '—'}{pct != null ? '%' : ''}</p>
+                            <p className="text-[9px] font-semibold" style={{ color: 'var(--text-muted)' }}>Éxito</p>
+                          </div>
+                          <div className="rounded-xl p-2.5 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                            <p className="text-lg font-extrabold tabular-nums" style={{ color: 'var(--text-primary)' }}>{ses.respuestas_correctas ?? '—'}</p>
+                            <p className="text-[9px] font-semibold" style={{ color: 'var(--text-muted)' }}>Correctas</p>
+                          </div>
+                          <div className="rounded-xl p-2.5 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
+                            <p className="text-lg font-extrabold tabular-nums" style={{ color: 'var(--text-primary)' }}>{ses.oportunidades_totales ?? '—'}</p>
+                            <p className="text-[9px] font-semibold" style={{ color: 'var(--text-muted)' }}>Oportunidades</p>
+                          </div>
+                        </div>
+                        {ses.notas && (
+                          <DetailBox title="Notas" content={ses.notas} icon={<MessageCircle size={13}/>} color="bg-sky-50 border-sky-200 text-sky-700" full/>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {(historyData.aba.length === 0 && historyData.entorno.length === 0 && (historyData.sesionesDataAba || []).length === 0) && (
                 <div className="py-16 text-center" style={{ color: 'var(--text-muted)' }}>
                   <History size={48} className="mx-auto mb-3 opacity-20"/>
                   <p className="font-bold text-sm">Sin registros</p>
