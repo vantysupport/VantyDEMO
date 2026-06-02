@@ -123,7 +123,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
 
         <div className="p-7 space-y-6">
           <div>
-            <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Imagen del producto</label>
+            <label className={`block text-xs font-bold mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Imagen del producto</label>
             <div
               className={`relative border-2 border-dashed rounded-2xl transition-all cursor-pointer overflow-hidden group ${dragOver ? 'border-blue-400 bg-blue-50/50 scale-[0.99]' : isDark ? 'border-[#30363d] hover:border-blue-500' : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50/50'}`}
               style={{ minHeight: 180 }}
@@ -155,19 +155,19 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
           </div>
 
           <div>
-            <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nombre *</label>
+            <label className={`block text-xs font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nombre *</label>
             <input value={form.nombre} onChange={e => setForm((f:any) => ({ ...f, nombre: e.target.value }))}
               placeholder="Ej: Kit de materiales sensoriales" className={inp} />
           </div>
 
           <div>
-            <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Descripción</label>
+            <label className={`block text-xs font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Descripción</label>
             <textarea value={form.descripcion} onChange={e => setForm((f:any) => ({ ...f, descripcion: e.target.value }))}
               rows={3} placeholder="Describe el producto, materiales, beneficios…" className={inp + ' resize-none'} />
           </div>
 
           <div>
-            <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Tipo de producto</label>
+            <label className={`block text-xs font-bold mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Tipo de producto</label>
             <div className="grid grid-cols-2 gap-3">
               {([['fisico','📦','Físico','Se retira en el centro'],['digital','📄','Digital','PDF o archivo descargable']] as const).map(([val,emoji,lbl,desc]) => (
                 <button key={val} type="button" onClick={() => setForm((f:any) => ({ ...f, tipo: val }))}
@@ -184,7 +184,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Precio (S/.) *</label>
+              <label className={`block text-xs font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Precio (S/.) *</label>
               <div className="relative">
                 <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>S/</span>
                 <input type="number" min="0" step="0.50" value={form.precio_soles}
@@ -193,7 +193,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
               </div>
             </div>
             <div>
-              <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{form.tipo==='digital' ? 'Stock (∞)' : 'Stock *'}</label>
+              <label className={`block text-xs font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{form.tipo==='digital' ? 'Stock (∞)' : 'Stock *'}</label>
               <input type="number" min="0" value={form.tipo==='digital' ? '' : form.stock}
                 onChange={e => setForm((f:any) => ({ ...f, stock: e.target.value }))}
                 disabled={form.tipo==='digital'} placeholder={form.tipo==='digital' ? '∞ Ilimitado' : '0'}
@@ -202,7 +202,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
           </div>
 
           <div>
-            <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Categoría</label>
+            <label className={`block text-xs font-bold mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Categoría</label>
             <div className="flex flex-wrap gap-2">
               {CATEGORIAS.map(cat => (
                 <button key={cat} type="button" onClick={() => setForm((f:any) => ({ ...f, categoria: cat }))}
@@ -571,7 +571,7 @@ export default function StoreManagementView() {
                     {open && (
                       <div className={`border-t p-5 space-y-5 ${isDark ? 'border-[#21262d] bg-[#0d1117]/40' : 'border-slate-100 bg-slate-50/60'}`}>
                         <div>
-                          <p className={`text-[10px] font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Artículos del pedido</p>
+                          <p className={`text-[10px] font-bold mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Artículos del pedido</p>
                           <div className="space-y-2">
                             {(order.store_order_items||[]).map(item => (
                               <div key={item.id} className={`flex items-center gap-3 rounded-xl p-3 border ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200/80'}`}>
@@ -590,13 +590,13 @@ export default function StoreManagementView() {
 
                         {order.notas && (
                           <div className={`rounded-xl p-4 border ${isDark ? 'bg-amber-900/10 border-amber-800/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Nota del padre</p>
+                            <p className="text-[10px] font-bold mb-1 opacity-60">Nota del padre</p>
                             <p className="text-sm">{order.notas}</p>
                           </div>
                         )}
 
                         <div>
-                          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nota interna (solo equipo)</p>
+                          <p className={`text-[10px] font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nota interna (solo equipo)</p>
                           <textarea defaultValue={order.admin_notas||''} rows={2}
                             placeholder="Ej: Pagado en efectivo, entregado el lunes…"
                             onBlur={e => updateAdminNota(order.id, e.target.value)}
@@ -604,7 +604,7 @@ export default function StoreManagementView() {
                         </div>
 
                         <div>
-                          <p className={`text-[10px] font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Actualizar estado</p>
+                          <p className={`text-[10px] font-bold mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Actualizar estado</p>
                           <div className="flex flex-wrap gap-2">
                             {ESTADOS_FLUJO.map(e => {
                               const c=ESTADO_CFG[e]; const isActive=order.estado===e

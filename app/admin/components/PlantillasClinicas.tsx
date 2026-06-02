@@ -292,16 +292,16 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
       {/* Datos básicos */}
       <div className={`${cc.card} border rounded-2xl p-5 space-y-4`}>
         <div>
-          <label className={`block text-[10px] font-bold uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Nombre de la ficha *</label>
+          <label className={`block text-[10px] font-bold mb-1.5 ${cc.txt3}`}>Nombre de la ficha *</label>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Historia Clínica, Seguimiento Mensual..." className={inputCls} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Descripción</label>
+            <label className={`block text-[10px] font-bold mb-1.5 ${cc.txt3}`}>Descripción</label>
             <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Para qué se usa esta ficha..." className={inputCls} />
           </div>
           <div>
-            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Categoría</label>
+            <label className={`block text-[10px] font-bold mb-1.5 ${cc.txt3}`}>Categoría</label>
             <select value={category} onChange={e => setCategory(e.target.value)} className={`${inputCls} cursor-pointer`}>
               {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
             </select>
@@ -312,7 +312,7 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
       {/* Campos sin sección */}
       <div className={`${cc.card} border rounded-2xl overflow-hidden`}>
         <div className={`px-5 py-3 border-b flex items-center justify-between ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          <p className={`text-xs font-bold uppercase tracking-widest ${cc.txt3}`}>Campos generales</p>
+          <p className={`text-xs font-bold ${cc.txt3}`}>Campos generales</p>
           <button onClick={() => addField()} className="flex items-center gap-1 text-xs font-bold text-sky-500 hover:text-sky-400">
             <Plus size={13} /> Añadir campo
           </button>
@@ -425,7 +425,7 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
       )}
       {['select', 'radio'].includes(field.type) && (
         <div className="space-y-1.5">
-          <p className={`text-[9px] font-bold uppercase tracking-widest ${cc.txt3}`}>Opciones</p>
+          <p className={`text-[9px] font-bold ${cc.txt3}`}>Opciones</p>
           <div className="space-y-1">
             {(field.options || []).map((opt, idx) => (
               <div key={idx} className="flex items-center gap-1.5">
@@ -762,15 +762,15 @@ export function RellenarFicha({
           <div className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-blue-50/50 border-blue-100'}`}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cc.txt3}`}>📅 Fecha</p>
+                <p className={`text-[10px] font-bold mb-1 ${cc.txt3}`}>📅 Fecha</p>
                 <p className={`text-sm font-bold capitalize ${cc.txt1}`}>{fechaHoyFmt}</p>
               </div>
               <div>
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cc.txt3}`}>👤 Alumno</p>
+                <p className={`text-[10px] font-bold mb-1 ${cc.txt3}`}>👤 Alumno</p>
                 <p className={`text-sm font-bold ${cc.txt1}`}>{childName}</p>
               </div>
               <div>
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cc.txt3}`}>👨‍⚕️ Especialista a cargo</p>
+                <p className={`text-[10px] font-bold mb-1 ${cc.txt3}`}>👨‍⚕️ Especialista a cargo</p>
                 {currentUser ? (
                   <p className={`text-sm font-bold ${cc.txt1}`}>
                     {currentUser.full_name}
@@ -860,7 +860,7 @@ function ResponseCard({ response, isDark }: { response: TemplateResponse; isDark
       </div>
       {open && (
         <div className={`p-4 pt-2 border-t space-y-3 ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          {fields.filter(f => !f.section).map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
+          {fields.filter(f => !f.section).map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-bold mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
           {sections.map(s => {
             const sf = fields.filter(f => f.section === s.id)
             if (!sf.some(f => val(f.id))) return null
@@ -868,12 +868,12 @@ function ResponseCard({ response, isDark }: { response: TemplateResponse; isDark
               <div key={s.id} className={`rounded-xl p-3 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-100'}`}>
                 <p className={`text-xs font-bold mb-2 ${cc.txt1}`}>{s.title}</p>
                 <div className="space-y-2">
-                  {sf.map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
+                  {sf.map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-bold mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
                 </div>
               </div>
             )
           })}
-          {response.notes && <div><p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${cc.txt3}`}>Observaciones</p><p className={`text-sm ${cc.txt1}`}>{response.notes}</p></div>}
+          {response.notes && <div><p className={`text-[10px] font-bold mb-0.5 ${cc.txt3}`}>Observaciones</p><p className={`text-sm ${cc.txt1}`}>{response.notes}</p></div>}
         </div>
       )}
     </div>

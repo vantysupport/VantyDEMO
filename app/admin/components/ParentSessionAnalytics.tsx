@@ -149,7 +149,7 @@ export default function ParentSessionAnalytics() {
         <>
           {/* ── Bar chart top 10 ── */}
           <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold mb-4" style={{ color: 'var(--text-muted)' }}>
               📊 Top padres por tiempo conectado (minutos)
             </p>
             <ResponsiveContainer width="100%" height={180}>
@@ -172,7 +172,7 @@ export default function ParentSessionAnalytics() {
 
           {/* ── Per-parent rows ── */}
           <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
               👥 Desglose por padre
             </p>
             {data.map(parent => (
@@ -287,7 +287,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
           {/* Sparkline — minutes per day */}
           {sparkData.length >= 2 && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
                 📅 Minutos conectado por día (últimas 2 semanas)
               </p>
               <div className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
@@ -312,7 +312,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
           {/* Session history list */}
           {parent.sessions?.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
                 🕐 Historial de sesiones recientes
               </p>
               <div className="space-y-1 max-h-48 overflow-y-auto pr-1">

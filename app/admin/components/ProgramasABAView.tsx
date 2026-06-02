@@ -347,7 +347,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
         return (
           <div className="space-y-2 mb-5">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
+              <p className="text-[10px] font-bold flex items-center gap-1.5"
                 style={{ color: 'var(--text-muted)' }}>
                 <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
               </p>
@@ -358,7 +358,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
               </button>
             </div>
             {aiAnalysis.resumen && (
-              <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '3px solid var(--text-muted)' }}>
+              <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: '1px solid var(--text-muted)' }}>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiAnalysis.resumen}</p>
               </div>
             )}
@@ -516,7 +516,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
-                <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full"
                   style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
                   ✓ Criterio alcanzado — {programasCriterioAuto.length} programa{programasCriterioAuto.length !== 1 ? 's' : ''}
                 </span>
@@ -594,7 +594,7 @@ function AlertaCard({ alerta, onDescartar }: { alerta: any; key?: any; onDescart
   }
   const c = cfg[alerta.prioridad] || cfg.media
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `3px solid ${c.border}` }}>
+    <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `1px solid ${c.border}` }}>
       <div className="flex items-start gap-2 mb-1">
         <span className="text-[10px] font-bold w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
           style={{ background: `${c.border}18`, color: c.border }}>
@@ -1195,7 +1195,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <div>
                   {/* Header con selector de tipo */}
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-slate-400">
                       📈 Gráfica de progreso
                     </p>
                     {/* Selector de tipo */}
@@ -1505,7 +1505,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
 
               {/* Sets / Objetivos CP */}
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
+                <p className="text-xs font-bold text-slate-400 mb-2">🎯 Sets / Objetivos</p>
                 {detalle.objetivos_cp?.length > 0 && (
                   <div className="space-y-2">
                     {[...detalle.objetivos_cp].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((obj: any) => (
@@ -1586,7 +1586,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       {setExpandidoId === obj.id && (
                         <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-sky-100 bg-sky-50 space-y-2 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">📌 Procedimiento del Set</p>
+                            <p className="text-[10px] font-bold text-sky-400">📌 Procedimiento del Set</p>
                             {editandoSetId !== obj.id && (
                               <div className="flex items-center gap-1">
                                 {/* Descargar guía de ejercicio para casa (para enviar a la familia) */}
@@ -1620,7 +1620,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 { key: 'generalizacion',    label: '➡️ Generalización',    placeholder: 'Promover con la familia...' },
                               ].map(({ key, label, placeholder }) => (
                                 <div key={key}>
-                                  <label className="block text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-0.5">{label}</label>
+                                  <label className="block text-[10px] font-bold text-sky-400 mb-0.5">{label}</label>
                                   <textarea
                                     value={editSetForm[key] || ''}
                                     onChange={e => setEditSetForm((f: any) => ({ ...f, [key]: e.target.value }))}
@@ -1759,7 +1759,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               {/* Últimas sesiones */}
               {detalle.sesiones_datos_aba?.length > 0 && (
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">📋 {t('programas.ultimasSesiones')}</p>
+                  <p className="text-xs font-bold text-slate-400 mb-2">📋 {t('programas.ultimasSesiones')}</p>
                   <div className="space-y-1.5">
                     {[...detalle.sesiones_datos_aba].sort((a: any, b: any) => (b.fecha || "").localeCompare(a.fecha || "")).slice(0, 6).map((s: any) => (
                       <SesionRow
@@ -1890,7 +1890,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               {/* Detalles del procedimiento */}
               {(detalle.sd_estimulo || detalle.unidad_positiva || detalle.unidad_negativa || detalle.reforzadores || detalle.materiales || detalle.correction_errores) && (
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
+                  <p className="text-xs font-bold text-slate-400 mb-2">📌 Procedimiento</p>
                   <div className="rounded-xl p-4 border border-[var(--card-border)] bg-[var(--card)] space-y-2 text-xs text-slate-600 dark:text-slate-300">
                     {detalle.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {detalle.sd_estimulo}</p>}
                     {detalle.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {detalle.unidad_positiva}</p>}
@@ -1976,7 +1976,7 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
           🏠 Práctica en casa (padre)
         </p>
         {!loading && (
@@ -2312,13 +2312,13 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1.5">{t('common.fecha')}</label>
+                <label className="text-xs font-bold text-slate-400 block mb-1.5">{t('common.fecha')}</label>
                 <input type="date" value={form.fecha}
                   onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))}
                   className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1.5">{t('ui.phase')}</label>
+                <label className="text-xs font-bold text-slate-400 block mb-1.5">{t('ui.phase')}</label>
                 <select value={form.fase} onChange={e => setForm(f => ({ ...f, fase: e.target.value }))}
                   className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-sky-400">
                   <option value="linea_base">Baseline</option>
@@ -2330,7 +2330,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
 
             {/* % de éxito */}
             <div className="bg-sky-50 rounded-2xl p-4 border border-sky-100">
-              <p className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-3">{t('programas.pctExito')}</p>
+              <p className="text-xs font-bold text-sky-600 mb-3">{t('programas.pctExito')}</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-slate-500 font-bold block mb-1">{t('ui.total_opportunities')}</label>
@@ -2368,7 +2368,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
             {/* Sets — reemplaza nivel de ayuda */}
             {sets.length > 0 && (
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">🎯 Set activo</label>
+                <label className="text-xs font-bold text-slate-400 block mb-2">🎯 Set activo</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {sets.map((s: any) => {
                     const setKey = s.numero_set ? `Set ${s.numero_set}` : s.descripcion
@@ -2383,7 +2383,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
                             ? 'bg-sky-600 text-white border-sky-600'
                             : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-sky-300 hover:bg-sky-50'
                         }`}>
-                        <span className={`font-bold text-[11px] uppercase tracking-wide ${isActive ? 'text-sky-100' : 'text-slate-400'}`}>
+                        <span className={`font-bold text-[11px] ${isActive ? 'text-sky-100' : 'text-slate-400'}`}>
                           {s.numero_set ? `Set ${s.numero_set}` : 'Set'}
                         </span>
                         {shortDesc && (
@@ -2405,7 +2405,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
 
             {/* Notas */}
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1.5">📝 Notas</label>
+              <label className="text-xs font-bold text-slate-400 block mb-1.5">📝 Notas</label>
               <textarea value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
                 rows={2} placeholder="Observaciones de la sesión..."
                 className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
@@ -2498,7 +2498,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
 
           {step === 1 && (
             <div className="space-y-4">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('programas.paso1Info')}</p>
+              <p className="text-xs font-bold text-slate-400">{t('programas.paso1Info')}</p>
               {/* Área — texto libre */}
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.area')} *</label>
@@ -2533,7 +2533,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
 
           {step === 2 && (
             <div className="space-y-4">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Paso 2 · Sets / Objetivos CP</p>
+              <p className="text-xs font-bold text-slate-400">Paso 2 · Sets / Objetivos CP</p>
               <p className="text-xs" style={{color:"var(--text-muted)"}}>{t('programas.definePasos')}</p>
               {objetivos.map((obj, i) => (
                 <div key={i} className="rounded-2xl border border-[var(--card-border)] overflow-hidden">
@@ -2606,7 +2606,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
 
           {step === 3 && (
             <div className="space-y-3">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Paso 3 · Procedimiento</p>
+              <p className="text-xs font-bold text-slate-400">Paso 3 · Procedimiento</p>
               {[
                 { key: 'generalizacion',   label: '➡️ Generalización',               placeholder: 'Promover con la familia que realicen este ejercicio en casa.' },
                 { key: 'notas_programa',   label: '🙈 Notas',                         placeholder: 'Observaciones generales del programa...' },

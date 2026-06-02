@@ -255,7 +255,7 @@ export default function MensajesPendientesPanel() {
                     {/* AI Analysis Preview */}
                     {analysis.resumen_ejecutivo && (
                       <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-400 flex items-center gap-2">
                           <Sparkles size={12} className="text-sky-500"/> Análisis Clínico Generado
                         </p>
                         <p className="text-sm text-slate-700 leading-relaxed">{analysis.resumen_ejecutivo}</p>
@@ -263,7 +263,7 @@ export default function MensajesPendientesPanel() {
                         <div className="grid grid-cols-2 gap-3">
                           {analysis.areas_fortaleza?.length > 0 && (
                             <div>
-                              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</p>
+                              <p className="text-[10px] font-bold text-emerald-600 mb-2">💪 Fortalezas</p>
                               <ul className="space-y-1">
                                 {analysis.areas_fortaleza.slice(0,3).map((f: string, i: number) => (
                                   <li key={i} className="text-xs text-slate-600 bg-emerald-50 rounded-lg p-2 border border-emerald-100">• {f}</li>
@@ -273,7 +273,7 @@ export default function MensajesPendientesPanel() {
                           )}
                           {analysis.areas_trabajo?.length > 0 && (
                             <div>
-                              <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mb-2">{t('mensajes.areasTrabajar')}</p>
+                              <p className="text-[10px] font-bold text-orange-600 mb-2">{t('mensajes.areasTrabajar')}</p>
                               <ul className="space-y-1">
                                 {analysis.areas_trabajo.slice(0,3).map((a: string, i: number) => (
                                   <li key={i} className="text-xs text-slate-600 bg-orange-50 rounded-lg p-2 border border-orange-100">• {a}</li>
@@ -285,7 +285,7 @@ export default function MensajesPendientesPanel() {
 
                         {analysis.actividades_en_casa?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">{t('mensajes.actividades')}</p>
+                            <p className="text-[10px] font-bold text-blue-600 mb-2">{t('mensajes.actividades')}</p>
                             <ul className="space-y-1">
                               {analysis.actividades_en_casa.map((a: string, i: number) => (
                                 <li key={i} className="text-xs text-slate-600 bg-blue-50 rounded-lg p-2 border border-blue-100 flex items-start gap-2">
@@ -298,7 +298,7 @@ export default function MensajesPendientesPanel() {
 
                         {analysis.recomendaciones?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-bold text-sky-600 uppercase tracking-widest mb-2">{t('mensajes.recomendaciones')}</p>
+                            <p className="text-[10px] font-bold text-sky-600 mb-2">{t('mensajes.recomendaciones')}</p>
                             <ul className="space-y-1">
                               {analysis.recomendaciones.slice(0,3).map((r: string, i: number) => (
                                 <li key={i} className="text-xs text-slate-600 bg-sky-50 rounded-lg p-2 border border-sky-100">• {r}</li>
@@ -311,7 +311,7 @@ export default function MensajesPendientesPanel() {
 
                     {/* Original AI message */}
                     <div>
-                      <p className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-sky-600 mb-2 flex items-center gap-1.5">
                         <Sparkles size={12}/> Mensaje original de la IA
                       </p>
                       <div className="bg-gradient-to-br from-sky-600 to-cyan-600 rounded-2xl p-4 text-white">
@@ -323,7 +323,7 @@ export default function MensajesPendientesPanel() {
                     {msg.status === 'pending_approval' && (
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                          <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
                             <Edit3 size={12}/> {isEditing ? t('evaluaciones.editandoMsg') : t('evaluaciones.mensajeEnviar')}
                           </p>
                           {!isEditing && (

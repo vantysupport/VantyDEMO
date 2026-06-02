@@ -452,7 +452,7 @@ function DynamicEvaluationsView() {
                      {currentStep + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                      <p className="text-blue-300 text-[9px] md:text-[10px] font-bold uppercase tracking-widest truncate mb-1">
+                      <p className="text-blue-300 text-[9px] md:text-[10px] font-bold truncate mb-1">
                         EVALUACIÓN EN CURSO
                       </p>
                       <h2 className="text-base md:text-xl lg:text-2xl font-bold truncate leading-tight">
@@ -500,7 +500,7 @@ function DynamicEvaluationsView() {
 
                {/* Selector de Paciente */}
                <div className="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-sm hover:shadow-md transition-all">
-                   <label className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2">
+                   <label className="text-xs md:text-sm font-bold text-slate-500 mb-3 ml-1 flex items-center gap-2">
                      <User size={16}/>
                      Seleccionar Paciente
                    </label>

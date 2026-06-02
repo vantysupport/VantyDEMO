@@ -209,7 +209,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
 
                 {/* Horario por día */}
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Horario de atención</p>
+                  <p className="text-xs font-bold mb-2" style={{ color: 'var(--text-muted)' }}>Horario de atención</p>
                   <div className="space-y-2">
                     {DIAS.map(d => {
                       const dia = cfg.working_hours[d.k] || { activo: false, bloques: [] }
@@ -245,7 +245,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
 
                 {/* Días cerrados — calendario navegable por mes */}
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Días cerrados (feriados / vacaciones)</p>
+                  <p className="text-xs font-bold mb-1" style={{ color: 'var(--text-muted)' }}>Días cerrados (feriados / vacaciones)</p>
                   <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Tocá los días que el centro estará cerrado. Podés marcar varios y cambiar de mes con las flechas.</p>
                   <CalendarioDiasCerrados
                     mes={calMonth}
@@ -333,7 +333,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
 
               {/* Lista de links */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Links generados</p>
+                <p className="text-xs font-bold mb-2" style={{ color: 'var(--text-muted)' }}>Links generados</p>
                 {loadingLinks ? <div className="flex justify-center py-6"><Loader2 className="animate-spin text-sky-500" /></div> : (
                   <div className="space-y-2">
                     {links.length === 0 && <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>Aún no generaste links.</p>}

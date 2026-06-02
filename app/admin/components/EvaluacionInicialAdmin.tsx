@@ -370,7 +370,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.recomendacion && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               {evaluacion.recomendacion === 'psicologica' ? <Heart size={16} className="text-pink-500" /> : <Brain size={16} className="text-sky-500" />}
               Recomendación IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">USO INTERNO</span>
             </h3>
@@ -442,7 +442,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.terapias_recomendadas?.length > 0 && (
         <div className="rounded-2xl p-5 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.3)' }}>
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Sparkles size={16} className="text-sky-500" />
               Terapias recomendadas por IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700">DEL CATÁLOGO</span>
             </h3>
@@ -523,7 +523,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {(terapiasElegidas.length > 0 || (evaluacion.estado === 'terapia_seleccionada' || evaluacion.estado === 'revisado' || evaluacion.estado === 'completado')) && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
-            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Award size={16} className="text-amber-500" /> Terapias elegidas
               {evaluacion.terapias_cambiadas_por_admin && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
@@ -564,7 +564,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             </div>
           )}
           {evaluacion.nota_cambio_terapias && (
-            <div className="mt-3 rounded-lg p-3 text-xs border-l-4 border-sky-400" style={{ background: 'rgba(99,102,241,0.05)' }}>
+            <div className="mt-3 rounded-lg p-3 text-xs border-l border-sky-400" style={{ background: 'rgba(99,102,241,0.05)' }}>
               <p className="font-bold mb-1" style={{ color: '#0369a1' }}>📝 Nota del especialista sobre el cambio</p>
               <p style={{ color: 'var(--text-secondary)' }}>{evaluacion.nota_cambio_terapias}</p>
             </div>
@@ -596,7 +596,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
 
             {/* Catálogo */}
             <div className="flex-1 overflow-y-auto p-5 space-y-2">
-              <div className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+              <div className="text-[11px] font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
                 Catálogo completo · {seleccionEdit.length} seleccionada{seleccionEdit.length === 1 ? '' : 's'}
               </div>
               {terapias.length === 0 ? (
@@ -683,7 +683,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {/* RESPUESTA YA ENVIADA */}
       {evaluacion.respuesta_especialista && (
         <div className="rounded-2xl p-5 border-2 border-green-300 bg-green-50">
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-2 text-green-700 flex items-center gap-2">
+          <h3 className="text-sm font-bold mb-2 text-green-700 flex items-center gap-2">
             <CheckCircle2 size={16} /> Respuesta enviada al padre
           </h3>
           <p className="text-xs mb-2 text-green-700">
@@ -707,7 +707,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.respuestas_intake && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <details>
-            <summary className="cursor-pointer text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <summary className="cursor-pointer text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <User size={16} /> Intake inicial ({Object.keys(evaluacion.respuestas_intake).length} respuestas)
             </summary>
             <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-sm">
@@ -717,7 +717,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 return (
                   <div key={k} className={esTabla ? 'sm:col-span-2' : ''}>
                     <div className="rounded-xl border px-3.5 py-2.5 h-full" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                      <p className="text-[10px] font-bold mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
                       {esTabla ? (
                         <div className="space-y-1.5 mt-1.5">
                           {(v as any[]).map((fila, idx) => {
@@ -754,7 +754,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.anamnesis_especifica && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <details>
-            <summary className="cursor-pointer text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <summary className="cursor-pointer text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <ClipboardCheck size={16} /> 2ª Anamnesis ({Object.keys(evaluacion.anamnesis_especifica).length} respuestas)
             </summary>
             <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-sm">
@@ -765,7 +765,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 return (
                   <div key={k} className={esTabla ? 'sm:col-span-2' : ''}>
                     <div className="rounded-xl border px-3.5 py-2.5 h-full" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                      <p className="text-[10px] font-bold mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
                       {esTabla ? (
                         <div className="space-y-1.5 mt-1.5">
                           {(v as any[]).map((fila, idx) => {

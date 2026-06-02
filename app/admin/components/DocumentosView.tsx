@@ -534,7 +534,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
 
           {/* Selector de carpeta destino */}
           <div>
-            <label className={`block text-[11px] font-bold uppercase tracking-widest mb-1.5 ${txt3}`}>Guardar en carpeta</label>
+            <label className={`block text-[11px] font-bold mb-1.5 ${txt3}`}>Guardar en carpeta</label>
             <select value={uploadFolder ?? ''} onChange={e => setUploadFolder(e.target.value || null)}
               className={`w-full px-3 py-2.5 rounded-xl text-sm border outline-none focus:border-blue-500 ${inputCls}`}>
               <option value="">📁 Inicio (sin carpeta)</option>
@@ -576,7 +576,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </div>
           )}
           <div>
-            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${txt3}`}>Categoría</label>
+            <label className={`block text-[10px] font-bold mb-2 ${txt3}`}>Categoría</label>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORIES.filter(c => c.id !== 'all').map(c => (
                 <button key={c.id} onClick={() => setNewCat(c.id)}
@@ -594,7 +594,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             )}
           </div>
           <div>
-            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${txt3}`}>Descripción (opcional)</label>
+            <label className={`block text-[10px] font-bold mb-2 ${txt3}`}>Descripción (opcional)</label>
             <input value={newDesc} onChange={e => setNewDesc(e.target.value)}
               placeholder="Ej: Tarea de la semana 3..."
               className={`w-full px-3 py-2.5 rounded-xl text-sm border-2 outline-none transition-all ${inputCls}`} />

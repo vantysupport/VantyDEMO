@@ -16,7 +16,7 @@ export function StatCardPremium({ title, value, icon, color, trend, trendUp }: a
             {trendUp ? '↗' : '↘'}
           </div>
         </div>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{title}</p>
+        <p className="text-slate-400 text-xs font-bold mb-2">{title}</p>
         <h4 className="text-4xl font-bold text-slate-800 mb-2">{value}</h4>
         <p className="text-xs text-slate-500 font-bold">{trend}</p>
       </div>
@@ -69,7 +69,7 @@ export function InfoRow({ label, value, icon }: { label: string; value: string; 
     <div className="flex items-start gap-3 py-3 border-b border-slate-50 last:border-0">
       {icon && <div className="mt-0.5 text-slate-400">{icon}</div>}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-xs font-bold text-slate-400 mb-1">{label}</p>
         <p className="text-sm font-bold text-slate-700 break-words">{value}</p>
       </div>
     </div>

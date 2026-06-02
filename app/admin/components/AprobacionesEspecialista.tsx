@@ -214,7 +214,7 @@ export default function AprobacionesEspecialista() {
                       {new Date(sub.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                     {sub.admin_comment && (
-                      <div style={{ background: 'rgba(255,255,255,0.04)', borderLeft: '3px solid #06b6d4' }}
+                      <div style={{ background: 'rgba(255,255,255,0.04)', borderLeft: '1px solid #06b6d4' }}
                         className="mt-2 px-3 py-2 rounded-r-xl text-xs">
                         <span style={{ color: '#64748b' }} className="font-bold">Tu comentario:</span>
                         <span style={{ color: '#94a3b8' }}> {sub.admin_comment}</span>
@@ -239,7 +239,7 @@ export default function AprobacionesEspecialista() {
                       <div className="space-y-3 pt-2">
                         <div>
                           <label style={{ color: '#475569' }}
-                            className="block text-xs font-bold uppercase tracking-widest mb-2">
+                            className="block text-xs font-bold mb-2">
                             Comentario para el especialista (opcional)
                           </label>
                           <textarea
@@ -285,7 +285,7 @@ export default function AprobacionesEspecialista() {
 function Section({ title, content }: { title: string; content: string }) {
   return (
     <div>
-      <p style={{ color: '#334155' }} className="text-[10px] font-bold uppercase tracking-widest mb-2">{title}</p>
+      <p style={{ color: '#334155' }} className="text-[10px] font-bold mb-2">{title}</p>
       <p style={{ color: '#94a3b8', lineHeight: 1.8 }} className="text-sm whitespace-pre-wrap">{content}</p>
     </div>
   )

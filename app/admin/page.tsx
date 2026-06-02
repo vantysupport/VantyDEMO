@@ -327,7 +327,7 @@ export default function AdminDashboard() {
           ))}
 
           <div className={`pt-4 mt-2 border-t ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-            <p className={`text-[10px] font-bold uppercase tracking-widest px-3 mb-2
+            <p className={`text-[10px] font-bold px-3 mb-2
               ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
               Sistema
             </p>
@@ -460,7 +460,7 @@ export default function AdminDashboard() {
                 <div className={`absolute right-0 top-11 w-72 rounded-2xl shadow-2xl border p-4 z-50 animate-scale-in
                   ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    <p className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                       Notificaciones
                     </p>
                     <button onClick={() => setShowNotifications(false)}>
@@ -472,7 +472,7 @@ export default function AdminDashboard() {
                     {/* Mensajes no leídos */}
                     {chatUnread > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-bold uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           Chat Equipo
                         </p>
                         <button
@@ -490,7 +490,7 @@ export default function AdminDashboard() {
                     {/* Citas de hoy */}
                     {notifications.length > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-bold uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           Citas de hoy
                         </p>
                         {notifications.map(n => (

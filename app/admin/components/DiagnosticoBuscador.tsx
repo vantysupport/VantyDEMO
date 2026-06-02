@@ -200,7 +200,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
         <div className="space-y-2">
           {history.length > 0 && (
             <div className="flex flex-wrap gap-1.5 items-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Recientes:</span>
+              <span className="text-[10px] font-bold text-slate-400">Recientes:</span>
               {history.map(h => (
                 <button key={h} onClick={() => setQ(h)}
                   className="px-2.5 py-1 rounded-full text-xs font-bold border bg-slate-50 border-slate-200 text-slate-500 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700 transition-all">
@@ -210,7 +210,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
             </div>
           )}
           <div className="flex flex-wrap gap-1.5 items-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Explorar:</span>
+            <span className="text-[10px] font-bold text-slate-400">Explorar:</span>
             {CHIPS.map(c => (
               <button key={c} onClick={() => setQ(c)}
                 className="px-2.5 py-1 rounded-full text-xs font-bold border transition-all hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700"
@@ -267,7 +267,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Definición */}
               {selected.definition && (
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-teal-600 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold text-teal-600 flex items-center gap-1.5">
                     <BookOpen size={11}/> Definición
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color:'var(--text-secondary)' }}>
@@ -279,7 +279,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Criterios diagnósticos OMS */}
               {selected.diagnosticCriteria && (
                 <div className="p-3 rounded-xl bg-teal-50 border border-teal-200">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700 mb-1.5 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold text-teal-700 mb-1.5 flex items-center gap-1.5">
                     🩺 Criterios diagnósticos (OMS CIE-11)
                   </p>
                   <p className="text-xs leading-relaxed text-teal-900 whitespace-pre-line">{selected.diagnosticCriteria}</p>
@@ -289,7 +289,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Nota de codificación */}
               {selected.codingNote && (
                 <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">📋 Nota de codificación</p>
+                  <p className="text-[10px] font-bold text-blue-600 mb-1">📋 Nota de codificación</p>
                   <p className="text-xs leading-relaxed text-blue-800">{selected.codingNote}</p>
                 </div>
               )}
@@ -297,7 +297,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Términos índice / sinónimos */}
               {selected.indexTerms.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
+                  <p className="text-[10px] font-bold flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
                     <Tag size={11}/> Términos incluidos / sinónimos
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -311,7 +311,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Inclusions */}
               {selected.inclusions.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold text-emerald-700 flex items-center gap-1.5">
                     ✓ Incluye
                   </p>
                   <ul className="space-y-1">
@@ -327,7 +327,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Exclusiones */}
               {selected.exclusions.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold text-red-600 flex items-center gap-1.5">
                     ✕ Exclusiones
                   </p>
                   <ul className="space-y-1">
@@ -343,7 +343,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Subcategorías / Hijos */}
               {selected.children.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
+                  <p className="text-[10px] font-bold flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
                     <GitBranch size={11}/> Subcategorías / Hijos
                   </p>
                   <div className="space-y-1.5">
@@ -365,7 +365,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Categoría Padre */}
               {selected.parent && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
+                  <p className="text-[10px] font-bold flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
                     ↑ Categoría Padre
                   </p>
                   <button onClick={() => loadDetail(selected.parent!)}

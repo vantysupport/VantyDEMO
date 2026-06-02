@@ -191,7 +191,7 @@ export default function ResourcesManagementView() {
           { label: 'Tipos', value: new Set(resources.map(r => r.resource_type)).size, color: 'emerald' },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-2xl p-5 shadow-sm border" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+            <p className="text-xs font-bold text-slate-400">{label}</p>
             <p className={`text-3xl font-bold text-${color}-600 mt-1`}>{value}</p>
           </div>
         ))}
@@ -234,7 +234,7 @@ export default function ResourcesManagementView() {
                       <IconComp size={18} className={typeInfo.color}/>
                     </div>
                     <div>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider ${typeInfo.color}`}>{typeInfo.label}</span>
+                      <span className={`text-[9px] font-bold ${typeInfo.color}`}>{typeInfo.label}</span>
                       <div className="flex items-center gap-1 mt-0.5">
                         {resource.is_global ? (
                           <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500">
@@ -306,7 +306,7 @@ export default function ResourcesManagementView() {
             <div className="space-y-5">
               {/* Resource type */}
               <div>
-                <label className="text-xs font-bold uppercase tracking-widest block mb-3" style={{ color: "var(--text-muted)" }}>{t('ui.tipoRecurso')}</label>
+                <label className="text-xs font-bold block mb-3" style={{ color: "var(--text-muted)" }}>{t('ui.tipoRecurso')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {RESOURCE_TYPES.map(type => {
                     const Icon = type.icon
@@ -322,21 +322,21 @@ export default function ResourcesManagementView() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('recursos.tituloStar')}</label>
+                <label className="text-xs font-bold text-slate-400 block mb-2">{t('recursos.tituloStar')}</label>
                 <input type="text" value={newResource.title} onChange={e => setNewResource(p => ({ ...p, title: e.target.value }))}
                   {...{placeholder: t('ui.resource_title')}}
                   className="w-full p-4 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all border-2" style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}/>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('common.descripcion')}</label>
+                <label className="text-xs font-bold text-slate-400 block mb-2">{t('common.descripcion')}</label>
                 <textarea rows={2} value={newResource.description} onChange={e => setNewResource(p => ({ ...p, description: e.target.value }))}
                   {...{placeholder: t('ui.resource_desc')}}
                   className="w-full p-4 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all resize-none border-2" style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}/>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">
+                <label className="text-xs font-bold text-slate-400 block mb-2">
                   URL *
                   <span className="ml-2 font-normal text-slate-300">
                     {RESOURCE_TYPES.find(t => t.id === newResource.resource_type)?.hint}
@@ -349,7 +349,7 @@ export default function ResourcesManagementView() {
 
               {/* Tags */}
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('recursos.etiquetas')}</label>
+                <label className="text-xs font-bold text-slate-400 block mb-2">{t('recursos.etiquetas')}</label>
                 <div className="flex flex-wrap gap-2">
                   {RESOURCE_TAGS.map(tag => (
                     <button key={tag} type="button" onClick={() => toggleTag(tag)}
@@ -362,7 +362,7 @@ export default function ResourcesManagementView() {
 
               {/* Audience */}
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">{t('recursos.paraQuien')}</label>
+                <label className="text-xs font-bold text-slate-400 block mb-3">{t('recursos.paraQuien')}</label>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <button onClick={() => setNewResource(p => ({ ...p, is_global: true, parent_id: '' }))}
                     className={`p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${newResource.is_global ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200' : 'text-slate-600 border-slate-200 hover:border-blue-300'}`} style={newResource.is_global ? {} : { background: 'var(--muted-bg)' }}>
@@ -387,7 +387,7 @@ export default function ResourcesManagementView() {
                   Cancelar
                 </button>
                 <button onClick={handleSave} disabled={isSaving}
-                  className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg shadow-sky-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:from-sky-700">
+                  className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-sky-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:from-sky-700">
                   {isSaving ? <Loader2 size={18} className="animate-spin"/> : <Send size={18}/>}
                   {isSaving ? 'Guardando...' : 'Compartir'}
                 </button>

@@ -119,7 +119,7 @@ function AlertaRow({ tipo, paciente, mensaje, prioridad, onClick, onDismiss }: a
       <button onClick={onClick} className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
         {tipo && (
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-[9px] font-semibold uppercase tracking-wider"
+            <span className="text-[9px] font-semibold"
               style={{ color: esLogro ? '#10b981' : 'var(--text-muted)' }}>
               {tipoLabel}
             </span>

@@ -261,12 +261,12 @@ function TerapiaCard({
         {/* Badges arriba */}
         <div className="absolute top-3 left-3 flex gap-1.5">
           {t.categoria && (
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full text-white shadow-lg bg-gradient-to-r ${c.gradient}`}>
+            <span className={`text-[10px] font-bold px-2 py-1 rounded-full text-white shadow-lg bg-gradient-to-r ${c.gradient}`}>
               {t.categoria}
             </span>
           )}
           {!t.activo && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-slate-900/80 text-white">
+            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-900/80 text-white">
               Oculto
             </span>
           )}
@@ -308,14 +308,14 @@ function TerapiaCard({
         {/* ¿Por qué llevarla? Caja destacada con el color del tema */}
         {t.por_que && (
           <div
-            className="rounded-xl p-3 text-sm leading-relaxed border-l-4"
+            className="rounded-xl p-3 text-sm leading-relaxed border-l"
             style={{
               background: 'var(--muted-bg)',
               borderLeftColor: c.accent,
               color: 'var(--text-secondary)',
             }}
           >
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: c.accent }}>
+            <p className="text-[10px] font-bold mb-1" style={{ color: c.accent }}>
               ✨ ¿Por qué llevarla?
             </p>
             <p>{t.por_que}</p>
@@ -341,7 +341,7 @@ function TerapiaCard({
         {/* FOOTER — PRECIO PROMINENTE */}
         <div className="flex items-end justify-between pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
               Inversión
             </p>
             {t.precio != null ? (
@@ -394,7 +394,7 @@ function EditorModal({
 
           {/* PALETA DE COLORES */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider block mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+            <label className="text-xs font-bold block mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
               <Palette size={12} /> Color de la tarjeta
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -524,7 +524,7 @@ function EditorModal({
 
           {/* PREVIEW */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
               Vista previa
             </p>
             <div className="max-w-sm">
@@ -574,7 +574,7 @@ function EditorModal({
 function Field({ label, hint, children }: { label: string; hint?: string; children: any }) {
   return (
     <div>
-      <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-muted)' }}>
+      <label className="text-xs font-bold block mb-1.5" style={{ color: 'var(--text-muted)' }}>
         {label}
       </label>
       {children}

@@ -187,7 +187,7 @@ function PacientesVinculados({ userId, children, onUnlink }: {
 
   return (
     <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
-      <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-[10px] font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
         Pacientes vinculados ({hijos.length})
       </p>
       <div className="flex flex-wrap gap-2">
@@ -883,7 +883,7 @@ export default function UserManagementView() {
             <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
               Si el paciente ya tiene tutor asignado, será reemplazado. Para acceso de dos tutores simultáneos, creá dos cuentas de padre y vincinalas por separado.
             </p>
-            <label className="text-xs font-bold uppercase tracking-widest block mb-2" style={{ color: 'var(--text-muted)' }}>
+            <label className="text-xs font-bold block mb-2" style={{ color: 'var(--text-muted)' }}>
               Seleccioná el paciente
             </label>
             <select value={selectedChildId} onChange={e => setSelectedChildId(e.target.value)}

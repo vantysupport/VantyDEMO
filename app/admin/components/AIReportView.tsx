@@ -585,7 +585,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                         <div className="rounded-xl p-3 bg-amber-50 border border-amber-200">
                           <div className="flex items-center gap-2 mb-1.5">
                             <MessageCircle size={11} className="text-amber-600"/>
-                            <span className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">{t('ui.mensajePadresLabel')}</span>
+                            <span className="text-[10px] font-bold text-amber-700">{t('ui.mensajePadresLabel')}</span>
                             <span className="ml-auto text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded-full">{t('ui.enBandeja')}</span>
                           </div>
                           <p className="text-xs text-amber-800 italic">"{d.mensaje_padres}"</p>
@@ -598,7 +598,7 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
               {(historyData.aba.length === 0 && historyData.entorno.length === 0) && (
                 <div className="py-16 text-center" style={{ color: 'var(--text-muted)' }}>
                   <History size={48} className="mx-auto mb-3 opacity-20"/>
-                  <p className="font-bold uppercase tracking-widest text-sm">Sin registros</p>
+                  <p className="font-bold text-sm">Sin registros</p>
                 </div>
               )}
             </div>
@@ -718,7 +718,7 @@ function AccordionSection({ id, title, icon, badge, defaultOpen, children }: {
       >
         <div className="flex items-center gap-3">
           {icon}
-          <span className="font-bold text-sm uppercase tracking-widest" style={{ color: "var(--text-primary)" }}>{title}</span>
+          <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{title}</span>
           {badge}
         </div>
         <ChevronDown size={16} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} style={{ color: "var(--text-muted)" }} />
@@ -801,7 +801,7 @@ function ReporteHistorialCard({ reporte }: { reporte: any; key?: any }) {
 
       {/* Info */}
       <div className="p-3 space-y-2.5">
-        <span className={`inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${badge}`}>
+        <span className={`inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge}`}>
           {reporte.tipo_reporte}
         </span>
 

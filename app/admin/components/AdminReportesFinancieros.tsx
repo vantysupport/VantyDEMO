@@ -421,7 +421,7 @@ export default function AdminReportesFinancieros() {
                     <thead>
                       <tr style={{ background: 'var(--muted-bg)', borderBottom: '1px solid var(--card-border)' }}>
                         {['Mes','Sesiones','Cobrado','Pendiente','Total',''].map(h => (
-                          <th key={h} className="text-left px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                          <th key={h} className="text-left px-5 py-2.5 text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -458,7 +458,7 @@ export default function AdminReportesFinancieros() {
                     </tbody>
                     <tfoot>
                       <tr style={{ background: 'var(--muted-bg)', borderTop: '2px solid var(--card-border)' }}>
-                        <td className="px-5 py-3 font-bold text-xs uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Total {anio}</td>
+                        <td className="px-5 py-3 font-bold text-xs" style={{ color: 'var(--text-muted)' }}>Total {anio}</td>
                         <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>{data.sesionesAnio}</td>
                         <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>S/ {data.totalAnio.toFixed(2)}</td>
                         <td className="px-5 py-3 font-bold" style={{ color: '#f59e0b' }}>S/ {data.totalPendiente.toFixed(2)}</td>

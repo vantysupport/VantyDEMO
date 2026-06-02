@@ -73,7 +73,7 @@ function SugerenciaCard({ s, onResolver }: { s: Sugerencia; onResolver: (id: str
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${prio.badge}`}>{prio.label}</span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{cfg.label}</span>
+              <span className="text-[10px] font-bold text-slate-500">{cfg.label}</span>
               <span className="text-[10px] text-slate-400">· {s.child_name}</span>
             </div>
             <p className="font-bold text-sm text-slate-800 leading-snug">{s.titulo}</p>
@@ -98,7 +98,7 @@ function SugerenciaCard({ s, onResolver }: { s: Sugerencia; onResolver: (id: str
             <div className="flex items-start gap-2 bg-white/60 rounded-xl p-3">
               <Lightbulb size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ui.recommended_action')}</p>
+                <p className="text-[11px] font-bold text-slate-600 mb-1">{t('ui.recommended_action')}</p>
                 <p className="text-xs text-slate-700 leading-relaxed">{s.accion_concreta}</p>
               </div>
             </div>

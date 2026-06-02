@@ -38,7 +38,7 @@ function Card({ title, subtitle, icon: Icon, iconColor, children }: {
 function SectionTitle({ label }: { label: string }) {
   const { isDark } = useTheme()
   return (
-    <p className={`text-[10px] font-bold uppercase tracking-widest pt-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+    <p className={`text-[10px] font-bold pt-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
       {label}
     </p>
   )
@@ -49,7 +49,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   const { isDark } = useTheme()
   return (
     <div>
-      <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</label>
+      <label className={`block text-xs font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</label>
       {children}
     </div>
   )
@@ -332,7 +332,7 @@ function SeccionSeguridad() {
 
         {/* Requisitos */}
         <div className={`mt-4 p-4 rounded-xl border ${isDark ? 'bg-[#0d1117] border-[#30363d]' : 'bg-slate-50 border-slate-100'}`}>
-          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Requisitos</p>
+          <p className={`text-[10px] font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Requisitos</p>
           {[
             { label: 'Mínimo 8 caracteres', ok: form.nueva.length >= 8 },
             { label: 'Al menos una mayúscula', ok: /[A-Z]/.test(form.nueva) },
@@ -461,7 +461,7 @@ function SeccionCuenta() {
           <div className={`flex items-center gap-3 p-4 rounded-xl ${isDark ? 'bg-[#0d1117]' : 'bg-slate-50'}`}>
             <Mail size={15} className={isDark ? 'text-slate-500' : 'text-slate-400'} />
             <div>
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Email</p>
+              <p className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Email</p>
               <p className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{email}</p>
             </div>
           </div>

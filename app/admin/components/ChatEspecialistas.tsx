@@ -802,7 +802,7 @@ export default function ChatEspecialistas({
                 {filtradosAdmins.length > 0 && (
                   <>
                     <div className={`px-4 py-2 border-b sticky top-0 z-10 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-slate-100/80 border-slate-200/60'}`}>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                      <p className={`text-[10px] font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
                         <span className="w-1.5 h-1.5 bg-sky-500 rounded-full inline-block" />
                         Administradores
                       </p>
@@ -854,7 +854,7 @@ export default function ChatEspecialistas({
                 {filtradosEspecialistas.length > 0 && (
                   <>
                     <div className={`px-4 py-2 border-b sticky top-0 z-10 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-slate-100/80 border-slate-200/60'}`}>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                      <p className={`text-[10px] font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" />
                         Especialistas
                       </p>

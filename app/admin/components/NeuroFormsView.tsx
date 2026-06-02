@@ -159,7 +159,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       {/* Análisis */}
       {analysis.analisis_clinico && (
         <div>
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{t('evaluaciones.analisisClin2')}</h4>
+          <h4 className="text-xs font-bold text-slate-400 mb-2">{t('evaluaciones.analisisClin2')}</h4>
           <p className="text-sm text-slate-700 leading-relaxed bg-white rounded-xl p-4 border border-slate-100">{analysis.analisis_clinico}</p>
         </div>
       )}
@@ -168,7 +168,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       <div className="grid grid-cols-2 gap-4">
         {analysis.areas_fortaleza?.length > 0 && (
           <div>
-            <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</h4>
+            <h4 className="text-xs font-bold text-emerald-600 mb-2">💪 Fortalezas</h4>
             <ul className="space-y-1">
               {analysis.areas_fortaleza.map((f: string, i: number) => (
                 <li key={i} className="text-xs text-slate-600 flex items-start gap-2 bg-emerald-50 rounded-lg p-2">
@@ -180,7 +180,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
         )}
         {analysis.areas_trabajo?.length > 0 && (
           <div>
-            <h4 className="text-xs font-bold text-orange-600 uppercase tracking-widest mb-2">{t('evaluaciones.areasTrabajar2')}</h4>
+            <h4 className="text-xs font-bold text-orange-600 mb-2">{t('evaluaciones.areasTrabajar2')}</h4>
             <ul className="space-y-1">
               {analysis.areas_trabajo.map((a: string, i: number) => (
                 <li key={i} className="text-xs text-slate-600 flex items-start gap-2 bg-orange-50 rounded-lg p-2">
@@ -195,7 +195,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       {/* Recomendaciones */}
       {analysis.recomendaciones?.length > 0 && (
         <div>
-          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">{t('evaluaciones.recomendaciones')}</h4>
+          <h4 className="text-xs font-bold text-sky-600 mb-2">{t('evaluaciones.recomendaciones')}</h4>
           <ul className="space-y-2">
             {analysis.recomendaciones.map((r: string, i: number) => (
               <li key={i} className="text-sm text-slate-700 flex items-start gap-3 bg-sky-50 rounded-xl p-3">
@@ -210,7 +210,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       {/* Formularios recomendados */}
       {analysis.formularios_recomendados?.length > 0 && (
         <div>
-          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">{t('evaluaciones.proxEvals2')}</h4>
+          <h4 className="text-xs font-bold text-sky-600 mb-2">{t('evaluaciones.proxEvals2')}</h4>
           <div className="flex flex-wrap gap-2">
             {analysis.formularios_recomendados.map((f: string, i: number) => (
               <span key={i} className="px-3 py-1.5 bg-sky-50 border border-sky-200 text-sky-700 rounded-full text-xs font-bold">{f}</span>
@@ -274,14 +274,14 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
         </div>
 
         <div className="bg-sky-50 rounded-xl p-4 mb-6 border border-sky-100">
-          <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-1">{t('evaluaciones.formularioEnviar')}</p>
+          <p className="text-xs font-bold text-sky-400 mb-1">{t('evaluaciones.formularioEnviar')}</p>
           <p className="font-bold text-sky-800">{form.title}</p>
           <p className="text-xs text-sky-600 mt-0.5">{form.estimatedMinutes} min aprox.</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.pacienteStar')}</label>
+            <label className="text-xs font-bold text-slate-400 block mb-2">{t('evaluaciones.pacienteStar')}</label>
             <select value={childId} onChange={e => setChildId(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all">
               <option value="">{t('ui.select_patient_option')}</option>
               {children.map((c: any) => <option key={c.id} value={c.id}>{c.name}{c.age ? ` - ${c.age}` : ''}</option>)}
@@ -289,18 +289,18 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
             <p className="text-xs text-slate-400 mt-1.5">{t('evaluaciones.irABiblioteca')}</p>
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('ui.mensajePadres2')}</label>
+            <label className="text-xs font-bold text-slate-400 block mb-2">{t('ui.mensajePadres2')}</label>
             <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
               {...{placeholder: t('ui.send_form_msg')}}
               className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all resize-none"/>
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('ui.fechaLimite')}</label>
+            <label className="text-xs font-bold text-slate-400 block mb-2">{t('ui.fechaLimite')}</label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all"/>
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
-            <button onClick={handleSend} disabled={sending || !childId} className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+            <button onClick={handleSend} disabled={sending || !childId} className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {sending ? <Loader2 size={18} className="animate-spin"/> : <Send size={18}/>}
               {sending ? 'Enviando...' : 'Enviar Formulario'}
             </button>
@@ -663,12 +663,12 @@ export default function NeuroFormsView() {
                 </button>
               )}
               {currentStep < totalSteps - 1 ? (
-                <button onClick={() => setCurrentStep(s => s + 1)} className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 hover:from-sky-700">
+                <button onClick={() => setCurrentStep(s => s + 1)} className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 hover:from-sky-700">
                   Siguiente <ChevronRight size={16}/>
                 </button>
               ) : (
                 <button onClick={handleAnalyzeWithAI} disabled={isAnalyzing || answeredCount < 3}
-                  className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg shadow-sky-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:from-sky-700">
+                  className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-sky-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:from-sky-700">
                   {isAnalyzing ? <Loader2 size={18} className="animate-spin"/> : <Sparkles size={18}/>}
                   {isAnalyzing ? 'Analizando...' : 'Analizar con IA'}
                 </button>
@@ -761,7 +761,7 @@ export default function NeuroFormsView() {
                       <div>
                         <span className="text-3xl">{form.icon}</span>
                         <div className="mt-2">
-                          <span className={`text-[9px] font-bold px-2 py-1 rounded-full bg-white/20 text-white uppercase tracking-widest`}>
+                          <span className={`text-[9px] font-bold px-2 py-1 rounded-full bg-white/20 text-white`}>
                             {cat.label}
                           </span>
                         </div>
@@ -852,7 +852,7 @@ export default function NeuroFormsView() {
 
               {expandedResponse === sf.id && sf.status === 'completed' && sf.responses && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-5">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">{t('ui.respuestasFormulario')}</h4>
+                  <h4 className="text-xs font-bold text-slate-400 mb-3">{t('ui.respuestasFormulario')}</h4>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(sf.responses).map(([k, v]) => (
                       <div key={k} className="bg-white rounded-xl p-3 border border-slate-100">

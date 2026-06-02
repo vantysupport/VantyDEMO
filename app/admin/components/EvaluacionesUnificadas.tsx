@@ -395,7 +395,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Clinical analysis */}
       {textoAnalisis ? (
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">{t('evaluaciones.analisisClinico')}</h4>
+          <h4 className="text-xs font-bold text-slate-500 mb-2">{t('evaluaciones.analisisClinico')}</h4>
           <p className="text-sm text-slate-700 leading-relaxed">{textoAnalisis}</p>
         </div>
       ) : null}
@@ -404,7 +404,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
         {/* Strengths */}
         {areasFortaleza.length > 0 && (
           <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-            <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</h4>
+            <h4 className="text-xs font-bold text-emerald-600 mb-2">💪 Fortalezas</h4>
             <ul className="space-y-1">
               {areasFortaleza.map((f: string, i: number) => (
                 <li key={i} className="text-xs text-emerald-800 font-medium flex items-center gap-1.5">
@@ -417,7 +417,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
         {/* Work areas */}
         {areasTrabajo.length > 0 && (
           <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-            <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">{t('evaluaciones.areasTrabajar')}</h4>
+            <h4 className="text-xs font-bold text-amber-600 mb-2">{t('evaluaciones.areasTrabajar')}</h4>
             <ul className="space-y-1">
               {areasTrabajo.map((f: string, i: number) => (
                 <li key={i} className="text-xs text-amber-800 font-medium flex items-center gap-1.5">
@@ -432,7 +432,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Recommendations */}
       {recomendaciones.length > 0 && (
         <div className="bg-sky-50 rounded-xl p-4 border border-sky-200">
-          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">💡 Recomendaciones</h4>
+          <h4 className="text-xs font-bold text-sky-600 mb-2">💡 Recomendaciones</h4>
           <ul className="space-y-1.5">
             {recomendaciones.map((r: string, i: number) => (
               <li key={i} className="text-xs text-sky-800 font-medium flex items-start gap-1.5">
@@ -446,7 +446,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Key indicators */}
       {indicadoresClave.length > 0 && (
         <div>
-          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">🔍 Indicadores Clave</h4>
+          <h4 className="text-xs font-bold text-slate-500 mb-2">🔍 Indicadores Clave</h4>
           <div className="flex flex-wrap gap-2">
             {indicadoresClave.map((ind: string, i: number) => (
               <span key={i} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold border border-slate-200">{ind}</span>
@@ -458,7 +458,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Next recommended forms */}
       {formsRecomendados.length > 0 && (
         <div>
-          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">{t('evaluaciones.proxEvals')}</h4>
+          <h4 className="text-xs font-bold text-sky-600 mb-2">{t('evaluaciones.proxEvals')}</h4>
           <div className="flex flex-wrap gap-2">
             {formsRecomendados.map((f: string, i: number) => (
               <span key={i} className="px-3 py-1.5 bg-sky-50 border border-sky-200 text-sky-700 rounded-full text-xs font-bold">{f}</span>
@@ -477,7 +477,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
                 <MessageCircle size={14} className="text-white"/>
               </div>
               <h4 className="font-bold text-amber-800">{t('ui.mensajePadres')}</h4>
-              <span className="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-300 uppercase tracking-widest">✏️ Editable</span>
+              <span className="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-300">✏️ Editable</span>
             </div>
             {onEditMessage ? (
               <textarea
@@ -503,7 +503,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
                   <span className="text-white text-xs font-bold">🏠</span>
                 </div>
                 <h4 className="font-bold text-blue-800">{t('ui.home_activity')}</h4>
-                <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full border border-blue-300 uppercase tracking-widest">✏️ Editable</span>
+                <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full border border-blue-300">✏️ Editable</span>
               </div>
               {onEditActividades ? (
                 <textarea
@@ -630,7 +630,7 @@ function HistorialFormCard({ sf, onReportGenerated }: { sf: any; onReportGenerat
               {sf.form_title || sf.form_type || 'Formulario'}
             </p>
             {sf._source && (
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider whitespace-nowrap">
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 whitespace-nowrap">
                 {sf._source === 'anamnesis_completa' ? 'Anamnesis' :
                  sf._source === 'registro_aba' ? 'ABA' :
                  sf._source === 'registro_entorno_hogar' ? 'Hogar' : 'NeuroForma'}
@@ -691,14 +691,14 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
         </div>
 
         <div className="bg-sky-50 rounded-xl p-4 mb-6 border border-sky-100">
-          <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-1">{t('evaluaciones.titulo')}</p>
+          <p className="text-xs font-bold text-sky-400 mb-1">{t('evaluaciones.titulo')}</p>
           <p className="font-bold text-sky-800">{form.title}</p>
           <p className="text-xs text-sky-600 mt-0.5">{form.estimatedMinutes} min aprox.</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.pacienteStar')}</label>
+            <label className="text-xs font-bold text-slate-400 block mb-2">{t('evaluaciones.pacienteStar')}</label>
             <select value={childId} onChange={e => setChildId(e.target.value)}
               className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all">
               <option value="">{t('ui.select_patient_option')}</option>
@@ -707,20 +707,20 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
             <p className="text-xs text-slate-400 mt-1.5">{t('evaluaciones.irABiblioteca')}</p>
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.mensaje')}</label>
+            <label className="text-xs font-bold text-slate-400 block mb-2">{t('evaluaciones.mensaje')}</label>
             <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
               {...{placeholder: t('ui.send_form_msg')}}
               className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all resize-none" />
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.fechaLimite2')}</label>
+            <label className="text-xs font-bold text-slate-400 block mb-2">{t('evaluaciones.fechaLimite2')}</label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
               className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all" />
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
             <button onClick={handleSend} disabled={sending || !childId}
-              className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
               {sending ? 'Enviando...' : 'Enviar'}
             </button>
@@ -1077,7 +1077,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
           </button>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              <p className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>
                 Sección {currentStep + 1} de {totalSteps}
               </p>
               <p className="text-xs font-bold text-sky-600">{Math.round(progress)}% completado</p>
@@ -1095,7 +1095,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         <div className={`bg-gradient-to-r ${form.color || 'from-sky-600 to-cyan-600'} rounded-2xl p-5 text-white shadow-lg`}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">{form.icon} {form.category?.toUpperCase()}</p>
+              <p className="text-white/70 text-xs font-bold mb-1">{form.icon} {form.category?.toUpperCase()}</p>
               <h2 className="font-bold text-xl">{form.title}</h2>
               <p className="text-white/80 text-sm mt-0.5">{form.subtitle}</p>
             </div>
@@ -1215,19 +1215,19 @@ function FormCard({ form, onStart, onSend, catInfo }: any) {
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             {isParent && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                 style={{ background: 'rgba(74,110,170,0.1)', color: '#4a6eaa', border: '1px solid rgba(74,110,170,0.2)' }}>
                 Padres
               </span>
             )}
             {isExternal && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                 style={{ background: 'rgba(176,120,48,0.1)', color: '#b07830', border: '1px solid rgba(176,120,48,0.2)' }}>
                 Ext.
               </span>
             )}
             {isPro && !isExternal && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                 style={{ background: 'rgba(122,74,74,0.1)', color: '#7a4a4a', border: '1px solid rgba(122,74,74,0.2)' }}>
                 PRO
               </span>
@@ -1393,7 +1393,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
             <p className="text-3xl font-bold pl-2 leading-none mb-1" style={{ color: bar }}>{value}</p>
-            <p className="text-[11px] font-semibold pl-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</p>
+            <p className="text-[11px] font-semibold pl-2" style={{ color: 'var(--text-muted)' }}>{label}</p>
           </div>
         ))}
       </div>
@@ -1500,7 +1500,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
               </div>
               {expandedResponse === sf.id && sf.status === 'completed' && sf.responses && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-5">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Respuestas</h4>
+                  <h4 className="text-xs font-bold text-slate-400 mb-3">Respuestas</h4>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(sf.responses).map(([k, v]) => (
                       <div key={k} className=" rounded-xl p-3 border border-slate-100" style={{ background: "var(--card)" }}>

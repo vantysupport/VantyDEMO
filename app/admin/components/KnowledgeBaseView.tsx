@@ -797,7 +797,7 @@ export default function KnowledgeBaseView() {
             {/* Keywords section */}
             {modoFuente === 'keywords' && (
               <div className="space-y-4">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block">
+                <label className="text-xs font-bold text-slate-500 block">
                   ¿Qué tema quieres que aprenda la IA?
                 </label>
                 <textarea
@@ -809,7 +809,7 @@ export default function KnowledgeBaseView() {
                   disabled={aprendiendo}
                 />
                 <div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Temas sugeridos:</p>
+                  <p className="text-[11px] font-bold text-slate-400 mb-2">Temas sugeridos:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {temasSugeridos.map(tema => (
                       <button key={tema} onClick={() => setKeywords(tema)} disabled={aprendiendo}
@@ -836,7 +836,7 @@ export default function KnowledgeBaseView() {
             {/* URL section */}
             {modoFuente === 'url' && (
               <div className="space-y-3">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block">
+                <label className="text-xs font-bold text-slate-500 block">
                   URL de página web a aprender
                 </label>
                 <input
@@ -869,7 +869,7 @@ export default function KnowledgeBaseView() {
           {/* Log */}
           {logAprender.length > 0 && (
             <div className="bg-slate-900 rounded-2xl p-4 font-mono text-xs space-y-1.5">
-              <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-2">{t('ui.real_time_progress')}</p>
+              <p className="text-slate-400 text-[10px] mb-2">{t('ui.real_time_progress')}</p>
               {logAprender.map((line, i) => (
                 <p key={i} className={
                   line.startsWith('✅') ? 'text-emerald-400' :
@@ -921,7 +921,7 @@ export default function KnowledgeBaseView() {
           {/* Temas ya aprendidos */}
           {docsAuto.length > 0 && (
             <div className={`rounded-2xl border shadow-sm p-4 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}`}>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+              <p className="text-xs font-bold text-slate-500 mb-3">
                 Temas ya aprendidos por la IA ({docsAuto.length})
               </p>
               <div className="space-y-2">
@@ -1098,7 +1098,7 @@ export default function KnowledgeBaseView() {
           ) : (
             <div className="space-y-2">
               {docsManual.length > 0 && (
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-1">
+                <p className="text-xs font-bold text-slate-400 px-1">
                   Subidos manualmente ({docsManual.length})
                 </p>
               )}
@@ -1106,7 +1106,7 @@ export default function KnowledgeBaseView() {
                 <DocCard key={doc.id} doc={doc} onDelete={handleDelete} onRetry={handleRetry} />
               ))}
               {docsAuto.length > 0 && (
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-1 pt-2">
+                <p className="text-xs font-bold text-slate-400 px-1 pt-2">
                   Auto-aprendidos ({docsAuto.length})
                 </p>
               )}

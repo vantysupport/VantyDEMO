@@ -153,7 +153,7 @@ export default function VADIAgentChat({
       {/* Sugerencias rápidas (solo si no hay conversación) */}
       {messages.length <= 1 && (
         <div className="px-4 pb-2">
-          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">{t('ui.suggested_questions')}</p>
+          <p className="text-[10px] font-bold text-slate-300 mb-2">{t('ui.suggested_questions')}</p>
           <div className="flex flex-wrap gap-2">
             {sugerencias.slice(0, 3).map((s, i) => (
               <button key={i} onClick={() => sendMessage(s)}
