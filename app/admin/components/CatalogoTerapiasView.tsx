@@ -142,24 +142,26 @@ export default function CatalogoTerapiasView() {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5">
       {/* ─── HERO ──────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl p-6 text-white shadow-xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500">
+      <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 text-white shadow-xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500">
         <div className="absolute inset-0 opacity-20"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 0%, transparent 50%)' }} />
-        <div className="relative flex items-center justify-between gap-4 flex-wrap">
+        {/* glow decorativo */}
+        <div className="absolute -top-16 -right-10 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="relative flex items-center justify-between gap-6 flex-wrap">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                <Sparkles size={20} />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/20 border border-white/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={26} />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">Catálogo de Terapias</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Catálogo de Terapias</h1>
             </div>
-            <p className="text-white/90 text-sm max-w-xl">
+            <p className="text-white/90 text-base md:text-lg leading-relaxed max-w-2xl">
               Las terapias que verán los padres tras la evaluación inicial. La IA usará estos datos para recomendar las más adecuadas según cada caso.
             </p>
           </div>
           <button onClick={() => setEditing({ ...VACIA })}
-            className="px-4 py-2.5 rounded-xl bg-white text-sky-700 font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition">
-            <Plus size={16} /> Nueva terapia
+            className="px-5 py-3.5 rounded-2xl bg-white text-sky-700 font-bold text-base flex items-center gap-2 shadow-lg hover:scale-105 active:scale-100 transition shrink-0">
+            <Plus size={18} /> Nueva terapia
           </button>
         </div>
       </div>
