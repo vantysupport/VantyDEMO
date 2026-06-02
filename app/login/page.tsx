@@ -131,12 +131,7 @@ export default function LoginPage(props: PageProps) {
           justify-content: space-between;
         }
         @media(min-width: 900px){ .lp-left { display: flex; } }
-        .lp-grid {
-          position: absolute; inset: 0;
-          background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-          background-size: 56px 56px;
-        }
-        .lp-orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: orbFloat 16s ease-in-out infinite; }
+        .lp-orb { position: absolute; border-radius: 50%; filter: blur(90px); animation: orbFloat 18s ease-in-out infinite; }
         .lp-orb-1 { width: 420px; height: 420px; background: #6366f1; opacity: .3; top: -140px; left: -90px; }
         .lp-orb-2 { width: 320px; height: 320px; background: #a78bfa; opacity: .22; bottom: -40px; right: -70px; animation-delay: 5s; }
         .lp-orb-3 { width: 220px; height: 220px; background: #38bdf8; opacity: .16; bottom: 200px; left: 60px; animation-delay: 9s; }
@@ -147,24 +142,13 @@ export default function LoginPage(props: PageProps) {
           100% { transform: translate(0,0) scale(1); }
         }
 
-        /* ── Red neuronal animada (motivo clínico: neuronas / sinapsis) ── */
-        .lp-neural { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; opacity: .55; pointer-events: none; }
-        .lp-edge { stroke: rgba(165,180,252,.16); stroke-width: 1; }
-        .lp-edge-flow { stroke: rgba(125,211,252,.4); stroke-width: 1.2; stroke-dasharray: 5 11; animation: edgeFlow 3.2s linear infinite; }
-        @keyframes edgeFlow { to { stroke-dashoffset: -32; } }
-        .lp-node { fill: #a5b4fc; animation: nodePulse 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-        @keyframes nodePulse {
-          0%, 100% { opacity: .3; transform: scale(1); }
-          50%      { opacity: .95; transform: scale(1.5); }
-        }
-
         /* ── Entrada escalonada de las features ── */
         @keyframes featIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes heroIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         .lp-hero-anim { opacity: 0; animation: heroIn .7s cubic-bezier(.22,1,.36,1) forwards; }
 
         @media (prefers-reduced-motion: reduce) {
-          .lp-orb, .lp-node, .lp-edge-flow, .lp-card, .lp-hero-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
+          .lp-orb, .lp-card, .lp-hero-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
         }
         .lp-card {
           background: transparent; border: 1px solid transparent;
@@ -220,45 +204,9 @@ export default function LoginPage(props: PageProps) {
 
         {/* LEFT */}
         <div className="lp-left">
-          <div className="lp-grid" />
           <div className="lp-orb lp-orb-1" />
           <div className="lp-orb lp-orb-2" />
           <div className="lp-orb lp-orb-3" />
-
-          {/* Red neuronal animada — evoca neuronas y conexiones sinápticas */}
-          <svg className="lp-neural" viewBox="0 0 480 820" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            {/* conexiones */}
-            <g>
-              <line className="lp-edge" x1="64" y1="130" x2="172" y2="92" />
-              <line className="lp-edge-flow" x1="172" y1="92" x2="300" y2="150" />
-              <line className="lp-edge" x1="300" y1="150" x2="412" y2="104" />
-              <line className="lp-edge" x1="64" y1="130" x2="128" y2="252" />
-              <line className="lp-edge-flow" x1="172" y1="92" x2="248" y2="226" />
-              <line className="lp-edge" x1="300" y1="150" x2="372" y2="262" />
-              <line className="lp-edge" x1="412" y1="104" x2="372" y2="262" />
-              <line className="lp-edge" x1="128" y1="252" x2="248" y2="226" />
-              <line className="lp-edge-flow" x1="248" y1="226" x2="372" y2="262" />
-              <line className="lp-edge" x1="372" y1="262" x2="448" y2="372" />
-              <line className="lp-edge" x1="128" y1="252" x2="180" y2="372" />
-              <line className="lp-edge-flow" x1="248" y1="226" x2="318" y2="378" />
-              <line className="lp-edge" x1="180" y1="372" x2="318" y2="378" />
-              <line className="lp-edge" x1="180" y1="372" x2="96" y2="452" />
-              <line className="lp-edge-flow" x1="318" y1="378" x2="262" y2="496" />
-              <line className="lp-edge" x1="372" y1="262" x2="424" y2="486" />
-              <line className="lp-edge" x1="318" y1="378" x2="424" y2="486" />
-              <line className="lp-edge" x1="96" y1="452" x2="262" y2="496" />
-            </g>
-            {/* nodos */}
-            <g>
-              {[
-                [64,130],[172,92],[300,150],[412,104],[128,252],[248,226],
-                [372,262],[448,372],[180,372],[318,378],[96,452],[262,496],[424,486],
-              ].map(([cx, cy], i) => (
-                <circle key={i} className="lp-node" cx={cx} cy={cy} r="3.4"
-                  style={{ animationDelay: `${(i * 0.45).toFixed(2)}s` }} />
-              ))}
-            </g>
-          </svg>
 
           <div style={{ position: 'relative', zIndex: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 52 }}>
