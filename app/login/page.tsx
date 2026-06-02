@@ -7,7 +7,7 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, Puzzle, Sparkles, LineChart, HeartHandshake } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, Puzzle, Sparkles, LineChart, HeartHandshake, ShieldCheck } from 'lucide-react'
 
 interface PageProps {
   searchParams: Promise<{ mode?: string }>
@@ -136,18 +136,45 @@ export default function LoginPage(props: PageProps) {
           background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
           background-size: 56px 56px;
         }
-        .lp-orb { position: absolute; border-radius: 50%; filter: blur(70px); animation: orbFloat 9s ease-in-out infinite alternate; }
-        .lp-orb-1 { width: 380px; height: 380px; background: #818cf8; opacity: .25; top: -120px; left: -80px; }
-        .lp-orb-2 { width: 300px; height: 300px; background: #a78bfa; opacity: .2; bottom: 0; right: -60px; animation-delay: 4s; }
-        .lp-orb-3 { width: 180px; height: 180px; background: #60a5fa; opacity: .3; bottom: 180px; left: 80px; animation-delay: 7s; }
-        @keyframes orbFloat { from { transform: translate(0,0) scale(1); } to { transform: translate(16px,-24px) scale(1.06); } }
+        .lp-orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: orbFloat 16s ease-in-out infinite; }
+        .lp-orb-1 { width: 420px; height: 420px; background: #6366f1; opacity: .3; top: -140px; left: -90px; }
+        .lp-orb-2 { width: 320px; height: 320px; background: #a78bfa; opacity: .22; bottom: -40px; right: -70px; animation-delay: 5s; }
+        .lp-orb-3 { width: 220px; height: 220px; background: #38bdf8; opacity: .16; bottom: 200px; left: 60px; animation-delay: 9s; }
+        @keyframes orbFloat {
+          0%   { transform: translate(0,0) scale(1); }
+          33%  { transform: translate(34px,-26px) scale(1.08); }
+          66%  { transform: translate(-18px,22px) scale(0.96); }
+          100% { transform: translate(0,0) scale(1); }
+        }
+
+        /* ── Red neuronal animada (motivo clínico: neuronas / sinapsis) ── */
+        .lp-neural { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; opacity: .55; pointer-events: none; }
+        .lp-edge { stroke: rgba(165,180,252,.16); stroke-width: 1; }
+        .lp-edge-flow { stroke: rgba(125,211,252,.4); stroke-width: 1.2; stroke-dasharray: 5 11; animation: edgeFlow 3.2s linear infinite; }
+        @keyframes edgeFlow { to { stroke-dashoffset: -32; } }
+        .lp-node { fill: #a5b4fc; animation: nodePulse 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        @keyframes nodePulse {
+          0%, 100% { opacity: .3; transform: scale(1); }
+          50%      { opacity: .95; transform: scale(1.5); }
+        }
+
+        /* ── Entrada escalonada de las features ── */
+        @keyframes featIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes heroIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .lp-hero-anim { opacity: 0; animation: heroIn .7s cubic-bezier(.22,1,.36,1) forwards; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .lp-orb, .lp-node, .lp-edge-flow, .lp-card, .lp-hero-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
         .lp-card {
           background: transparent; border: 1px solid transparent;
           border-radius: 14px; padding: 11px 13px;
           display: flex; align-items: center; gap: 14px;
-          transition: background .25s ease, border-color .25s ease;
+          transition: background .25s ease, border-color .25s ease, transform .25s ease;
+          opacity: 0; animation: featIn .6s cubic-bezier(.22,1,.36,1) forwards;
         }
-        .lp-card:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.10); }
+        .lp-card:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); transform: translateX(4px); }
+        .lp-card:hover .lp-card-icon { background: rgba(165,180,252,.22); border-color: rgba(165,180,252,.3); }
         .lp-card-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); color: #c7d2fe; }
         .lp-right {
           flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -198,6 +225,41 @@ export default function LoginPage(props: PageProps) {
           <div className="lp-orb lp-orb-2" />
           <div className="lp-orb lp-orb-3" />
 
+          {/* Red neuronal animada — evoca neuronas y conexiones sinápticas */}
+          <svg className="lp-neural" viewBox="0 0 480 820" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            {/* conexiones */}
+            <g>
+              <line className="lp-edge" x1="64" y1="130" x2="172" y2="92" />
+              <line className="lp-edge-flow" x1="172" y1="92" x2="300" y2="150" />
+              <line className="lp-edge" x1="300" y1="150" x2="412" y2="104" />
+              <line className="lp-edge" x1="64" y1="130" x2="128" y2="252" />
+              <line className="lp-edge-flow" x1="172" y1="92" x2="248" y2="226" />
+              <line className="lp-edge" x1="300" y1="150" x2="372" y2="262" />
+              <line className="lp-edge" x1="412" y1="104" x2="372" y2="262" />
+              <line className="lp-edge" x1="128" y1="252" x2="248" y2="226" />
+              <line className="lp-edge-flow" x1="248" y1="226" x2="372" y2="262" />
+              <line className="lp-edge" x1="372" y1="262" x2="448" y2="372" />
+              <line className="lp-edge" x1="128" y1="252" x2="180" y2="372" />
+              <line className="lp-edge-flow" x1="248" y1="226" x2="318" y2="378" />
+              <line className="lp-edge" x1="180" y1="372" x2="318" y2="378" />
+              <line className="lp-edge" x1="180" y1="372" x2="96" y2="452" />
+              <line className="lp-edge-flow" x1="318" y1="378" x2="262" y2="496" />
+              <line className="lp-edge" x1="372" y1="262" x2="424" y2="486" />
+              <line className="lp-edge" x1="318" y1="378" x2="424" y2="486" />
+              <line className="lp-edge" x1="96" y1="452" x2="262" y2="496" />
+            </g>
+            {/* nodos */}
+            <g>
+              {[
+                [64,130],[172,92],[300,150],[412,104],[128,252],[248,226],
+                [372,262],[448,372],[180,372],[318,378],[96,452],[262,496],[424,486],
+              ].map(([cx, cy], i) => (
+                <circle key={i} className="lp-node" cx={cx} cy={cy} r="3.4"
+                  style={{ animationDelay: `${(i * 0.45).toFixed(2)}s` }} />
+              ))}
+            </g>
+          </svg>
+
           <div style={{ position: 'relative', zIndex: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 52 }}>
               <div style={{ width: 48, height: 48, borderRadius: 13, background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -209,10 +271,10 @@ export default function LoginPage(props: PageProps) {
               </div>
             </div>
 
-            <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(40px, 3.6vw, 54px)', lineHeight: 1.04, letterSpacing: '-0.025em', marginBottom: 18 }}>
+            <h2 className="lp-hero-anim" style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(40px, 3.6vw, 54px)', lineHeight: 1.04, letterSpacing: '-0.025em', marginBottom: 18, animationDelay: '.05s' }}>
               Tu hijo merece<br/><span style={{ color: '#a5b4fc' }}>lo mejor.</span>
             </h2>
-            <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 15.5, lineHeight: 1.7, marginBottom: 46, maxWidth: 360 }}>
+            <p className="lp-hero-anim" style={{ color: 'rgba(255,255,255,.6)', fontSize: 15.5, lineHeight: 1.7, marginBottom: 46, maxWidth: 360, animationDelay: '.18s' }}>
               Plataforma de gestión clínica ABA potenciada con Inteligencia Artificial para el seguimiento real de tu hijo.
             </p>
 
@@ -222,8 +284,8 @@ export default function LoginPage(props: PageProps) {
                 { Icon: Sparkles, title: 'Análisis con IA Profesional', desc: 'Informes clínicos automáticos' },
                 { Icon: LineChart, title: 'Progreso en tiempo real', desc: 'Gráficos y seguimiento visual' },
                 { Icon: HeartHandshake, title: 'Portal para familias', desc: 'Citas, formularios y asistente IA' },
-              ].map(({ Icon, title, desc }) => (
-                <div key={title} className="lp-card">
+              ].map(({ Icon, title, desc }, i) => (
+                <div key={title} className="lp-card" style={{ animationDelay: `${(0.35 + i * 0.12).toFixed(2)}s` }}>
                   <div className="lp-card-icon"><Icon size={19} strokeWidth={1.75} /></div>
                   <div>
                     <p style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{title}</p>
@@ -251,7 +313,10 @@ export default function LoginPage(props: PageProps) {
               </div>
             </div>
 
-            <div className="lp-pill">✦ {isSignUp ? 'Crea tu cuenta gratis' : 'Acceso seguro'}</div>
+            <div className="lp-pill">
+              <ShieldCheck size={13} strokeWidth={2.2} />
+              {isSignUp ? 'Crea tu cuenta gratis' : 'Plataforma clínica protegida'}
+            </div>
 
             <h1 style={{ fontSize: 'clamp(26px, 5vw, 33px)', fontWeight: 800, color: '#111827', marginBottom: 7, lineHeight: 1.12, letterSpacing: '-0.025em' }}>
               {isSignUp ? 'Bienvenido al equipo' : 'Ingresa a tu cuenta'}
