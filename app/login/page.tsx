@@ -7,7 +7,7 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, Puzzle, Sparkles, LineChart, HeartHandshake } from 'lucide-react'
 
 interface PageProps {
   searchParams: Promise<{ mode?: string }>
@@ -142,16 +142,17 @@ export default function LoginPage(props: PageProps) {
         .lp-orb-3 { width: 180px; height: 180px; background: #60a5fa; opacity: .3; bottom: 180px; left: 80px; animation-delay: 7s; }
         @keyframes orbFloat { from { transform: translate(0,0) scale(1); } to { transform: translate(16px,-24px) scale(1.06); } }
         .lp-card {
-          background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-          backdrop-filter: blur(12px); border-radius: 18px; padding: 18px 20px;
-          display: flex; align-items: center; gap: 14px; transition: background .3s;
+          background: transparent; border: 1px solid transparent;
+          border-radius: 14px; padding: 11px 13px;
+          display: flex; align-items: center; gap: 14px;
+          transition: background .25s ease, border-color .25s ease;
         }
-        .lp-card:hover { background: rgba(255,255,255,.12); }
-        .lp-card-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; background: rgba(255,255,255,.12); }
+        .lp-card:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.10); }
+        .lp-card-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); color: #c7d2fe; }
         .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px 40px; }
         .lp-form-box { width: 100%; max-width: 430px; }
         .lp-field { position: relative; margin-bottom: 12px; }
-        .lp-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; margin-bottom: 7px; }
+        .lp-field label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 7px; }
         .lp-field input { width: 100%; padding: 13px 16px 13px 44px; background: #fff; border: 2px solid #e5e7eb; border-radius: 13px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; }
         .lp-field input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79,70,229,.1); }
         .lp-field .lp-icon { position: absolute; left: 14px; bottom: 14px; color: #9ca3af; pointer-events: none; }
@@ -205,18 +206,18 @@ export default function LoginPage(props: PageProps) {
               Plataforma de gestión clínica ABA potenciada con Inteligencia Artificial para el seguimiento real de tu hijo.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {[
-                { icon: '🧩', title: 'Formularios TEA y TDAH', desc: 'BRIEF-2, ADOS-2, WISC-V y más' },
-                { icon: '🤖', title: 'Análisis con IA Profesional', desc: 'Informes clínicos automáticos' },
-                { icon: '📊', title: 'Progreso en tiempo real', desc: 'Gráficos y seguimiento visual' },
-                { icon: '💙', title: 'Portal para familias', desc: 'Citas, formularios y asistente IA' },
-              ].map(({ icon, title, desc }) => (
+                { Icon: Puzzle, title: 'Formularios TEA y TDAH', desc: 'BRIEF-2, ADOS-2, WISC-V y más' },
+                { Icon: Sparkles, title: 'Análisis con IA Profesional', desc: 'Informes clínicos automáticos' },
+                { Icon: LineChart, title: 'Progreso en tiempo real', desc: 'Gráficos y seguimiento visual' },
+                { Icon: HeartHandshake, title: 'Portal para familias', desc: 'Citas, formularios y asistente IA' },
+              ].map(({ Icon, title, desc }) => (
                 <div key={title} className="lp-card">
-                  <div className="lp-card-icon">{icon}</div>
+                  <div className="lp-card-icon"><Icon size={19} strokeWidth={1.75} /></div>
                   <div>
-                    <p style={{ color: '#fff', fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{title}</p>
-                    <p style={{ color: 'rgba(255,255,255,.45)', fontSize: 12 }}>{desc}</p>
+                    <p style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{title}</p>
+                    <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 12.5 }}>{desc}</p>
                   </div>
                 </div>
               ))}
