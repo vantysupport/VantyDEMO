@@ -1195,7 +1195,7 @@ function FormCard({ form, onStart, onSend, catInfo }: any) {
   const isParent = form.targetRole === 'parent' || form.targetRole === 'both'
 
   return (
-    <div className="rounded-xl overflow-hidden transition-all hover:shadow-md group"
+    <div className="rounded-2xl overflow-hidden transition-all hover:shadow-md group"
       style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       {/* Top accent bar - thin, tasteful */}
       <div className="h-0.5" style={{ background: `linear-gradient(90deg, ${isExternal ? '#b07830' : isPro ? '#7a4a4a' : '#4a6eaa'}, transparent)` }} />
@@ -1389,7 +1389,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
           { label: 'Pendientes',                       value: stats.pending,   bar: '#9a7020' },
           { label: 'Completados',                      value: stats.completed, bar: '#3a8a60' },
         ].map(({ label, value, bar }) => (
-          <div key={label} className="rounded-xl p-4 relative overflow-hidden"
+          <div key={label} className="rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
             <p className="text-3xl font-bold pl-2 leading-none mb-1" style={{ color: bar }}>{value}</p>
@@ -1431,7 +1431,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
               <input
                 type="text" placeholder={t('ui.search_form')} value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }} />
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl text-sm font-medium outline-none transition-all" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }} />
             </div>
           </div>
 

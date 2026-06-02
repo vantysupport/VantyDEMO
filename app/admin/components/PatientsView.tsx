@@ -161,7 +161,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
 
   return (
     <>
-      <div className="rounded-xl p-4 mt-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="rounded-2xl p-4 mt-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             <UserCheck size={13} style={{ color: 'var(--text-muted)' }} />
@@ -327,7 +327,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
 
   if (loading) {
     return (
-      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="rounded-2xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
           <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
@@ -343,7 +343,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
 
   if (checkins.length === 0) {
     return (
-      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="rounded-2xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
           <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
@@ -362,7 +362,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
   const fechaUltimo = new Date(ultimo.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+    <div className="rounded-2xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
@@ -493,7 +493,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
   }
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+    <div className="rounded-2xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <BarChart3 size={12} style={{ color: 'var(--text-muted)' }} />
@@ -811,7 +811,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
 
       ) : (
         /* ───────────── EDICIÓN ───────────── */
-        <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="space-y-3 rounded-2xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           {/* Header edición */}
           <div className="flex items-center justify-between pb-2 mb-1" style={{ borderBottom: '1px solid var(--card-border)' }}>
             <p className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>

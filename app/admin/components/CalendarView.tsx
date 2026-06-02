@@ -579,14 +579,21 @@ function MonthlyCalendarView() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {[
-            {label:'Total',      value:apts.length,        color:'blue'},
-            {label:'Hoy',        value:todayApts.length,   color:'emerald'},
-            {label:'Esta semana',value:weekApts.length,    color:'violet'},
-            {label:'Virtuales',  value:virtualApts.length, color:'indigo'},
-          ].map(({label,value,color}) => (
-            <div key={label} className="rounded-2xl p-5 shadow-sm" style={{ background: "var(--card)", border: "1px solid var(--card-border)" }}>
-              <p className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>{label}</p>
-              <p className={`text-3xl font-bold text-${color}-600 mt-1`}>{value}</p>
+            {label:'Total',       value:apts.length,        color:'#0284c7', Icon:Calendar},
+            {label:'Hoy',         value:todayApts.length,   color:'#10b981', Icon:Clock},
+            {label:'Esta semana', value:weekApts.length,    color:'#06b6d4', Icon:Calendar},
+            {label:'Virtuales',   value:virtualApts.length, color:'#0ea5e9', Icon:Video},
+          ].map(({label,value,color,Icon}) => (
+            <div key={label} className="group rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+              style={{ background: `linear-gradient(157deg, ${color}0d 0%, var(--card) 46%)`, border: "1px solid var(--card-border)", boxShadow: 'var(--shadow-sm)' }}>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>{label}</p>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: `${color}1a`, color }}>
+                  <Icon size={15}/>
+                </div>
+              </div>
+              <p className="text-3xl font-extrabold tabular-nums tracking-tight" style={{ color }}>{value}</p>
             </div>
           ))}
         </div>

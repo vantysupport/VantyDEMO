@@ -47,7 +47,7 @@ function KPIBig({ label, value, sub, icon: Icon, bar, delta, deltaLabel }: any) 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-xl px-4 py-3 shadow-xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+    <div className="rounded-2xl px-4 py-3 shadow-xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
       <p className="text-xs font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{label}</p>
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2 text-xs">

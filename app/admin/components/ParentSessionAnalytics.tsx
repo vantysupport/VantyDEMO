@@ -276,7 +276,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
               { label: 'Prom. por sesión',   value: formatDuration(parent.avg_session_seconds) },
               { label: 'Última conexión',    value: parent.last_seen ? new Date(parent.last_seen).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—' },
             ].map(m => (
-              <div key={m.label} className="rounded-xl p-3 text-center"
+              <div key={m.label} className="rounded-2xl p-3 text-center"
                 style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{m.value}</p>
                 <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
@@ -290,7 +290,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
               <p className="text-[10px] font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
                 📅 Minutos conectado por día (últimas 2 semanas)
               </p>
-              <div className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-2xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <ResponsiveContainer width="100%" height={90}>
                   <LineChart data={sparkData} margin={{ top: 4, right: 8, bottom: 4, left: -30 }}>
                     <CartesianGrid strokeDasharray="2 2" stroke="var(--card-border)" />

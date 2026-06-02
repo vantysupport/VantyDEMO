@@ -1054,7 +1054,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   {AREA_CONFIG[localArea]?.emoji} {AREA_CONFIG[localArea]?.label || localArea}
                 </button>
                 {editingArea && (
-                  <div className="absolute top-6 left-0 z-50 rounded-xl shadow-xl py-1 min-w-[160px]"
+                  <div className="absolute top-6 left-0 z-50 rounded-2xl shadow-xl py-1 min-w-[160px]"
                     style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
                     onClick={e => e.stopPropagation()}>
                     {Object.entries(AREA_CONFIG).map(([key, cfg]) => (
@@ -1083,7 +1083,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   <FaseTag fase={localFase} />
                 </button>
                 {editingFase && (
-                  <div className="absolute top-6 left-0 z-50 rounded-xl shadow-xl py-1 min-w-[160px]"
+                  <div className="absolute top-6 left-0 z-50 rounded-2xl shadow-xl py-1 min-w-[160px]"
                     style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
                     onClick={e => e.stopPropagation()}>
                     {[
@@ -1219,7 +1219,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                     </div>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+                  <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
 
                     {/* ── ABA Phase Chart — segmentos con líneas verticales y labels ── */}
                     {tipoGrafico === 'lineas' && (() => {
@@ -1992,12 +1992,12 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cargando registros...</span>
         </div>
       ) : error ? (
-        <div className="rounded-xl p-4 text-center" style={{ background: 'var(--card)', border: '1px solid #fca5a5' }}>
+        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--card)', border: '1px solid #fca5a5' }}>
           <p className="text-xs font-medium text-red-500">Error al cargar: {error}</p>
           <p className="text-[10px] text-red-400 mt-1">Tabla: programa_practica_casa · ID: {programaId?.slice(0,8)}...</p>
         </div>
       ) : registros.length === 0 ? (
-        <div className="rounded-xl p-4 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
             El padre aún no ha registrado práctica en casa para este programa.
           </p>
@@ -2005,7 +2005,7 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
       ) : (
         <div className="space-y-3">
           {weeks.map((week, wi) => (
-            <div key={wi} className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+            <div key={wi} className="rounded-2xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-[10px] font-bold mb-2.5" style={{ color: 'var(--text-muted)' }}>{week.label}</p>
               <div className="overflow-x-auto">
               <div className="grid grid-cols-7 gap-1 min-w-[280px]">
