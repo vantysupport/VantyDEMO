@@ -113,10 +113,24 @@ button:not(:disabled):active {
   transform: scale(0.985);
 }
 
+/* ── SISTEMA DE DOS TIPOGRAFÍAS ──────────────────────────────────────
+   Títulos y negritas → Poppins (display, elegante, con presencia).
+   Cuerpo y texto normal → Plus Jakarta Sans.
+   La diferencia marcada entre ambas es lo que da el aire premium. */
+h1, h2, h3, h4, h5, h6,
+.font-bold, .font-extrabold, .font-black,
+b, strong {
+  font-family: var(--font-display), var(--font-sans), "Segoe UI", system-ui, sans-serif;
+}
+
 /* Títulos: tracking ajustado y mejor balance de líneas (más "diseñado") */
 h1, h2, h3 {
   letter-spacing: -0.02em;
   text-wrap: balance;
+}
+/* Poppins luce mejor con tracking levemente ceñido en negritas grandes */
+.font-extrabold, .font-black {
+  letter-spacing: -0.015em;
 }
 /* Prosa larga: menos huérfanas */
 p {

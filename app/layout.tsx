@@ -1,16 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import { ToastProvider } from '@/components/Toast'
 import { ThemeProvider } from '@/components/ThemeContext'
 import "./globals.css";
 
-// Fuente principal: Plus Jakarta Sans — humanista, cálida y profesional.
-// Reemplaza a Arial en toda la app vía la variable --font-sans (ver globals.css).
-// Una sola familia con contraste de pesos > tres tipografías compitiendo.
+// Sistema de dos tipografías:
+//  • CUERPO → Plus Jakarta Sans (var --font-sans): legible, profesional.
+//  • TÍTULOS / NEGRITAS → Poppins (var --font-display): geométrica y con
+//    presencia; el bold marca elegancia y jerarquía premium.
+// La diferencia clara entre ambas (display bold vs body normal) da el look premium.
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
+  display: "swap",
+});
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -66,7 +74,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={jakarta.variable} suppressHydrationWarning>
+    <html lang="es" className={`${jakarta.variable} ${poppins.variable}`} suppressHydrationWarning>
       <head>
         <meta name="google-site-verification" content="xQbKWmWgeRRPlZbv5h7rEDXAOw0TPHC3140_cyWT9OI" />
         <meta name="google-site-verification" content="Vm989cC49i4_RMsZFi23exrJONLlBnEvu00C4Zs1Lm4" />
