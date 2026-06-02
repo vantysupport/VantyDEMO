@@ -7,7 +7,7 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, Puzzle, Sparkles, LineChart, HeartHandshake, ShieldCheck } from 'lucide-react'
 
 interface PageProps {
   searchParams: Promise<{ mode?: string }>
@@ -124,41 +124,63 @@ export default function LoginPage(props: PageProps) {
           display: none;
           width: 50%;
           position: relative;
-          background: linear-gradient(160deg, #1e1b4b 0%, #312e81 45%, #4f46e5 100%);
+          background: linear-gradient(158deg, #17143a 0%, #2a2668 48%, #4338ca 100%);
           overflow: hidden;
-          padding: 52px 56px;
+          padding: 56px 60px;
           flex-direction: column;
           justify-content: space-between;
         }
         @media(min-width: 900px){ .lp-left { display: flex; } }
-        .lp-grid {
-          position: absolute; inset: 0;
-          background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-          background-size: 56px 56px;
+        .lp-orb { position: absolute; border-radius: 50%; filter: blur(90px); animation: orbFloat 18s ease-in-out infinite; }
+        .lp-orb-1 { width: 420px; height: 420px; background: #6366f1; opacity: .3; top: -140px; left: -90px; }
+        .lp-orb-2 { width: 320px; height: 320px; background: #a78bfa; opacity: .22; bottom: -40px; right: -70px; animation-delay: 5s; }
+        .lp-orb-3 { width: 220px; height: 220px; background: #38bdf8; opacity: .16; bottom: 200px; left: 60px; animation-delay: 9s; }
+        @keyframes orbFloat {
+          0%   { transform: translate(0,0) scale(1); }
+          33%  { transform: translate(34px,-26px) scale(1.08); }
+          66%  { transform: translate(-18px,22px) scale(0.96); }
+          100% { transform: translate(0,0) scale(1); }
         }
-        .lp-orb { position: absolute; border-radius: 50%; filter: blur(70px); animation: orbFloat 9s ease-in-out infinite alternate; }
-        .lp-orb-1 { width: 380px; height: 380px; background: #818cf8; opacity: .25; top: -120px; left: -80px; }
-        .lp-orb-2 { width: 300px; height: 300px; background: #a78bfa; opacity: .2; bottom: 0; right: -60px; animation-delay: 4s; }
-        .lp-orb-3 { width: 180px; height: 180px; background: #60a5fa; opacity: .3; bottom: 180px; left: 80px; animation-delay: 7s; }
-        @keyframes orbFloat { from { transform: translate(0,0) scale(1); } to { transform: translate(16px,-24px) scale(1.06); } }
+
+        /* ── Entrada escalonada de las features ── */
+        @keyframes featIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes heroIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .lp-hero-anim { opacity: 0; animation: heroIn .7s cubic-bezier(.22,1,.36,1) forwards; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .lp-orb, .lp-card, .lp-hero-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
         .lp-card {
-          background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-          backdrop-filter: blur(12px); border-radius: 18px; padding: 18px 20px;
-          display: flex; align-items: center; gap: 14px; transition: background .3s;
+          background: transparent; border: 1px solid transparent;
+          border-radius: 14px; padding: 11px 13px;
+          display: flex; align-items: center; gap: 14px;
+          transition: background .25s ease, border-color .25s ease, transform .25s ease;
+          opacity: 0; animation: featIn .6s cubic-bezier(.22,1,.36,1) forwards;
         }
-        .lp-card:hover { background: rgba(255,255,255,.12); }
-        .lp-card-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; background: rgba(255,255,255,.12); }
-        .lp-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px 40px; }
-        .lp-form-box { width: 100%; max-width: 430px; }
+        .lp-card:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); transform: translateX(4px); }
+        .lp-card:hover .lp-card-icon { background: rgba(165,180,252,.22); border-color: rgba(165,180,252,.3); }
+        .lp-card-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); color: #c7d2fe; }
+        .lp-right {
+          flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 28px 20px 40px; position: relative; overflow: hidden;
+          background:
+            radial-gradient(90% 70% at 100% 0%, rgba(124,58,237,.10) 0%, rgba(124,58,237,0) 55%),
+            radial-gradient(80% 60% at 0% 100%, rgba(79,70,229,.08) 0%, rgba(79,70,229,0) 50%),
+            #f7f6fd;
+        }
+        .lp-form-box { width: 100%; max-width: 408px; position: relative; z-index: 2; }
         .lp-field { position: relative; margin-bottom: 12px; }
-        .lp-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; margin-bottom: 7px; }
-        .lp-field input { width: 100%; padding: 13px 16px 13px 44px; background: #fff; border: 2px solid #e5e7eb; border-radius: 13px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; }
-        .lp-field input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79,70,229,.1); }
-        .lp-field .lp-icon { position: absolute; left: 14px; bottom: 14px; color: #9ca3af; pointer-events: none; }
-        .lp-field .lp-eye { position: absolute; right: 14px; bottom: 13px; color: #9ca3af; cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; display: flex; }
-        .lp-field .lp-eye:hover { color: #4f46e5; }
-        .lp-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border: none; border-radius: 13px; font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s, transform .15s, box-shadow .2s; box-shadow: 0 8px 24px rgba(79,70,229,.3); margin-top: 6px; }
-        .lp-btn:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(79,70,229,.35); }
+        .lp-field label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 7px; }
+        .lp-field input { width: 100%; padding: 15px 16px 15px 46px; background: #fff; border: 1.5px solid #e7e6f0; border-radius: 14px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: 0 1px 2px rgba(30,27,75,.04); }
+        .lp-field input::placeholder { color: #b6b6c6; }
+        .lp-field input:hover { border-color: #d6d4e6; }
+        .lp-field input:focus { border-color: #6d28d9; box-shadow: 0 0 0 4px rgba(109,40,217,.12); }
+        .lp-field .lp-icon { position: absolute; left: 15px; bottom: 16px; color: #9ca3af; pointer-events: none; }
+        .lp-field .lp-eye { position: absolute; right: 14px; bottom: 15px; color: #9ca3af; cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; display: flex; }
+        .lp-field .lp-eye:hover { color: #6d28d9; }
+        .lp-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #5b21b6 0%, #6d28d9 55%, #7c3aed 100%); color: #fff; border: none; border-radius: 14px; font-size: 15.5px; font-weight: 700; letter-spacing: .01em; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .15s ease, box-shadow .25s ease, filter .2s; box-shadow: 0 10px 28px rgba(91,33,182,.32); margin-top: 8px; }
+        .lp-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 36px rgba(91,33,182,.4); }
+        .lp-btn:active:not(:disabled) { transform: translateY(0); }
         .lp-btn:disabled { opacity: .6; cursor: not-allowed; }
         .lp-error { display: flex; align-items: center; gap: 10px; background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 14px; }
         .lp-sep { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #d1d5db; font-size: 12px; }
@@ -167,7 +189,7 @@ export default function LoginPage(props: PageProps) {
         .lp-forgot p { font-size: 13px; color: #3730a3; line-height: 1.6; margin-bottom: 11px; }
         .lp-forgot a { display: flex; align-items: center; justify-content: center; gap: 8px; background: #16a34a; color: #fff; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 700; text-decoration: none; transition: background .2s; }
         .lp-forgot a:hover { background: #15803d; }
-        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(79,70,229,.08); border: 1px solid rgba(79,70,229,.15); color: #4f46e5; border-radius: 99px; padding: 5px 13px; font-size: 12px; font-weight: 700; margin-bottom: 14px; }
+        .lp-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(109,40,217,.07); border: 1px solid rgba(109,40,217,.16); color: #6d28d9; border-radius: 99px; padding: 6px 14px; font-size: 12px; font-weight: 600; margin-bottom: 18px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
         @media(min-width:900px) { .mobile-logo { display: none !important; } }
@@ -182,7 +204,6 @@ export default function LoginPage(props: PageProps) {
 
         {/* LEFT */}
         <div className="lp-left">
-          <div className="lp-grid" />
           <div className="lp-orb lp-orb-1" />
           <div className="lp-orb lp-orb-2" />
           <div className="lp-orb lp-orb-3" />
@@ -198,25 +219,25 @@ export default function LoginPage(props: PageProps) {
               </div>
             </div>
 
-            <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 36, lineHeight: 1.2, marginBottom: 14 }}>
+            <h2 className="lp-hero-anim" style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(40px, 3.6vw, 54px)', lineHeight: 1.04, letterSpacing: '-0.025em', marginBottom: 18, animationDelay: '.05s' }}>
               Tu hijo merece<br/><span style={{ color: '#a5b4fc' }}>lo mejor.</span>
             </h2>
-            <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 15, lineHeight: 1.75, marginBottom: 44, maxWidth: 340 }}>
+            <p className="lp-hero-anim" style={{ color: 'rgba(255,255,255,.6)', fontSize: 15.5, lineHeight: 1.7, marginBottom: 46, maxWidth: 360, animationDelay: '.18s' }}>
               Plataforma de gestión clínica ABA potenciada con Inteligencia Artificial para el seguimiento real de tu hijo.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {[
-                { icon: '🧩', title: 'Formularios TEA y TDAH', desc: 'BRIEF-2, ADOS-2, WISC-V y más' },
-                { icon: '🤖', title: 'Análisis con IA Profesional', desc: 'Informes clínicos automáticos' },
-                { icon: '📊', title: 'Progreso en tiempo real', desc: 'Gráficos y seguimiento visual' },
-                { icon: '💙', title: 'Portal para familias', desc: 'Citas, formularios y asistente IA' },
-              ].map(({ icon, title, desc }) => (
-                <div key={title} className="lp-card">
-                  <div className="lp-card-icon">{icon}</div>
+                { Icon: Puzzle, title: 'Formularios TEA y TDAH', desc: 'BRIEF-2, ADOS-2, WISC-V y más' },
+                { Icon: Sparkles, title: 'Análisis con IA Profesional', desc: 'Informes clínicos automáticos' },
+                { Icon: LineChart, title: 'Progreso en tiempo real', desc: 'Gráficos y seguimiento visual' },
+                { Icon: HeartHandshake, title: 'Portal para familias', desc: 'Citas, formularios y asistente IA' },
+              ].map(({ Icon, title, desc }, i) => (
+                <div key={title} className="lp-card" style={{ animationDelay: `${(0.35 + i * 0.12).toFixed(2)}s` }}>
+                  <div className="lp-card-icon"><Icon size={19} strokeWidth={1.75} /></div>
                   <div>
-                    <p style={{ color: '#fff', fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{title}</p>
-                    <p style={{ color: 'rgba(255,255,255,.45)', fontSize: 12 }}>{desc}</p>
+                    <p style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{title}</p>
+                    <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 12.5 }}>{desc}</p>
                   </div>
                 </div>
               ))}
@@ -240,12 +261,15 @@ export default function LoginPage(props: PageProps) {
               </div>
             </div>
 
-            <div className="lp-pill">✦ {isSignUp ? 'Crea tu cuenta gratis' : 'Acceso seguro'}</div>
+            <div className="lp-pill">
+              <ShieldCheck size={13} strokeWidth={2.2} />
+              {isSignUp ? 'Crea tu cuenta gratis' : 'Plataforma clínica protegida'}
+            </div>
 
-            <h1 style={{ fontSize: 'clamp(22px, 6vw, 28px)', fontWeight: 800, color: '#111827', marginBottom: 6, lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: 'clamp(26px, 5vw, 33px)', fontWeight: 800, color: '#111827', marginBottom: 7, lineHeight: 1.12, letterSpacing: '-0.025em' }}>
               {isSignUp ? 'Bienvenido al equipo' : 'Ingresa a tu cuenta'}
             </h1>
-            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
+            <p style={{ fontSize: 14.5, color: '#6b7280', marginBottom: 24 }}>
               {isSignUp ? 'Completa los datos para comenzar' : 'Continúa el seguimiento de tu hijo'}
             </p>
 
