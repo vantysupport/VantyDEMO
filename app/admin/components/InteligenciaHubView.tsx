@@ -14,7 +14,7 @@ import {
   AlertTriangle, CheckCircle, RefreshCw, Users, Target,
   Lock, Eye, BarChart3, Zap, ArrowUp, ArrowDown,
   ChevronRight, ChevronLeft, Activity, Sparkles, Clock, Star, Heart,
-  MessageCircle, BookOpen, Award, UserCheck
+  MessageCircle, BookOpen, Award, UserCheck, FileText, Search
 } from 'lucide-react'
 
 type Tab = 'predicciones' | 'seguridad' | 'patrones' | 'objetivos' | 'reportes' | 'sugerencias'
@@ -81,7 +81,7 @@ function Badge({ label, color }: { label: string; color: string }) {
     green: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     red: 'bg-red-500/15 text-red-400 border-red-500/30',
     yellow: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    blue: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    blue: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
     purple: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
   }
   return (
@@ -96,7 +96,7 @@ function ProgressBar({ value, max = 100, color = 'blue' }: { value: number; max?
 
   const pct = Math.min(100, (value / max) * 100)
   const colors: Record<string, string> = {
-    blue: 'bg-blue-500', green: 'bg-emerald-500', red: 'bg-red-500',
+    blue: 'bg-sky-500', green: 'bg-emerald-500', red: 'bg-red-500',
     yellow: 'bg-amber-500', purple: 'bg-sky-500', gray: 'bg-slate-400'
   }
   return (
@@ -176,7 +176,7 @@ function ProgramaCard({ prog, t }: { prog: any; t: any }) {
   const badge = prog.criterio_logrado
     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
     : prog.ultimo_porcentaje >= prog.criterio_dominio
-    ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+    ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
     : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
 
   return (
@@ -303,7 +303,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
           <div className="flex items-center gap-2 px-4 py-3 border-b flex-shrink-0" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
             <button
               onClick={() => { setShowMobileDetail(false); setSelectedPaciente(null); setPrediccion(null) }}
-              className="flex items-center gap-1.5 text-xs font-bold text-blue-500 active:text-blue-700 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-bold text-sky-500 active:text-sky-700 transition-colors"
             >
               <ChevronLeft size={16} /> Pacientes
             </button>
@@ -326,7 +326,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
 
         {loading && (
           <div className="flex flex-col items-center justify-center h-full p-12 text-center" style={{ minHeight: '200px' }}>
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-12 h-12 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin mx-auto mb-4" />
             <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>{t('hub.analizandoPatrones')}</p>
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('ui.calculating')}</p>
           </div>
@@ -335,12 +335,12 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {prediccion && !loading && selectedPaciente && (
           <div className="p-4 md:p-5 space-y-4">
             {/* Header paciente */}
-            <div className="bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
+            <div className="bg-gradient-to-r from-sky-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-blue-200 text-xs font-bold mb-1">{t('hub.analisPorPrograma')}</p>
+                  <p className="text-sky-200 text-xs font-bold mb-1">{t('hub.analisPorPrograma')}</p>
                   <h3 className="text-lg md:text-xl font-bold truncate">{selectedPaciente.name}</h3>
-                  <p className="text-blue-200 text-sm mt-0.5">
+                  <p className="text-sky-200 text-sm mt-0.5">
                     {(prediccion as any).programas_analizados || 0} programas · {(prediccion as any).total_sesiones_unificado ?? (prediccion as any).analisis_por_programa?.reduce((a: number, p: any) => a + p.total_sesiones, 0) ?? 0} sesiones totales
                   </p>
                 </div>
@@ -458,7 +458,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         <div className="lg:hidden flex flex-col">
           <div className="px-4 py-3.5 border-b flex-shrink-0" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
             <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Users size={15} className="text-blue-500" /> {t('ui.generarPrediccion2')}
+              <Users size={15} className="text-sky-500" /> {t('ui.generarPrediccion2')}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('hub.iaAnalizara')}</p>
           </div>
@@ -478,7 +478,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               onMouseEnter={e => { if (selectedPaciente?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'var(--card)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selectedPaciente?.id === p.id ? 'rgba(37,99,235,0.12)' : 'transparent' }}
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-sky-500 flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-xs">{(p.name || p.nombre || '?').charAt(0).toUpperCase()}</span>
               </div>
               <div className="min-w-0 flex-1">
@@ -486,7 +486,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
                 <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{p.diagnosis || 'Sin diagnóstico'}</p>
               </div>
               {selectedPaciente?.id === p.id && (
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0 hidden lg:block" />
+                <div className="w-1.5 h-1.5 rounded-full bg-sky-500 flex-shrink-0 hidden lg:block" />
               )}
               <ChevronRight size={14} className="text-slate-400 lg:hidden flex-shrink-0" />
             </button>
@@ -503,7 +503,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         <div className="w-64 flex-shrink-0 flex flex-col border-r" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
           <div className="px-4 py-3.5 border-b flex-shrink-0" style={{ borderColor: 'var(--card-border)' }}>
             <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Users size={15} className="text-blue-500" /> {t('ui.generarPrediccion2')}
+              <Users size={15} className="text-sky-500" /> {t('ui.generarPrediccion2')}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('hub.iaAnalizara')}</p>
           </div>
@@ -523,7 +523,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               onMouseEnter={e => { if (selectedPaciente?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'var(--card)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selectedPaciente?.id === p.id ? 'rgba(37,99,235,0.12)' : 'transparent' }}
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-sky-500 flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-xs">{(p.name || p.nombre || '?').charAt(0).toUpperCase()}</span>
               </div>
               <div className="min-w-0 flex-1">
@@ -531,7 +531,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
                 <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{p.diagnosis || 'Sin diagnóstico'}</p>
               </div>
               {selectedPaciente?.id === p.id && (
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0 hidden lg:block" />
+                <div className="w-1.5 h-1.5 rounded-full bg-sky-500 flex-shrink-0 hidden lg:block" />
               )}
               <ChevronRight size={14} className="text-slate-400 lg:hidden flex-shrink-0" />
             </button>
@@ -553,7 +553,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
 
         {loading && (
           <div className="flex flex-col items-center justify-center h-full p-12 text-center" style={{ minHeight: '200px' }}>
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-12 h-12 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin mx-auto mb-4" />
             <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>{t('hub.analizandoPatrones')}</p>
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('ui.calculating')}</p>
           </div>
@@ -562,12 +562,12 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {prediccion && !loading && selectedPaciente && (
           <div className="p-4 md:p-5 space-y-4">
             {/* Header paciente */}
-            <div className="bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
+            <div className="bg-gradient-to-r from-sky-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-blue-200 text-xs font-bold mb-1">{t('hub.analisPorPrograma')}</p>
+                  <p className="text-sky-200 text-xs font-bold mb-1">{t('hub.analisPorPrograma')}</p>
                   <h3 className="text-lg md:text-xl font-bold truncate">{selectedPaciente.name}</h3>
-                  <p className="text-blue-200 text-sm mt-0.5">
+                  <p className="text-sky-200 text-sm mt-0.5">
                     {(prediccion as any).programas_analizados || 0} programas · {(prediccion as any).total_sesiones_unificado ?? (prediccion as any).analisis_por_programa?.reduce((a: number, p: any) => a + p.total_sesiones, 0) ?? 0} sesiones totales
                   </p>
                 </div>
@@ -712,7 +712,7 @@ function TabSeguridad() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
-      <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
     </div>
   )
 
@@ -738,14 +738,14 @@ function TabSeguridad() {
         ].map(m => (
           <div key={m.label} className=" rounded-2xl border border-slate-200 p-5 flex flex-col justify-between" style={{ background: "var(--card)" }}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-              m.color === 'blue' ? 'bg-blue-50' : m.color === 'red' ? 'bg-red-50' : m.color === 'green' ? 'bg-emerald-50' : 'bg-sky-50'
+              m.color === 'blue' ? 'bg-sky-50' : m.color === 'red' ? 'bg-red-50' : m.color === 'green' ? 'bg-emerald-50' : 'bg-sky-50'
             }`}>
               <m.icon size={18} className={
-                m.color === 'blue' ? 'text-blue-600' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-sky-600'
+                m.color === 'blue' ? 'text-sky-600' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-sky-600'
               } />
             </div>
             <p className={`text-3xl font-bold ${
-              m.color === 'blue' ? 'text-blue-700' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-sky-700'
+              m.color === 'blue' ? 'text-sky-700' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-sky-700'
             }`}>{m.value}</p>
             <p className="text-xs text-slate-400 font-medium mt-1">{m.label}</p>
           </div>
@@ -756,7 +756,7 @@ function TabSeguridad() {
       {datos?.accesosPorRol && Object.keys(datos.accesosPorRol).length > 0 && (
         <div className=" rounded-2xl border border-slate-200 p-5" style={{ background: "var(--card)" }}>
           <h4 className="font-bold text-slate-700 text-sm mb-4 flex items-center gap-2">
-            <Users size={14} className="text-blue-500" /> Accesos por Rol (últimos 7 días)
+            <Users size={14} className="text-sky-500" /> Accesos por Rol (últimos 7 días)
           </h4>
           <div className="space-y-3">
             {Object.entries(datos.accesosPorRol).map(([rol, count]) => {
@@ -782,7 +782,7 @@ function TabSeguridad() {
           <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
             <AlertTriangle size={14} className="text-amber-500" /> Alertas de Seguridad
           </h4>
-          <button onClick={cargar} className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1">
+          <button onClick={cargar} className="text-xs text-sky-600 hover:text-sky-800 font-bold flex items-center gap-1">
             <RefreshCw size={11} /> Actualizar
           </button>
         </div>
@@ -948,20 +948,20 @@ function TabCompetitividad() {
 // accent = color principal, usado en borde izq, número, badge
 // bg/border son suficientemente ligeros para light mode
 const PATRON_CONFIG: Record<string, {
-  label: string; icon: string; accent: string; lightBg: string; lightBorder: string; lightText: string; darkBg: string; darkBorder: string; darkText: string
+  label: string; Icon: any; accent: string; lightBg: string; lightBorder: string; lightText: string; darkBg: string; darkBorder: string; darkText: string
 }> = {
-  regresion:     { label: 'Regresión Conductual',   icon: '↘', accent: '#c0524a', lightBg: '#fdf3f3', lightBorder: '#f0b8b5', lightText: '#9a3030', darkBg: 'rgba(192,82,74,0.12)',   darkBorder: 'rgba(192,82,74,0.3)',   darkText: '#e8a0a0' },
-  estancamiento: { label: 'Estancamiento de Aprendizaje', icon: '→', accent: '#b07830', lightBg: '#fdf8ee', lightBorder: '#e8cc90', lightText: '#7a5010', darkBg: 'rgba(176,120,48,0.12)',  darkBorder: 'rgba(176,120,48,0.3)',  darkText: '#d9b87a' },
-  aceleracion:   { label: 'Aceleración del Logro',  icon: '↗', accent: '#2e7a56', lightBg: '#f3faf6', lightBorder: '#a0d4b8', lightText: '#1a5c38', darkBg: 'rgba(46,122,86,0.12)',   darkBorder: 'rgba(46,122,86,0.3)',   darkText: '#7ec4a4' },
-  inconsistencia:{ label: 'Variabilidad Alta',      icon: '⟺', accent: '#6355a0', lightBg: '#f7f5fc', lightBorder: '#c0b8e0', lightText: '#42357a', darkBg: 'rgba(99,85,160,0.12)',   darkBorder: 'rgba(99,85,160,0.3)',   darkText: '#c4b8e8' },
-  dominio:       { label: 'Criterio de Dominio',    icon: '★', accent: '#3a68a0', lightBg: '#f3f7fc', lightBorder: '#a8c4e0', lightText: '#1e4878', darkBg: 'rgba(58,104,160,0.12)',  darkBorder: 'rgba(58,104,160,0.3)',  darkText: '#90b8d8' },
+  regresion:     { label: 'Regresión Conductual',         Icon: TrendingDown, accent: '#ef4444', lightBg: '#fef2f2', lightBorder: '#fecaca', lightText: '#b91c1c', darkBg: 'rgba(239,68,68,0.12)',  darkBorder: 'rgba(239,68,68,0.3)',  darkText: '#fca5a5' },
+  estancamiento: { label: 'Estancamiento de Aprendizaje', Icon: Minus,        accent: '#f59e0b', lightBg: '#fffbeb', lightBorder: '#fde68a', lightText: '#b45309', darkBg: 'rgba(245,158,11,0.12)', darkBorder: 'rgba(245,158,11,0.3)', darkText: '#fcd34d' },
+  aceleracion:   { label: 'Aceleración del Logro',        Icon: TrendingUp,   accent: '#10b981', lightBg: '#f0fdf4', lightBorder: '#a7f3d0', lightText: '#047857', darkBg: 'rgba(16,185,129,0.12)', darkBorder: 'rgba(16,185,129,0.3)', darkText: '#6ee7b7' },
+  inconsistencia:{ label: 'Variabilidad Alta',            Icon: Activity,     accent: '#0891b2', lightBg: '#ecfeff', lightBorder: '#a5f3fc', lightText: '#0e7490', darkBg: 'rgba(8,145,178,0.12)',  darkBorder: 'rgba(8,145,178,0.3)',  darkText: '#67e8f9' },
+  dominio:       { label: 'Criterio de Dominio',          Icon: Award,        accent: '#0284c7', lightBg: '#f0f9ff', lightBorder: '#bae6fd', lightText: '#075985', darkBg: 'rgba(2,132,199,0.12)',  darkBorder: 'rgba(2,132,199,0.3)',  darkText: '#7dd3fc' },
 }
 
 function PatronCard({ p, index, defaultOpen = false }: { p: any; index: number; defaultOpen?: boolean; key?: any }) {
   const cfg = PATRON_CONFIG[p.tipo] || PATRON_CONFIG.estancamiento
   const delta = p.valor_actual - p.valor_anterior
   const [open, setOpen] = useState<boolean>(defaultOpen)
-  const deltaColor = delta < 0 ? '#c0524a' : delta > 0 ? '#2e7a56' : 'var(--text-muted)'
+  const deltaColor = delta < 0 ? '#ef4444' : delta > 0 ? '#10b981' : 'var(--text-muted)'
   return (
     <div className="rounded-xl border transition-all overflow-hidden">
       {/* Accent bar top */}
@@ -975,9 +975,9 @@ function PatronCard({ p, index, defaultOpen = false }: { p: any; index: number; 
         >
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold flex-shrink-0"
-                style={{ background: `${cfg.accent}15`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
-                {cfg.icon}
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: `${cfg.accent}18`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
+                {(() => { const PI = cfg.Icon; return <PI size={18} /> })()}
               </div>
               <div className="min-w-0 flex-1">
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded inline-block"
@@ -1230,14 +1230,14 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
         </div>
         <div className="flex flex-wrap gap-3 mt-3 pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
           {[
-            { icon: '↘', label: 'Regresión',   color: '#c0524a' },
-            { icon: '→', label: 'Estancamiento',      color: '#fbbf24' },
-            { icon: '↗', label: 'Aceleración',  color: '#2e7a56' },
-            { icon: '⟺', label: 'Variabilidad', color: '#6355a0' },
-            { icon: '★', label: 'Dominio',      color: '#3a68a0' },
+            { Icon: TrendingDown, label: 'Regresión',     color: '#ef4444' },
+            { Icon: Minus,        label: 'Estancamiento',  color: '#f59e0b' },
+            { Icon: TrendingUp,   label: 'Aceleración',    color: '#10b981' },
+            { Icon: Activity,     label: 'Variabilidad',   color: '#0891b2' },
+            { Icon: Award,        label: 'Dominio',        color: '#0284c7' },
           ].map(item => (
             <div key={item.label} className="flex items-center gap-1.5">
-              <span className="text-xs font-bold" style={{ color: item.color }}>{item.icon}</span>
+              <item.Icon size={13} style={{ color: item.color }} />
               <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.label}</span>
             </div>
           ))}
@@ -1286,14 +1286,17 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
           {/* KPIs */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Sesiones analizadas', val: resultado.sesiones_analizadas || 0, color: '#5e8fc0', icon: '📋' },
-              { label: 'Patrones detectados', val: resultado.patrones?.length || 0,   color: '#7b6bbf', icon: '🔍' },
-              { label: 'Requieren atención',  val: resultado.patrones_urgentes || 0,   color: resultado.patrones_urgentes > 0 ? '#c47070' : '#5a9e7a', icon: resultado.patrones_urgentes > 0 ? '⚠' : '✓' },
+              { label: 'Sesiones analizadas', val: resultado.sesiones_analizadas || 0, color: '#0284c7', Icon: FileText },
+              { label: 'Patrones detectados', val: resultado.patrones?.length || 0,   color: '#0891b2', Icon: Search },
+              { label: 'Requieren atención',  val: resultado.patrones_urgentes || 0,   color: resultado.patrones_urgentes > 0 ? '#ef4444' : '#10b981', Icon: resultado.patrones_urgentes > 0 ? AlertTriangle : CheckCircle },
             ].map(m => (
-              <div key={m.label} className="rounded-2xl p-4 text-center border"
-                style={{ background: `${m.color}12`, borderColor: `${m.color}25` }}>
-                <p className="text-2xl mb-1">{m.icon}</p>
-                <p className="text-2xl font-bold" style={{ color: m.color }}>{m.val}</p>
+              <div key={m.label} className="group rounded-2xl p-4 text-center border transition-all hover:-translate-y-0.5 hover:shadow-md"
+                style={{ background: `linear-gradient(157deg, ${m.color}10 0%, var(--card) 50%)`, borderColor: `${m.color}25` }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2 transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: `${m.color}1a`, color: m.color }}>
+                  <m.Icon size={17} />
+                </div>
+                <p className="text-2xl font-extrabold tabular-nums tracking-tight" style={{ color: m.color }}>{m.val}</p>
                 <p className="text-[10px] mt-1 leading-tight" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
               </div>
             ))}
@@ -1423,7 +1426,7 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
           {(resultado.resultado?.objetivos_sugeridos || []).map((obj: any, i: number) => {
             const protoColor = obj.protocolo_referencia === 'VB-MAPP' ? 'bg-sky-100 text-sky-700'
               : obj.protocolo_referencia === 'ABLLS-R' ? 'bg-emerald-100 text-emerald-700'
-              : obj.protocolo_referencia === 'AFLS' ? 'bg-blue-100 text-blue-700'
+              : obj.protocolo_referencia === 'AFLS' ? 'bg-sky-100 text-sky-700'
               : 'bg-slate-100 text-slate-600'
             return (
             <div key={i} className="rounded-xl border border-amber-100 p-4 overflow-hidden" style={{ background: "var(--card)" }}>
@@ -1464,7 +1467,7 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
           ))}
           {/* evaluar_dominio → resultado.resultado.evaluaciones */}
           {(resultado.resultado?.evaluaciones || []).map((obj: any, i: number) => (
-            <div key={i} className=" rounded-xl border border-blue-100 p-4" style={{ background: "var(--card)" }}>
+            <div key={i} className=" rounded-xl border border-sky-100 p-4" style={{ background: "var(--card)" }}>
               <div className="flex items-start justify-between gap-2 mb-1 flex-wrap">
                 <p className="font-bold text-sm text-slate-800 flex-1" style={{ color: "var(--text-primary)" }}>{obj.programa}</p>
                 <div className="flex gap-1 flex-wrap">
@@ -1478,7 +1481,7 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
               </div>
               <p className="text-xs text-slate-600">Acción: {obj.accion}</p>
               <p className="text-xs text-slate-500 mt-1">{obj.justificacion}</p>
-              {obj.siguiente_paso && <p className="text-xs text-blue-700 mt-2 bg-blue-50 px-3 py-2 rounded-lg">→ {obj.siguiente_paso}</p>}
+              {obj.siguiente_paso && <p className="text-xs text-sky-700 mt-2 bg-sky-50 px-3 py-2 rounded-lg">→ {obj.siguiente_paso}</p>}
             </div>
           ))}
           {/* texto_libre fallback — el JSON no se pudo parsear, mostramos crudo en bloque scrolleable */}
@@ -1854,7 +1857,7 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
                   const verifUrl = `/verificar/${encodeURIComponent(d.codigo_doc)}`
                   return (
                     <tr key={d.codigo_doc} className="border-t" style={{ borderColor: 'var(--card-border)' }}>
-                      <td className="px-3 py-2 font-mono font-bold text-blue-700">{d.codigo_doc}</td>
+                      <td className="px-3 py-2 font-mono font-bold text-sky-700">{d.codigo_doc}</td>
                       <td className="px-3 py-2" style={{ color: 'var(--text-primary)' }}>{d.tipo_label}</td>
                       <td className="px-3 py-2" style={{ color: 'var(--text-secondary)' }}>
                         <span className="font-bold">{d.paciente_iniciales || '—'}</span>
@@ -1888,7 +1891,7 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Abrir página de verificación pública"
-                            className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-[10px] font-bold"
+                            className="px-2 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 text-[10px] font-bold"
                           >
                             🔗 Ver
                           </a>
@@ -1963,7 +1966,7 @@ export default function InteligenciaHubView() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-600 rounded-xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl flex items-center justify-center">
           <Zap size={20} className="text-white" />
         </div>
         <div>
@@ -1982,7 +1985,7 @@ export default function InteligenciaHubView() {
             className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg font-bold transition-all whitespace-nowrap flex-shrink-0 ${
               tab === tab_.id
                 ? `bg-white shadow-sm text-sm ${
-                    tab_.color === 'blue' ? 'text-blue-700' :
+                    tab_.color === 'blue' ? 'text-sky-700' :
                     tab_.color === 'violet' ? 'text-sky-700' :
                     tab_.color === 'amber' ? 'text-amber-700' :
                     tab_.color === 'orange' ? 'text-orange-700' :
