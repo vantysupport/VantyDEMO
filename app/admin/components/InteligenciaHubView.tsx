@@ -82,10 +82,10 @@ function Badge({ label, color }: { label: string; color: string }) {
     red: 'bg-red-500/15 text-red-400 border-red-500/30',
     yellow: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
     blue: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-    purple: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    purple: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
   }
   return (
-    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors[color] || colors.blue}`}>
+    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors[color] || colors.blue}`}>
       {label}
     </span>
   )
@@ -97,7 +97,7 @@ function ProgressBar({ value, max = 100, color = 'blue' }: { value: number; max?
   const pct = Math.min(100, (value / max) * 100)
   const colors: Record<string, string> = {
     blue: 'bg-blue-500', green: 'bg-emerald-500', red: 'bg-red-500',
-    yellow: 'bg-amber-500', purple: 'bg-purple-500', gray: 'bg-slate-400'
+    yellow: 'bg-amber-500', purple: 'bg-sky-500', gray: 'bg-slate-400'
   }
   return (
     <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
@@ -123,7 +123,7 @@ function Sparkline({ data, color = '#3b82f6' }: { data: number[]; color?: string
 }
 
 // ─── Gráfico de líneas de progreso ABA (para analytics) ──────────────────────
-function LineChartProgreso({ sesiones, criterio = 90, color = '#7c3aed', titulo = '' }: {
+function LineChartProgreso({ sesiones, criterio = 90, color = '#0284c7', titulo = '' }: {
 
   sesiones: { fecha: string; porcentaje_exito: number; fase?: string }[]
   criterio?: number
@@ -185,12 +185,12 @@ function ProgramaCard({ prog, t }: { prog: any; t: any }) {
         className="w-full px-4 py-3 border-b flex items-center justify-between text-left transition-opacity hover:opacity-80"
         style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
         <div className="min-w-0 flex-1">
-          <p className="font-black text-sm truncate" style={{ color: 'var(--text-primary)' }}>{prog.nombre || prog.titulo || 'Sin nombre'}</p>
+          <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{prog.nombre || prog.titulo || 'Sin nombre'}</p>
           <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{prog.objetivo || prog.objetivo_lp || prog.descripcion || prog.area || ''}</p>
         </div>
         <div className="flex items-center gap-2 ml-3 shrink-0">
-          <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${badge}`}>{prog.estado_general}</span>
-          <span className="text-[10px] font-black" style={{ color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge}`}>{prog.estado_general}</span>
+          <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
         </div>
       </button>
 
@@ -211,7 +211,7 @@ function ProgramaCard({ prog, t }: { prog: any; t: any }) {
                 ].map(m => (
                   <div key={m.label} className="rounded-xl p-2.5 text-center border" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
                     <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
-                    <p className={`text-lg font-black ${m.highlight ? 'text-emerald-400' : ''}`}
+                    <p className={`text-lg font-bold ${m.highlight ? 'text-emerald-400' : ''}`}
                       style={m.color ? { color: m.color, fontSize: m.label === 'Tendencia' ? '11px' : undefined } : !m.highlight ? { color: 'var(--text-primary)' } : {}}>
                       {m.value}
                     </p>
@@ -221,7 +221,7 @@ function ProgramaCard({ prog, t }: { prog: any; t: any }) {
 
               {prog.sets?.length > 0 && (
                 <div className="space-y-1.5">
-                  <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>SETS</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>SETS</p>
                   {prog.sets.map((set: any) => (
                     <div key={set.nombre} className="flex items-center justify-between rounded-lg px-3 py-2 border" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
                       <div className="flex items-center gap-2 min-w-0">
@@ -230,7 +230,7 @@ function ProgramaCard({ prog, t }: { prog: any; t: any }) {
                       </div>
                       <div className="flex items-center gap-3 shrink-0 ml-2">
                         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>media {set.media}%</span>
-                        <span className={`text-xs font-black ${set.criterio_logrado ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        <span className={`text-xs font-bold ${set.criterio_logrado ? 'text-emerald-400' : 'text-amber-400'}`}>
                           {set.criterio_logrado ? '✅ Logrado' : `${set.ultimo_pct}%`}
                         </span>
                       </div>
@@ -319,7 +319,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {!selectedPaciente && !loading && (
           <div className="flex flex-col items-center justify-center h-full p-12 text-center" style={{ minHeight: '200px' }}>
             <Brain size={48} className="text-slate-300 mb-4" style={{ opacity: 0.4 }} />
-            <p className="font-black text-base" style={{ color: 'var(--text-muted)' }}>Selecciona un paciente</p>
+            <p className="font-bold text-base" style={{ color: 'var(--text-muted)' }}>Selecciona un paciente</p>
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>La IA analizará sus últimas 12 semanas</p>
           </div>
         )}
@@ -335,18 +335,18 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {prediccion && !loading && selectedPaciente && (
           <div className="p-4 md:p-5 space-y-4">
             {/* Header paciente */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 md:p-5 text-white">
+            <div className="bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">{t('hub.analisPorPrograma')}</p>
-                  <h3 className="text-lg md:text-xl font-black truncate">{selectedPaciente.name}</h3>
+                  <h3 className="text-lg md:text-xl font-bold truncate">{selectedPaciente.name}</h3>
                   <p className="text-blue-200 text-sm mt-0.5">
                     {(prediccion as any).programas_analizados || 0} programas · {(prediccion as any).total_sesiones_unificado ?? (prediccion as any).analisis_por_programa?.reduce((a: number, p: any) => a + p.total_sesiones, 0) ?? 0} sesiones totales
                   </p>
                 </div>
                 <div className="bg-white/15 rounded-xl px-3 py-2 text-center flex-shrink-0">
                   <p className="text-white/70 text-[10px] uppercase tracking-wide">{t('ui.criteria')}</p>
-                  <p className="text-white font-black text-sm">≥90% × 2</p>
+                  <p className="text-white font-bold text-sm">≥90% × 2</p>
                   <p className="text-white/70 text-[10px]">sesiones consecutivas</p>
                 </div>
               </div>
@@ -368,10 +368,10 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
             {/* Análisis IA general */}
             {(prediccion as any).resumen_general && (
               <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
-                <div className="px-5 py-3 border-b flex items-center gap-2" style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", borderColor: "var(--card-border)" }}>
-                  <Sparkles size={14} className="text-violet-300" />
-                  <p className="text-xs font-black uppercase tracking-wider text-violet-200">Análisis Clínico IA — Analista Conductual ABA</p>
-                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-violet-500/30 text-violet-300 font-bold border border-violet-500/30">IA</span>
+                <div className="px-5 py-3 border-b flex items-center gap-2" style={{ background: "linear-gradient(135deg, #082f49, #0c4a6e)", borderColor: "var(--card-border)" }}>
+                  <Sparkles size={14} className="text-sky-300" />
+                  <p className="text-xs font-bold uppercase tracking-wider text-sky-200">Análisis Clínico IA — Analista Conductual ABA</p>
+                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-sky-500/30 text-sky-300 font-bold border border-sky-500/30">IA</span>
                 </div>
                 <div className="p-4 md:p-5 space-y-4">
                   {(prediccion as any).resumen_general
@@ -396,7 +396,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
                         return (
                           <div key={i} className="flex items-center gap-2 pt-2">
                             <div className="h-0.5 w-3 rounded-full" style={{ background: `#${color}` }}/>
-                            <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: `#${color}` }}>{label}</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: `#${color}` }}>{label}</p>
                             <div className="flex-1 h-px" style={{ background: `#${color}30` }}/>
                           </div>
                         )
@@ -412,8 +412,8 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
                               const [title, ...rest] = text.split(':')
                               return (
                                 <div key={j} className="flex gap-3 items-start">
-                                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5"
-                                    style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6' }}>
+                                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                                    style={{ background: 'rgba(139,92,246,0.15)', color: '#0ea5e9' }}>
                                     {num?.[1]}
                                   </span>
                                   <div>
@@ -457,7 +457,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
       {!showMobileDetail && (
         <div className="lg:hidden flex flex-col">
           <div className="px-4 py-3.5 border-b flex-shrink-0" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
-            <h3 className="font-black text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Users size={15} className="text-blue-500" /> {t('ui.generarPrediccion2')}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('hub.iaAnalizara')}</p>
@@ -478,8 +478,8 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               onMouseEnter={e => { if (selectedPaciente?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'var(--card)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selectedPaciente?.id === p.id ? 'rgba(37,99,235,0.12)' : 'transparent' }}
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-black text-xs">{(p.name || p.nombre || '?').charAt(0).toUpperCase()}</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs">{(p.name || p.nombre || '?').charAt(0).toUpperCase()}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-xs truncate" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
@@ -502,7 +502,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {/* Lista de pacientes — panel fijo izquierdo */}
         <div className="w-64 flex-shrink-0 flex flex-col border-r" style={{ borderColor: 'var(--card-border)', background: 'var(--muted-bg)' }}>
           <div className="px-4 py-3.5 border-b flex-shrink-0" style={{ borderColor: 'var(--card-border)' }}>
-            <h3 className="font-black text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Users size={15} className="text-blue-500" /> {t('ui.generarPrediccion2')}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('hub.iaAnalizara')}</p>
@@ -523,8 +523,8 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               onMouseEnter={e => { if (selectedPaciente?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'var(--card)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selectedPaciente?.id === p.id ? 'rgba(37,99,235,0.12)' : 'transparent' }}
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-black text-xs">{(p.name || p.nombre || '?').charAt(0).toUpperCase()}</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs">{(p.name || p.nombre || '?').charAt(0).toUpperCase()}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-xs truncate" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
@@ -546,7 +546,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {!selectedPaciente && !loading && (
           <div className="flex flex-col items-center justify-center h-full p-12 text-center" style={{ minHeight: '200px' }}>
             <Brain size={48} className="text-slate-300 mb-4" style={{ opacity: 0.4 }} />
-            <p className="font-black text-base" style={{ color: 'var(--text-muted)' }}>Selecciona un paciente</p>
+            <p className="font-bold text-base" style={{ color: 'var(--text-muted)' }}>Selecciona un paciente</p>
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>La IA analizará sus últimas 12 semanas</p>
           </div>
         )}
@@ -562,18 +562,18 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {prediccion && !loading && selectedPaciente && (
           <div className="p-4 md:p-5 space-y-4">
             {/* Header paciente */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 md:p-5 text-white">
+            <div className="bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">{t('hub.analisPorPrograma')}</p>
-                  <h3 className="text-lg md:text-xl font-black truncate">{selectedPaciente.name}</h3>
+                  <h3 className="text-lg md:text-xl font-bold truncate">{selectedPaciente.name}</h3>
                   <p className="text-blue-200 text-sm mt-0.5">
                     {(prediccion as any).programas_analizados || 0} programas · {(prediccion as any).total_sesiones_unificado ?? (prediccion as any).analisis_por_programa?.reduce((a: number, p: any) => a + p.total_sesiones, 0) ?? 0} sesiones totales
                   </p>
                 </div>
                 <div className="bg-white/15 rounded-xl px-3 py-2 text-center flex-shrink-0">
                   <p className="text-white/70 text-[10px] uppercase tracking-wide">{t('ui.criteria')}</p>
-                  <p className="text-white font-black text-sm">≥90% × 2</p>
+                  <p className="text-white font-bold text-sm">≥90% × 2</p>
                   <p className="text-white/70 text-[10px]">sesiones consecutivas</p>
                 </div>
               </div>
@@ -595,10 +595,10 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
             {/* Análisis IA general */}
             {(prediccion as any).resumen_general && (
               <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
-                <div className="px-5 py-3 border-b flex items-center gap-2" style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", borderColor: "var(--card-border)" }}>
-                  <Sparkles size={14} className="text-violet-300" />
-                  <p className="text-xs font-black uppercase tracking-wider text-violet-200">Análisis Clínico IA — Analista Conductual ABA</p>
-                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-violet-500/30 text-violet-300 font-bold border border-violet-500/30">IA</span>
+                <div className="px-5 py-3 border-b flex items-center gap-2" style={{ background: "linear-gradient(135deg, #082f49, #0c4a6e)", borderColor: "var(--card-border)" }}>
+                  <Sparkles size={14} className="text-sky-300" />
+                  <p className="text-xs font-bold uppercase tracking-wider text-sky-200">Análisis Clínico IA — Analista Conductual ABA</p>
+                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-sky-500/30 text-sky-300 font-bold border border-sky-500/30">IA</span>
                 </div>
                 <div className="p-4 md:p-5 space-y-4">
                   {(prediccion as any).resumen_general
@@ -623,7 +623,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
                         return (
                           <div key={i} className="flex items-center gap-2 pt-2">
                             <div className="h-0.5 w-3 rounded-full" style={{ background: `#${color}` }}/>
-                            <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: `#${color}` }}>{label}</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: `#${color}` }}>{label}</p>
                             <div className="flex-1 h-px" style={{ background: `#${color}30` }}/>
                           </div>
                         )
@@ -639,8 +639,8 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
                               const [title, ...rest] = text.split(':')
                               return (
                                 <div key={j} className="flex gap-3 items-start">
-                                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5"
-                                    style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6' }}>
+                                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                                    style={{ background: 'rgba(139,92,246,0.15)', color: '#0ea5e9' }}>
                                     {num?.[1]}
                                   </span>
                                   <div>
@@ -724,10 +724,10 @@ function TabSeguridad() {
           <div className="relative">
             <ScoreRing score={datos?.scoreSeguridad || 0} size={100} color={scoreColor} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-black" style={{ color: scoreColor }}>{datos?.scoreSeguridad}</span>
+              <span className="text-2xl font-bold" style={{ color: scoreColor }}>{datos?.scoreSeguridad}</span>
             </div>
           </div>
-          <p className="text-xs font-black text-slate-500 uppercase mt-2">Score Seguridad</p>
+          <p className="text-xs font-bold text-slate-500 uppercase mt-2">Score Seguridad</p>
           <Badge label={datos?.estado || 'desconocido'} color={estadoColor} />
         </div>
 
@@ -738,14 +738,14 @@ function TabSeguridad() {
         ].map(m => (
           <div key={m.label} className=" rounded-2xl border border-slate-200 p-5 flex flex-col justify-between" style={{ background: "var(--card)" }}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-              m.color === 'blue' ? 'bg-blue-50' : m.color === 'red' ? 'bg-red-50' : m.color === 'green' ? 'bg-emerald-50' : 'bg-purple-50'
+              m.color === 'blue' ? 'bg-blue-50' : m.color === 'red' ? 'bg-red-50' : m.color === 'green' ? 'bg-emerald-50' : 'bg-sky-50'
             }`}>
               <m.icon size={18} className={
-                m.color === 'blue' ? 'text-blue-600' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-purple-600'
+                m.color === 'blue' ? 'text-blue-600' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-sky-600'
               } />
             </div>
-            <p className={`text-3xl font-black ${
-              m.color === 'blue' ? 'text-blue-700' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-purple-700'
+            <p className={`text-3xl font-bold ${
+              m.color === 'blue' ? 'text-blue-700' : m.color === 'red' ? 'text-red-600' : m.color === 'green' ? 'text-emerald-600' : 'text-sky-700'
             }`}>{m.value}</p>
             <p className="text-xs text-slate-400 font-medium mt-1">{m.label}</p>
           </div>
@@ -755,7 +755,7 @@ function TabSeguridad() {
       {/* Accesos por rol */}
       {datos?.accesosPorRol && Object.keys(datos.accesosPorRol).length > 0 && (
         <div className=" rounded-2xl border border-slate-200 p-5" style={{ background: "var(--card)" }}>
-          <h4 className="font-black text-slate-700 text-sm mb-4 flex items-center gap-2">
+          <h4 className="font-bold text-slate-700 text-sm mb-4 flex items-center gap-2">
             <Users size={14} className="text-blue-500" /> Accesos por Rol (últimos 7 días)
           </h4>
           <div className="space-y-3">
@@ -779,7 +779,7 @@ function TabSeguridad() {
       {/* Alertas activas */}
       <div className=" rounded-2xl border border-slate-200 overflow-hidden" style={{ background: "var(--card)" }}>
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h4 className="font-black text-slate-700 text-sm flex items-center gap-2">
+          <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
             <AlertTriangle size={14} className="text-amber-500" /> Alertas de Seguridad
           </h4>
           <button onClick={cargar} className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1">
@@ -799,7 +799,7 @@ function TabSeguridad() {
                   <AlertTriangle size={14} className={a.nivel === 'critico' ? 'text-red-600' : 'text-amber-600'} />
                 </div>
                 <div>
-                  <p className="font-black text-sm text-slate-800" style={{ color: "var(--text-primary)" }}>{a.tipo?.replace(/_/g, ' ')}</p>
+                  <p className="font-bold text-sm text-slate-800" style={{ color: "var(--text-primary)" }}>{a.tipo?.replace(/_/g, ' ')}</p>
                   <p className="text-xs text-slate-600 mt-0.5">{a.descripcion}</p>
                   <p className="text-[10px] text-slate-400 mt-1">{new Date(a.timestamp).toLocaleString('es')}</p>
                 </div>
@@ -835,7 +835,7 @@ function TabCompetitividad() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
-      <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
     </div>
   )
 
@@ -847,41 +847,41 @@ function TabCompetitividad() {
   return (
     <div className="space-y-5">
       {/* Header competitivo */}
-      <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-purple-200 text-xs font-black uppercase tracking-wider mb-1">Score Competitivo</p>
+            <p className="text-sky-200 text-xs font-bold uppercase tracking-wider mb-1">Score Competitivo</p>
             <div className="flex items-end gap-3">
-              <span className="text-5xl font-black">{datos.scoreGlobal}</span>
-              <span className="text-purple-300 text-lg mb-1">/100</span>
+              <span className="text-5xl font-bold">{datos.scoreGlobal}</span>
+              <span className="text-sky-300 text-lg mb-1">/100</span>
             </div>
-            <p className="text-purple-100 font-bold mt-1">{datos.nivelCompetitivo}</p>
+            <p className="text-sky-100 font-bold mt-1">{datos.nivelCompetitivo}</p>
           </div>
           <div className="text-right">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm mb-2 ${ventajaPositiva ? 'bg-emerald-500/20 text-emerald-200' : 'bg-red-500/20 text-red-200'}`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm mb-2 ${ventajaPositiva ? 'bg-emerald-500/20 text-emerald-200' : 'bg-red-500/20 text-red-200'}`}>
               {ventajaPositiva ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
               {Math.abs(datos.ventaja)} pts vs Central Reach
             </div>
-            <p className="text-purple-300 text-xs">Central Reach: {datos.centralReachScore}/100</p>
-            <p className="text-purple-400 text-xs mt-1">{datos.totalPacientes} pacientes · {datos.totalSesiones} sesiones</p>
+            <p className="text-sky-300 text-xs">Central Reach: {datos.centralReachScore}/100</p>
+            <p className="text-sky-400 text-xs mt-1">{datos.totalPacientes} pacientes · {datos.totalSesiones} sesiones</p>
           </div>
         </div>
 
         {/* Mini comparativa visual */}
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-purple-200 w-28">Neuropsicología y Terapias SANTI</span>
+            <span className="text-sky-200 w-28">Neuropsicología y Terapias SANTI</span>
             <div className="flex-1 bg-white/20 rounded-full h-2.5 overflow-hidden">
               <div className="h-full rounded-full bg-white transition-all duration-700" style={{ width: `${datos.scoreGlobal}%` }} />
             </div>
-            <span className="text-white font-black w-8">{datos.scoreGlobal}</span>
+            <span className="text-white font-bold w-8">{datos.scoreGlobal}</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-purple-300 w-28">Central Reach</span>
+            <span className="text-sky-300 w-28">Central Reach</span>
             <div className="flex-1 bg-white/20 rounded-full h-2.5 overflow-hidden">
-              <div className="h-full rounded-full bg-purple-300 transition-all duration-700" style={{ width: `${datos.centralReachScore}%` }} />
+              <div className="h-full rounded-full bg-sky-300 transition-all duration-700" style={{ width: `${datos.centralReachScore}%` }} />
             </div>
-            <span className="text-purple-300 font-black w-8">{datos.centralReachScore}</span>
+            <span className="text-sky-300 font-bold w-8">{datos.centralReachScore}</span>
           </div>
         </div>
       </div>
@@ -889,13 +889,13 @@ function TabCompetitividad() {
       {/* Métricas detalladas */}
       <div className=" rounded-2xl border border-slate-200 overflow-hidden" style={{ background: "var(--card)" }}>
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h4 className="font-black text-slate-700 text-sm flex items-center gap-2">
-            <BarChart3 size={14} className="text-purple-500" /> Métricas vs Estándares de Industria
+          <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
+            <BarChart3 size={14} className="text-sky-500" /> Métricas vs Estándares de Industria
           </h4>
           <div className="flex gap-1.5">
             {[7, 30, 90].map(d => (
               <button key={d} onClick={() => { setDias(d); cargar(d) }}
-                className={`text-[10px] font-black px-2.5 py-1 rounded-lg transition-colors ${dias === d ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-colors ${dias === d ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                 {d}d
               </button>
             ))}
@@ -911,8 +911,8 @@ function TabCompetitividad() {
                   <div className="flex items-center justify-between mb-1.5">
                     <p className="text-sm font-bold text-slate-700 truncate">{m.benchmark.label}</p>
                     <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                      <span className="text-sm font-black text-slate-800" style={{ color: "var(--text-primary)" }}>{m.valor}</span>
-                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                      <span className="text-sm font-bold text-slate-800" style={{ color: "var(--text-primary)" }}>{m.valor}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                         scoreColor === 'green' ? 'bg-emerald-100 text-emerald-700' :
                         scoreColor === 'yellow' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                       }`}>{score}%</span>
@@ -930,8 +930,8 @@ function TabCompetitividad() {
       {/* Análisis estratégico IA */}
       {datos.analisisEstrategico && (
         <div className=" rounded-2xl border border-slate-200 p-5" style={{ background: "var(--card)" }}>
-          <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <Sparkles size={12} className="text-purple-500" /> ANÁLISIS ESTRATÉGICO IA
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Sparkles size={12} className="text-sky-500" /> ANÁLISIS ESTRATÉGICO IA
           </p>
           <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
             {datos.analisisEstrategico}
@@ -975,12 +975,12 @@ function PatronCard({ p, index, defaultOpen = false }: { p: any; index: number; 
         >
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-black flex-shrink-0"
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold flex-shrink-0"
                 style={{ background: `${cfg.accent}15`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
                 {cfg.icon}
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block"
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded inline-block"
                   style={{ background: `${cfg.accent}12`, color: cfg.accent, border: `1px solid ${cfg.accent}30` }}>
                   {cfg.label}
                 </span>
@@ -989,7 +989,7 @@ function PatronCard({ p, index, defaultOpen = false }: { p: any; index: number; 
             </div>
             {/* Resumen compacto: Δ + confianza + flecha */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="text-xs font-black" style={{ color: deltaColor }}>
+              <span className="text-xs font-bold" style={{ color: deltaColor }}>
                 {delta >= 0 ? '+' : ''}{delta}%
               </span>
               <div className="flex items-center gap-1.5">
@@ -1016,7 +1016,7 @@ function PatronCard({ p, index, defaultOpen = false }: { p: any; index: number; 
                 <div key={m.label} className="rounded-lg p-2.5 text-center"
                   style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
                   <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
-                  <p className="text-sm font-black" style={{ color: m.hi ? cfg.accent : 'var(--text-primary)' }}>{m.val}</p>
+                  <p className="text-sm font-bold" style={{ color: m.hi ? cfg.accent : 'var(--text-primary)' }}>{m.val}</p>
                 </div>
               ))}
             </div>
@@ -1095,17 +1095,17 @@ function ResumenIACard({ texto }: { texto: string }) {
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: 'rgba(139,92,246,0.25)', border: '1px solid rgba(139,92,246,0.4)' }}>
-            <Brain size={16} className="text-violet-300" />
+            <Brain size={16} className="text-sky-300" />
           </div>
           <div>
-            <p className="text-sm font-black uppercase tracking-widest" style={{ color: '#d0d0e8' }}>Informe Neuropsicológico Clínico</p>
+            <p className="text-sm font-bold uppercase tracking-widest" style={{ color: '#d0d0e8' }}>Informe Neuropsicológico Clínico</p>
             <p className="text-[11px]" style={{ color: '#7a7a9a' }}>Análisis ABA · Supervisión Conductual</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] px-2.5 py-1 rounded-full font-black border hidden sm:inline-block"
+          <span className="text-[10px] px-2.5 py-1 rounded-full font-bold border hidden sm:inline-block"
             style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', borderColor: 'var(--card-border)' }}>IA</span>
-          <span className="text-[10px] px-2.5 py-1 rounded-full font-black border"
+          <span className="text-[10px] px-2.5 py-1 rounded-full font-bold border"
             style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', borderColor: 'var(--card-border)' }}>CONFIDENCIAL</span>
         </div>
       </div>
@@ -1121,7 +1121,7 @@ function ResumenIACard({ texto }: { texto: string }) {
                 <div className="flex items-center gap-3 mb-1">
                   <span className="text-base leading-none" style={{ color: c }}>{icon}</span>
                   <div className="flex-1 flex items-center gap-2">
-                    <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: c }}>{section.label}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: c }}>{section.label}</p>
                     <div className="flex-1 h-px" style={{ background: `${c}20` }} />
                   </div>
                 </div>
@@ -1137,7 +1137,7 @@ function ResumenIACard({ texto }: { texto: string }) {
                         const ci = txt.indexOf(':')
                         return (
                           <div key={li} className="flex gap-3 items-start">
-                            <span className="w-6 h-6 rounded-full text-[11px] font-black flex items-center justify-center flex-shrink-0 mt-0.5"
+                            <span className="w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5"
                               style={{ background: `${c}20`, color: c }}>{num}</span>
                             <p className="text-sm leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>
                               {ci > 0 && ci < 50
@@ -1224,7 +1224,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <Activity size={16} style={{ color: 'var(--text-secondary)' }} />
           </div>
           <div>
-            <p className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Detector de Patrones ABA — CAPA 1</p>
+            <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Detector de Patrones ABA — CAPA 1</p>
             <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Análisis de regresiones, plateaus, aceleraciones e inconsistencias conductuales</p>
           </div>
         </div>
@@ -1237,7 +1237,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             { icon: '★', label: 'Dominio',      color: '#3a68a0' },
           ].map(item => (
             <div key={item.label} className="flex items-center gap-1.5">
-              <span className="text-xs font-black" style={{ color: item.color }}>{item.icon}</span>
+              <span className="text-xs font-bold" style={{ color: item.color }}>{item.icon}</span>
               <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.label}</span>
             </div>
           ))}
@@ -1247,7 +1247,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
       {/* Selector + botón */}
       <div className="rounded-2xl p-5 border space-y-4" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+          <label className="block text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
             Selecciona Paciente
           </label>
           <select
@@ -1262,7 +1262,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
           </select>
         </div>
         <button onClick={analizar} disabled={!selected || loading}
-          className="w-full py-3.5 rounded-xl text-sm font-black flex items-center justify-center gap-2.5 transition-all"
+          className="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2.5 transition-all"
           style={{
             background: !selected || loading ? 'var(--muted-bg)' : 'var(--text-primary)',
             color: 'var(--card)',
@@ -1293,7 +1293,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
               <div key={m.label} className="rounded-2xl p-4 text-center border"
                 style={{ background: `${m.color}12`, borderColor: `${m.color}25` }}>
                 <p className="text-2xl mb-1">{m.icon}</p>
-                <p className="text-2xl font-black" style={{ color: m.color }}>{m.val}</p>
+                <p className="text-2xl font-bold" style={{ color: m.color }}>{m.val}</p>
                 <p className="text-[10px] mt-1 leading-tight" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
               </div>
             ))}
@@ -1304,7 +1304,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="rounded-2xl p-8 text-center border"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
               <p className="text-3xl mb-3">✓</p>
-              <p className="font-black text-sm mb-1" style={{ color: '#2e7a56' }}>Progreso Estable</p>
+              <p className="font-bold text-sm mb-1" style={{ color: '#2e7a56' }}>Progreso Estable</p>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 {resultado.resumen || `Sin patrones problemáticos en ${resultado.sesiones_analizadas} sesiones.`}
               </p>
@@ -1316,7 +1316,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#c47070' }} />
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#c0524a' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#c0524a' }}>
                   Requieren Atención Inmediata ({urgentes.length})
                 </p>
               </div>
@@ -1329,7 +1329,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#5a9e7a' }} />
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#2e7a56' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#2e7a56' }}>
                   Logros Clínicos ({positivos.length})
                 </p>
               </div>
@@ -1342,7 +1342,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#7b6bbf' }} />
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#6355a0' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6355a0' }}>
                   Otras Observaciones ({otros.length})
                 </p>
               </div>
@@ -1421,7 +1421,7 @@ function TabObjetivos({ pacientes }: { pacientes: Paciente[] }) {
         <div className="space-y-3">
           {/* generar → resultado.resultado.objetivos_sugeridos */}
           {(resultado.resultado?.objetivos_sugeridos || []).map((obj: any, i: number) => {
-            const protoColor = obj.protocolo_referencia === 'VB-MAPP' ? 'bg-purple-100 text-purple-700'
+            const protoColor = obj.protocolo_referencia === 'VB-MAPP' ? 'bg-sky-100 text-sky-700'
               : obj.protocolo_referencia === 'ABLLS-R' ? 'bg-emerald-100 text-emerald-700'
               : obj.protocolo_referencia === 'AFLS' ? 'bg-blue-100 text-blue-700'
               : 'bg-slate-100 text-slate-600'
@@ -1552,7 +1552,7 @@ function TabSugerencias() {
       {/* Insight global IA (solo aparece si hay ≥2 alertas urgentes) */}
       {insightGlobal && (
         <div className=" rounded-xl border border-orange-200 p-4" style={{ background: "var(--card)" }}>
-          <p className="text-[10px] font-black text-orange-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <p className="text-[10px] font-bold text-orange-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <Sparkles size={10} /> RESUMEN EJECUTIVO IA
           </p>
           <p className="text-sm text-slate-700 leading-relaxed">{insightGlobal}</p>
@@ -1572,7 +1572,7 @@ function TabSugerencias() {
         <div key={i} className=" rounded-xl border border-slate-100 p-4" style={{ background: "var(--card)" }}>
           <div className="flex items-start justify-between gap-2 mb-2">
             <div>
-              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${prioColor[s.prioridad]}`}>{s.prioridad}</span>
+              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${prioColor[s.prioridad]}`}>{s.prioridad}</span>
               <span className="ml-2 text-[10px] text-slate-400">{s.child_name}</span>
             </div>
             <span className="text-[10px] text-slate-400">{s.semanas_detectado}w</span>
@@ -1765,7 +1765,7 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-indigo-600">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-sky-600">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
               </svg>
@@ -1839,7 +1839,7 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
           <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--card-border)' }}>
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-[10px] font-black uppercase tracking-wider" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>
+                <tr className="text-[10px] font-bold uppercase tracking-wider" style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>
                   <th className="px-3 py-2 text-left">Código</th>
                   <th className="px-3 py-2 text-left">Tipo</th>
                   <th className="px-3 py-2 text-left">Paciente</th>
@@ -1963,11 +1963,11 @@ export default function InteligenciaHubView() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-600 rounded-xl flex items-center justify-center">
           <Zap size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="text-xl font-black text-slate-800" style={{ color: "var(--text-primary)" }}>{t('hub.hubInteligencia')}</h1>
+          <h1 className="text-xl font-bold text-slate-800" style={{ color: "var(--text-primary)" }}>{t('hub.hubInteligencia')}</h1>
           <p className="text-xs text-slate-400">6 agentes IA · Predicciones · Patrones · Objetivos · Reportes</p>
         </div>
       </div>
@@ -1983,7 +1983,7 @@ export default function InteligenciaHubView() {
               tab === tab_.id
                 ? `bg-white shadow-sm text-sm ${
                     tab_.color === 'blue' ? 'text-blue-700' :
-                    tab_.color === 'violet' ? 'text-violet-700' :
+                    tab_.color === 'violet' ? 'text-sky-700' :
                     tab_.color === 'amber' ? 'text-amber-700' :
                     tab_.color === 'orange' ? 'text-orange-700' :
                     tab_.color === 'teal' ? 'text-teal-700' :

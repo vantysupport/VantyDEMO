@@ -17,7 +17,7 @@ export function StatCardPremium({ title, value, icon, color, trend, trendUp }: a
           </div>
         </div>
         <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{title}</p>
-        <h4 className="text-4xl font-black text-slate-800 mb-2">{value}</h4>
+        <h4 className="text-4xl font-bold text-slate-800 mb-2">{value}</h4>
         <p className="text-xs text-slate-500 font-bold">{trend}</p>
       </div>
     </div>
@@ -58,7 +58,7 @@ export function MiniStatCard({ value, label, icon, color }: any) {
   return (
     <div className={`${color} p-4 rounded-2xl text-center hover:scale-105 transition-transform cursor-default`}>
       <div className="flex justify-center mb-2">{icon}</div>
-      <h4 className="text-2xl font-black mb-1">{value}</h4>
+      <h4 className="text-2xl font-bold mb-1">{value}</h4>
       <p className="text-xs font-bold opacity-80">{label}</p>
     </div>
   )
@@ -69,7 +69,7 @@ export function InfoRow({ label, value, icon }: { label: string; value: string; 
     <div className="flex items-start gap-3 py-3 border-b border-slate-50 last:border-0">
       {icon && <div className="mt-0.5 text-slate-400">{icon}</div>}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
         <p className="text-sm font-bold text-slate-700 break-words">{value}</p>
       </div>
     </div>
@@ -83,7 +83,7 @@ export function NavItem({ icon, label, active, onClick }: any) {
       className={`flex items-center gap-3 md:gap-4 w-full p-3 md:p-4 rounded-xl md:rounded-2xl transition-all ${active ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 scale-105' : 'text-slate-500 hover:bg-slate-50 hover:pl-4 md:hover:pl-6'}`}
     >
       {icon} 
-      <span className="block md:hidden lg:block font-black text-[10px] md:text-xs uppercase tracking-[0.15em]">{label}</span>
+      <span className="block md:hidden lg:block font-bold text-[10px] md:text-xs uppercase tracking-[0.15em]">{label}</span>
     </button>
   ) 
 }

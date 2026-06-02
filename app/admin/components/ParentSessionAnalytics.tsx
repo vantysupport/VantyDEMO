@@ -33,7 +33,7 @@ function ago(isoDate: string): string {
 
 function colorByTime(seconds: number): string {
   if (seconds >= 7200) return '#059669'   // ≥ 2h  green
-  if (seconds >= 1800) return '#6366f1'   // ≥ 30m purple
+  if (seconds >= 1800) return '#0284c7'   // ≥ 30m purple
   if (seconds >= 300)  return '#f59e0b'   // ≥ 5m  amber
   return '#94a3b8'                         // <5m   grey
 }
@@ -85,7 +85,7 @@ export default function ParentSessionAnalytics() {
             <Clock size={16} style={{ color: 'var(--text-secondary)' }} />
           </div>
           <div>
-            <h2 className="font-black text-lg leading-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <h2 className="font-bold text-lg leading-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               Tiempo de Conexión · Padres
             </h2>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Cuánto tiempo estuvieron conectados en los últimos {days} días</p>
@@ -127,7 +127,7 @@ export default function ParentSessionAnalytics() {
             <div className="flex items-center gap-1.5 mb-1 pl-1" style={{ color: stat.color }}>
               {stat.icon}
             </div>
-            <p className="text-2xl font-black pl-1 leading-none mb-0.5" style={{ color: stat.color }}>
+            <p className="text-2xl font-bold pl-1 leading-none mb-0.5" style={{ color: stat.color }}>
               {stat.value}
             </p>
             <p className="text-[11px] font-semibold pl-1" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
@@ -137,7 +137,7 @@ export default function ParentSessionAnalytics() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="animate-spin text-indigo-400" size={28} />
+          <Loader2 className="animate-spin text-sky-400" size={28} />
         </div>
       ) : data.length === 0 ? (
         <div className="text-center py-14 rounded-2xl" style={{ border: '2px dashed var(--card-border)', background: 'var(--card)' }}>
@@ -149,7 +149,7 @@ export default function ParentSessionAnalytics() {
         <>
           {/* ── Bar chart top 10 ── */}
           <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-            <p className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
               📊 Top padres por tiempo conectado (minutos)
             </p>
             <ResponsiveContainer width="100%" height={180}>
@@ -172,7 +172,7 @@ export default function ParentSessionAnalytics() {
 
           {/* ── Per-parent rows ── */}
           <div className="space-y-2">
-            <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
               👥 Desglose por padre
             </p>
             {data.map(parent => (
@@ -215,7 +215,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
       {/* Row header */}
       <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggle}>
         {/* Avatar */}
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
           style={{ background: `linear-gradient(135deg, ${barColor}, ${barColor}99)` }}>
           {initial}
         </div>
@@ -231,7 +231,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
         {/* Stats */}
         <div className="flex items-center gap-4 shrink-0">
           <div className="text-right hidden sm:block">
-            <p className="font-black text-sm" style={{ color: barColor }}>
+            <p className="font-bold text-sm" style={{ color: barColor }}>
               {formatDuration(parent.total_seconds)}
             </p>
             <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
@@ -278,7 +278,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
             ].map(m => (
               <div key={m.label} className="rounded-xl p-3 text-center"
                 style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-                <p className="font-black text-base" style={{ color: 'var(--text-primary)' }}>{m.value}</p>
+                <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{m.value}</p>
                 <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
               </div>
             ))}
@@ -287,7 +287,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
           {/* Sparkline — minutes per day */}
           {sparkData.length >= 2 && (
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
                 📅 Minutos conectado por día (últimas 2 semanas)
               </p>
               <div className="rounded-xl p-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
@@ -312,7 +312,7 @@ function ParentRow({ parent, expanded, onToggle }: { parent: any; expanded: bool
           {/* Session history list */}
           {parent.sessions?.length > 0 && (
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
                 🕐 Historial de sesiones recientes
               </p>
               <div className="space-y-1 max-h-48 overflow-y-auto pr-1">

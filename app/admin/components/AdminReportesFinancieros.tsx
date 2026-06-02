@@ -16,7 +16,7 @@ import { useToast } from '@/components/Toast'
 
 const MESES     = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 const MESES_L   = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const COLORS    = ['#3a68a0','#10b981','#f59e0b','#8b5cf6','#ef4444','#ec4899','#06b6d4','#84cc16']
+const COLORS    = ['#3a68a0','#10b981','#f59e0b','#0ea5e9','#ef4444','#ec4899','#06b6d4','#84cc16']
 const METHODS   = ['efectivo','yape','plin','transferencia','tarjeta','otro']
 
 // ── KPI grande con comparativa ────────────────────────────────────────────────
@@ -30,13 +30,13 @@ function KPIBig({ label, value, sub, icon: Icon, bar, delta, deltaLabel }: any) 
           <Icon size={18} style={{ color: bar }} />
         </div>
         {delta !== undefined && (
-          <div className={`flex items-center gap-1 text-[11px] font-black px-2 py-1 rounded-full ${up ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+          <div className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full ${up ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
             {up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
             {Math.abs(delta).toFixed(1)}%
           </div>
         )}
       </div>
-      <p className="font-black leading-none pl-4 mb-1 whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--text-primary)', fontSize: 'clamp(1.1rem, 2.2vw, 2.25rem)' }}>{value}</p>
+      <p className="font-bold leading-none pl-4 mb-1 whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--text-primary)', fontSize: 'clamp(1.1rem, 2.2vw, 2.25rem)' }}>{value}</p>
       <p className="text-xs font-bold pl-4 mt-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
       {sub && <p className="text-[10px] pl-4 mt-0.5" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
     </div>
@@ -48,12 +48,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
     <div className="rounded-xl px-4 py-3 shadow-xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-      <p className="text-xs font-black mb-2" style={{ color: 'var(--text-primary)' }}>{label}</p>
+      <p className="text-xs font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{label}</p>
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2 text-xs">
           <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
           <span style={{ color: 'var(--text-muted)' }}>{p.name}:</span>
-          <span className="font-black" style={{ color: 'var(--text-primary)' }}>
+          <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
             {p.name === 'Sesiones' ? p.value : `S/ ${Number(p.value).toFixed(2)}`}
           </span>
         </div>
@@ -208,10 +208,10 @@ export default function AdminReportesFinancieros() {
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
       <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-        <div className="h-1" style={{ background: 'linear-gradient(90deg, #10b981 0%, #3a68a0 40%, #f59e0b 70%, #8b5cf6 100%)' }} />
+        <div className="h-1" style={{ background: 'linear-gradient(90deg, #10b981 0%, #3a68a0 40%, #f59e0b 70%, #0ea5e9 100%)' }} />
         <div className="px-6 py-4 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>Reportes Financieros</h2>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Reportes Financieros</h2>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Ingresos, facturación y métricas del centro · {MESES_L[new Date().getMonth()]} {anio}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -219,7 +219,7 @@ export default function AdminReportesFinancieros() {
             <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--card-border)' }}>
               {[new Date().getFullYear() - 1, new Date().getFullYear()].map(y => (
                 <button key={y} onClick={() => setAnio(y)}
-                  className="px-4 py-2 text-xs font-black transition-all"
+                  className="px-4 py-2 text-xs font-bold transition-all"
                   style={{ background: anio === y ? '#10b981' : 'var(--muted-bg)', color: anio === y ? '#fff' : 'var(--text-muted)' }}>
                   {y}
                 </button>
@@ -249,7 +249,7 @@ export default function AdminReportesFinancieros() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KPIBig label="Ingresos del año"    value={loading ? '—' : fmt(data.totalAnio)}         sub={`${anio}`}              icon={DollarSign}  bar="#10b981" />
         <KPIBig label="Este mes"            value={loading ? '—' : fmt(data.totalMes)}           sub={MESES_L[new Date().getMonth()]} icon={TrendingUp} bar="#3a68a0" delta={data.deltaMes} />
-        <KPIBig label="Cobros realizados"   value={loading ? '—' : data.sesionesAnio}            sub={`${data.tasaCobro}% tasa de cobro`} icon={CheckCircle2} bar="#8b5cf6" />
+        <KPIBig label="Cobros realizados"   value={loading ? '—' : data.sesionesAnio}            sub={`${data.tasaCobro}% tasa de cobro`} icon={CheckCircle2} bar="#0ea5e9" />
         <KPIBig label="Por cobrar"          value={loading ? '—' : fmt(data.totalPendiente)}     sub="Pendiente de pago"     icon={Calendar}    bar="#f59e0b" />
       </div>
 
@@ -261,7 +261,7 @@ export default function AdminReportesFinancieros() {
           { id: 'servicios',   label: '🏷️ Servicios' },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
-            className="flex-1 py-2.5 rounded-xl text-xs font-black transition-all"
+            className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all"
             style={{
               background: tab === t.id ? 'var(--card)' : 'transparent',
               color: tab === t.id ? 'var(--text-primary)' : 'var(--text-muted)',
@@ -288,7 +288,7 @@ export default function AdminReportesFinancieros() {
               <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                 <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
                   <div>
-                    <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Evolución de ingresos {anio}</h3>
+                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Evolución de ingresos {anio}</h3>
                     <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Ingresos cobrados vs pendientes por mes</p>
                   </div>
                   <div className="flex items-center gap-3 text-[11px]">
@@ -329,7 +329,7 @@ export default function AdminReportesFinancieros() {
                 {/* Por método */}
                 <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                   <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
-                    <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Métodos de pago</h3>
+                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Métodos de pago</h3>
                     <DollarSign size={15} style={{ color: '#f59e0b' }} />
                   </div>
                   <div className="p-5">
@@ -361,7 +361,7 @@ export default function AdminReportesFinancieros() {
                                     <div className="w-2 h-2 rounded-full" style={{ background: m.color }} />
                                     <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{m.name}</span>
                                   </div>
-                                  <span className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>{pct}%</span>
+                                  <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{pct}%</span>
                                 </div>
                                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
                                   <div style={{ width: `${pct}%`, background: m.color, height: '100%', borderRadius: '999px' }} />
@@ -378,7 +378,7 @@ export default function AdminReportesFinancieros() {
                 {/* Sesiones por mes */}
                 <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                   <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
-                    <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Sesiones pagadas por mes</h3>
+                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Sesiones pagadas por mes</h3>
                     <Activity size={15} style={{ color: '#3a68a0' }} />
                   </div>
                   <div className="p-5">
@@ -398,7 +398,7 @@ export default function AdminReportesFinancieros() {
               {/* Tabla resumen mes a mes */}
               <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                 <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
-                  <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Resumen mensual {anio}</h3>
+                  <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Resumen mensual {anio}</h3>
                   <button
                     onClick={async () => {
                       const res = await fetch(`/api/pagos/reporte-mensual?anio=${anio}&mes=0`)
@@ -421,7 +421,7 @@ export default function AdminReportesFinancieros() {
                     <thead>
                       <tr style={{ background: 'var(--muted-bg)', borderBottom: '1px solid var(--card-border)' }}>
                         {['Mes','Sesiones','Cobrado','Pendiente','Total',''].map(h => (
-                          <th key={h} className="text-left px-5 py-2.5 text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                          <th key={h} className="text-left px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -430,9 +430,9 @@ export default function AdminReportesFinancieros() {
                         <tr key={i} style={{ borderBottom: '1px solid var(--card-border)', opacity: m.ingresos + m.pendiente === 0 ? 0.4 : 1 }}>
                           <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>{MESES_L[i]}</td>
                           <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{m.sesiones}</td>
-                          <td className="px-5 py-3 font-black" style={{ color: '#10b981' }}>S/ {m.ingresos.toFixed(2)}</td>
+                          <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>S/ {m.ingresos.toFixed(2)}</td>
                           <td className="px-5 py-3 font-medium" style={{ color: '#f59e0b' }}>S/ {m.pendiente.toFixed(2)}</td>
-                          <td className="px-5 py-3 font-black" style={{ color: 'var(--text-primary)' }}>S/ {(m.ingresos + m.pendiente).toFixed(2)}</td>
+                          <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>S/ {(m.ingresos + m.pendiente).toFixed(2)}</td>
                           <td className="px-3 py-3">
                             {(m.ingresos + m.pendiente) > 0 && (
                               <button
@@ -458,11 +458,11 @@ export default function AdminReportesFinancieros() {
                     </tbody>
                     <tfoot>
                       <tr style={{ background: 'var(--muted-bg)', borderTop: '2px solid var(--card-border)' }}>
-                        <td className="px-5 py-3 font-black text-xs uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Total {anio}</td>
-                        <td className="px-5 py-3 font-black" style={{ color: 'var(--text-primary)' }}>{data.sesionesAnio}</td>
-                        <td className="px-5 py-3 font-black" style={{ color: '#10b981' }}>S/ {data.totalAnio.toFixed(2)}</td>
-                        <td className="px-5 py-3 font-black" style={{ color: '#f59e0b' }}>S/ {data.totalPendiente.toFixed(2)}</td>
-                        <td className="px-5 py-3 font-black" style={{ color: 'var(--text-primary)' }}>S/ {(data.totalAnio + data.totalPendiente).toFixed(2)}</td>
+                        <td className="px-5 py-3 font-bold text-xs uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Total {anio}</td>
+                        <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>{data.sesionesAnio}</td>
+                        <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>S/ {data.totalAnio.toFixed(2)}</td>
+                        <td className="px-5 py-3 font-bold" style={{ color: '#f59e0b' }}>S/ {data.totalPendiente.toFixed(2)}</td>
+                        <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>S/ {(data.totalAnio + data.totalPendiente).toFixed(2)}</td>
                         <td />
                       </tr>
                     </tfoot>
@@ -478,7 +478,7 @@ export default function AdminReportesFinancieros() {
             <div className="space-y-4">
               <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                 <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
-                  <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Ingresos por paciente {anio}</h3>
+                  <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Ingresos por paciente {anio}</h3>
                   <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>{data.porPaciente.length} pacientes</span>
                 </div>
                 <div className="p-5 space-y-3">
@@ -489,13 +489,13 @@ export default function AdminReportesFinancieros() {
                     const pct = Math.round(p.ingresos / max * 100)
                     return (
                       <div key={p.name} className="flex items-center gap-4 p-3 rounded-xl" style={{ background: 'var(--muted-bg)' }}>
-                        <span className="text-[11px] font-black w-5 text-center flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0"
+                        <span className="text-[11px] font-bold w-5 text-center flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                           style={{ background: COLORS[i % COLORS.length] }}>{p.name.charAt(0).toUpperCase()}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1.5">
-                            <p className="text-xs font-black truncate" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
-                            <p className="text-sm font-black ml-2 flex-shrink-0" style={{ color: '#10b981' }}>S/ {p.ingresos.toFixed(2)}</p>
+                            <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
+                            <p className="text-sm font-bold ml-2 flex-shrink-0" style={{ color: '#10b981' }}>S/ {p.ingresos.toFixed(2)}</p>
                           </div>
                           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--card)' }}>
                             <div style={{ width: `${pct}%`, background: COLORS[i % COLORS.length], height: '100%', borderRadius: '999px', transition: 'width 0.6s ease' }} />
@@ -516,7 +516,7 @@ export default function AdminReportesFinancieros() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                   <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
-                    <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Distribución por servicio</h3>
+                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Distribución por servicio</h3>
                   </div>
                   <div className="p-5">
                     {data.porServicio.length === 0 ? (
@@ -542,16 +542,16 @@ export default function AdminReportesFinancieros() {
 
                 <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                   <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
-                    <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Ranking por servicio</h3>
+                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Ranking por servicio</h3>
                   </div>
                   <div className="divide-y" style={{ borderColor: 'var(--card-border)' }}>
                     {data.porServicio.slice(0, 8).map((s, i) => (
                       <div key={s.name} className="flex items-center gap-3 px-5 py-3.5">
-                        <span className="text-xs font-black w-5 text-center" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
+                        <span className="text-xs font-bold w-5 text-center" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
                         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
                         <p className="text-xs font-medium flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>{s.name}</p>
                         <div className="text-right">
-                          <p className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>S/ {s.value.toFixed(2)}</p>
+                          <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>S/ {s.value.toFixed(2)}</p>
                           <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{s.count} cobros</p>
                         </div>
                       </div>

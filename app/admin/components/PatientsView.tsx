@@ -38,7 +38,7 @@ const getDisplayName = (p: any, role: string) => {
   return (useApodo && p.apodo) ? p.apodo : p.name
 }
 const PALETTES = [
-  'from-violet-500 to-purple-600', 'from-blue-500 to-indigo-600',
+  'from-sky-500 to-sky-600', 'from-blue-500 to-sky-600',
   'from-emerald-500 to-teal-600',  'from-rose-500 to-pink-600',
   'from-amber-500 to-orange-600',
 ]
@@ -46,7 +46,7 @@ function Avatar({ name, size = 'md' }: { name: string; size?: 'sm'|'md'|'lg' }) 
   const pal = PALETTES[name.charCodeAt(0) % PALETTES.length]
   const sz  = { sm: 'w-9 h-9 text-base', md: 'w-12 h-12 text-lg', lg: 'w-16 h-16 text-2xl' }[size]
   return (
-    <div className={`bg-gradient-to-br ${pal} ${sz} rounded-2xl flex items-center justify-center font-black text-white flex-shrink-0 shadow-sm`}>
+    <div className={`bg-gradient-to-br ${pal} ${sz} rounded-2xl flex items-center justify-center font-bold text-white flex-shrink-0 shadow-sm`}>
       {name.charAt(0).toUpperCase()}
     </div>
   )
@@ -58,7 +58,7 @@ function InfoPill({ label, value, icon }: { label: string; value: string; icon: 
     <div className="p-3 rounded-xl space-y-1" style={{ background: 'var(--muted-bg)' }}>
       <div className="flex items-center gap-1.5">
         <span className="text-blue-500">{icon}</span>
-        <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{label}</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{label}</p>
       </div>
       <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>{value || '—'}</p>
     </div>
@@ -146,7 +146,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             <UserCheck size={13} style={{ color: 'var(--text-muted)' }} />
-            <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
               Cuenta vinculada
             </p>
           </div>
@@ -181,7 +181,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
                     <Mail size={10}/>{linkedUser.email}
                   </p>
                 </div>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
                   style={{ background: '#d1fae5', color: '#065f46' }}>
                   {linkedUser.role}
                 </span>
@@ -207,7 +207,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
             style={{ background: 'var(--card)' }}>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                   Vincular cuenta a {nino.name}
                 </h3>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -311,7 +311,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
       <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             Bienestar del padre/madre
           </p>
         </div>
@@ -327,7 +327,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
       <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             Bienestar del padre/madre
           </p>
         </div>
@@ -347,7 +347,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <Heart size={12} style={{ color: 'var(--text-muted)' }} />
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             Bienestar del padre/madre
           </p>
         </div>
@@ -478,7 +478,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <BarChart3 size={12} style={{ color: 'var(--text-muted)' }} />
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             Total de sesiones del paciente
           </p>
         </div>
@@ -495,7 +495,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
 
       {/* Total grande */}
       <div className="flex items-baseline gap-2 mb-3">
-        <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>
+        <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
           {loading ? '…' : total}
         </p>
         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>sesiones totales</p>
@@ -539,7 +539,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
               </button>
             </div>
           ) : (
-            <p className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+            <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
               {sessionsBefore}
             </p>
           )}
@@ -548,7 +548,7 @@ function SessionCounterCard({ nino, onSaved }: { nino: any; onSaved: () => void 
           <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>
             En la plataforma
           </p>
-          <p className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
             {loading ? '…' : autoCount}
           </p>
         </div>
@@ -700,7 +700,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
 
   const fieldCls = "w-full px-3 py-2.5 rounded-lg text-sm border outline-none transition-colors"
   const fieldStyle = { borderColor: 'var(--card-border)', color: 'var(--text-primary)', background: 'var(--muted-bg)' }
-  const labelCls = "block text-[10px] font-black uppercase tracking-widest mb-1.5"
+  const labelCls = "block text-[10px] font-bold uppercase tracking-widest mb-1.5"
 
   return (
     <div className="p-4 md:p-6">
@@ -730,7 +730,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Calendar size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                   {t('pacientes.fechaNacimiento')}
                 </p>
               </div>
@@ -741,7 +741,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Baby size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                   {t('ui.age')}
                 </p>
               </div>
@@ -754,7 +754,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Stethoscope size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                   {t('pacientes.diagnostico')}
                 </p>
               </div>
@@ -765,7 +765,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
             <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <User size={12} style={{ color: 'var(--text-muted)' }}/>
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                   Apodo
                 </p>
               </div>
@@ -780,13 +780,13 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
           <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="flex items-center gap-1.5 mb-2">
               <Stethoscope size={12} style={{ color: '#7b5ea7' }}/>
-              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                 Especialista asignado
               </p>
             </div>
             {specialistName
               ? <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-violet-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-6 h-6 rounded-lg bg-sky-500 flex items-center justify-center flex-shrink-0">
                     <User size={11} className="text-white"/>
                   </div>
                   <div className="min-w-0">
@@ -804,7 +804,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
           <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="flex items-center gap-1.5 mb-2">
               <ClipboardList size={12} style={{ color: '#3a68a0' }}/>
-              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                 Notas del paciente
               </p>
             </div>
@@ -831,7 +831,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
         <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
           {/* Header edición */}
           <div className="flex items-center justify-between pb-2 mb-1" style={{ borderBottom: '1px solid var(--card-border)' }}>
-            <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
               {t('common.editar')}
             </p>
             <div className="flex gap-2">
@@ -948,12 +948,12 @@ function FichasTab({ childId, childName, currentRole }: {
         <div className={`flex rounded-2xl p-1.5 gap-1.5 border ${cc.bar}`}>
           {canManage && (
             <button onClick={() => setSubTab('plantillas')}
-              className={`flex-1 py-3 rounded-xl text-sm font-black transition-all ${subTab === 'plantillas' ? cc.active : cc.inactive}`}>
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${subTab === 'plantillas' ? cc.active : cc.inactive}`}>
               ⚙️ Gestionar fichas
             </button>
           )}
           <button onClick={() => setSubTab('rellenar')}
-            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all ${subTab === 'rellenar' ? cc.active : cc.inactive}`}>
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${subTab === 'rellenar' ? cc.active : cc.inactive}`}>
             📋 Fichas del paciente
           </button>
         </div>
@@ -1161,7 +1161,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
       {/* Header */}
       <div className="p-3 border-b space-y-2 flex-shrink-0" style={{ borderColor:'var(--card-border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-black uppercase tracking-widest" style={{ color:'var(--text-muted)' }}>
+          <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color:'var(--text-muted)' }}>
             {t('nav.pacientes')} · <span className="font-normal">{filtrados.length}</span>
           </h2>
           <button onClick={()=>setShowNew(true)}
@@ -1242,7 +1242,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                       value={headerNameInput}
                       onChange={e => setHeaderNameInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') saveHeaderName(); if (e.key === 'Escape') cancelEditHeaderName() }}
-                      className="flex-1 min-w-0 text-base font-black rounded-lg px-2 py-0.5 leading-tight outline-none"
+                      className="flex-1 min-w-0 text-base font-bold rounded-lg px-2 py-0.5 leading-tight outline-none"
                       style={{ background: 'var(--muted-bg)', color: 'var(--text-primary)', border: '1.5px solid var(--accent, #3b82f6)' }}
                     />
                     <button onClick={saveHeaderName} disabled={savingHeaderName}
@@ -1258,7 +1258,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 group">
-                    <h1 className="text-lg font-black truncate leading-tight" style={{ color:'var(--text-primary)' }}>
+                    <h1 className="text-lg font-bold truncate leading-tight" style={{ color:'var(--text-primary)' }}>
                       {selected.name}
                     </h1>
                     <button onClick={startEditHeaderName}
@@ -1341,11 +1341,11 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
       ) : (
         /* Empty state — solo visible en desktop */
         <div className="flex-1 hidden md:flex flex-col items-center justify-center gap-4 p-8">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-50 to-sky-100 flex items-center justify-center">
             <Users size={36} className="text-blue-400"/>
           </div>
           <div className="text-center">
-            <h3 className="font-black text-lg mb-1" style={{ color:'var(--text-primary)' }}>{t('pacientes.seleccionaUno')}</h3>
+            <h3 className="font-bold text-lg mb-1" style={{ color:'var(--text-primary)' }}>{t('pacientes.seleccionaUno')}</h3>
             <p className="text-sm max-w-xs" style={{ color:'var(--text-muted)' }}>{t('pacientes.seleccionaDesc')}</p>
           </div>
           <button onClick={()=>setShowNew(true)}
@@ -1363,7 +1363,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
       <div className="rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md shadow-2xl p-5 space-y-4"
         style={{ background:'var(--card)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-black" style={{ color:'var(--text-primary)' }}>{t('pacientes.nuevo')}</h3>
+          <h3 className="text-lg font-bold" style={{ color:'var(--text-primary)' }}>{t('pacientes.nuevo')}</h3>
           <button onClick={()=>setShowNew(false)} className="p-2 rounded-xl hover:bg-slate-100">
             <X size={16} style={{ color:'var(--text-muted)' }}/>
           </button>
@@ -1375,7 +1375,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
             { key:'diagnosis',  label:t('pacientes.diagnostico'),    type:'text', placeholder:'Ej: TEA Nivel 2',  req:false },
           ].map(f => (
             <div key={f.key}>
-              <label className="block text-xs font-black uppercase tracking-widest mb-1.5" style={{ color:'var(--text-muted)' }}>
+              <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color:'var(--text-muted)' }}>
                 {f.label}{f.req && <span className="text-red-400 ml-0.5">*</span>}
               </label>
               <input type={f.type} placeholder={f.placeholder}

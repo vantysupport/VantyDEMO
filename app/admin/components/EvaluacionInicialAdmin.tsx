@@ -22,9 +22,9 @@ type Props = { childId: string; childName: string }
 const ESTADO_LABEL: Record<string, { label: string; color: string; pasos: number }> = {
   pendiente_intake:       { label: '1/7 · Esperando intake del padre',         color: 'bg-slate-100 text-slate-700',    pasos: 1 },
   analizando:             { label: '2/7 · IA analizando',                       color: 'bg-blue-100 text-blue-700',      pasos: 2 },
-  recomendado:            { label: '3/7 · Esperando que el padre confirme',     color: 'bg-purple-100 text-purple-700',  pasos: 3 },
-  confirmado:             { label: '4/7 · Padre llenando 2ª anamnesis',         color: 'bg-indigo-100 text-indigo-700',  pasos: 4 },
-  anamnesis_completa:     { label: '5/7 · Padre eligiendo terapias',            color: 'bg-violet-100 text-violet-700',  pasos: 5 },
+  recomendado:            { label: '3/7 · Esperando que el padre confirme',     color: 'bg-sky-100 text-sky-700',  pasos: 3 },
+  confirmado:             { label: '4/7 · Padre llenando 2ª anamnesis',         color: 'bg-sky-100 text-sky-700',  pasos: 4 },
+  anamnesis_completa:     { label: '5/7 · Padre eligiendo terapias',            color: 'bg-sky-100 text-sky-700',  pasos: 5 },
   terapia_seleccionada:   { label: '6/7 · 🔔 ESPERANDO TU RESPUESTA',           color: 'bg-amber-100 text-amber-700',    pasos: 6 },
   revisado:               { label: '7/7 · Respuesta enviada',                   color: 'bg-green-100 text-green-700',    pasos: 7 },
   completado:             { label: '✅ Completado',                              color: 'bg-emerald-100 text-emerald-700',pasos: 7 },
@@ -244,8 +244,8 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <div className="flex items-center gap-2 mb-2">
-              <ClipboardCheck size={22} className="text-indigo-500" />
-              <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>Evaluación Inicial — {childName}</h2>
+              <ClipboardCheck size={22} className="text-sky-500" />
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Evaluación Inicial — {childName}</h2>
             </div>
             <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${estadoInfo.color}`}>
               {estadoInfo.label}
@@ -254,7 +254,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             {/* Barra de progreso del flujo */}
             <div className="mt-3 flex items-center gap-1">
               {[1, 2, 3, 4, 5, 6, 7].map(p => (
-                <div key={p} className={`h-1.5 flex-1 rounded ${p <= estadoInfo.pasos ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+                <div key={p} className={`h-1.5 flex-1 rounded ${p <= estadoInfo.pasos ? 'bg-sky-500' : 'bg-slate-200'}`} />
               ))}
             </div>
 
@@ -271,7 +271,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
           <div className="flex gap-2 flex-wrap">
             {evaluacion.respuestas_intake && (
               <button onClick={reanalizar} disabled={reanalizando}
-                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                className="px-3 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
                 {reanalizando ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 {evaluacion.recomendacion ? 'Re-analizar IA' : 'Analizar con IA'}
               </button>
@@ -291,7 +291,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             )}
             {evaluacion.anamnesis_especifica && (
               <button onClick={regenerarInformeWord} disabled={generandoWord}
-                className="px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                className="px-3 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
                 {generandoWord ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
                 Generar informe Word
               </button>
@@ -325,7 +325,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 <Trash2 size={20} className="text-red-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-black text-base mb-1" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="font-bold text-base mb-1" style={{ color: 'var(--text-primary)' }}>
                   ¿Eliminar evaluación inicial?
                 </h3>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -358,7 +358,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             <Send size={18} />
           </div>
           <div className="flex-1">
-            <p className="font-black text-amber-900">El padre está esperando tu respuesta</p>
+            <p className="font-bold text-amber-900">El padre está esperando tu respuesta</p>
             <p className="text-sm text-amber-800">
               Eligió {terapiasElegidas.length} terapia{terapiasElegidas.length === 1 ? '' : 's'}. Revisa toda la información abajo y envía un mensaje personalizado.
             </p>
@@ -370,8 +370,8 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.recomendacion && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              {evaluacion.recomendacion === 'psicologica' ? <Heart size={16} className="text-pink-500" /> : <Brain size={16} className="text-indigo-500" />}
+            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              {evaluacion.recomendacion === 'psicologica' ? <Heart size={16} className="text-pink-500" /> : <Brain size={16} className="text-sky-500" />}
               Recomendación IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">USO INTERNO</span>
             </h3>
           </div>
@@ -379,7 +379,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
           <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3"
             style={{
               background: evaluacion.recomendacion === 'psicologica' ? '#fce7f3' : '#e0e7ff',
-              color: evaluacion.recomendacion === 'psicologica' ? '#be185d' : '#4338ca',
+              color: evaluacion.recomendacion === 'psicologica' ? '#be185d' : '#075985',
             }}>
             {evaluacion.recomendacion === 'psicologica' ? 'Evaluación Psicológica Emocional'
             : evaluacion.recomendacion === 'neuropsicologica' ? 'Evaluación Neuropsicológica'
@@ -388,7 +388,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
 
           {evaluacion.mensaje_amigable_padre && (
             <details className="mb-3 rounded-lg p-3" style={{ background: 'rgba(99,102,241,0.06)' }}>
-              <summary className="cursor-pointer text-xs font-bold uppercase text-indigo-700">Mensaje que vio el padre</summary>
+              <summary className="cursor-pointer text-xs font-bold uppercase text-sky-700">Mensaje que vio el padre</summary>
               <p className="text-sm mt-2 whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>
                 {evaluacion.mensaje_amigable_padre}
               </p>
@@ -397,7 +397,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
 
           {evaluacion.recomendacion_razon && (
             <details className="text-sm" open>
-              <summary className="cursor-pointer font-bold text-indigo-600 mb-2">Razonamiento clínico completo</summary>
+              <summary className="cursor-pointer font-bold text-sky-600 mb-2">Razonamiento clínico completo</summary>
               <div className="mt-2 leading-relaxed rounded-lg p-3 text-sm"
                 style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)' }}>
                 <RichText texto={evaluacion.recomendacion_razon} />
@@ -442,13 +442,13 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.terapias_recomendadas?.length > 0 && (
         <div className="rounded-2xl p-5 border" style={{ background: 'rgba(168,85,247,0.06)', borderColor: 'rgba(168,85,247,0.3)' }}>
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Sparkles size={16} className="text-purple-500" />
-              Terapias recomendadas por IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">DEL CATÁLOGO</span>
+            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Sparkles size={16} className="text-sky-500" />
+              Terapias recomendadas por IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700">DEL CATÁLOGO</span>
             </h3>
             {evaluacion.anamnesis_especifica && (
               <button onClick={reRecomendarTerapias} disabled={reRecomendando}
-                className="px-2.5 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                className="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
                 {reRecomendando ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
                 Re-recomendar
               </button>
@@ -463,14 +463,14 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
               const elegida = (evaluacion.terapias_seleccionadas || []).includes(id)
               return (
                 <div key={id} className="rounded-lg p-3 border flex items-center gap-3" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-                  <div className="w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                     {i + 1}
                   </div>
                   {t.imagen_url ? (
                     <img src={t.imagen_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
                   ) : (
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
-                      <Sparkles size={14} className="text-purple-500" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center shrink-0">
+                      <Sparkles size={14} className="text-sky-500" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -493,7 +493,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
           {/* Razonamiento */}
           {evaluacion.terapias_recomendadas_razon && (
             <details className="text-sm">
-              <summary className="cursor-pointer font-bold text-purple-700 mb-2">Ver razonamiento de la IA</summary>
+              <summary className="cursor-pointer font-bold text-sky-700 mb-2">Ver razonamiento de la IA</summary>
               <div className="mt-2 leading-relaxed rounded-lg p-3 text-sm"
                 style={{ background: 'var(--card)', color: 'var(--text-secondary)' }}>
                 <RichText texto={evaluacion.terapias_recomendadas_razon} />
@@ -508,11 +508,11 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
         <div className="rounded-2xl p-4 border-2 border-dashed flex items-center justify-between gap-3"
           style={{ borderColor: 'var(--card-border)' }}>
           <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Sparkles size={16} className="text-purple-500" />
+            <Sparkles size={16} className="text-sky-500" />
             <span>La IA aún no ha recomendado terapias del catálogo para este caso.</span>
           </div>
           <button onClick={reRecomendarTerapias} disabled={reRecomendando}
-            className="px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 shrink-0">
+            className="px-3 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 shrink-0">
             {reRecomendando ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
             Generar ahora
           </button>
@@ -523,17 +523,17 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {(terapiasElegidas.length > 0 || (evaluacion.estado === 'terapia_seleccionada' || evaluacion.estado === 'revisado' || evaluacion.estado === 'completado')) && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
-            <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Award size={16} className="text-amber-500" /> Terapias elegidas
               {evaluacion.terapias_cambiadas_por_admin && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
                   Ajustada por especialista
                 </span>
               )}
             </h3>
             <button onClick={abrirEditorTerapias}
-              className="px-3 py-1.5 rounded-lg border-2 text-xs font-bold flex items-center gap-1.5 hover:bg-indigo-50 transition-colors"
-              style={{ borderColor: '#a5b4fc', color: '#4f46e5' }}>
+              className="px-3 py-1.5 rounded-lg border-2 text-xs font-bold flex items-center gap-1.5 hover:bg-sky-50 transition-colors"
+              style={{ borderColor: '#a5b4fc', color: '#0369a1' }}>
               <Edit3 size={12} /> Cambiar selección
             </button>
           </div>
@@ -548,8 +548,8 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                   {t.imagen_url ? (
                     <img src={t.imagen_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center">
-                      <CheckCircle2 className="text-indigo-500" size={20} />
+                    <div className="w-12 h-12 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <CheckCircle2 className="text-sky-500" size={20} />
                     </div>
                   )}
                   <div className="flex-1">
@@ -564,8 +564,8 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             </div>
           )}
           {evaluacion.nota_cambio_terapias && (
-            <div className="mt-3 rounded-lg p-3 text-xs border-l-4 border-indigo-400" style={{ background: 'rgba(99,102,241,0.05)' }}>
-              <p className="font-bold mb-1" style={{ color: '#4f46e5' }}>📝 Nota del especialista sobre el cambio</p>
+            <div className="mt-3 rounded-lg p-3 text-xs border-l-4 border-sky-400" style={{ background: 'rgba(99,102,241,0.05)' }}>
+              <p className="font-bold mb-1" style={{ color: '#0369a1' }}>📝 Nota del especialista sobre el cambio</p>
               <p style={{ color: 'var(--text-secondary)' }}>{evaluacion.nota_cambio_terapias}</p>
             </div>
           )}
@@ -581,8 +581,8 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
             {/* Header */}
             <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: 'var(--card-border)' }}>
               <div>
-                <h3 className="font-black text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                  <Edit3 size={20} className="text-indigo-600" /> Cambiar selección de terapias
+                <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <Edit3 size={20} className="text-sky-600" /> Cambiar selección de terapias
                 </h3>
                 <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                   Como especialista, podés ajustar las terapias para <strong>{childName}</strong> según tu criterio clínico. Tu selección reemplazará la del padre/madre.
@@ -596,7 +596,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
 
             {/* Catálogo */}
             <div className="flex-1 overflow-y-auto p-5 space-y-2">
-              <div className="text-[11px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+              <div className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
                 Catálogo completo · {seleccionEdit.length} seleccionada{seleccionEdit.length === 1 ? '' : 's'}
               </div>
               {terapias.length === 0 ? (
@@ -614,7 +614,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                         arr.includes(t.id) ? arr.filter(x => x !== t.id) : [...arr, t.id]
                       )}
                       className={`w-full text-left rounded-xl p-3 border-2 flex items-center gap-3 transition-all ${
-                        seleccionada ? 'border-indigo-500 bg-indigo-50' : 'hover:border-indigo-200'
+                        seleccionada ? 'border-sky-500 bg-sky-50' : 'hover:border-sky-200'
                       }`}
                       style={!seleccionada ? { borderColor: 'var(--card-border)', background: 'var(--card)' } : {}}>
                       {t.imagen_url ? (
@@ -628,7 +628,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                         <div className="flex items-center gap-1.5 flex-wrap mb-1">
                           <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t.nombre}</p>
                           {recomendadaIA && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 flex items-center gap-0.5">
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 flex items-center gap-0.5">
                               <Sparkles size={8} /> IA
                             </span>
                           )}
@@ -645,7 +645,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                         </p>
                       </div>
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                        seleccionada ? 'bg-indigo-600' : 'border-2 border-slate-300'
+                        seleccionada ? 'bg-sky-600' : 'border-2 border-slate-300'
                       }`}>
                         {seleccionada && <CheckCircle2 size={14} className="text-white" />}
                       </div>
@@ -662,7 +662,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
               </label>
               <textarea value={notaCambio} onChange={e => setNotaCambio(e.target.value)} rows={2}
                 placeholder="Ej: Tras la entrevista presencial considero que la terapia X es más prioritaria que la Y por…"
-                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-indigo-500 resize-none"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-sky-500 resize-none"
                 style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
               <div className="flex gap-2 justify-end mt-3">
                 <button onClick={() => setShowEditTerapias(false)} disabled={guardandoTerapias}
@@ -671,7 +671,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                   Cancelar
                 </button>
                 <button onClick={guardarSeleccionTerapias} disabled={guardandoTerapias || seleccionEdit.length === 0}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold flex items-center gap-1.5 disabled:opacity-50">
+                  className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold flex items-center gap-1.5 disabled:opacity-50">
                   {guardandoTerapias ? <><Loader2 size={14} className="animate-spin" /> Guardando…</> : <><CheckCircle2 size={14} /> Guardar selección</>}
                 </button>
               </div>
@@ -683,7 +683,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {/* RESPUESTA YA ENVIADA */}
       {evaluacion.respuesta_especialista && (
         <div className="rounded-2xl p-5 border-2 border-green-300 bg-green-50">
-          <h3 className="text-sm font-black uppercase tracking-wider mb-2 text-green-700 flex items-center gap-2">
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-2 text-green-700 flex items-center gap-2">
             <CheckCircle2 size={16} /> Respuesta enviada al padre
           </h3>
           <p className="text-xs mb-2 text-green-700">
@@ -707,7 +707,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.respuestas_intake && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <details>
-            <summary className="cursor-pointer text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <summary className="cursor-pointer text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <User size={16} /> Intake inicial ({Object.keys(evaluacion.respuestas_intake).length} respuestas)
             </summary>
             <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-sm">
@@ -717,7 +717,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 return (
                   <div key={k} className={esTabla ? 'sm:col-span-2' : ''}>
                     <div className="rounded-xl border px-3.5 py-2.5 h-full" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-                      <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
                       {esTabla ? (
                         <div className="space-y-1.5 mt-1.5">
                           {(v as any[]).map((fila, idx) => {
@@ -726,7 +726,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                             return (
                               <div key={idx} className="rounded-lg border px-3 py-2 text-xs flex flex-wrap gap-x-3 gap-y-1"
                                 style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-                                <span className="font-black px-1.5 rounded bg-indigo-100 text-indigo-700">#{idx + 1}</span>
+                                <span className="font-bold px-1.5 rounded bg-sky-100 text-sky-700">#{idx + 1}</span>
                                 {entries.map(([col, val]) => (
                                   <span key={col} style={{ color: 'var(--text-primary)' }}>
                                     <strong className="capitalize" style={{ color: 'var(--text-muted)' }}>{col.replace(/_/g, ' ')}:</strong> {String(val)}
@@ -754,7 +754,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.anamnesis_especifica && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <details>
-            <summary className="cursor-pointer text-sm font-black uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <summary className="cursor-pointer text-sm font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <ClipboardCheck size={16} /> 2ª Anamnesis ({Object.keys(evaluacion.anamnesis_especifica).length} respuestas)
             </summary>
             <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-sm">
@@ -765,7 +765,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                 return (
                   <div key={k} className={esTabla ? 'sm:col-span-2' : ''}>
                     <div className="rounded-xl border px-3.5 py-2.5 h-full" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-                      <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</p>
                       {esTabla ? (
                         <div className="space-y-1.5 mt-1.5">
                           {(v as any[]).map((fila, idx) => {
@@ -774,7 +774,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                             return (
                               <div key={idx} className="rounded-lg border px-3 py-2 text-xs flex flex-wrap gap-x-3 gap-y-1"
                                 style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
-                                <span className="font-black px-1.5 rounded bg-indigo-100 text-indigo-700">#{idx + 1}</span>
+                                <span className="font-bold px-1.5 rounded bg-sky-100 text-sky-700">#{idx + 1}</span>
                                 {entries.map(([col, val]) => (
                                   <span key={col} style={{ color: 'var(--text-primary)' }}>
                                     <strong className="capitalize" style={{ color: 'var(--text-muted)' }}>{col.replace(/_/g, ' ')}:</strong> {String(val)}
@@ -803,7 +803,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur" onClick={() => setShowResponder(false)}>
           <div className="max-w-2xl w-full rounded-2xl shadow-2xl p-6" style={{ background: 'var(--card)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-black text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 <MessageCircle size={20} className="text-green-600" /> Responder al padre
               </h3>
               <button onClick={() => setShowResponder(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
@@ -819,7 +819,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
               onChange={e => setRespuesta(e.target.value)}
               rows={10}
               placeholder={`Hola, soy [tu nombre], especialista de SANTI. He revisado el caso de ${childName} y…`}
-              className="w-full px-4 py-3 rounded-xl border outline-none focus:border-indigo-500 resize-none text-sm"
+              className="w-full px-4 py-3 rounded-xl border outline-none focus:border-sky-500 resize-none text-sm"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
             />
 
@@ -841,7 +841,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur" onClick={() => setVerDocumento(false)}>
           <div className="max-w-3xl w-full max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ background: 'var(--card)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <h3 className="font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 <FileText size={18} /> Documento clínico interno
               </h3>
               <div className="flex gap-2">
@@ -853,7 +853,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
                     a.download = `eval-inicial-${childName}.md`
                     a.click()
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1">
+                  className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold flex items-center gap-1">
                   <Download size={12} /> Descargar .md
                 </button>
                 <button onClick={() => setVerDocumento(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>

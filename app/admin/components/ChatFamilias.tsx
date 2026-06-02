@@ -23,7 +23,7 @@ interface Family {
 interface Props { profile?: any; userId?: string; userName?: string; isDark?: boolean }
 
 const ROLE_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  jefe:         { label: 'Dirección',   color: '#7c3aed', bg: '#f5f3ff' },
+  jefe:         { label: 'Dirección',   color: '#0284c7', bg: '#f0f9ff' },
   admin:        { label: 'Admin',       color: '#2563eb', bg: '#eff6ff' },
   especialista: { label: 'Terapeuta',   color: '#059669', bg: '#f0fdf4' },
   terapeuta:    { label: 'Terapeuta',   color: '#059669', bg: '#f0fdf4' },

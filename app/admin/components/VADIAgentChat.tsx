@@ -112,16 +112,16 @@ export default function VADIAgentChat({
   return (
     <div className={`flex flex-col bg-white rounded-3xl border-2 border-slate-100 shadow-sm overflow-hidden ${compact ? 'h-[500px]' : 'h-[680px]'}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4 flex items-center gap-3">
+      <div className="bg-gradient-to-r from-sky-600 to-cyan-600 px-5 py-4 flex items-center gap-3">
         <div className="w-9 h-9 bg-white/20 rounded-2xl flex items-center justify-center">
           <Brain size={18} className="text-white" />
         </div>
         <div>
-          <h3 className="font-black text-white text-sm flex items-center gap-2">
+          <h3 className="font-bold text-white text-sm flex items-center gap-2">
             VADI — Asistente Clínico IA
-            <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-black">BETA</span>
+            <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-bold">BETA</span>
           </h3>
-          <p className="text-violet-200 text-[10px]">
+          <p className="text-sky-200 text-[10px]">
             {childId ? `Caso activo: ${childName || 'Paciente'}` : 'Asistente clínico especializado'}
           </p>
         </div>
@@ -138,11 +138,11 @@ export default function VADIAgentChat({
         ))}
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 bg-violet-100 rounded-2xl flex items-center justify-center shrink-0">
-              <Brain size={14} className="text-violet-600" />
+            <div className="w-8 h-8 bg-sky-100 rounded-2xl flex items-center justify-center shrink-0">
+              <Brain size={14} className="text-sky-600" />
             </div>
             <div className="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
-              <Loader2 size={14} className="animate-spin text-violet-500" />
+              <Loader2 size={14} className="animate-spin text-sky-500" />
               <span className="text-sm text-slate-500">{t('ui.vadiPensando')}</span>
             </div>
           </div>
@@ -153,11 +153,11 @@ export default function VADIAgentChat({
       {/* Sugerencias rápidas (solo si no hay conversación) */}
       {messages.length <= 1 && (
         <div className="px-4 pb-2">
-          <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">{t('ui.suggested_questions')}</p>
+          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">{t('ui.suggested_questions')}</p>
           <div className="flex flex-wrap gap-2">
             {sugerencias.slice(0, 3).map((s, i) => (
               <button key={i} onClick={() => sendMessage(s)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-all text-left leading-tight">
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:border-sky-300 hover:text-sky-600 transition-all text-left leading-tight">
                 {s}
               </button>
             ))}
@@ -175,11 +175,11 @@ export default function VADIAgentChat({
             onKeyDown={handleKeyDown}
             rows={1}
             {...{placeholder: t('ui.ask_vadi')}}
-            className="flex-1 p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm resize-none outline-none focus:border-violet-400 transition-all leading-relaxed max-h-28"
+            className="flex-1 p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm resize-none outline-none focus:border-sky-400 transition-all leading-relaxed max-h-28"
             style={{ minHeight: '44px' }}
           />
           <button onClick={() => sendMessage()} disabled={!input.trim() || loading}
-            className="w-11 h-11 bg-violet-600 text-white rounded-2xl flex items-center justify-center hover:bg-violet-700 disabled:opacity-40 transition-all shrink-0">
+            className="w-11 h-11 bg-sky-600 text-white rounded-2xl flex items-center justify-center hover:bg-sky-700 disabled:opacity-40 transition-all shrink-0">
             <Send size={16} />
           </button>
         </div>
@@ -211,14 +211,14 @@ function MessageBubble({ message }: { message: Message; key?: any }) {
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-2xl flex items-center justify-center shrink-0 ${
-        isUser ? 'bg-indigo-100' : 'bg-violet-100'
+        isUser ? 'bg-sky-100' : 'bg-sky-100'
       }`}>
-        {isUser ? <User size={14} className="text-indigo-600" /> : <Brain size={14} className="text-violet-600" />}
+        {isUser ? <User size={14} className="text-sky-600" /> : <Brain size={14} className="text-sky-600" />}
       </div>
       <div className={`max-w-[82%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? 'bg-indigo-600 text-white rounded-tr-sm'
+            ? 'bg-sky-600 text-white rounded-tr-sm'
             : 'bg-slate-100 text-slate-800 rounded-tl-sm'
         }`}>
           {formatContent(message.content)}
@@ -230,7 +230,7 @@ function MessageBubble({ message }: { message: Message; key?: any }) {
           {message.fuentes && message.fuentes.length > 0 && (
             <div className="flex gap-1">
               {message.fuentes.map((f, i) => (
-                <span key={i} className="text-[9px] px-1.5 py-0.5 bg-violet-50 text-violet-600 rounded-full border border-violet-200 font-bold flex items-center gap-1">
+                <span key={i} className="text-[9px] px-1.5 py-0.5 bg-sky-50 text-sky-600 rounded-full border border-sky-200 font-bold flex items-center gap-1">
                   <BookOpen size={8} /> {f}
                 </span>
               ))}

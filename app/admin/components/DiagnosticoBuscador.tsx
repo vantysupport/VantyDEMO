@@ -185,12 +185,12 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
           onChange={e => setQ(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && q.trim().length >= 2 && doSearch(q)}
           placeholder="Buscar diagnóstico — nombre, código CIE-11, sigla (TEA, TDAH, TOC...)..."
-          className="w-full pl-10 pr-10 py-3.5 rounded-xl text-sm font-medium border-2 outline-none focus:border-violet-500 transition-colors shadow-sm"
+          className="w-full pl-10 pr-10 py-3.5 rounded-xl text-sm font-medium border-2 outline-none focus:border-sky-500 transition-colors shadow-sm"
           style={{ background:'var(--input-bg)', borderColor:'var(--input-border)', color:'var(--text-primary)' }}
           autoComplete="off"
         />
         {loading
-          ? <Loader2 size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin text-violet-500"/>
+          ? <Loader2 size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin text-sky-500"/>
           : q && <button onClick={clear} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-600 transition-all"><X size={15}/></button>
         }
       </div>
@@ -200,20 +200,20 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
         <div className="space-y-2">
           {history.length > 0 && (
             <div className="flex flex-wrap gap-1.5 items-center">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Recientes:</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Recientes:</span>
               {history.map(h => (
                 <button key={h} onClick={() => setQ(h)}
-                  className="px-2.5 py-1 rounded-full text-xs font-bold border bg-slate-50 border-slate-200 text-slate-500 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700 transition-all">
+                  className="px-2.5 py-1 rounded-full text-xs font-bold border bg-slate-50 border-slate-200 text-slate-500 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700 transition-all">
                   🕐 {h}
                 </button>
               ))}
             </div>
           )}
           <div className="flex flex-wrap gap-1.5 items-center">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Explorar:</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Explorar:</span>
             {CHIPS.map(c => (
               <button key={c} onClick={() => setQ(c)}
-                className="px-2.5 py-1 rounded-full text-xs font-bold border transition-all hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"
+                className="px-2.5 py-1 rounded-full text-xs font-bold border transition-all hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700"
                 style={{ background:'var(--card)', borderColor:'var(--card-border)', color:'var(--text-secondary)' }}>
                 {c}
               </button>
@@ -229,33 +229,33 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
           {/* Breadcrumb */}
           <div className="px-4 py-2.5 border-b flex items-center gap-1.5 text-xs flex-wrap" style={{ background:'var(--muted-bg)', borderColor:'var(--card-border)' }}>
             <button onClick={() => { setSelected(null); setBreadcrumb([]) }}
-              className="flex items-center gap-1 text-violet-600 hover:underline font-semibold">
+              className="flex items-center gap-1 text-sky-600 hover:underline font-semibold">
               <Home size={11}/> Inicio
             </button>
             {breadcrumb.map((bc, i) => (
               <span key={i} className="flex items-center gap-1">
                 <ChevronRight size={11} className="text-slate-300"/>
-                <button onClick={goBack} className="text-violet-600 hover:underline font-semibold">{bc.code}</button>
+                <button onClick={goBack} className="text-sky-600 hover:underline font-semibold">{bc.code}</button>
               </span>
             ))}
             <ChevronRight size={11} className="text-slate-300"/>
-            <span className="font-black text-slate-600">{selected.code}</span>
+            <span className="font-bold text-slate-600">{selected.code}</span>
           </div>
 
           <div className="p-5 space-y-4">
 
             {detailLoading && (
               <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
-                <Loader2 size={14} className="animate-spin text-violet-400"/> Cargando detalle desde API OMS...
+                <Loader2 size={14} className="animate-spin text-sky-400"/> Cargando detalle desde API OMS...
               </div>
             )}
             {true && (<>
 
               {/* Código + Título */}
               <div className="flex items-start gap-3">
-                <span className="px-3 py-1.5 rounded-xl text-sm font-black bg-teal-500 text-white flex-shrink-0">{selected.code}</span>
+                <span className="px-3 py-1.5 rounded-xl text-sm font-bold bg-teal-500 text-white flex-shrink-0">{selected.code}</span>
                 <div className="flex-1">
-                  <h2 className="font-black text-lg leading-tight" style={{ color:'var(--text-primary)' }}>{selected.title}</h2>
+                  <h2 className="font-bold text-lg leading-tight" style={{ color:'var(--text-primary)' }}>{selected.title}</h2>
                   {selected.parent && (
                     <p className="text-xs mt-1 font-semibold" style={{ color:'var(--text-muted)' }}>
                       Capítulo: {CHAPTER_NAMES[selected.parent.code] || selected.parent.title}
@@ -267,7 +267,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Definición */}
               {selected.definition && (
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-teal-600 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-teal-600 flex items-center gap-1.5">
                     <BookOpen size={11}/> Definición
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color:'var(--text-secondary)' }}>
@@ -279,7 +279,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Criterios diagnósticos OMS */}
               {selected.diagnosticCriteria && (
                 <div className="p-3 rounded-xl bg-teal-50 border border-teal-200">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-teal-700 mb-1.5 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700 mb-1.5 flex items-center gap-1.5">
                     🩺 Criterios diagnósticos (OMS CIE-11)
                   </p>
                   <p className="text-xs leading-relaxed text-teal-900 whitespace-pre-line">{selected.diagnosticCriteria}</p>
@@ -289,7 +289,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Nota de codificación */}
               {selected.codingNote && (
                 <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">📋 Nota de codificación</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">📋 Nota de codificación</p>
                   <p className="text-xs leading-relaxed text-blue-800">{selected.codingNote}</p>
                 </div>
               )}
@@ -297,12 +297,12 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Términos índice / sinónimos */}
               {selected.indexTerms.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
                     <Tag size={11}/> Términos incluidos / sinónimos
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {selected.indexTerms.map((t, i) => (
-                      <span key={i} className="px-2.5 py-1 rounded-full text-xs bg-violet-50 text-violet-700 border border-violet-100 font-medium">{t}</span>
+                      <span key={i} className="px-2.5 py-1 rounded-full text-xs bg-sky-50 text-sky-700 border border-sky-100 font-medium">{t}</span>
                     ))}
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Inclusions */}
               {selected.inclusions.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 flex items-center gap-1.5">
                     ✓ Incluye
                   </p>
                   <ul className="space-y-1">
@@ -327,7 +327,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Exclusiones */}
               {selected.exclusions.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-red-600 flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 flex items-center gap-1.5">
                     ✕ Exclusiones
                   </p>
                   <ul className="space-y-1">
@@ -343,7 +343,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Subcategorías / Hijos */}
               {selected.children.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
                     <GitBranch size={11}/> Subcategorías / Hijos
                   </p>
                   <div className="space-y-1.5">
@@ -351,7 +351,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
                       <button key={i} onClick={() => loadDetail(child)}
                         className="w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all hover:border-teal-400 hover:bg-teal-50 group"
                         style={{ borderColor:'var(--card-border)', background:'var(--muted-bg)' }}>
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-teal-500 text-white flex-shrink-0">{child.code}</span>
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-500 text-white flex-shrink-0">{child.code}</span>
                         <span className="text-sm font-semibold flex-1" style={{ color:'var(--text-primary)' }}>
                           {child.title || `Ver subcategoría ${child.code}`}
                         </span>
@@ -365,15 +365,15 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               {/* Categoría Padre */}
               {selected.parent && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color:'var(--text-muted)' }}>
                     ↑ Categoría Padre
                   </p>
                   <button onClick={() => loadDetail(selected.parent!)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all hover:border-violet-400 hover:bg-violet-50 group"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all hover:border-sky-400 hover:bg-sky-50 group"
                     style={{ borderColor:'var(--card-border)', background:'var(--muted-bg)' }}>
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-400 text-white flex-shrink-0">{selected.parent.code}</span>
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-400 text-white flex-shrink-0">{selected.parent.code}</span>
                     <span className="text-sm font-semibold flex-1" style={{ color:'var(--text-primary)' }}>{selected.parent.title}</span>
-                    <ChevronRight size={14} className="text-slate-300 group-hover:text-violet-500 flex-shrink-0"/>
+                    <ChevronRight size={14} className="text-slate-300 group-hover:text-sky-500 flex-shrink-0"/>
                   </button>
                 </div>
               )}
@@ -387,7 +387,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
                   Copiar código
                 </button>
                 <button onClick={() => copiar(`${selected.title}\nCIE-11: ${selected.code}\n${selected.definition}`, 'full')}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold bg-violet-600 text-white hover:bg-violet-700 transition-colors">
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold bg-sky-600 text-white hover:bg-sky-700 transition-colors">
                   {copied === 'full' ? <Check size={14}/> : <Copy size={14}/>}
                   Copiar para ARIA
                 </button>
@@ -439,7 +439,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
                 <AlertCircle size={36} className="mx-auto mb-3 text-slate-200"/>
                 <p className="text-sm font-semibold mb-1" style={{ color:'var(--text-muted)' }}>Sin resultados para "{q}"</p>
                 <p className="text-xs mb-4" style={{ color:'var(--text-muted)' }}>Intentá con el código CIE-11 (ej: 6A02), otro idioma o sinónimo</p>
-                <button onClick={clear} className="px-4 py-2 rounded-xl text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-colors">Nueva búsqueda</button>
+                <button onClick={clear} className="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 transition-colors">Nueva búsqueda</button>
               </div>
             )}
 
@@ -448,7 +448,7 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
               <button key={r.id || r.code} onClick={() => loadDetail(r)}
                 className="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all hover:border-teal-400 hover:shadow-sm hover:bg-teal-50/30 group"
                 style={{ background:'var(--card)', borderColor:'var(--card-border)' }}>
-                <span className="px-2.5 py-1.5 rounded-lg text-xs font-black bg-teal-500 text-white flex-shrink-0 min-w-[60px] text-center">
+                <span className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-teal-500 text-white flex-shrink-0 min-w-[60px] text-center">
                   {r.code}
                 </span>
                 <div className="flex-1 min-w-0">

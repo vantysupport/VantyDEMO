@@ -702,23 +702,23 @@ export default function KnowledgeBaseView() {
       <div className={`rounded-2xl border p-4 md:p-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200 shadow-sm'}`}>
         {/* Top row: icon + title */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center flex-shrink-0">
             <Brain size={22} className="text-white" />
           </div>
           <div>
-            <h2 className={`text-base md:text-lg font-black ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('nav.cerebro')}</h2>
+            <h2 className={`text-base md:text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('nav.cerebro')}</h2>
             <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('ui.baseConocimiento')}</p>
           </div>
         </div>
         {/* Stats row: 3 equal columns */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: t('ui.documents'), value: documentos.length, color: 'text-violet-500' },
-            { label: t('ui.fragments'), value: totalChunks.toLocaleString(), color: 'text-indigo-500' },
+            { label: t('ui.documents'), value: documentos.length, color: 'text-sky-500' },
+            { label: t('ui.fragments'), value: totalChunks.toLocaleString(), color: 'text-sky-500' },
             { label: 'Auto-aprendidos', value: docsAuto.length, color: 'text-blue-500' },
           ].map(s => (
             <div key={s.label} className={`text-center px-2 py-2 rounded-xl border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-100'}`}>
-              <p className={`text-lg md:text-xl font-black ${s.color}`}>{s.value}</p>
+              <p className={`text-lg md:text-xl font-bold ${s.color}`}>{s.value}</p>
               <p className={`text-[9px] md:text-[10px] font-bold leading-tight mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</p>
             </div>
           ))}
@@ -728,24 +728,24 @@ export default function KnowledgeBaseView() {
       {/* Tabs */}
       <div className={`flex rounded-2xl p-1.5 border gap-1.5 overflow-x-auto scrollbar-hide ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-200'}`}>
         <button onClick={() => setTab('aprender')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-black transition-all whitespace-nowrap flex-shrink-0 ${tab === 'aprender'
-            ? isDark ? 'bg-[#161b22] text-violet-400 shadow border border-[#30363d]' : 'bg-white text-violet-700 shadow border border-slate-200'
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${tab === 'aprender'
+            ? isDark ? 'bg-[#161b22] text-sky-400 shadow border border-[#30363d]' : 'bg-white text-sky-700 shadow border border-slate-200'
             : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}>
           <Sparkles size={13} />
           <span className="hidden sm:inline">{t('whatsapp.aprenderInternet')}</span>
           <span className="sm:hidden">Aprender</span>
         </button>
         <button onClick={() => setTab('diagnosticos')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-black transition-all whitespace-nowrap flex-shrink-0 ${tab === 'diagnosticos'
-            ? isDark ? 'bg-[#161b22] text-violet-400 shadow border border-[#30363d]' : 'bg-white text-violet-700 shadow border border-slate-200'
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${tab === 'diagnosticos'
+            ? isDark ? 'bg-[#161b22] text-sky-400 shadow border border-[#30363d]' : 'bg-white text-sky-700 shadow border border-slate-200'
             : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}>
           <span>🏥</span>
           <span className="hidden sm:inline">CIE-11 / DSM-5</span>
           <span className="sm:hidden">CIE-11</span>
         </button>
         <button onClick={() => setTab('biblioteca')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-black transition-all whitespace-nowrap flex-shrink-0 ${tab === 'biblioteca'
-            ? isDark ? 'bg-[#161b22] text-violet-400 shadow border border-[#30363d]' : 'bg-white text-violet-700 shadow border border-slate-200'
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 md:px-4 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${tab === 'biblioteca'
+            ? isDark ? 'bg-[#161b22] text-sky-400 shadow border border-[#30363d]' : 'bg-white text-sky-700 shadow border border-slate-200'
             : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}>
           <BookMarked size={13} />
           <span className="hidden sm:inline">Biblioteca ({documentos.length})</span>
@@ -758,10 +758,10 @@ export default function KnowledgeBaseView() {
         <div className="space-y-4">
 
           {/* Cómo funciona */}
-          <div className={`rounded-2xl p-4 border ${isDark ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
+          <div className={`rounded-2xl p-4 border ${isDark ? 'bg-sky-900/20 border-sky-800/30' : 'bg-sky-50 border-sky-100'}`}>
             <div className="flex items-center gap-2 mb-3">
-              <Cpu size={16} className="text-violet-600" />
-              <span className={`font-bold text-sm ${isDark ? 'text-violet-300' : 'text-violet-800'}`}>{t('ui.comoFuncAuto')}</span>
+              <Cpu size={16} className="text-sky-600" />
+              <span className={`font-bold text-sm ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>{t('ui.comoFuncAuto')}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
@@ -770,9 +770,9 @@ export default function KnowledgeBaseView() {
                 { icon: '🤖', t: 'Sintetiza con IA', d: 'Genera resumen clínico estructurado para ABA' },
                 { icon: '🧠', t: 'Indexa en el Cerebro', d: 'ARIA y todos los agentes ya saben ese tema' },
               ].map((s, i) => (
-                <div key={i} className={`rounded-xl p-3 border ${isDark ? 'bg-[#161b22] border-violet-900/30' : 'bg-white border-violet-100'}`}>
+                <div key={i} className={`rounded-xl p-3 border ${isDark ? 'bg-[#161b22] border-sky-900/30' : 'bg-white border-sky-100'}`}>
                   <p className="text-xl mb-1">{s.icon}</p>
-                  <p className="text-xs font-bold text-violet-700">{s.t}</p>
+                  <p className="text-xs font-bold text-sky-700">{s.t}</p>
                   <p className="text-[11px] text-slate-500 mt-0.5">{s.d}</p>
                 </div>
               ))}
@@ -785,11 +785,11 @@ export default function KnowledgeBaseView() {
             {/* Selector keywords vs URL */}
             <div className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-[#0d1117]' : 'bg-slate-100'}`}>
               <button onClick={() => setModoFuente('keywords')}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${modoFuente === 'keywords' ? (isDark ? 'bg-[#161b22] shadow text-violet-400' : 'bg-white shadow text-violet-700') : (isDark ? 'text-slate-500' : 'text-slate-500')}`}>
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${modoFuente === 'keywords' ? (isDark ? 'bg-[#161b22] shadow text-sky-400' : 'bg-white shadow text-sky-700') : (isDark ? 'text-slate-500' : 'text-slate-500')}`}>
                 🔍 Palabras clave
               </button>
               <button onClick={() => setModoFuente('url')}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${modoFuente === 'url' ? (isDark ? 'bg-[#161b22] shadow text-violet-400' : 'bg-white shadow text-violet-700') : (isDark ? 'text-slate-500' : 'text-slate-500')}`}>
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${modoFuente === 'url' ? (isDark ? 'bg-[#161b22] shadow text-sky-400' : 'bg-white shadow text-sky-700') : (isDark ? 'text-slate-500' : 'text-slate-500')}`}>
                 🌐 URL de página web
               </button>
             </div>
@@ -804,7 +804,7 @@ export default function KnowledgeBaseView() {
                   value={keywords}
                   onChange={e => setKeywords(e.target.value)}
                   {...{placeholder: t('ui.search_resource')}}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-400"
                   rows={3}
                   disabled={aprendiendo}
                 />
@@ -813,7 +813,7 @@ export default function KnowledgeBaseView() {
                   <div className="flex flex-wrap gap-1.5">
                     {temasSugeridos.map(tema => (
                       <button key={tema} onClick={() => setKeywords(tema)} disabled={aprendiendo}
-                        className="text-[11px] bg-slate-50 hover:bg-violet-50 hover:text-violet-700 border border-slate-200 hover:border-violet-200 px-2.5 py-1 rounded-full transition">
+                        className="text-[11px] bg-slate-50 hover:bg-sky-50 hover:text-sky-700 border border-slate-200 hover:border-sky-200 px-2.5 py-1 rounded-full transition">
                         {tema}
                       </button>
                     ))}
@@ -822,9 +822,9 @@ export default function KnowledgeBaseView() {
                 <div className="flex gap-2">
                   {(['completo', 'rapido'] as const).map(m => (
                     <button key={m} onClick={() => setModo(m)}
-                      className={`flex-1 p-3 rounded-xl border text-left transition ${modo === m ? 'bg-violet-600 text-white border-violet-600' : 'border-slate-200 text-slate-500 hover:border-violet-200'}`}>
+                      className={`flex-1 p-3 rounded-xl border text-left transition ${modo === m ? 'bg-sky-600 text-white border-sky-600' : 'border-slate-200 text-slate-500 hover:border-sky-200'}`}>
                       <p className="text-xs font-bold">{m === 'completo' ? '🔬 Completo' : '⚡ Rápido'}</p>
-                      <p className={`text-[10px] mt-0.5 ${modo === m ? 'text-violet-200' : 'text-slate-400'}`}>
+                      <p className={`text-[10px] mt-0.5 ${modo === m ? 'text-sky-200' : 'text-slate-400'}`}>
                         {m === 'completo' ? 'Más fuentes, más fragmentos, más rico' : 'Solo síntesis IA, más veloz'}
                       </p>
                     </button>
@@ -843,7 +843,7 @@ export default function KnowledgeBaseView() {
                   value={urlAprender}
                   onChange={e => setUrlAprender(e.target.value)}
                   placeholder="https://ejemplo.com/articulo-sobre-aba"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
                   disabled={aprendiendo}
                 />
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
@@ -859,7 +859,7 @@ export default function KnowledgeBaseView() {
             <button
               onClick={modoFuente === 'url' ? handleAprenderUrl : handleAprender}
               disabled={aprendiendo || (modoFuente === 'keywords' ? !keywords.trim() : !urlAprender.trim())}
-              className="w-full py-3.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-xl font-black flex items-center justify-center gap-2 text-sm transition shadow-md">
+              className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition shadow-md">
               {aprendiendo
                 ? <><Loader2 size={16} className="animate-spin" /> Aprendiendo desde internet...</>
                 : <><Sparkles size={16} /> Aprender ahora</>}
@@ -875,11 +875,11 @@ export default function KnowledgeBaseView() {
                   line.startsWith('✅') ? 'text-emerald-400' :
                   line.startsWith('❌') ? 'text-red-400' :
                   line.startsWith('⚠️') ? 'text-amber-400' :
-                  line.startsWith('🎉') ? 'text-violet-300 font-bold' :
+                  line.startsWith('🎉') ? 'text-sky-300 font-bold' :
                   'text-slate-300'
                 }>{line}</p>
               ))}
-              {aprendiendo && <p className="text-violet-400 animate-pulse">⟳ Procesando...</p>}
+              {aprendiendo && <p className="text-sky-400 animate-pulse">⟳ Procesando...</p>}
             </div>
           )}
 
@@ -888,7 +888,7 @@ export default function KnowledgeBaseView() {
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2 size={20} className="text-emerald-500" />
-                <span className="font-black text-emerald-800">{t('whatsapp.aprendizajeCompleto')}</span>
+                <span className="font-bold text-emerald-800">{t('whatsapp.aprendizajeCompleto')}</span>
               </div>
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
@@ -897,7 +897,7 @@ export default function KnowledgeBaseView() {
                   { v: resultadoAprender.totalChunks, l: 'Fragmentos' },
                 ].map((s, i) => (
                   <div key={i} className="bg-white rounded-xl p-3 text-center border border-emerald-100">
-                    <p className="text-xl font-black text-emerald-700">{s.v}</p>
+                    <p className="text-xl font-bold text-emerald-700">{s.v}</p>
                     <p className="text-[11px] text-slate-500">{s.l}</p>
                   </div>
                 ))}
@@ -926,7 +926,7 @@ export default function KnowledgeBaseView() {
               </p>
               <div className="space-y-2">
                 {docsAuto.map(doc => (
-                  <div key={doc.id} className="flex items-center justify-between bg-violet-50 rounded-xl px-3 py-2 border border-violet-100">
+                  <div key={doc.id} className="flex items-center justify-between bg-sky-50 rounded-xl px-3 py-2 border border-sky-100">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-base">🧠</span>
                       <div className="min-w-0">
@@ -951,12 +951,12 @@ export default function KnowledgeBaseView() {
       {/* ══ TAB: CIE-11 / DSM-5 ══ */}
       {tab === 'diagnosticos' && (
         <div className="space-y-4">
-          <div className={`rounded-2xl p-4 border ${isDark ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
+          <div className={`rounded-2xl p-4 border ${isDark ? 'bg-sky-900/20 border-sky-800/30' : 'bg-sky-50 border-sky-100'}`}>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">🏥</span>
-              <span className={`font-bold text-sm ${isDark ? 'text-violet-300' : 'text-violet-800'}`}>Buscador de Diagnósticos — CIE-11 / DSM-5 / ICD-10</span>
+              <span className={`font-bold text-sm ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>Buscador de Diagnósticos — CIE-11 / DSM-5 / ICD-10</span>
             </div>
-            <p className="text-xs text-violet-600">
+            <p className="text-xs text-sky-600">
               Busca por nombre, código CIE-11 (ej: <b>6A02</b>), ICD-10 (ej: <b>F84</b>), DSM-5 o sinónimo. Haz clic en los códigos para copiarlos directamente.
             </p>
           </div>
@@ -968,20 +968,20 @@ export default function KnowledgeBaseView() {
       {tab === 'biblioteca' && (
         <div className="space-y-4">
           <button onClick={() => setShowForm(v => !v)}
-            className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 text-sm transition">
+            className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 text-sm transition">
             {showForm ? <><X size={16} /> {t('common.cancelar')}</> : <><Plus size={16} /> Agregar documento manualmente</>}
           </button>
 
           {showForm && (
             <div className={`rounded-2xl border shadow-sm p-5 space-y-4 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}`}>
-              <p className={`font-black text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('ui.add_document')}</p>
+              <p className={`font-bold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('ui.add_document')}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {(['archivo', 'url', 'texto', 'buscar'] as const).map(m => {
                   const icons: Record<string, string> = { archivo: '📎', url: '🔗', texto: '📝', buscar: '🔍' }
                   const labels: Record<string, string> = { archivo: 'Archivo PDF/TXT', url: 'URL', texto: 'Pegar texto', buscar: 'Buscar libro' }
                   return (
                     <button key={m} onClick={() => { setInputMode(m); setLibroSeleccionado(null) }}
-                      className={`p-2.5 rounded-xl border text-xs font-bold transition text-center ${inputMode === m ? (isDark ? 'bg-violet-900/30 border-violet-700 text-violet-400' : 'bg-violet-100 border-violet-300 text-violet-700') : (isDark ? 'border-[#30363d] text-slate-500' : 'border-slate-200 text-slate-500 hover:border-violet-200')}`}>
+                      className={`p-2.5 rounded-xl border text-xs font-bold transition text-center ${inputMode === m ? (isDark ? 'bg-sky-900/30 border-sky-700 text-sky-400' : 'bg-sky-100 border-sky-300 text-sky-700') : (isDark ? 'border-[#30363d] text-slate-500' : 'border-slate-200 text-slate-500 hover:border-sky-200')}`}>
                       <span className="text-lg block mb-0.5">{icons[m]}</span>{labels[m]}
                     </button>
                   )
@@ -995,7 +995,7 @@ export default function KnowledgeBaseView() {
               <div className="flex gap-2">
                 {['libro', 'articulo', 'guia', 'protocolo'].map(t => (
                   <button key={t} onClick={() => setForm(p => ({ ...p, tipo: t }))}
-                    className={`flex-1 py-1.5 text-xs rounded-lg border font-bold transition capitalize ${form.tipo === t ? 'bg-violet-600 text-white border-violet-600' : isDark ? 'border-[#30363d] text-slate-500' : 'border-slate-200 text-slate-500'}`}>
+                    className={`flex-1 py-1.5 text-xs rounded-lg border font-bold transition capitalize ${form.tipo === t ? 'bg-sky-600 text-white border-sky-600' : isDark ? 'border-[#30363d] text-slate-500' : 'border-slate-200 text-slate-500'}`}>
                     {t}
                   </button>
                 ))}
@@ -1003,7 +1003,7 @@ export default function KnowledgeBaseView() {
 
               {inputMode === 'archivo' && (
                 <div onClick={() => fileRef.current?.click()}
-                  className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-violet-300 hover:bg-violet-50 transition">
+                  className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-sky-300 hover:bg-sky-50 transition">
                   <Upload size={20} className="text-slate-400 mx-auto mb-2" />
                   {selectedFile ? (
                     <div>
@@ -1011,7 +1011,7 @@ export default function KnowledgeBaseView() {
                       <p className="text-xs text-slate-400 mt-1">
                         {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
                         {selectedFile.size > 10 * 1024 * 1024 && (
-                          <span className="ml-2 text-violet-500 font-medium">{t('ui.extractaLocal')}</span>
+                          <span className="ml-2 text-sky-500 font-medium">{t('ui.extractaLocal')}</span>
                         )}
                       </p>
                     </div>
@@ -1029,10 +1029,10 @@ export default function KnowledgeBaseView() {
                 </div>
               )}
               {uploading && uploadProgress && (
-                <div className={`rounded-xl px-4 py-3 mt-2 border ${isDark ? 'bg-violet-900/20 border-violet-800/40' : 'bg-violet-50 border-violet-200'}`}>
+                <div className={`rounded-xl px-4 py-3 mt-2 border ${isDark ? 'bg-sky-900/20 border-sky-800/40' : 'bg-sky-50 border-sky-200'}`}>
                   <div className="flex items-center gap-2">
-                    <Loader2 size={14} className="animate-spin text-violet-500 flex-shrink-0" />
-                    <p className="text-xs text-violet-700 font-medium">{uploadProgress}</p>
+                    <Loader2 size={14} className="animate-spin text-sky-500 flex-shrink-0" />
+                    <p className="text-xs text-sky-700 font-medium">{uploadProgress}</p>
                   </div>
                 </div>
               )}
@@ -1057,7 +1057,7 @@ export default function KnowledgeBaseView() {
                       onChange={e => setBusqueda(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && buscarLibros()} />
                     <button onClick={buscarLibros} disabled={buscando}
-                      className="px-4 bg-violet-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">
+                      className="px-4 bg-sky-600 text-white rounded-xl text-sm font-bold disabled:opacity-50">
                       {buscando ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
                     </button>
                   </div>
@@ -1065,7 +1065,7 @@ export default function KnowledgeBaseView() {
                     {resultadosBusqueda.map(libro => (
                       <div key={libro.id}
                         onClick={() => { setLibroSeleccionado(libro); setForm(p => ({ ...p, titulo: libro.titulo })) }}
-                        className={`p-3 rounded-xl border cursor-pointer transition ${libroSeleccionado?.id === libro.id ? (isDark ? 'bg-violet-900/20 border-violet-700' : 'bg-violet-50 border-violet-300') : (isDark ? 'border-[#21262d] hover:border-violet-800' : 'border-slate-200 hover:border-violet-200')}`}>
+                        className={`p-3 rounded-xl border cursor-pointer transition ${libroSeleccionado?.id === libro.id ? (isDark ? 'bg-sky-900/20 border-sky-700' : 'bg-sky-50 border-sky-300') : (isDark ? 'border-[#21262d] hover:border-sky-800' : 'border-slate-200 hover:border-sky-200')}`}>
                         <p className="font-semibold text-slate-800 text-xs truncate">{libro.titulo}</p>
                         <p className="text-[10px] text-slate-500">{libro.autor} · {libro.fuente} · {libro.formato}</p>
                       </div>
@@ -1079,7 +1079,7 @@ export default function KnowledgeBaseView() {
                 value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} />
 
               <button onClick={handleUpload} disabled={uploading}
-                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+                className="w-full py-3 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
                 {uploading
                   ? <><Loader2 size={14} className="animate-spin" /> {uploadProgress || 'Procesando...'}</>
                   : <><Save size={14} /> Indexar en el Cerebro</>}
@@ -1088,7 +1088,7 @@ export default function KnowledgeBaseView() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-violet-400" /></div>
+            <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-sky-400" /></div>
           ) : documentos.length === 0 ? (
             <div className={`rounded-2xl border border-dashed p-10 text-center ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
               <Brain size={32} className="text-slate-200 mx-auto mb-3" />
@@ -1133,15 +1133,15 @@ function DocCard({ doc, onDelete, onRetry }: {
   return (
     <div className={`rounded-xl border p-3.5 flex items-center justify-between gap-3 transition ${isDark ? 'bg-[#161b22] border-[#21262d] hover:border-[#30363d]' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
       <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isAuto ? 'bg-violet-100' : 'bg-slate-100'}`}>
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isAuto ? 'bg-sky-100' : 'bg-slate-100'}`}>
           {isAuto
-            ? <Sparkles size={16} className="text-violet-600" />
+            ? <Sparkles size={16} className="text-sky-600" />
             : <FileText size={16} className="text-slate-500" />}
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-800 truncate">{doc.titulo.replace('[IA] ', '')}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-md ${isAuto ? (isDark ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-100 text-violet-600') : (isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-500')}`}>
+            <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-md ${isAuto ? (isDark ? 'bg-sky-900/30 text-sky-400' : 'bg-sky-100 text-sky-600') : (isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-500')}`}>
               {isAuto ? 'auto' : doc.tipo}
             </span>
             <span className="text-[10px] text-slate-400">{doc.total_chunks || 0} fragmentos</span>

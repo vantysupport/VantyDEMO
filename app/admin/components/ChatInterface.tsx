@@ -145,23 +145,23 @@ function RobotAvatar({ size = 36, animated = false }: { size?: number; animated?
     <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"
       style={animated ? { animation: 'robotBob 2s ease-in-out infinite' } : {}}>
       {/* Antena */}
-      <line x1="40" y1="6" x2="40" y2="16" stroke="#6366f1" strokeWidth="3" strokeLinecap="round"/>
-      <circle cx="40" cy="4" r="4" fill="#818cf8"/>
+      <line x1="40" y1="6" x2="40" y2="16" stroke="#0284c7" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="40" cy="4" r="4" fill="#38bdf8"/>
       {/* Cabeza */}
       <rect x="16" y="16" width="48" height="36" rx="12" fill="url(#robotHead)"/>
       {/* Ojos */}
       <circle cx="29" cy="32" r="7" fill="white"/>
       <circle cx="51" cy="32" r="7" fill="white"/>
-      <circle cx="31" cy="32" r="3.5" fill="#4f46e5" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite' } : {}}/>
-      <circle cx="53" cy="32" r="3.5" fill="#4f46e5" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite .2s' } : {}}/>
+      <circle cx="31" cy="32" r="3.5" fill="#0369a1" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite' } : {}}/>
+      <circle cx="53" cy="32" r="3.5" fill="#0369a1" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite .2s' } : {}}/>
       <circle cx="32" cy="31" r="1.2" fill="white"/>
       <circle cx="54" cy="31" r="1.2" fill="white"/>
       {/* Boca */}
       <rect x="26" y="42" width="28" height="5" rx="2.5" fill="white" opacity=".6"/>
-      <rect x="29" y="43" width="6" height="3" rx="1.5" fill="#818cf8"/>
-      <rect x="37" y="43" width="6" height="3" rx="1.5" fill="#818cf8"/>
+      <rect x="29" y="43" width="6" height="3" rx="1.5" fill="#38bdf8"/>
+      <rect x="37" y="43" width="6" height="3" rx="1.5" fill="#38bdf8"/>
       {/* Cuello */}
-      <rect x="34" y="52" width="12" height="6" rx="3" fill="#6366f1"/>
+      <rect x="34" y="52" width="12" height="6" rx="3" fill="#0284c7"/>
       {/* Cuerpo */}
       <rect x="20" y="58" width="40" height="20" rx="8" fill="url(#robotBody)"/>
       {/* Pecho indicador */}
@@ -169,12 +169,12 @@ function RobotAvatar({ size = 36, animated = false }: { size?: number; animated?
       {/* Gradientes */}
       <defs>
         <linearGradient id="robotHead" x1="16" y1="16" x2="64" y2="52" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#6366f1"/>
-          <stop offset="1" stopColor="#4f46e5"/>
+          <stop stopColor="#0284c7"/>
+          <stop offset="1" stopColor="#0369a1"/>
         </linearGradient>
         <linearGradient id="robotBody" x1="20" y1="58" x2="60" y2="78" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#818cf8"/>
-          <stop offset="1" stopColor="#6366f1"/>
+          <stop stopColor="#38bdf8"/>
+          <stop offset="1" stopColor="#0284c7"/>
         </linearGradient>
         <radialGradient id="chestLight" cx="50%" cy="50%" r="50%">
           <stop stopColor="#a5f3fc"/>
@@ -195,7 +195,7 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
     return (
       <div className="flex justify-end mb-3">
         <div className="max-w-[78%] px-5 py-3.5 rounded-3xl rounded-br-lg text-sm font-medium leading-relaxed text-white shadow-lg"
-          style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', boxShadow: '0 4px 18px rgba(79,70,229,.35)' }}>
+          style={{ background: 'linear-gradient(135deg,#0369a1,#0284c7)', boxShadow: '0 4px 18px rgba(79,70,229,.35)' }}>
           {m.text}
         </div>
       </div>
@@ -207,13 +207,13 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
     return (
       <div className="flex gap-3 mb-4 items-start">
         <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg,#fce7f3,#ede9fe)' }}>
+          style={{ background: 'linear-gradient(135deg,#fce7f3,#e0f2fe)' }}>
           <Heart size={15} className="text-pink-600" />
         </div>
         <div className="max-w-[82%] rounded-3xl rounded-tl-lg overflow-hidden shadow-sm border border-pink-100"
           style={{ background: 'linear-gradient(135deg,#fdf2f8,#faf5ff)' }}>
           <div className="px-5 pt-4 pb-2">
-            <p className="text-xs font-black text-pink-500 uppercase tracking-widest mb-2">{t('ui.checkBienestar')}</p>
+            <p className="text-xs font-bold text-pink-500 uppercase tracking-widest mb-2">{t('ui.checkBienestar')}</p>
             <p className="text-sm text-slate-700 font-medium leading-relaxed">
               ¿Cómo te has sentido tú esta semana acompañando el proceso de tu hijo/a?
             </p>
@@ -221,7 +221,7 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
           <div className="px-4 pb-4 flex flex-col gap-2">
             {['😊 Bien, con energía', '😐 Regular, algo cansado/a', '😔 Difícil, necesito apoyo'].map(opt => (
               <button key={opt}
-                className="text-left px-4 py-3 text-sm font-semibold text-slate-700 rounded-2xl border-2 border-purple-100 transition-all hover:border-purple-400 hover:bg-purple-50 bg-white">
+                className="text-left px-4 py-3 text-sm font-semibold text-slate-700 rounded-2xl border-2 border-sky-100 transition-all hover:border-sky-400 hover:bg-sky-50 bg-white">
                 {opt}
               </button>
             ))}
@@ -243,14 +243,14 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
         {/* Burbuja principal */}
         <div className={`rounded-3xl rounded-tl-lg px-5 py-4 shadow-sm text-sm font-medium leading-relaxed text-slate-700 dark:text-slate-100
           ${m.type === 'emotional'
-            ? 'border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 dark:border-blue-700'
+            ? 'border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/40 dark:to-sky-900/40 dark:border-blue-700'
             : 'bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600'
           }`}
           style={{ boxShadow: '0 2px 16px rgba(0,0,0,.06)' }}>
           {m.type === 'emotional' && (
             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-blue-100">
               <Heart size={13} className="text-blue-500 fill-blue-500" />
-              <span className="text-xs font-black text-blue-500 uppercase tracking-widest">{t('ui.from_therapist')}</span>
+              <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{t('ui.from_therapist')}</span>
             </div>
           )}
           <p className="whitespace-pre-wrap">{m.text}</p>
@@ -263,7 +263,7 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
             <div className="flex items-center gap-2 px-4 py-2.5"
               style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
               <ShoppingBag size={14} className="text-white" />
-              <span className="text-xs font-black text-white uppercase tracking-wider">{t('ui.disponibleTienda')}</span>
+              <span className="text-xs font-bold text-white uppercase tracking-wider">{t('ui.disponibleTienda')}</span>
             </div>
             <div className="flex gap-3 p-4 items-center">
               <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-amber-100 flex items-center justify-center text-3xl border border-amber-200">
@@ -273,16 +273,16 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
                 }
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-black text-amber-900 text-sm leading-tight mb-1">{m.producto.nombre}</p>
+                <p className="font-bold text-amber-900 text-sm leading-tight mb-1">{m.producto.nombre}</p>
                 {(m.producto.razon || m.producto.descripcion) && (
                   <p className="text-xs text-amber-700 leading-relaxed mb-2 line-clamp-2">
                     💡 {m.producto.razon || m.producto.descripcion}
                   </p>
                 )}
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-black text-amber-600">S/ {Number(m.producto.precio_soles).toFixed(2)}</span>
+                  <span className="text-lg font-bold text-amber-600">S/ {Number(m.producto.precio_soles).toFixed(2)}</span>
                   <button onClick={onNavigateToStore}
-                    className="px-3.5 py-1.5 text-xs font-black text-white rounded-xl transition-all hover:scale-105 active:scale-95"
+                    className="px-3.5 py-1.5 text-xs font-bold text-white rounded-xl transition-all hover:scale-105 active:scale-95"
                     style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 3px 10px rgba(217,119,6,.35)' }}>
                     Ver en tienda →
                   </button>
@@ -307,7 +307,7 @@ function TypingIndicator() {
       </div>
       <div className="bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 rounded-3xl rounded-tl-lg px-5 py-3.5 shadow-sm flex items-center gap-1.5">
         {[0, .2, .4].map(d => (
-          <div key={d} className="w-2 h-2 rounded-full bg-indigo-400"
+          <div key={d} className="w-2 h-2 rounded-full bg-sky-400"
             style={{ animation: `typingDot 1.2s ease-in-out infinite`, animationDelay: `${d}s` }} />
         ))}
         <span className="text-xs text-slate-400 font-medium ml-2">{t('common.analizando')}</span>
@@ -331,7 +331,7 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
       {/* Robot grande animado */}
       <div className="relative mb-5">
         <div className="absolute inset-0 rounded-full blur-2xl opacity-30 scale-110"
-          style={{ background: 'radial-gradient(circle,#818cf8,#c4b5fd)', animation: 'pulse 2s ease-in-out infinite' }} />
+          style={{ background: 'radial-gradient(circle,#38bdf8,#7dd3fc)', animation: 'pulse 2s ease-in-out infinite' }} />
         <div className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-xl"
           style={{ background: 'linear-gradient(135deg,#eef2ff,#dbeafe)', animation: 'robotBob 2.5s ease-in-out infinite' }}>
           <RobotAvatar size={72} animated />
@@ -342,8 +342,8 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
         </div>
       </div>
 
-      <h3 className="text-xl font-black text-slate-800 mb-1">
-        ¡Hola! Soy <span style={{ color: '#6366f1' }}>ARIA</span> 🤖
+      <h3 className="text-xl font-bold text-slate-800 mb-1">
+        ¡Hola! Soy <span style={{ color: '#0284c7' }}>ARIA</span> 🤖
       </h3>
       <p className="text-sm text-slate-500 font-medium mb-1">
         Tu asistente clínico de Neuropsicología y Terapias SANTI
@@ -368,14 +368,14 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
       </div>
 
       {/* Preguntas rápidas */}
-      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">{t('aria.dondeEmpezamos')}</p>
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">{t('aria.dondeEmpezamos')}</p>
       <div className="flex flex-col gap-2 w-full max-w-sm">
         {quick.map(({ icon, text, color, border }) => (
           <button key={text} onClick={() => onQuickSend(text)}
             className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] active:scale-[.98] group"
             style={{ background: color, borderColor: border }}>
             <span className="text-lg shrink-0">{icon}</span>
-            <span className="text-sm font-semibold text-slate-700 group-hover:text-indigo-700 transition-colors">{text}</span>
+            <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-700 transition-colors">{text}</span>
           </button>
         ))}
       </div>
@@ -561,18 +561,18 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
         <div className="shrink-0 px-5 py-4 flex items-center gap-3 border-b border-slate-100"
           style={{ background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(12px)' }}>
           <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-md shrink-0"
-            style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)', padding: 6 }}>
+            style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1)', padding: 6 }}>
             <RobotAvatar size={30} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="font-black text-slate-800 text-base">ARIA</p>
+              <p className="font-bold text-slate-800 text-base">ARIA</p>
               <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
                 En línea
               </span>
               {speaking && (
-                <span className="flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full"
+                <span className="flex items-center gap-1 text-xs font-bold text-sky-600 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full"
                   style={{ animation: 'fadeUp .2s ease' }}>
                   <Volume2 size={10} />
                   Hablando...
@@ -586,7 +586,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
           {/* Botón silenciar voz */}
           <button onClick={toggleVoice} title={voiceEnabled ? 'Silenciar respuestas de voz' : 'Activar respuestas de voz'}
             className="p-2.5 rounded-xl hover:bg-slate-100 transition-all"
-            style={{ color: voiceEnabled ? '#6366f1' : '#94a3b8' }}>
+            style={{ color: voiceEnabled ? '#0284c7' : '#94a3b8' }}>
             {voiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
           <button onClick={handleReset}
@@ -604,7 +604,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
               <Mic size={14} className="text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-black text-red-700">Escuchando...</p>
+              <p className="text-sm font-bold text-red-700">Escuchando...</p>
               <p className="text-xs text-red-500 font-medium">{t('aria.hablaAhora')}</p>
             </div>
             <button onClick={stopListening}
@@ -641,7 +641,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
                 const texts = ['¿Cómo le fue en la última sesión?', 'Dame consejos para actividades en casa', '¿Qué objetivos está trabajando?', 'Necesito apoyo emocional']
                 return (
                   <button key={i} onClick={() => send(texts[i])}
-                    className="shrink-0 px-3.5 py-2 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 rounded-2xl text-xs font-semibold transition-all whitespace-nowrap shadow-sm">
+                    className="shrink-0 px-3.5 py-2 bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-600 hover:text-sky-700 rounded-2xl text-xs font-semibold transition-all whitespace-nowrap shadow-sm">
                     {q}
                   </button>
                 )
@@ -673,7 +673,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
                 onFocus={e => {
                   if (!listening) {
                     e.target.style.background = '#fff'
-                    e.target.style.borderColor = '#6366f1'
+                    e.target.style.borderColor = '#0284c7'
                     e.target.style.boxShadow = '0 0 0 4px rgba(99,102,241,.1)'
                   }
                 }}
@@ -717,7 +717,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
                 title={t('aria.detenerVoz')}
                 className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
                 style={{
-                  background: 'linear-gradient(135deg,#6366f1,#7c3aed)',
+                  background: 'linear-gradient(135deg,#0284c7,#0284c7)',
                   boxShadow: '0 4px 18px rgba(99,102,241,.45)',
                   animation: 'speakerPulse 1.5s ease-in-out infinite',
                 }}>
@@ -728,7 +728,7 @@ function ChatInterface({ childId, childName, onNavigateToStore }: any) {
                 onClick={() => send()}
                 disabled={typing || !input.trim() || listening}
                 className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-40 hover:scale-105 active:scale-95"
-                style={{ background: 'linear-gradient(135deg,#6366f1,#7c3aed)', boxShadow: '0 4px 18px rgba(99,102,241,.45)' }}>
+                style={{ background: 'linear-gradient(135deg,#0284c7,#0284c7)', boxShadow: '0 4px 18px rgba(99,102,241,.45)' }}>
                 <Send size={18} className="text-white" style={{ transform: 'translateX(1px)' }} />
               </button>
             )}

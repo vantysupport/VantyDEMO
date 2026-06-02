@@ -31,7 +31,7 @@ interface Order {
 const ESTADO_CFG: Record<string, any> = {
   pendiente:  { label: 'Pendiente',  icon: Clock,       bg: 'bg-amber-50',   border: 'border-amber-200',  text: 'text-amber-700',   dot: 'bg-amber-400',   ring: 'ring-amber-300',  gradient: 'from-amber-400 to-orange-500'  },
   confirmado: { label: 'Confirmado', icon: CheckCircle, bg: 'bg-sky-50',     border: 'border-sky-200',    text: 'text-sky-700',     dot: 'bg-sky-400',     ring: 'ring-sky-300',    gradient: 'from-sky-400 to-blue-500'      },
-  listo:      { label: 'Listo',      icon: Package,     bg: 'bg-violet-50',  border: 'border-violet-200', text: 'text-violet-700',  dot: 'bg-violet-400',  ring: 'ring-violet-300', gradient: 'from-violet-400 to-purple-500' },
+  listo:      { label: 'Listo',      icon: Package,     bg: 'bg-sky-50',  border: 'border-sky-200', text: 'text-sky-700',  dot: 'bg-sky-400',  ring: 'ring-sky-300', gradient: 'from-sky-400 to-sky-500' },
   entregado:  { label: 'Entregado',  icon: BadgeCheck,  bg: 'bg-emerald-50', border: 'border-emerald-200',text: 'text-emerald-700', dot: 'bg-emerald-400', ring: 'ring-emerald-300',gradient: 'from-emerald-400 to-teal-500'  },
   cancelado:  { label: 'Cancelado',  icon: XCircle,     bg: 'bg-red-50',     border: 'border-red-200',    text: 'text-red-700',     dot: 'bg-red-400',     ring: 'ring-red-300',    gradient: 'from-red-400 to-rose-500'      },
 }
@@ -110,11 +110,11 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
       <div className={`rounded-3xl w-full max-w-2xl max-h-[94vh] overflow-y-auto shadow-2xl ${isDark ? 'bg-[#161b22] border border-[#30363d]' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
         <div className={`sticky top-0 z-10 px-7 py-5 border-b flex items-center justify-between ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-100'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-lg shadow-blue-200">
               <ShoppingBag size={18} className="text-white" />
             </div>
             <div>
-              <h2 className={`text-lg font-black ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{product ? 'Editar producto' : 'Nuevo producto'}</h2>
+              <h2 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{product ? 'Editar producto' : 'Nuevo producto'}</h2>
               <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{product ? `ID: ${product.id.slice(0,8)}…` : 'Completa los datos del artículo'}</p>
             </div>
           </div>
@@ -123,7 +123,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
 
         <div className="p-7 space-y-6">
           <div>
-            <label className={`block text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Imagen del producto</label>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Imagen del producto</label>
             <div
               className={`relative border-2 border-dashed rounded-2xl transition-all cursor-pointer overflow-hidden group ${dragOver ? 'border-blue-400 bg-blue-50/50 scale-[0.99]' : isDark ? 'border-[#30363d] hover:border-blue-500' : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50/50'}`}
               style={{ minHeight: 180 }}
@@ -155,19 +155,19 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
           </div>
 
           <div>
-            <label className={`block text-xs font-black uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nombre *</label>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nombre *</label>
             <input value={form.nombre} onChange={e => setForm((f:any) => ({ ...f, nombre: e.target.value }))}
               placeholder="Ej: Kit de materiales sensoriales" className={inp} />
           </div>
 
           <div>
-            <label className={`block text-xs font-black uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Descripción</label>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Descripción</label>
             <textarea value={form.descripcion} onChange={e => setForm((f:any) => ({ ...f, descripcion: e.target.value }))}
               rows={3} placeholder="Describe el producto, materiales, beneficios…" className={inp + ' resize-none'} />
           </div>
 
           <div>
-            <label className={`block text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Tipo de producto</label>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Tipo de producto</label>
             <div className="grid grid-cols-2 gap-3">
               {([['fisico','📦','Físico','Se retira en el centro'],['digital','📄','Digital','PDF o archivo descargable']] as const).map(([val,emoji,lbl,desc]) => (
                 <button key={val} type="button" onClick={() => setForm((f:any) => ({ ...f, tipo: val }))}
@@ -175,7 +175,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
                     ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100'
                     : isDark ? 'border-[#30363d] hover:border-[#4a5568]' : 'border-slate-200 hover:border-slate-300 bg-white'}`}>
                   <span className="text-2xl block mb-2">{emoji}</span>
-                  <p className={`font-black text-sm ${form.tipo===val ? 'text-blue-700' : isDark ? 'text-slate-300' : 'text-slate-800'}`}>{lbl}</p>
+                  <p className={`font-bold text-sm ${form.tipo===val ? 'text-blue-700' : isDark ? 'text-slate-300' : 'text-slate-800'}`}>{lbl}</p>
                   <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{desc}</p>
                 </button>
               ))}
@@ -184,16 +184,16 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`block text-xs font-black uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Precio (S/.) *</label>
+              <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Precio (S/.) *</label>
               <div className="relative">
-                <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-black text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>S/</span>
+                <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>S/</span>
                 <input type="number" min="0" step="0.50" value={form.precio_soles}
                   onChange={e => setForm((f:any) => ({ ...f, precio_soles: e.target.value }))}
                   placeholder="0.00" className={inp + ' pl-10'} />
               </div>
             </div>
             <div>
-              <label className={`block text-xs font-black uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{form.tipo==='digital' ? 'Stock (∞)' : 'Stock *'}</label>
+              <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{form.tipo==='digital' ? 'Stock (∞)' : 'Stock *'}</label>
               <input type="number" min="0" value={form.tipo==='digital' ? '' : form.stock}
                 onChange={e => setForm((f:any) => ({ ...f, stock: e.target.value }))}
                 disabled={form.tipo==='digital'} placeholder={form.tipo==='digital' ? '∞ Ilimitado' : '0'}
@@ -202,7 +202,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
           </div>
 
           <div>
-            <label className={`block text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Categoría</label>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Categoría</label>
             <div className="flex flex-wrap gap-2">
               {CATEGORIAS.map(cat => (
                 <button key={cat} type="button" onClick={() => setForm((f:any) => ({ ...f, categoria: cat }))}
@@ -228,7 +228,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
                     : isDark ? 'border-[#30363d]' : 'border-slate-200 bg-white'}`}>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${on ? ac==='emerald' ? 'bg-emerald-100' : 'bg-amber-100' : isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>{icon}</div>
                   <div className="flex-1">
-                    <p className={`text-sm font-black ${on ? ac==='emerald' ? 'text-emerald-700' : 'text-amber-700' : isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
+                    <p className={`text-sm font-bold ${on ? ac==='emerald' ? 'text-emerald-700' : 'text-amber-700' : isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
                     <p className={`text-xs ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>{desc}</p>
                   </div>
                   {on ? <ToggleRight size={22} className={ac==='emerald' ? 'text-emerald-500' : 'text-amber-500'}/> : <ToggleLeft size={22} className={isDark ? 'text-slate-600' : 'text-slate-300'}/>}
@@ -241,7 +241,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
         <div className={`sticky bottom-0 px-7 py-5 border-t flex gap-3 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white/95 backdrop-blur-sm border-slate-100'}`}>
           <button onClick={onClose} className={`flex-1 py-3.5 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-[#21262d] text-slate-300 hover:bg-[#30363d]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>Cancelar</button>
           <button onClick={handleSave} disabled={saving}
-            className="flex-1 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+            className="flex-1 py-3.5 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
             {saving ? <Loader2 size={16} className="animate-spin"/> : <Save size={16}/>}
             {saving ? 'Guardando…' : product ? 'Guardar cambios' : 'Crear producto'}
           </button>
@@ -272,28 +272,28 @@ function ProductCard({ p, onEdit, onToggle, onDelete }: { p:Product; onEdit:()=>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
         <div className="absolute top-3 left-3 flex gap-1.5">
-          <span className={`text-[10px] font-black px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm ${p.tipo==='digital' ? 'bg-violet-600/95 text-white' : 'bg-slate-900/85 text-white'}`}>
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm ${p.tipo==='digital' ? 'bg-sky-600/95 text-white' : 'bg-slate-900/85 text-white'}`}>
             {p.tipo==='digital' ? '📄 Digital' : '📦 Físico'}
           </span>
-          {p.destacado && <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-amber-400/95 text-white shadow-sm">⭐ Top</span>}
+          {p.destacado && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-400/95 text-white shadow-sm">⭐ Top</span>}
         </div>
         {lowStock && (
           <div className="absolute top-3 right-3">
-            <span className={`text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm ${p.stock===0 ? 'bg-red-600 text-white' : 'bg-orange-500 text-white'}`}>
+            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm ${p.stock===0 ? 'bg-red-600 text-white' : 'bg-orange-500 text-white'}`}>
               {p.stock===0 ? '❌ Sin stock' : `⚠️ Solo ${p.stock}`}
             </span>
           </div>
         )}
         {!p.activo && (
           <div className="absolute inset-0 bg-slate-900/50 flex items-center justify-center backdrop-blur-[1px]">
-            <span className="text-xs font-black text-white bg-slate-800/90 px-4 py-2 rounded-full">Oculto</span>
+            <span className="text-xs font-bold text-white bg-slate-800/90 px-4 py-2 rounded-full">Oculto</span>
           </div>
         )}
       </div>
 
       <div className="p-5">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className={`font-black text-sm leading-snug flex-1 line-clamp-2 ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{p.nombre}</h3>
+          <h3 className={`font-bold text-sm leading-snug flex-1 line-clamp-2 ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{p.nombre}</h3>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg capitalize shrink-0 ${isDark ? 'bg-[#21262d] text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
             {CAT_EMOJI[p.categoria]} {p.categoria}
           </span>
@@ -301,9 +301,9 @@ function ProductCard({ p, onEdit, onToggle, onDelete }: { p:Product; onEdit:()=>
         <p className={`text-xs leading-relaxed line-clamp-2 mb-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{p.descripcion||'Sin descripción'}</p>
 
         <div className={`flex items-center justify-between mb-4 pb-4 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          <span className={`text-2xl font-black ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>S/ {Number(p.precio_soles).toFixed(2)}</span>
+          <span className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>S/ {Number(p.precio_soles).toFixed(2)}</span>
           <p className={`text-xs font-bold ${
-            p.tipo==='digital' ? (isDark ? 'text-violet-400' : 'text-violet-600') :
+            p.tipo==='digital' ? (isDark ? 'text-sky-400' : 'text-sky-600') :
             p.stock===0 ? 'text-red-500' : p.stock<=3 ? 'text-orange-500' :
             isDark ? 'text-emerald-400' : 'text-emerald-600'
           }`}>
@@ -404,7 +404,7 @@ export default function StoreManagementView() {
     <div className="w-full space-y-5">
 
       {/* HEADER */}
-      <div className={`w-full rounded-2xl overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-[#1a1f2e] via-[#161b22] to-[#0d1117] border border-[#21262d]' : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700'}`}>
+      <div className={`w-full rounded-2xl overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-[#1a1f2e] via-[#161b22] to-[#0d1117] border border-[#21262d]' : 'bg-gradient-to-br from-blue-600 via-blue-700 to-sky-700'}`}>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32 pointer-events-none"/>
         <div className="absolute bottom-0 left-24 w-40 h-40 bg-white/5 rounded-full translate-y-16 pointer-events-none"/>
         <div className="relative px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
@@ -413,12 +413,12 @@ export default function StoreManagementView() {
               <ShoppingBag size={24} className="text-white"/>
             </div>
             <div>
-              <h2 className="text-xl font-black text-white tracking-tight">Gestión de Tienda</h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">Gestión de Tienda</h2>
               <p className="text-sm text-blue-200/80 mt-0.5 font-medium">Productos, stock y pedidos de las familias</p>
             </div>
           </div>
           <button onClick={() => { setEditProduct(null); setShowModal(true) }}
-            className="flex items-center gap-2 bg-white text-blue-700 font-black px-5 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-sm active:scale-95">
+            className="flex items-center gap-2 bg-white text-blue-700 font-bold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-sm active:scale-95">
             <Plus size={15}/> Nuevo producto
           </button>
         </div>
@@ -431,14 +431,14 @@ export default function StoreManagementView() {
           { label:'Activos',    value: stats.activos,  sub:'Visibles para padres',      icon: BadgeCheck,    grad:'from-emerald-500 to-emerald-600',txt: isDark?'text-emerald-400':'text-emerald-600' },
           { label:'Stock bajo', value: stats.stockBajo,sub:'≤ 3 unidades',              icon: AlertTriangle, grad: stats.stockBajo>0?'from-orange-500 to-orange-600':'from-slate-400 to-slate-500', txt: stats.stockBajo>0?(isDark?'text-orange-400':'text-orange-600'):(isDark?'text-slate-500':'text-slate-400') },
           { label:'Pendientes', value: stats.pendientes,sub:'Por atender',              icon: ShoppingCart,  grad: stats.pendientes>0?'from-amber-500 to-amber-600':'from-slate-400 to-slate-500',  txt: stats.pendientes>0?(isDark?'text-amber-400':'text-amber-600'):(isDark?'text-slate-500':'text-slate-400') },
-          { label:'Ingresos',   value:`S/ ${stats.revenue.toFixed(2)}`, sub:'Pedidos completados', icon:TrendingUp,grad:'from-violet-500 to-violet-600', txt:isDark?'text-violet-400':'text-violet-600' },
+          { label:'Ingresos',   value:`S/ ${stats.revenue.toFixed(2)}`, sub:'Pedidos completados', icon:TrendingUp,grad:'from-sky-500 to-sky-600', txt:isDark?'text-sky-400':'text-sky-600' },
         ].map(({ label, value, icon: Icon, grad, txt, sub }) => (
           <div key={label} className={`rounded-2xl p-4 border transition-all hover:shadow-lg hover:-translate-y-0.5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200/80 shadow-sm'}`}>
             <div className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center bg-gradient-to-br ${grad} shadow-md`}>
               <Icon size={17} className="text-white"/>
             </div>
-            <p className={`text-2xl font-black ${txt}`}>{value}</p>
-            <p className={`text-xs font-black mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{label}</p>
+            <p className={`text-2xl font-bold ${txt}`}>{value}</p>
+            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{label}</p>
             <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>{sub}</p>
           </div>
         ))}
@@ -456,7 +456,7 @@ export default function StoreManagementView() {
               : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
             <Icon size={15}/>
             {label}
-            <span className={`text-xs px-2 py-0.5 rounded-full font-black ${tab===id ? 'bg-white/20' : isDark ? 'bg-[#30363d] text-slate-400' : 'bg-white text-slate-500 shadow-sm'}`}>{count}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${tab===id ? 'bg-white/20' : isDark ? 'bg-[#30363d] text-slate-400' : 'bg-white text-slate-500 shadow-sm'}`}>{count}</span>
             {badge>0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-[#21262d]"/>}
           </button>
         ))}
@@ -486,11 +486,11 @@ export default function StoreManagementView() {
             <div className={`rounded-3xl border py-24 flex flex-col items-center gap-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-gradient-to-br from-slate-50 to-blue-50/30 border-slate-200/80'}`}>
               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center text-5xl ${isDark ? 'bg-[#21262d]' : 'bg-white shadow-sm'}`}>🛍️</div>
               <div className="text-center">
-                <p className={`font-black text-xl ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>No hay productos</p>
+                <p className={`font-bold text-xl ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>No hay productos</p>
                 <p className={`text-sm mt-1.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Crea el primer artículo de la tienda</p>
               </div>
               <button onClick={() => { setEditProduct(null); setShowModal(true) }}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 active:scale-95">
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 active:scale-95">
                 <Plus size={16}/> Crear primer producto
               </button>
             </div>
@@ -521,7 +521,7 @@ export default function StoreManagementView() {
                     : isDark ? 'bg-[#0d1117] text-slate-400 border-[#30363d] hover:border-[#4a5568]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>
                   {cfg && <span className={`w-2 h-2 rounded-full ${cfg.dot}`}/>}
                   {e==='todos' ? 'Todos' : cfg?.label}
-                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${active ? 'bg-black/10' : isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>{count}</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? 'bg-black/10' : isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>{count}</span>
                 </button>
               )
             })}
@@ -531,7 +531,7 @@ export default function StoreManagementView() {
             <div className={`rounded-3xl border py-24 flex flex-col items-center gap-5 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-gradient-to-br from-slate-50 to-blue-50/30 border-slate-200/80'}`}>
               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center text-5xl ${isDark ? 'bg-[#21262d]' : 'bg-white shadow-sm'}`}>📭</div>
               <div className="text-center">
-                <p className={`font-black text-xl ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>Sin pedidos</p>
+                <p className={`font-bold text-xl ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>Sin pedidos</p>
                 <p className={`text-sm mt-1.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Aún no hay pedidos registrados</p>
               </div>
             </div>
@@ -550,8 +550,8 @@ export default function StoreManagementView() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                          <p className={`font-black text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{order.parent_name||'Padre/Madre'}</p>
-                          <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.border}`}>{cfg.label}</span>
+                          <p className={`font-bold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{order.parent_name||'Padre/Madre'}</p>
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.border}`}>{cfg.label}</span>
                         </div>
                         <div className={`flex items-center gap-3 text-[11px] flex-wrap font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           {order.parent_phone && <span className="flex items-center gap-1"><Phone size={10}/>{order.parent_phone}</span>}
@@ -560,7 +560,7 @@ export default function StoreManagementView() {
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`text-xl font-black ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>S/ {Number(order.total_soles).toFixed(2)}</p>
+                        <p className={`text-xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>S/ {Number(order.total_soles).toFixed(2)}</p>
                         <p className={`text-[10px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>total del pedido</p>
                       </div>
                       <div className={`p-2 rounded-xl transition-all ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-100'}`}>
@@ -571,7 +571,7 @@ export default function StoreManagementView() {
                     {open && (
                       <div className={`border-t p-5 space-y-5 ${isDark ? 'border-[#21262d] bg-[#0d1117]/40' : 'border-slate-100 bg-slate-50/60'}`}>
                         <div>
-                          <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Artículos del pedido</p>
+                          <p className={`text-[10px] font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Artículos del pedido</p>
                           <div className="space-y-2">
                             {(order.store_order_items||[]).map(item => (
                               <div key={item.id} className={`flex items-center gap-3 rounded-xl p-3 border ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200/80'}`}>
@@ -582,7 +582,7 @@ export default function StoreManagementView() {
                                   <p className={`font-bold text-sm truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{item.product_nombre}</p>
                                   <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>x{item.cantidad} · S/ {Number(item.precio_unitario).toFixed(2)} c/u</p>
                                 </div>
-                                <p className={`font-black shrink-0 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>S/ {Number(item.subtotal).toFixed(2)}</p>
+                                <p className={`font-bold shrink-0 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>S/ {Number(item.subtotal).toFixed(2)}</p>
                               </div>
                             ))}
                           </div>
@@ -590,13 +590,13 @@ export default function StoreManagementView() {
 
                         {order.notas && (
                           <div className={`rounded-xl p-4 border ${isDark ? 'bg-amber-900/10 border-amber-800/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
-                            <p className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Nota del padre</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Nota del padre</p>
                             <p className="text-sm">{order.notas}</p>
                           </div>
                         )}
 
                         <div>
-                          <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nota interna (solo equipo)</p>
+                          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nota interna (solo equipo)</p>
                           <textarea defaultValue={order.admin_notas||''} rows={2}
                             placeholder="Ej: Pagado en efectivo, entregado el lunes…"
                             onBlur={e => updateAdminNota(order.id, e.target.value)}
@@ -604,7 +604,7 @@ export default function StoreManagementView() {
                         </div>
 
                         <div>
-                          <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Actualizar estado</p>
+                          <p className={`text-[10px] font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Actualizar estado</p>
                           <div className="flex flex-wrap gap-2">
                             {ESTADOS_FLUJO.map(e => {
                               const c=ESTADO_CFG[e]; const isActive=order.estado===e

@@ -61,7 +61,7 @@ export default function WhatsAppConfigView() {
 
   if (loading) return (
     <div className="flex items-center justify-center p-12">
-      <div className="animate-spin w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full" />
+      <div className="animate-spin w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full" />
     </div>
   )
 
@@ -73,8 +73,8 @@ export default function WhatsAppConfigView() {
 
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
-          <Bell size={20} className="text-violet-600" />
+        <div className="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center shrink-0">
+          <Bell size={20} className="text-sky-600" />
         </div>
         <div>
           <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -132,7 +132,7 @@ export default function WhatsAppConfigView() {
             onClick={() => setTab(t.id)}
             className={`pb-2.5 px-1 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all ${
               tab === t.id
-                ? 'border-violet-500 text-violet-600'
+                ? 'border-sky-500 text-sky-600'
                 : 'border-transparent text-slate-400 hover:text-slate-600'
             }`}
           >

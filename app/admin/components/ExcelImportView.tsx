@@ -140,7 +140,7 @@ export default function ExcelImportView() {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all
-          ${dragOver ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
+          ${dragOver ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-sky-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
         <input ref={inputRef} type="file" accept=".csv,.txt" className="hidden"
           onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]) }} />
         <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
@@ -184,7 +184,7 @@ export default function ExcelImportView() {
       {/* Import button */}
       {file && !result && (
         <button onClick={handleImport} disabled={loading}
-          className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition">
+          className="w-full py-3 bg-sky-600 hover:bg-sky-700 disabled:bg-sky-400 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition">
           {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Importando...</> : <><Upload className="w-5 h-5" /> Importar pacientes</>}
         </button>
       )}

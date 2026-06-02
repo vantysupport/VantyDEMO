@@ -32,7 +32,7 @@ const TIPO_CONFIG: Record<string, { icon: any; color: string; bg: string; label:
   reforzador:          { icon: Star,           color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200',label: 'Reforzadores' },
   conducta_desafiante: { icon: AlertTriangle,  color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200', label: 'Conductas' },
   logro_celebrar:      { icon: Trophy,         color: 'text-emerald-600',bg: 'bg-emerald-50 border-emerald-200', label: '¡Logro!' },
-  carga_sesiones:      { icon: TrendingDown,   color: 'text-purple-600', bg: 'bg-purple-50 border-purple-200', label: 'Frecuencia' },
+  carga_sesiones:      { icon: TrendingDown,   color: 'text-sky-600', bg: 'bg-sky-50 border-sky-200', label: 'Frecuencia' },
 }
 
 const PRIORIDAD_CONFIG = {
@@ -72,7 +72,7 @@ function SugerenciaCard({ s, onResolver }: { s: Sugerencia; onResolver: (id: str
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${prio.badge}`}>{prio.label}</span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${prio.badge}`}>{prio.label}</span>
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{cfg.label}</span>
               <span className="text-[10px] text-slate-400">· {s.child_name}</span>
             </div>
@@ -98,7 +98,7 @@ function SugerenciaCard({ s, onResolver }: { s: Sugerencia; onResolver: (id: str
             <div className="flex items-start gap-2 bg-white/60 rounded-xl p-3">
               <Lightbulb size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1">{t('ui.recommended_action')}</p>
+                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ui.recommended_action')}</p>
                 <p className="text-xs text-slate-700 leading-relaxed">{s.accion_concreta}</p>
               </div>
             </div>
@@ -156,7 +156,7 @@ export default function SugerenciasPanel({ childId }: { childId?: string }) {
             <Brain size={15} className="text-white" />
           </div>
           <div>
-            <h3 className="font-black text-slate-800 text-sm">Sugerencias Proactivas</h3>
+            <h3 className="font-bold text-slate-800 text-sm">Sugerencias Proactivas</h3>
             <p className="text-[11px] text-slate-400">
               {sugerencias.length} sugerencia{sugerencias.length !== 1 ? 's' : ''}
               {urgentes > 0 && <span className="text-red-600 font-bold ml-1">· {urgentes} urgente{urgentes !== 1 ? 's' : ''}</span>}
@@ -172,9 +172,9 @@ export default function SugerenciasPanel({ childId }: { childId?: string }) {
 
       {/* Insight global */}
       {insight && (
-        <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl flex gap-2">
-          <Lightbulb size={14} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-indigo-800 leading-relaxed">{insight}</p>
+        <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100 rounded-xl flex gap-2">
+          <Lightbulb size={14} className="text-sky-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-sky-800 leading-relaxed">{insight}</p>
         </div>
       )}
 
@@ -183,7 +183,7 @@ export default function SugerenciasPanel({ childId }: { childId?: string }) {
         <div className="flex gap-1.5 px-4 pt-3">
           {(['todas', 'alta', 'media', 'baja'] as const).map(f => (
             <button key={f} onClick={() => setFiltro(f)}
-              className={`text-[10px] font-black px-2.5 py-1 rounded-lg capitalize transition-colors ${
+              className={`text-[10px] font-bold px-2.5 py-1 rounded-lg capitalize transition-colors ${
                 filtro === f ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}>
               {f === 'todas' ? `Todas (${sugerencias.length})` :

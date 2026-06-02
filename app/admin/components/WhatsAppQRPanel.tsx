@@ -171,7 +171,7 @@ export default function WhatsAppQRPanel() {
       {status === 'qr' && qr && (
         <div className="rounded-xl border p-5 space-y-4" style={{ borderColor: 'var(--card-border)', background: 'var(--card)' }}>
           <div className="flex items-center gap-2">
-            <Smartphone size={18} className="text-violet-500"/>
+            <Smartphone size={18} className="text-sky-500"/>
             <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
               Escaneá este QR con WhatsApp Business
             </p>
@@ -194,7 +194,7 @@ export default function WhatsAppQRPanel() {
               'Escaneá este QR',
             ].map((step, i) => (
               <p key={i} className="text-xs text-slate-500 flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-600 text-[10px] font-black flex items-center justify-center shrink-0">{i+1}</span>
+                <span className="w-4 h-4 rounded-full bg-sky-100 text-sky-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i+1}</span>
                 {step}
               </p>
             ))}
@@ -209,7 +209,7 @@ export default function WhatsAppQRPanel() {
       {/* Estado: generando QR */}
       {(status === 'waiting' || status === 'loading') && (
         <div className="rounded-xl border p-8 flex flex-col items-center gap-3" style={{ borderColor: 'var(--card-border)', background: 'var(--card)' }}>
-          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"/>
+          <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"/>
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
             {status === 'loading' ? 'Conectando con el servicio...' : 'Generando QR...'}
           </p>

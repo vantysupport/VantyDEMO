@@ -109,16 +109,16 @@ export default function AprobacionesEspecialista() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div style={{ background: '#8b5cf620', color: '#8b5cf6' }}
+          <div style={{ background: '#0ea5e920', color: '#0ea5e9' }}
             className="w-9 h-9 rounded-xl flex items-center justify-center">
             <Stethoscope size={18} />
           </div>
           <div>
-            <h3 style={{ color: '#f1f5f9' }} className="font-black text-xl flex items-center gap-2">
+            <h3 style={{ color: '#f1f5f9' }} className="font-bold text-xl flex items-center gap-2">
               Evaluaciones de Especialistas
               {filtro === 'pending_approval' && pendientesCount > 0 && (
                 <span style={{ background: '#f59e0b', color: '#fff' }}
-                  className="text-xs font-black px-2 py-0.5 rounded-full">{pendientesCount}</span>
+                  className="text-xs font-bold px-2 py-0.5 rounded-full">{pendientesCount}</span>
               )}
             </h3>
             <p style={{ color: '#475569' }} className="text-sm">{t('ui.require_approval')}</p>
@@ -132,7 +132,7 @@ export default function AprobacionesEspecialista() {
               border: `1px solid ${autoAprobacion ? 'rgba(16,185,129,0.4)' : 'rgba(255,255,255,0.08)'}`,
               color: autoAprobacion ? '#10b981' : '#475569'
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all hover:opacity-80"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-80"
             title={t('ui.auto_approval_tooltip')}>
             <span className={`w-2 h-2 rounded-full ${autoAprobacion ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`}/>
             Auto-aprobar {autoAprobacion ? 'ON' : 'OFF'}
@@ -165,7 +165,7 @@ export default function AprobacionesEspecialista() {
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 size={24} style={{ color: '#8b5cf6' }} className="animate-spin" />
+          <Loader2 size={24} style={{ color: '#0ea5e9' }} className="animate-spin" />
         </div>
       ) : submissions.length === 0 ? (
         <div style={{ background: '#0d1a2d', border: '1px solid rgba(255,255,255,0.05)' }}
@@ -285,7 +285,7 @@ export default function AprobacionesEspecialista() {
 function Section({ title, content }: { title: string; content: string }) {
   return (
     <div>
-      <p style={{ color: '#334155' }} className="text-[10px] font-black uppercase tracking-widest mb-2">{title}</p>
+      <p style={{ color: '#334155' }} className="text-[10px] font-bold uppercase tracking-widest mb-2">{title}</p>
       <p style={{ color: '#94a3b8', lineHeight: 1.8 }} className="text-sm whitespace-pre-wrap">{content}</p>
     </div>
   )

@@ -68,7 +68,7 @@ function SidebarLink({ icon: Icon, label, active, onClick, small, badge }: any) 
       <Icon size={small ? 15 : 17} className={`flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-slate-400 group-hover:text-sky-500'}`} />
       <span className={`font-semibold truncate flex-1 ${small ? 'text-xs' : ''}`}>{label}</span>
       {badge > 0 && (
-        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0
           ${active ? 'bg-white/20 text-white' : 'bg-red-500 text-white'}`}>
           {badge}
         </span>
@@ -417,7 +417,7 @@ export default function AdminDashboard() {
             {currentView === 'reportes' && selectedChildReport && (
               <button
                 onClick={() => setShowAnalytics(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-xs shadow hover:shadow-md transition-all"
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg font-bold text-xs shadow hover:shadow-md transition-all"
               >
                 <BarChart3 size={14} /> Analytics
               </button>
@@ -460,7 +460,7 @@ export default function AdminDashboard() {
                 <div className={`absolute right-0 top-11 w-72 rounded-2xl shadow-2xl border p-4 z-50 animate-scale-in
                   ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                       Notificaciones
                     </p>
                     <button onClick={() => setShowNotifications(false)}>
@@ -472,15 +472,15 @@ export default function AdminDashboard() {
                     {/* Mensajes no leídos */}
                     {chatUnread > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-black uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           Chat Equipo
                         </p>
                         <button
                           onClick={() => { navigateTo('chat-especialistas'); setShowNotifications(false) }}
                           className={`w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors
-                            ${isDark ? 'bg-violet-900/20 hover:bg-violet-900/30' : 'bg-violet-50 hover:bg-violet-100'}`}>
-                          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 flex-shrink-0" />
-                          <p className={`text-xs font-medium ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
+                            ${isDark ? 'bg-sky-900/20 hover:bg-sky-900/30' : 'bg-sky-50 hover:bg-sky-100'}`}>
+                          <div className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 flex-shrink-0" />
+                          <p className={`text-xs font-medium ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>
                             {chatUnread} mensaje{chatUnread !== 1 ? 's' : ''} sin leer
                           </p>
                         </button>
@@ -490,7 +490,7 @@ export default function AdminDashboard() {
                     {/* Citas de hoy */}
                     {notifications.length > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-black uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           Citas de hoy
                         </p>
                         {notifications.map(n => (
@@ -539,8 +539,8 @@ export default function AdminDashboard() {
               )}
               {currentView === 'programas'    && (
                 <div className="max-w-4xl mx-auto">
-                  <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-sm text-indigo-700">
-                    💡 Selecciona un paciente desde <button onClick={() => navigateTo('ninos')} className="font-black underline">{t('nav.pacientes')}</button> para ver sus programas ABA. O usa esta vista general.
+                  <div className="mb-4 p-4 bg-sky-50 border border-sky-200 rounded-2xl text-sm text-sky-700">
+                    💡 Selecciona un paciente desde <button onClick={() => navigateTo('ninos')} className="font-bold underline">{t('nav.pacientes')}</button> para ver sus programas ABA. O usa esta vista general.
                   </div>
 
                 </div>
@@ -579,7 +579,7 @@ export default function AdminDashboard() {
           <div className={`rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in
             ${isDark ? 'bg-[#161b22] border border-[#30363d]' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className={`text-lg font-black ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              <h2 className={`text-lg font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Cambiar Contraseña
               </h2>
               <button onClick={() => setShowChangePassword(false)}
@@ -630,14 +630,14 @@ export default function AdminDashboard() {
             height: ariaMinimized ? '54px' : ariaExpanded ? '860px' : '560px',
           }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <svg width="18" height="18" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="6" y="9" width="16" height="13" rx="3" fill="white" fillOpacity="0.9"/>
-                  <rect x="9" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-                  <rect x="16" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-                  <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#7c3aed"/>
+                  <rect x="9" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+                  <rect x="16" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+                  <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#0284c7"/>
                   <rect x="13" y="6" width="2" height="4" rx="1" fill="white" fillOpacity="0.9"/>
                   <circle cx="14" cy="5.5" r="1.5" fill="white"/>
                   <rect x="2" y="12" width="2.5" height="5" rx="1.25" fill="white" fillOpacity="0.7"/>
@@ -645,13 +645,13 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <div>
-                <p className="text-white font-black text-sm leading-tight flex items-center gap-2">
+                <p className="text-white font-bold text-sm leading-tight flex items-center gap-2">
                   ARIA
-                  <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-black">IA</span>
+                  <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-bold">IA</span>
                 </p>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"/>
-                  <p className="text-violet-200 text-[10px] font-medium">{(currentView === 'ninos' && activeChild) ? `Caso: ${activeChild.name}` : 'Asistente Clínico · Activa'}</p>
+                  <p className="text-sky-200 text-[10px] font-medium">{(currentView === 'ninos' && activeChild) ? `Caso: ${activeChild.name}` : 'Asistente Clínico · Activa'}</p>
                 </div>
               </div>
             </div>
@@ -686,19 +686,19 @@ export default function AdminDashboard() {
       {!ariaOpen && currentView !== 'chat-especialistas' && (
         <button
           onClick={() => setAriaOpen(true)}
-          className="fixed bottom-6 md:bottom-6 right-4 md:right-6 z-[91] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-gradient-to-br from-violet-600 to-indigo-600"
+          className="fixed bottom-6 md:bottom-6 right-4 md:right-6 z-[91] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-gradient-to-br from-sky-600 to-cyan-600"
           title="ARIA — Asistente IA">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="6" y="9" width="16" height="13" rx="3" fill="white" fillOpacity="0.9"/>
-            <rect x="9" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-            <rect x="16" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-            <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#7c3aed"/>
+            <rect x="9" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+            <rect x="16" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+            <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#0284c7"/>
             <rect x="13" y="6" width="2" height="4" rx="1" fill="white" fillOpacity="0.9"/>
             <circle cx="14" cy="5.5" r="1.5" fill="white"/>
             <rect x="2" y="12" width="2.5" height="5" rx="1.25" fill="white" fillOpacity="0.7"/>
             <rect x="23.5" y="12" width="2.5" height="5" rx="1.25" fill="white" fillOpacity="0.7"/>
           </svg>
-          <span className="pointer-events-none absolute inset-0 rounded-full bg-violet-400 animate-ping opacity-20"/>
+          <span className="pointer-events-none absolute inset-0 rounded-full bg-sky-400 animate-ping opacity-20"/>
         </button>
       )}
     </div>

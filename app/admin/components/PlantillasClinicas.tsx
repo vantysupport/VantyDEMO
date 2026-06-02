@@ -128,27 +128,27 @@ export function GestorPlantillas({ isDark: isDarkProp }: { isDark?: boolean }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className={`font-black text-base flex items-center gap-2 ${cc.txt1}`}>
-            <LayoutTemplate size={18} className="text-indigo-500" />
+          <h3 className={`font-bold text-base flex items-center gap-2 ${cc.txt1}`}>
+            <LayoutTemplate size={18} className="text-sky-500" />
             Fichas Clínicas
           </h3>
           <p className={`text-xs mt-0.5 ${cc.txt3}`}>Crea y gestiona los modelos de ficha de tu centro</p>
         </div>
         <button onClick={() => { setEditing(null); setView('create') }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl transition-all shadow-sm">
+          className="flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
           <Plus size={14} /> Nueva ficha
         </button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 size={22} className="animate-spin text-indigo-500" /></div>
+        <div className="flex justify-center py-12"><Loader2 size={22} className="animate-spin text-sky-500" /></div>
       ) : templates.length === 0 ? (
         <div className={`${cc.card} border rounded-2xl p-12 text-center`}>
           <LayoutTemplate size={40} className={`mx-auto mb-3 ${cc.txt3}`} />
-          <p className={`font-black text-sm ${cc.txt3}`}>Sin fichas creadas</p>
+          <p className={`font-bold text-sm ${cc.txt3}`}>Sin fichas creadas</p>
           <p className={`text-xs mt-1 ${cc.txt3} opacity-60`}>Crea la primera ficha clínica de tu centro</p>
           <button onClick={() => setView('create')}
-            className="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl">
+            className="mt-4 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl">
             Crear primera ficha
           </button>
         </div>
@@ -157,14 +157,14 @@ export function GestorPlantillas({ isDark: isDarkProp }: { isDark?: boolean }) {
           {templates.map(t => (
             <div key={t.id} className={`${cc.card} border rounded-2xl`}>
               <div className="p-4 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-indigo-900/30' : 'bg-indigo-50'}`}>
-                  <FileText size={18} className="text-indigo-500" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-sky-900/30' : 'bg-sky-50'}`}>
+                  <FileText size={18} className="text-sky-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className={`font-black text-sm ${cc.txt1}`}>{t.name}</p>
-                    {t.is_default && <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">Sistema</span>}
-                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${t.is_active ? 'bg-emerald-100 text-emerald-700' : isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
+                    <p className={`font-bold text-sm ${cc.txt1}`}>{t.name}</p>
+                    {t.is_default && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">Sistema</span>}
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${t.is_active ? 'bg-emerald-100 text-emerald-700' : isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
                       {t.is_active ? '● Activa' : '○ Inactiva'}
                     </span>
                     <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
@@ -223,8 +223,8 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
     txt1:  isDark ? 'text-slate-100' : 'text-slate-800',
     txt3:  isDark ? 'text-slate-500' : 'text-slate-400',
     input: isDark
-      ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600 focus:border-indigo-500'
-      : 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400',
+      ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600 focus:border-sky-500'
+      : 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-sky-400',
   }
   const inputCls = `w-full px-3 py-2.5 rounded-xl text-sm border-2 outline-none transition-all ${cc.input}`
 
@@ -275,7 +275,7 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
           <ArrowLeft size={16} className={cc.txt3} />
         </button>
         <div className="flex-1">
-          <p className={`font-black text-base ${cc.txt1}`}>{template ? 'Editar ficha' : 'Nueva ficha clínica'}</p>
+          <p className={`font-bold text-base ${cc.txt1}`}>{template ? 'Editar ficha' : 'Nueva ficha clínica'}</p>
           <p className={`text-xs ${cc.txt3}`}>Diseña el formulario con secciones y preguntas</p>
         </div>
         <button onClick={() => setPreview(true)}
@@ -283,7 +283,7 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
           <Eye size={13} /> Vista previa
         </button>
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl disabled:opacity-50">
+          className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl disabled:opacity-50">
           {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
           {saving ? 'Guardando...' : 'Guardar ficha'}
         </button>
@@ -292,16 +292,16 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
       {/* Datos básicos */}
       <div className={`${cc.card} border rounded-2xl p-5 space-y-4`}>
         <div>
-          <label className={`block text-[10px] font-black uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Nombre de la ficha *</label>
+          <label className={`block text-[10px] font-bold uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Nombre de la ficha *</label>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Historia Clínica, Seguimiento Mensual..." className={inputCls} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className={`block text-[10px] font-black uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Descripción</label>
+            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Descripción</label>
             <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Para qué se usa esta ficha..." className={inputCls} />
           </div>
           <div>
-            <label className={`block text-[10px] font-black uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Categoría</label>
+            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-1.5 ${cc.txt3}`}>Categoría</label>
             <select value={category} onChange={e => setCategory(e.target.value)} className={`${inputCls} cursor-pointer`}>
               {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
             </select>
@@ -312,8 +312,8 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
       {/* Campos sin sección */}
       <div className={`${cc.card} border rounded-2xl overflow-hidden`}>
         <div className={`px-5 py-3 border-b flex items-center justify-between ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          <p className={`text-xs font-black uppercase tracking-widest ${cc.txt3}`}>Campos generales</p>
-          <button onClick={() => addField()} className="flex items-center gap-1 text-xs font-bold text-indigo-500 hover:text-indigo-400">
+          <p className={`text-xs font-bold uppercase tracking-widest ${cc.txt3}`}>Campos generales</p>
+          <button onClick={() => addField()} className="flex items-center gap-1 text-xs font-bold text-sky-500 hover:text-sky-400">
             <Plus size={13} /> Añadir campo
           </button>
         </div>
@@ -339,12 +339,12 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
               <div className="flex-1 space-y-1.5">
                 <input value={section.title} onChange={e => updateSection(section.id, { title: e.target.value })}
                   placeholder="Título de la sección"
-                  className={`w-full px-3 py-1.5 rounded-lg text-sm font-black border-2 outline-none ${isDark ? 'bg-[#161b22] border-[#21262d] text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`} />
+                  className={`w-full px-3 py-1.5 rounded-lg text-sm font-bold border-2 outline-none ${isDark ? 'bg-[#161b22] border-[#21262d] text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`} />
                 <input value={section.description || ''} onChange={e => updateSection(section.id, { description: e.target.value })}
                   placeholder="Descripción de la sección (opcional)"
                   className={`w-full px-3 py-1 rounded-lg text-xs border outline-none ${isDark ? 'bg-[#161b22] border-[#21262d] text-slate-400' : 'bg-white border-slate-200 text-slate-500'}`} />
               </div>
-              <button onClick={() => addField(section.id)} className="flex items-center gap-1 text-xs font-bold text-indigo-500 hover:text-indigo-400 whitespace-nowrap mt-1">
+              <button onClick={() => addField(section.id)} className="flex items-center gap-1 text-xs font-bold text-sky-500 hover:text-sky-400 whitespace-nowrap mt-1">
                 <Plus size={12} /> Campo
               </button>
               <button onClick={() => removeSection(section.id)} className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 mt-0.5">
@@ -370,7 +370,7 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
       {/* Agregar sección */}
       <button onClick={addSection}
         className={`w-full py-3 rounded-2xl border-2 border-dashed text-xs font-bold transition-all
-          ${isDark ? 'border-[#30363d] text-slate-500 hover:border-indigo-700 hover:text-indigo-400' : 'border-slate-200 text-slate-400 hover:border-indigo-300 hover:text-indigo-500'}`}>
+          ${isDark ? 'border-[#30363d] text-slate-500 hover:border-sky-700 hover:text-sky-400' : 'border-slate-200 text-slate-400 hover:border-sky-300 hover:text-sky-500'}`}>
         + Agregar sección
       </button>
     </div>
@@ -393,12 +393,12 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
     <div className={`${cc.bg} border-2 ${cc.border} rounded-xl p-3 space-y-2`}>
       <div className="flex items-center gap-2">
         <div className="flex flex-col gap-0.5 flex-shrink-0">
-          <button onClick={onMoveUp} className={`text-[9px] leading-none ${cc.txt3} hover:text-indigo-500`}>▲</button>
-          <button onClick={onMoveDown} className={`text-[9px] leading-none ${cc.txt3} hover:text-indigo-500`}>▼</button>
+          <button onClick={onMoveUp} className={`text-[9px] leading-none ${cc.txt3} hover:text-sky-500`}>▲</button>
+          <button onClick={onMoveDown} className={`text-[9px] leading-none ${cc.txt3} hover:text-sky-500`}>▼</button>
         </div>
         <input value={field.label} onChange={e => onChange({ label: e.target.value })}
           placeholder="Pregunta o etiqueta del campo"
-          className={`flex-1 px-3 py-2 rounded-lg text-sm border-2 outline-none focus:border-indigo-400 transition-all ${cc.input}`} />
+          className={`flex-1 px-3 py-2 rounded-lg text-sm border-2 outline-none focus:border-sky-400 transition-all ${cc.input}`} />
         <select value={field.type} onChange={e => {
           const newType = e.target.value as Field['type']
           const needsOptions = ['select', 'radio'].includes(newType)
@@ -411,8 +411,8 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
           {FIELD_TYPES.map(ft => <option key={ft.id} value={ft.id}>{ft.icon} {ft.label}</option>)}
         </select>
         <label className="flex items-center gap-1 cursor-pointer flex-shrink-0" title="Campo obligatorio">
-          <input type="checkbox" checked={field.required} onChange={e => onChange({ required: e.target.checked })} className="rounded accent-indigo-500" />
-          <span className={`text-[10px] font-black ${cc.txt3}`}>*</span>
+          <input type="checkbox" checked={field.required} onChange={e => onChange({ required: e.target.checked })} className="rounded accent-sky-500" />
+          <span className={`text-[10px] font-bold ${cc.txt3}`}>*</span>
         </label>
         <button onClick={onDelete} className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0">
           <X size={13} />
@@ -425,7 +425,7 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
       )}
       {['select', 'radio'].includes(field.type) && (
         <div className="space-y-1.5">
-          <p className={`text-[9px] font-black uppercase tracking-widest ${cc.txt3}`}>Opciones</p>
+          <p className={`text-[9px] font-bold uppercase tracking-widest ${cc.txt3}`}>Opciones</p>
           <div className="space-y-1">
             {(field.options || []).map((opt, idx) => (
               <div key={idx} className="flex items-center gap-1.5">
@@ -449,7 +449,7 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
                     }
                   }}
                   placeholder={`Opción ${idx + 1}`}
-                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs border-2 outline-none focus:border-indigo-400 transition-all ${cc.input}`}
+                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs border-2 outline-none focus:border-sky-400 transition-all ${cc.input}`}
                   autoFocus={idx === (field.options || []).length - 1 && opt === ''}
                 />
                 <button
@@ -465,7 +465,7 @@ function FieldEditor({ field, isDark, onChange, onDelete, onMoveUp, onMoveDown }
             {/* Add option button */}
             <button
               onClick={() => onChange({ options: [...(field.options || []), ''] })}
-              className={`flex items-center gap-1 text-xs font-bold mt-1 px-2 py-1 rounded-lg transition-colors ${isDark ? 'text-indigo-400 hover:bg-indigo-900/20' : 'text-indigo-600 hover:bg-indigo-50'}`}>
+              className={`flex items-center gap-1 text-xs font-bold mt-1 px-2 py-1 rounded-lg transition-colors ${isDark ? 'text-sky-400 hover:bg-sky-900/20' : 'text-sky-600 hover:bg-sky-50'}`}>
               <Plus size={11} /> Añadir opción
             </button>
           </div>
@@ -487,7 +487,7 @@ function FormPreview({ name, desc, sections, fields, isDark, onBack }: {
   }
   const renderField = (f: Field) => (
     <div key={f.id}>
-      <label className={`block text-xs font-black mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+      <label className={`block text-xs font-bold mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
         {f.label || '(Sin nombre)'} {f.required && <span className="text-red-400">*</span>}
       </label>
       {f.type === 'textarea' && <textarea rows={3} disabled placeholder={f.placeholder} className={`w-full px-3 py-2 rounded-xl text-sm border-2 resize-none opacity-70 ${cc.input}`} />}
@@ -522,11 +522,11 @@ function FormPreview({ name, desc, sections, fields, isDark, onBack }: {
         <button onClick={onBack} className={`p-2 rounded-xl ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-100'}`}>
           <ArrowLeft size={16} className={cc.txt3} />
         </button>
-        <p className={`font-black text-sm ${cc.txt1}`}>Vista previa — así verán la ficha los especialistas</p>
+        <p className={`font-bold text-sm ${cc.txt1}`}>Vista previa — así verán la ficha los especialistas</p>
       </div>
       <div className={`${cc.card} border rounded-2xl p-6 space-y-5`}>
         <div className={`pb-4 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          <p className={`font-black text-lg ${cc.txt1}`}>{name || '(Sin nombre)'}</p>
+          <p className={`font-bold text-lg ${cc.txt1}`}>{name || '(Sin nombre)'}</p>
           {desc && <p className={`text-sm mt-1 ${cc.txt3}`}>{desc}</p>}
         </div>
         {fields.filter(f => !f.section).length > 0 && (
@@ -536,7 +536,7 @@ function FormPreview({ name, desc, sections, fields, isDark, onBack }: {
           const sf = fields.filter(f => f.section === section.id)
           return (
             <div key={section.id} className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-100'}`}>
-              <p className={`font-black text-sm mb-0.5 ${cc.txt1}`}>{section.title}</p>
+              <p className={`font-bold text-sm mb-0.5 ${cc.txt1}`}>{section.title}</p>
               {section.description && <p className={`text-xs mb-3 ${cc.txt3}`}>{section.description}</p>}
               <div className="space-y-4">{sf.map(renderField)}</div>
             </div>
@@ -649,7 +649,7 @@ export function RellenarFicha({
 
   const renderField = (field: Field) => (
     <div key={field.id}>
-      <label className={`block text-xs font-black mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+      <label className={`block text-xs font-bold mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
         {field.label} {field.required && <span className="text-red-400">*</span>}
       </label>
       {field.type === 'textarea' && <textarea rows={3} value={answers[field.id] || ''} placeholder={field.placeholder} onChange={e => setAnswers(p => ({ ...p, [field.id]: e.target.value }))} className={`${inputCls} resize-none`} />}
@@ -688,7 +688,7 @@ export function RellenarFicha({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h3 className={`font-black text-base flex items-center gap-2 ${cc.txt1}`}>
+          <h3 className={`font-bold text-base flex items-center gap-2 ${cc.txt1}`}>
             <FileText size={16} className="text-blue-500" /> Fichas Clínicas
           </h3>
           <p className={`text-xs mt-0.5 ${cc.txt3}`}>{selected ? selected.name : `Fichas de ${childName}`}</p>
@@ -713,7 +713,7 @@ export function RellenarFicha({
           {responses.length === 0 ? (
             <div className={`${cc.card} border rounded-2xl p-8 text-center`}>
               <FileText size={28} className={`mx-auto mb-2 ${cc.txt3}`} />
-              <p className={`text-sm font-black ${cc.txt3}`}>Sin fichas registradas</p>
+              <p className={`text-sm font-bold ${cc.txt3}`}>Sin fichas registradas</p>
             </div>
           ) : responses.map(r => <ResponseCard key={r.id} response={r} isDark={isDark} />)}
         </div>
@@ -724,7 +724,7 @@ export function RellenarFicha({
         templates.length === 0 ? (
           <div className={`${cc.card} border rounded-2xl p-10 text-center`}>
             <LayoutTemplate size={32} className={`mx-auto mb-3 ${cc.txt3}`} />
-            <p className={`font-black text-sm ${cc.txt3}`}>Sin fichas disponibles</p>
+            <p className={`font-bold text-sm ${cc.txt3}`}>Sin fichas disponibles</p>
             <p className={`text-xs mt-1 opacity-70 ${cc.txt3}`}>El administrador debe crear fichas primero desde Mi Perfil</p>
           </div>
         ) : (
@@ -737,7 +737,7 @@ export function RellenarFicha({
                     <FileText size={18} className="text-blue-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-black text-sm ${cc.txt1}`}>{t.name}</p>
+                    <p className={`font-bold text-sm ${cc.txt1}`}>{t.name}</p>
                     {t.description && <p className={`text-xs mt-0.5 ${cc.txt3} line-clamp-2`}>{t.description}</p>}
                     <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
                       {t.fields?.length || 0} campos{t.sections?.length ? ` · ${t.sections.length} secciones` : ''}
@@ -754,7 +754,7 @@ export function RellenarFicha({
       {selected && (
         <div className={`${cc.card} border rounded-2xl p-5 space-y-5`}>
           <div className={`pb-3 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-            <p className={`font-black text-base ${cc.txt1}`}>{selected.name}</p>
+            <p className={`font-bold text-base ${cc.txt1}`}>{selected.name}</p>
             {selected.description && <p className={`text-xs mt-0.5 ${cc.txt3}`}>{selected.description}</p>}
           </div>
 
@@ -762,15 +762,15 @@ export function RellenarFicha({
           <div className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-blue-50/50 border-blue-100'}`}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${cc.txt3}`}>📅 Fecha</p>
+                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cc.txt3}`}>📅 Fecha</p>
                 <p className={`text-sm font-bold capitalize ${cc.txt1}`}>{fechaHoyFmt}</p>
               </div>
               <div>
-                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${cc.txt3}`}>👤 Alumno</p>
+                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cc.txt3}`}>👤 Alumno</p>
                 <p className={`text-sm font-bold ${cc.txt1}`}>{childName}</p>
               </div>
               <div>
-                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${cc.txt3}`}>👨‍⚕️ Especialista a cargo</p>
+                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cc.txt3}`}>👨‍⚕️ Especialista a cargo</p>
                 {currentUser ? (
                   <p className={`text-sm font-bold ${cc.txt1}`}>
                     {currentUser.full_name}
@@ -794,18 +794,18 @@ export function RellenarFicha({
             if (sf.length === 0) return null
             return (
               <div key={section.id} className={`rounded-xl p-4 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-100'}`}>
-                <p className={`font-black text-sm mb-0.5 ${cc.txt1}`}>{section.title}</p>
+                <p className={`font-bold text-sm mb-0.5 ${cc.txt1}`}>{section.title}</p>
                 {section.description && <p className={`text-xs mb-3 ${cc.txt3}`}>{section.description}</p>}
                 <div className="space-y-4">{sf.map(renderField)}</div>
               </div>
             )
           })}
           <div>
-            <label className={`block text-xs font-black mb-1.5 ${cc.txt3}`}>Observaciones adicionales</label>
+            <label className={`block text-xs font-bold mb-1.5 ${cc.txt3}`}>Observaciones adicionales</label>
             <textarea rows={3} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas del clínico..." className={`${inputCls} resize-none`} />
           </div>
           <button onClick={handleSave} disabled={saving}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-xl text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-xl text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {saving ? 'Guardando...' : 'Guardar ficha'}
           </button>
@@ -847,7 +847,7 @@ function ResponseCard({ response, isDark }: { response: TemplateResponse; isDark
         <button onClick={() => setOpen(!open)} className="flex-1 flex items-center gap-3 text-left min-w-0">
           <FileText size={16} className="text-blue-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-black ${cc.txt1}`}>{template?.name || 'Ficha'}</p>
+            <p className={`text-sm font-bold ${cc.txt1}`}>{template?.name || 'Ficha'}</p>
             <p className={`text-xs ${cc.txt3}`}>{response.filler_name} · {new Date(response.created_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
           </div>
           {open ? <ChevronUp size={15} className={cc.txt3} /> : <ChevronDown size={15} className={cc.txt3} />}
@@ -860,20 +860,20 @@ function ResponseCard({ response, isDark }: { response: TemplateResponse; isDark
       </div>
       {open && (
         <div className={`p-4 pt-2 border-t space-y-3 ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          {fields.filter(f => !f.section).map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
+          {fields.filter(f => !f.section).map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
           {sections.map(s => {
             const sf = fields.filter(f => f.section === s.id)
             if (!sf.some(f => val(f.id))) return null
             return (
               <div key={s.id} className={`rounded-xl p-3 border ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50 border-slate-100'}`}>
-                <p className={`text-xs font-black mb-2 ${cc.txt1}`}>{s.title}</p>
+                <p className={`text-xs font-bold mb-2 ${cc.txt1}`}>{s.title}</p>
                 <div className="space-y-2">
-                  {sf.map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
+                  {sf.map(f => { const v = val(f.id); if (!v) return null; return <div key={f.id}><p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${cc.txt3}`}>{f.label}</p><p className={`text-sm ${cc.txt1}`}>{v}</p></div> })}
                 </div>
               </div>
             )
           })}
-          {response.notes && <div><p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${cc.txt3}`}>Observaciones</p><p className={`text-sm ${cc.txt1}`}>{response.notes}</p></div>}
+          {response.notes && <div><p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${cc.txt3}`}>Observaciones</p><p className={`text-sm ${cc.txt1}`}>{response.notes}</p></div>}
         </div>
       )}
     </div>

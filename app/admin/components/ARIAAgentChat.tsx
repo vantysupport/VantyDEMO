@@ -206,9 +206,9 @@ export default function ARIAAgentChat({
               <Brain size={15} style={{ color: 'var(--text-secondary)' }} />
             </div>
             <div>
-              <h3 className="font-black text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 ARIA — Asistente Clínico IA
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
                   style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
                   BETA
                 </span>
@@ -257,7 +257,7 @@ export default function ARIAAgentChat({
           className="px-5 pb-4"
           style={{ background: 'var(--background)', borderTop: '1px solid var(--card-border)' }}
         >
-          <p className="text-[10px] font-black uppercase tracking-widest mb-2 mt-3" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-2 mt-3" style={{ color: 'var(--text-muted)' }}>
             Preguntas sugeridas
           </p>
           <div className="flex flex-wrap gap-2">

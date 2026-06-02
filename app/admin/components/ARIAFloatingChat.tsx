@@ -491,7 +491,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
             className={`px-3 py-2.5 flex items-center gap-2 flex-shrink-0 cursor-pointer transition-all duration-300
               ${mode === 'soporte'
                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600'
-                : 'bg-gradient-to-r from-violet-600 to-indigo-600'}`}
+                : 'bg-gradient-to-r from-sky-600 to-cyan-600'}`}
             onClick={() => setMinimized(m => !m)}
           >
             <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -500,7 +500,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                 : <Brain size={14} className="text-white" />}
             </div>
             <div className="flex-1 min-w-0 overflow-hidden">
-              <p className="font-black text-white text-sm leading-tight truncate">ARIA</p>
+              <p className="font-bold text-white text-sm leading-tight truncate">ARIA</p>
               <p className="text-white/70 text-[10px] truncate">
                 {mode === 'soporte' ? 'Guía de Plataforma · VANTY' : 'Asistente Clínico IA'}
               </p>
@@ -542,7 +542,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                   onClick={() => handleModeChange('clinico')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
                     mode === 'clinico'
-                      ? 'bg-violet-600 text-white shadow-md'
+                      ? 'bg-sky-600 text-white shadow-md'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--muted-bg)]'
                   }`}
                 >
@@ -575,15 +575,15 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                     <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: msg.role === 'user' ? 'rgba(99,102,241,0.15)' : (mode === 'soporte' ? 'rgba(5,150,105,0.15)' : 'rgba(139,92,246,0.15)') }}>
                       {msg.role === 'user'
-                        ? <User size={12} className="text-indigo-500" />
+                        ? <User size={12} className="text-sky-500" />
                         : mode === 'soporte'
                           ? <Map size={12} className="text-emerald-500" />
-                          : <Brain size={12} className="text-violet-500" />}
+                          : <Brain size={12} className="text-sky-500" />}
                     </div>
                     <div className={`max-w-[80%] flex flex-col gap-0.5 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                       <div className="rounded-2xl px-3 py-2 text-xs leading-relaxed"
                         style={msg.role === 'user'
-                          ? { background: '#6d28d9', color: '#fff', borderRadius: '1rem 0.25rem 1rem 1rem' }
+                          ? { background: '#0369a1', color: '#fff', borderRadius: '1rem 0.25rem 1rem 1rem' }
                           : { background: 'var(--muted-bg)', color: 'var(--text-primary)', border: '1px solid var(--card-border)', borderRadius: '0.25rem 1rem 1rem 1rem' }
                         }>
                         {formatContent(msg.content)}
@@ -594,7 +594,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                             <span key={j} className={`text-[9px] px-1.5 py-0.5 rounded-full border font-bold flex items-center gap-1 ${
                               mode === 'soporte'
                                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                : 'bg-violet-500/20 text-violet-400 border-violet-500/30'
+                                : 'bg-sky-500/20 text-sky-400 border-sky-500/30'
                             }`}>
                               <BookOpen size={7} /> {f}
                             </span>
@@ -606,14 +606,14 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                 ))}
                 {loading && (
                   <div className="flex gap-2">
-                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${mode === 'soporte' ? 'bg-emerald-500/20' : 'bg-violet-500/20'}`}>
+                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${mode === 'soporte' ? 'bg-emerald-500/20' : 'bg-sky-500/20'}`}>
                       {mode === 'soporte'
                         ? <Map size={12} className="text-emerald-500" />
-                        : <Brain size={12} className="text-violet-500" />}
+                        : <Brain size={12} className="text-sky-500" />}
                     </div>
                     <div className="rounded-2xl px-3 py-2 flex items-center gap-2"
                       style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
-                      <Loader2 size={12} className="animate-spin text-violet-500" />
+                      <Loader2 size={12} className="animate-spin text-sky-500" />
                       <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>ARIA está pensando...</span>
                     </div>
                   </div>
@@ -626,7 +626,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                 <div className="px-3 pb-2 pt-2 flex flex-wrap gap-1.5" style={{ borderTop: '1px solid var(--card-border)', background: 'var(--background)' }}>
                   {sugerencias.map((s, i) => (
                     <button key={i} onClick={() => sendMessage(s)}
-                      className="px-2.5 py-1.5 rounded-xl text-[11px] font-medium transition-all hover:border-violet-400 hover:text-violet-500 text-left"
+                      className="px-2.5 py-1.5 rounded-xl text-[11px] font-medium transition-all hover:border-sky-400 hover:text-sky-500 text-left"
                       style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)' }}>
                       {s}
                     </button>
@@ -657,7 +657,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                     onKeyDown={handleKeyDown}
                     rows={1}
                     placeholder={mode === 'soporte' ? '¿En qué sección necesitas ayuda?' : 'Pregúntale a ARIA sobre el caso, protocolos ABA, DSM-5...'}
-                    className="flex-1 p-2.5 rounded-2xl text-xs resize-none outline-none transition-all leading-relaxed max-h-24 focus:ring-2 focus:ring-violet-400"
+                    className="flex-1 p-2.5 rounded-2xl text-xs resize-none outline-none transition-all leading-relaxed max-h-24 focus:ring-2 focus:ring-sky-400"
                     style={{
                       background: 'var(--input-bg)',
                       border: '1.5px solid var(--input-border)',
@@ -667,7 +667,7 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
                   />
                   <button onClick={() => sendMessage()} disabled={!input.trim() || loading}
                     className={`w-9 h-9 text-white rounded-xl flex items-center justify-center disabled:opacity-40 transition-all shrink-0 ${
-                      mode === 'soporte' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-violet-600 hover:bg-violet-700'
+                      mode === 'soporte' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-sky-600 hover:bg-sky-700'
                     }`}>
                     <Send size={14} />
                   </button>
@@ -683,12 +683,12 @@ export default function ARIAFloatingChat({ userId, childId, childName }: { userI
         onClick={() => setOpen(o => !o)}
         className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95
           ${open ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'}`}
-        style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
+        style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)' }}
         title="Abrir ARIA"
       >
         <Brain size={26} className="text-white" />
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg">
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg">
             {unread}
           </span>
         )}

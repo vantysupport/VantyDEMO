@@ -38,10 +38,10 @@ const UNIFIED_CATEGORIES = [
   { id: 'conductual', label: 'ABA / Sesión',          icon: '🎯', color: 'bg-orange-50 text-orange-700 border-orange-200' },
   { id: 'familia',    label: 'Familia / Hogar',       icon: '🏠', color: 'bg-pink-50 text-pink-700 border-pink-200' },
   { id: 'clinico',    label: 'Historia Clínica',      icon: '📋', color: 'bg-slate-50 text-slate-700 border-slate-200' },
-  { id: 'tea',        label: 'TEA / Diagnóstico',     icon: '🧩', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { id: 'tea',        label: 'TEA / Diagnóstico',     icon: '🧩', color: 'bg-sky-50 text-sky-700 border-sky-200' },
   { id: 'tdah',       label: 'TDAH',                  icon: '⚡', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   { id: 'habilidades',label: 'Conducta Adaptativa',   icon: '🌟', color: 'bg-green-50 text-green-700 border-green-200' },
-  { id: 'cognitivo',  label: 'Cognitivo / CI',        icon: '🧠', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  { id: 'cognitivo',  label: 'Cognitivo / CI',        icon: '🧠', color: 'bg-sky-50 text-sky-700 border-sky-200' },
   { id: 'sensorial',  label: 'Sensorial',             icon: '🌀', color: 'bg-teal-50 text-teal-700 border-teal-200' },
 ]
 
@@ -77,7 +77,7 @@ const CLINICAL_FORMS = [
   {
     id: 'ados2', title: 'ADOS-2', subtitle: 'Registro de resultados diagnósticos',
     category: 'tea', icon: '🔬', tags: ['TEA', 'ADOS', 'Diagnóstico'],
-    color: 'from-purple-600 to-violet-700', estimatedMinutes: 10, targetRole: 'admin',
+    color: 'from-sky-600 to-sky-700', estimatedMinutes: 10, targetRole: 'admin',
     description: '⚠️ Corre en plataforma oficial ADOS-2. Aquí solo registrá los resultados y puntuaciones.',
     formKey: 'ados2', area: 'Resultados', externalPlatform: true
   },
@@ -131,7 +131,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {opts.map((opt: string) => (
             <button key={opt} type="button" onClick={() => onChange(opt)}
-              className={`p-2.5 rounded-xl border-2 text-xs font-bold transition-all text-left ${value === opt ? 'bg-violet-600 text-white border-violet-600 shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300'}`}>
+              className={`p-2.5 rounded-xl border-2 text-xs font-bold transition-all text-left ${value === opt ? 'bg-sky-600 text-white border-sky-600 shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           ))}
@@ -152,7 +152,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
                 const s = selected.includes(opt) ? selected.filter(x => x !== opt) : [...selected, opt]
                 onChange(s)
               }}
-              className={`px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all ${selected.includes(opt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300'}`}>
+              className={`px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all ${selected.includes(opt) ? 'bg-sky-600 text-white border-sky-600' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           ))}
@@ -169,7 +169,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
         <div className="flex gap-3">
           {scale.map(n => (
             <button key={n} type="button" onClick={() => onChange(n)}
-              className={`w-12 h-12 rounded-xl border-2 font-black text-lg transition-all ${value === n ? 'bg-violet-600 text-white border-violet-600 shadow-lg scale-110' : 'bg-white border-slate-200 text-slate-500 hover:border-violet-300'}`}>
+              className={`w-12 h-12 rounded-xl border-2 font-bold text-lg transition-all ${value === n ? 'bg-sky-600 text-white border-sky-600 shadow-lg scale-110' : 'bg-white border-slate-200 text-slate-500 hover:border-sky-300'}`}>
               {n}
             </button>
           ))}
@@ -188,7 +188,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
         <div className="flex gap-3">
           {['Sí', 'No'].map(opt => (
             <button key={opt} type="button" onClick={() => onChange(opt)}
-              className={`flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-all ${value === opt ? (opt === 'Sí' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-600 text-white border-slate-600') : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300'}`}>
+              className={`flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-all ${value === opt ? (opt === 'Sí' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-600 text-white border-slate-600') : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           ))}
@@ -203,7 +203,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
         {question.helpText && <p className="text-xs text-slate-400 mb-2">{question.helpText}</p>}
         <textarea rows={3} value={value || ''} onChange={e => onChange(e.target.value)}
           placeholder={question.placeholder}
-          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-violet-400 transition-all resize-none" />
+          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all resize-none" />
       </div>
     )
   }
@@ -212,7 +212,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
       <div>
         <label className="text-sm font-bold text-slate-700 block mb-2">{question.label}</label>
         <select value={value || ''} onChange={e => onChange(e.target.value)}
-          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-violet-400 transition-all">
+          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all">
           <option value="">{t('common.seleccionar')}</option>
           {(question.options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
@@ -231,14 +231,14 @@ function QuestionRenderer({ question, value, onChange }: any) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400 font-bold">{labels[0] || min}</span>
-            <span className="text-2xl font-black text-violet-600">{val}</span>
+            <span className="text-2xl font-bold text-sky-600">{val}</span>
             <span className="text-xs text-slate-400 font-bold">{labels[labels.length-1] || max}</span>
           </div>
           <input type="range" min={min} max={max} step={1} value={val}
             onChange={e => onChange(Number(e.target.value))}
-            className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-violet-600" />
+            className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-sky-600" />
           {labels.length > 0 && val >= min && (
-            <p className="text-xs text-center font-bold text-violet-600 bg-violet-50 px-3 py-1.5 rounded-lg">
+            <p className="text-xs text-center font-bold text-sky-600 bg-sky-50 px-3 py-1.5 rounded-lg">
               {labels[val - min] || ''}
             </p>
           )}
@@ -252,7 +252,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
       <div>
         <label className="text-sm font-bold text-slate-700 block mb-2">{question.label}</label>
         <input type="date" value={value || ''} onChange={e => onChange(e.target.value)}
-          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-violet-400 transition-all" />
+          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all" />
       </div>
     )
   }
@@ -263,16 +263,16 @@ function QuestionRenderer({ question, value, onChange }: any) {
       return (
         <div>
           <label className="text-sm font-bold text-slate-700 block mb-2 flex items-center gap-1.5">
-            <Sparkles size={13} className="text-violet-500" /> {question.label}
-            <span className="text-[10px] font-bold text-violet-400 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 ml-1">{t('evaluaciones.generadoIA')}</span>
+            <Sparkles size={13} className="text-sky-500" /> {question.label}
+            <span className="text-[10px] font-bold text-sky-400 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 ml-1">{t('evaluaciones.generadoIA')}</span>
           </label>
           {hasValue ? (
             <textarea rows={4} value={value} onChange={e => onChange(e.target.value)}
-              className="w-full p-4 bg-violet-50 border-2 border-violet-200 rounded-xl text-sm font-medium outline-none focus:border-violet-400 transition-all resize-none text-slate-700" />
+              className="w-full p-4 bg-sky-50 border-2 border-sky-200 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all resize-none text-slate-700" />
           ) : (
             <div className="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center gap-2 text-slate-400 text-sm">
-              <Sparkles size={15} className="text-violet-300 flex-shrink-0" />
-              <span>{t('evaluaciones.seCompletara')} <strong className="text-violet-500">{t('evaluaciones.analizarConIA2')}</strong></span>
+              <Sparkles size={15} className="text-sky-300 flex-shrink-0" />
+              <span>{t('evaluaciones.seCompletara')} <strong className="text-sky-500">{t('evaluaciones.analizarConIA2')}</strong></span>
             </div>
           )}
         </div>
@@ -281,16 +281,16 @@ function QuestionRenderer({ question, value, onChange }: any) {
     return (
       <div>
         <label className="text-sm font-bold text-slate-700 block mb-2 flex items-center gap-1.5">
-          <Sparkles size={13} className="text-violet-500" /> {question.label}
-          <span className="text-[10px] font-bold text-violet-400 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 ml-1">Generado por IA</span>
+          <Sparkles size={13} className="text-sky-500" /> {question.label}
+          <span className="text-[10px] font-bold text-sky-400 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 ml-1">Generado por IA</span>
         </label>
         {hasValue ? (
           <input type="text" value={value} onChange={e => onChange(e.target.value)}
-            className="w-full p-4 bg-violet-50 border-2 border-violet-200 rounded-xl text-sm font-medium outline-none focus:border-violet-400 transition-all" />
+            className="w-full p-4 bg-sky-50 border-2 border-sky-200 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all" />
         ) : (
           <div className="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center gap-2 text-slate-400 text-sm">
-            <Sparkles size={15} className="text-violet-300 flex-shrink-0" />
-            <span>{t('evaluaciones.seCompletara2')} <strong className="text-violet-500">{t('evaluaciones.analizarConIA2')}</strong></span>
+            <Sparkles size={15} className="text-sky-300 flex-shrink-0" />
+            <span>{t('evaluaciones.seCompletara2')} <strong className="text-sky-500">{t('evaluaciones.analizarConIA2')}</strong></span>
           </div>
         )}
       </div>
@@ -307,7 +307,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
           <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 ml-1">Auto-calculado</span>
         </label>
         {hasValue ? (
-          <div className="w-full p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl text-sm font-black text-emerald-800">
+          <div className="w-full p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl text-sm font-bold text-emerald-800">
             {value}
           </div>
         ) : (
@@ -328,7 +328,7 @@ function QuestionRenderer({ question, value, onChange }: any) {
         min={question.min} max={question.max}
         value={value || ''} onChange={e => onChange(e.target.value)}
         placeholder={question.placeholder}
-        className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-violet-400 transition-all" />
+        className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all" />
     </div>
   )
 }
@@ -378,10 +378,10 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-        <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-purple-700 rounded-xl flex items-center justify-center">
+        <div className="w-8 h-8 bg-gradient-to-br from-sky-600 to-sky-700 rounded-xl flex items-center justify-center">
           <Sparkles size={16} className="text-white" />
         </div>
-        <h3 className="font-black text-slate-800" style={{ color: "var(--text-primary)" }}>{t('evaluaciones.analisisIA')}</h3>
+        <h3 className="font-bold text-slate-800" style={{ color: "var(--text-primary)" }}>{t('evaluaciones.analisisIA')}</h3>
       </div>
 
       {/* Alert level */}
@@ -395,7 +395,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Clinical analysis */}
       {textoAnalisis ? (
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-          <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">{t('evaluaciones.analisisClinico')}</h4>
+          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">{t('evaluaciones.analisisClinico')}</h4>
           <p className="text-sm text-slate-700 leading-relaxed">{textoAnalisis}</p>
         </div>
       ) : null}
@@ -404,7 +404,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
         {/* Strengths */}
         {areasFortaleza.length > 0 && (
           <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-            <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</h4>
+            <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</h4>
             <ul className="space-y-1">
               {areasFortaleza.map((f: string, i: number) => (
                 <li key={i} className="text-xs text-emerald-800 font-medium flex items-center gap-1.5">
@@ -417,7 +417,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
         {/* Work areas */}
         {areasTrabajo.length > 0 && (
           <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-            <h4 className="text-xs font-black text-amber-600 uppercase tracking-widest mb-2">{t('evaluaciones.areasTrabajar')}</h4>
+            <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">{t('evaluaciones.areasTrabajar')}</h4>
             <ul className="space-y-1">
               {areasTrabajo.map((f: string, i: number) => (
                 <li key={i} className="text-xs text-amber-800 font-medium flex items-center gap-1.5">
@@ -431,12 +431,12 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
 
       {/* Recommendations */}
       {recomendaciones.length > 0 && (
-        <div className="bg-violet-50 rounded-xl p-4 border border-violet-200">
-          <h4 className="text-xs font-black text-violet-600 uppercase tracking-widest mb-2">💡 Recomendaciones</h4>
+        <div className="bg-sky-50 rounded-xl p-4 border border-sky-200">
+          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">💡 Recomendaciones</h4>
           <ul className="space-y-1.5">
             {recomendaciones.map((r: string, i: number) => (
-              <li key={i} className="text-xs text-violet-800 font-medium flex items-start gap-1.5">
-                <span className="w-1.5 h-1.5 bg-violet-500 rounded-full shrink-0 mt-1" />{r}
+              <li key={i} className="text-xs text-sky-800 font-medium flex items-start gap-1.5">
+                <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0 mt-1" />{r}
               </li>
             ))}
           </ul>
@@ -446,7 +446,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Key indicators */}
       {indicadoresClave.length > 0 && (
         <div>
-          <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">🔍 Indicadores Clave</h4>
+          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">🔍 Indicadores Clave</h4>
           <div className="flex flex-wrap gap-2">
             {indicadoresClave.map((ind: string, i: number) => (
               <span key={i} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-bold border border-slate-200">{ind}</span>
@@ -458,10 +458,10 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Next recommended forms */}
       {formsRecomendados.length > 0 && (
         <div>
-          <h4 className="text-xs font-black text-violet-600 uppercase tracking-widest mb-2">{t('evaluaciones.proxEvals')}</h4>
+          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">{t('evaluaciones.proxEvals')}</h4>
           <div className="flex flex-wrap gap-2">
             {formsRecomendados.map((f: string, i: number) => (
-              <span key={i} className="px-3 py-1.5 bg-violet-50 border border-violet-200 text-violet-700 rounded-full text-xs font-bold">{f}</span>
+              <span key={i} className="px-3 py-1.5 bg-sky-50 border border-sky-200 text-sky-700 rounded-full text-xs font-bold">{f}</span>
             ))}
           </div>
         </div>
@@ -476,8 +476,8 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
               <div className="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center">
                 <MessageCircle size={14} className="text-white"/>
               </div>
-              <h4 className="font-black text-amber-800">{t('ui.mensajePadres')}</h4>
-              <span className="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full border border-amber-300 uppercase tracking-widest">✏️ Editable</span>
+              <h4 className="font-bold text-amber-800">{t('ui.mensajePadres')}</h4>
+              <span className="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-300 uppercase tracking-widest">✏️ Editable</span>
             </div>
             {onEditMessage ? (
               <textarea
@@ -497,13 +497,13 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
 
           {/* Sección 2: Actividad para casa */}
           {(analysis.actividades_casa || analysis.actividad_casa || editableActividades !== undefined) && (
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border-2 border-blue-200">
+            <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-5 border-2 border-blue-200">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-xs font-black">🏠</span>
+                  <span className="text-white text-xs font-bold">🏠</span>
                 </div>
-                <h4 className="font-black text-blue-800">{t('ui.home_activity')}</h4>
-                <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-black rounded-full border border-blue-300 uppercase tracking-widest">✏️ Editable</span>
+                <h4 className="font-bold text-blue-800">{t('ui.home_activity')}</h4>
+                <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full border border-blue-300 uppercase tracking-widest">✏️ Editable</span>
               </div>
               {onEditActividades ? (
                 <textarea
@@ -630,7 +630,7 @@ function HistorialFormCard({ sf, onReportGenerated }: { sf: any; onReportGenerat
               {sf.form_title || sf.form_type || 'Formulario'}
             </p>
             {sf._source && (
-              <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider whitespace-nowrap">
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider whitespace-nowrap">
                 {sf._source === 'anamnesis_completa' ? 'Anamnesis' :
                  sf._source === 'registro_aba' ? 'ABA' :
                  sf._source === 'registro_entorno_hogar' ? 'Hogar' : 'NeuroForma'}
@@ -643,14 +643,14 @@ function HistorialFormCard({ sf, onReportGenerated }: { sf: any; onReportGenerat
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
           {sf.ai_analysis && (
-            <span className="px-2 py-1 bg-violet-50 text-violet-600 rounded-full text-[10px] font-bold border border-violet-200 flex items-center gap-1">
+            <span className="px-2 py-1 bg-sky-50 text-sky-600 rounded-full text-[10px] font-bold border border-sky-200 flex items-center gap-1">
               <Sparkles size={9} /> Con IA
             </span>
           )}
           <button
             onClick={handleGenerateReport}
             disabled={generating}
-            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black shadow-sm hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
             {generating ? (
               <><Loader2 size={12} className="animate-spin" /> {t('common.generando')}</>
@@ -684,43 +684,43 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className=" rounded-3xl p-8 w-full max-w-md shadow-2xl" style={{ background: "var(--card)" }}>
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-black text-xl text-slate-800 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
-            <Send size={20} className="text-violet-600" /> {t('common.enviarPadres')}
+          <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+            <Send size={20} className="text-sky-600" /> {t('common.enviarPadres')}
           </h3>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100"><X size={20} /></button>
         </div>
 
-        <div className="bg-violet-50 rounded-xl p-4 mb-6 border border-violet-100">
-          <p className="text-xs font-black text-violet-400 uppercase tracking-widest mb-1">{t('evaluaciones.titulo')}</p>
-          <p className="font-bold text-violet-800">{form.title}</p>
-          <p className="text-xs text-violet-600 mt-0.5">{form.estimatedMinutes} min aprox.</p>
+        <div className="bg-sky-50 rounded-xl p-4 mb-6 border border-sky-100">
+          <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-1">{t('evaluaciones.titulo')}</p>
+          <p className="font-bold text-sky-800">{form.title}</p>
+          <p className="text-xs text-sky-600 mt-0.5">{form.estimatedMinutes} min aprox.</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.pacienteStar')}</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.pacienteStar')}</label>
             <select value={childId} onChange={e => setChildId(e.target.value)}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-violet-400 transition-all">
+              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all">
               <option value="">{t('ui.select_patient_option')}</option>
               {children.map((c: any) => <option key={c.id} value={c.id}>{c.name}{c.age ? ` (${c.age})` : ''}</option>)}
             </select>
             <p className="text-xs text-slate-400 mt-1.5">{t('evaluaciones.irABiblioteca')}</p>
           </div>
           <div>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.mensaje')}</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.mensaje')}</label>
             <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
               {...{placeholder: t('ui.send_form_msg')}}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-violet-400 transition-all resize-none" />
+              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all resize-none" />
           </div>
           <div>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.fechaLimite2')}</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.fechaLimite2')}</label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-violet-400 transition-all" />
+              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all" />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-black uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
+            <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
             <button onClick={handleSend} disabled={sending || !childId}
-              className="flex-[2] py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
               {sending ? 'Enviando...' : 'Enviar'}
             </button>
@@ -1032,14 +1032,14 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
           <CheckCircle2 size={40} className="text-emerald-500" />
         </div>
         <div className="text-center">
-          <h2 className="text-2xl font-black text-slate-800 mb-2" style={{ color: "var(--text-primary)" }}>{t('evaluaciones.formGuardado')}</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2" style={{ color: "var(--text-primary)" }}>{t('evaluaciones.formGuardado')}</h2>
           <p className="text-slate-500 font-medium">{form.title}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
           <button
             onClick={handleGenerateAndDownload}
             disabled={isGeneratingReport}
-            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-black text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-2xl font-bold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
             {isGeneratingReport ? (
               <><Loader2 size={18} className="animate-spin" /> Generando reporte...</>
@@ -1049,13 +1049,13 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
           </button>
           <button
             onClick={onBack}
-            className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-sm transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-sm transition-all"
           >
             <ChevronLeft size={18} /> Volver
           </button>
         </div>
         {aiAnalysis && (
-          <p className="text-xs text-violet-600 font-bold flex items-center gap-1">
+          <p className="text-xs text-sky-600 font-bold flex items-center gap-1">
             <Sparkles size={12} /> Análisis IA disponible — se incluirá en el reporte
           </p>
         )}
@@ -1072,18 +1072,18 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
       {/* Header barra */}
       <div className="flex-shrink-0 border-b shadow-sm z-20" style={{ background: "var(--card)", borderColor: "var(--card-border)" }}>
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-4">
-          <button onClick={onBack} className="flex items-center gap-1.5 hover:text-violet-500 font-bold transition-all text-sm group" style={{ color: "var(--text-muted)" }}>
+          <button onClick={onBack} className="flex items-center gap-1.5 hover:text-sky-500 font-bold transition-all text-sm group" style={{ color: "var(--text-muted)" }}>
             <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Volver
           </button>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
                 Sección {currentStep + 1} de {totalSteps}
               </p>
-              <p className="text-xs font-bold text-violet-600">{Math.round(progress)}% completado</p>
+              <p className="text-xs font-bold text-sky-600">{Math.round(progress)}% completado</p>
             </div>
             <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--muted-bg)" }}>
-              <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-500"
+              <div className="h-full bg-gradient-to-r from-sky-500 to-cyan-500 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }} />
             </div>
           </div>
@@ -1092,11 +1092,11 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
 
       <div className="flex-1 overflow-y-auto"><div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Form info card */}
-        <div className={`bg-gradient-to-r ${form.color || 'from-violet-600 to-indigo-600'} rounded-2xl p-5 text-white shadow-lg`}>
+        <div className={`bg-gradient-to-r ${form.color || 'from-sky-600 to-cyan-600'} rounded-2xl p-5 text-white shadow-lg`}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">{form.icon} {form.category?.toUpperCase()}</p>
-              <h2 className="font-black text-xl">{form.title}</h2>
+              <h2 className="font-bold text-xl">{form.title}</h2>
               <p className="text-white/80 text-sm mt-0.5">{form.subtitle}</p>
             </div>
             {initialChildId ? (
@@ -1116,7 +1116,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         {/* Section */}
         <div className="rounded-2xl shadow-sm overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--card-border)" }}>
           <div className="px-6 py-4 border-b" style={{ background: "var(--muted-bg)", borderColor: "var(--card-border)" }}>
-            <h3 className="font-black text-lg" style={{ color: "var(--text-primary)" }}>{currentSection.title || currentSection.section}</h3>
+            <h3 className="font-bold text-lg" style={{ color: "var(--text-primary)" }}>{currentSection.title || currentSection.section}</h3>
             {(currentSection.description || currentSection.subtitle) && (
               <p className="text-sm text-slate-500 mt-1">{currentSection.description || currentSection.subtitle}</p>
             )}
@@ -1136,7 +1136,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         {/* Navigation */}
         <div className="flex items-center justify-between gap-4">
           <button onClick={() => setCurrentStep(s => s - 1)} disabled={currentStep === 0}
-            className="flex items-center gap-2 px-6 py-3  border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:border-violet-300 disabled:opacity-40 transition-all" style={{ background: "var(--card)" }}>
+            className="flex items-center gap-2 px-6 py-3  border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:border-sky-300 disabled:opacity-40 transition-all" style={{ background: "var(--card)" }}>
             <ChevronLeft size={18} /> Anterior
           </button>
 
@@ -1145,7 +1145,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
             {(currentStep === totalSteps - 1 || (form.formKey === 'aba' && currentStep >= 5)) && (
               <>
                 <button onClick={handleAnalyzeWithAI} disabled={isAnalyzing || answeredCount < 3}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold disabled:opacity-40 transition-all shadow-lg shadow-violet-200 hover:opacity-90">
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold disabled:opacity-40 transition-all shadow-lg shadow-sky-200 hover:opacity-90">
                   {isAnalyzing ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                   {isAnalyzing ? 'Analizando...' : 'Analizar con IA'}
                 </button>
@@ -1168,7 +1168,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
                   </button>
                 )}
                 <button onClick={() => setCurrentStep(s => s + 1)}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-violet-200 hover:opacity-90">
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-sky-200 hover:opacity-90">
                   Siguiente <ChevronRight size={18} />
                 </button>
               </>
@@ -1178,7 +1178,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
 
         {/* AI Analysis */}
         {aiAnalysis && (
-          <div className=" rounded-2xl shadow-sm border border-violet-100 p-6" style={{ background: "var(--card)" }}>
+          <div className=" rounded-2xl shadow-sm border border-sky-100 p-6" style={{ background: "var(--card)" }}>
             <AIAnalysisPanel analysis={aiAnalysis} editableMessage={editedMessage} onEditMessage={setEditedMessage} editableActividades={editedActividades} onEditActividades={setEditedActividades} />
           </div>
         )}
@@ -1215,19 +1215,19 @@ function FormCard({ form, onStart, onSend, catInfo }: any) {
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             {isParent && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(74,110,170,0.1)', color: '#4a6eaa', border: '1px solid rgba(74,110,170,0.2)' }}>
                 Padres
               </span>
             )}
             {isExternal && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(176,120,48,0.1)', color: '#b07830', border: '1px solid rgba(176,120,48,0.2)' }}>
                 Ext.
               </span>
             )}
             {isPro && !isExternal && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(122,74,74,0.1)', color: '#7a4a4a', border: '1px solid rgba(122,74,74,0.2)' }}>
                 PRO
               </span>
@@ -1392,7 +1392,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
           <div key={label} className="rounded-xl p-4 relative overflow-hidden"
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
-            <p className="text-3xl font-black pl-2 leading-none mb-1" style={{ color: bar }}>{value}</p>
+            <p className="text-3xl font-bold pl-2 leading-none mb-1" style={{ color: bar }}>{value}</p>
             <p className="text-[11px] font-semibold pl-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</p>
           </div>
         ))}
@@ -1411,7 +1411,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
               ? { background: 'var(--card)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
               : { background: 'transparent', color: 'var(--text-muted)' }}>
             {label}
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-black"
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
               style={activeTab === key
                 ? { background: 'var(--muted-bg)', color: 'var(--text-secondary)' }
                 : { background: 'var(--card-border)', color: 'var(--text-muted)' }}>
@@ -1489,7 +1489,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                     <p className="font-bold text-slate-800 text-sm truncate" style={{ color: "var(--text-primary)" }}>{sf.form_title}</p>
-                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase ${sf.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${sf.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                       {sf.status === 'completed' ? `✅ ${t('evaluaciones.completado')}` : `⏳ ${t('evaluaciones.pendiente')}`}
                     </span>
                   </div>
@@ -1500,7 +1500,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
               </div>
               {expandedResponse === sf.id && sf.status === 'completed' && sf.responses && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-5">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Respuestas</h4>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Respuestas</h4>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(sf.responses).map(([k, v]) => (
                       <div key={k} className=" rounded-xl p-3 border border-slate-100" style={{ background: "var(--card)" }}>

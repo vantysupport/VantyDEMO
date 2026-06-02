@@ -356,14 +356,14 @@ function DynamicEvaluationsView() {
             {/* Card ABA */}
             <button 
               onClick={() => setActiveForm('aba')} 
-              className="group relative bg-white rounded-3xl md:rounded-[2.5rem] border-2 border-slate-100 hover:border-purple-400 hover:shadow-2xl transition-all duration-300 p-8 md:p-12 flex flex-col items-center justify-center text-center h-[320px] md:h-[420px] overflow-hidden"
+              className="group relative bg-white rounded-3xl md:rounded-[2.5rem] border-2 border-slate-100 hover:border-sky-400 hover:shadow-2xl transition-all duration-300 p-8 md:p-12 flex flex-col items-center justify-center text-center h-[320px] md:h-[420px] overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10 flex flex-col items-center">
-                <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-3xl md:rounded-[2.5rem] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-purple-200">
+                <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-3xl md:rounded-[2.5rem] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-sky-200">
                    <Activity size={40} className="md:w-16 md:h-16" strokeWidth={2.5}/>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black text-slate-800 mb-3 md:mb-4 tracking-tight">Registro ABA</h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3 md:mb-4 tracking-tight">Registro ABA</h3>
                 <p className="text-slate-500 text-sm md:text-base max-w-xs font-medium leading-relaxed mb-4">{t('evaluaciones.sistemaCompleto')}</p>
                 <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
                   <span className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-bold">IA Pro</span>
@@ -381,7 +381,7 @@ function DynamicEvaluationsView() {
                 <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl md:rounded-[2.5rem] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-blue-200">
                    <FileText size={40} className="md:w-16 md:h-16" strokeWidth={2.5}/>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black text-slate-800 mb-3 md:mb-4 tracking-tight">{t('ui.anamnesis')}</h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3 md:mb-4 tracking-tight">{t('ui.anamnesis')}</h3>
                 <p className="text-slate-500 text-sm md:text-base max-w-xs font-medium leading-relaxed mb-4">{t('ui.anamnesis')}</p>
               </div>
             </button>
@@ -396,7 +396,7 @@ function DynamicEvaluationsView() {
                 <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-3xl md:rounded-[2.5rem] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-green-200">
                    <Home size={40} className="md:w-16 md:h-16" strokeWidth={2.5}/>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black text-slate-800 mb-3 md:mb-4 tracking-tight">Entorno Hogar</h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3 md:mb-4 tracking-tight">Entorno Hogar</h3>
                 <p className="text-slate-500 text-sm md:text-base max-w-xs font-medium leading-relaxed mb-4">{t('ui.home_analysis')}</p>
                 <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
                   <span className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-bold">IA Avanzada</span>
@@ -418,7 +418,7 @@ function DynamicEvaluationsView() {
                     <Brain size={40} className="md:w-16 md:h-16" strokeWidth={2.5}/>
                   </div>
                   
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-800 mb-3 md:mb-4 tracking-tight uppercase">
+                  <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3 md:mb-4 tracking-tight uppercase">
                     {type.replace(/(\d+)/, '-$1')}
                   </h3>
                   
@@ -448,14 +448,14 @@ function DynamicEvaluationsView() {
           <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-4 md:px-8 py-4 md:py-6 text-white shrink-0">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-3 md:gap-4 overflow-hidden flex-1">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center font-black text-lg md:text-xl border border-white/20">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center font-bold text-lg md:text-xl border border-white/20">
                      {currentStep + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                      <p className="text-blue-300 text-[9px] md:text-[10px] font-black uppercase tracking-widest truncate mb-1">
+                      <p className="text-blue-300 text-[9px] md:text-[10px] font-bold uppercase tracking-widest truncate mb-1">
                         EVALUACIÓN EN CURSO
                       </p>
-                      <h2 className="text-base md:text-xl lg:text-2xl font-black truncate leading-tight">
+                      <h2 className="text-base md:text-xl lg:text-2xl font-bold truncate leading-tight">
                         {currentSection?.title}
                       </h2>
                   </div>
@@ -489,7 +489,7 @@ function DynamicEvaluationsView() {
                            <button 
                                onClick={handleGenerateUniversalIA}
                                disabled={isGenerating}
-                               className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-5 py-2.5 rounded-full font-black text-xs md:text-sm shadow-xl hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                               className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-cyan-600 text-white px-5 py-2.5 rounded-full font-bold text-xs md:text-sm shadow-xl hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                            >
                                {isGenerating ? <Loader2 size={16} className="animate-spin"/> : <Sparkles size={16}/>}
                                Generar IA
@@ -500,7 +500,7 @@ function DynamicEvaluationsView() {
 
                {/* Selector de Paciente */}
                <div className="bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-sm hover:shadow-md transition-all">
-                   <label className="text-xs md:text-sm font-black text-slate-500 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2">
+                   <label className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2">
                      <User size={16}/>
                      Seleccionar Paciente
                    </label>
@@ -523,7 +523,7 @@ function DynamicEvaluationsView() {
                            {q.label}
                            {q.required && <span className="text-red-500">*</span>}
                            {q.aiGenerated && (
-                             <span className="text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full font-black">IA</span>
+                             <span className="text-xs bg-gradient-to-r from-blue-500 to-sky-500 text-white px-2 py-0.5 rounded-full font-bold">IA</span>
                            )}
                          </label>
                      </div>
@@ -594,7 +594,7 @@ function DynamicEvaluationsView() {
                              {q.labels?.[0] || 'Mínimo'}
                            </span>
                            <div className="flex items-center gap-2">
-                             <span className="text-3xl font-black text-blue-600">
+                             <span className="text-3xl font-bold text-blue-600">
                                {respuestas[q.id] || q.min || 1}
                              </span>
                              <span className="text-sm text-slate-400">/ {q.max || 5}</span>
@@ -688,7 +688,7 @@ function DynamicEvaluationsView() {
              <button 
                disabled={currentStep === 0} 
                onClick={() => setCurrentStep(currentStep-1)} 
-               className="px-6 md:px-8 py-3 md:py-4 font-black text-sm md:text-base text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+               className="px-6 md:px-8 py-3 md:py-4 font-bold text-sm md:text-base text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
              >
                <ChevronLeft size={18}/>
                Atrás
@@ -697,7 +697,7 @@ function DynamicEvaluationsView() {
              {currentStep < (formConfig!.length - 1) ? (
                  <button 
                    onClick={() => setCurrentStep(currentStep+1)} 
-                   className="px-8 md:px-12 py-3 md:py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:from-black hover:to-slate-900 transition-all flex items-center gap-2 shadow-xl"
+                   className="px-8 md:px-12 py-3 md:py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl md:rounded-2xl font-bold text-sm md:text-base hover:from-black hover:to-slate-900 transition-all flex items-center gap-2 shadow-xl"
                  >
                    <span>{t('common.siguiente')}</span>
                    <ChevronRight size={18}/>
@@ -706,7 +706,7 @@ function DynamicEvaluationsView() {
                  <button 
                    onClick={handleSave} 
                    disabled={isSaving || !selectedChild} 
-                   className="px-10 md:px-14 py-3 md:py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:from-green-700 hover:to-green-800 transition-all flex items-center gap-2 shadow-xl shadow-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                   className="px-10 md:px-14 py-3 md:py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl md:rounded-2xl font-bold text-sm md:text-base hover:from-green-700 hover:to-green-800 transition-all flex items-center gap-2 shadow-xl shadow-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
                  >
                    {isSaving ? (
                      <>

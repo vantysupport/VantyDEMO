@@ -391,7 +391,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className={`font-black text-base ${txt1}`}>
+          <h3 className={`font-bold text-base ${txt1}`}>
             <FolderOpen size={16} className="inline mr-2 text-blue-500" />
             Documentos
           </h3>
@@ -442,7 +442,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       {/* New Folder modal */}
       {(showNewFolder || editingFolder) && (
         <div className={`${card} border rounded-2xl p-4 space-y-3`}>
-          <p className={`text-sm font-black ${txt1}`}>{editingFolder ? 'Editar carpeta' : 'Nueva carpeta'}</p>
+          <p className={`text-sm font-bold ${txt1}`}>{editingFolder ? 'Editar carpeta' : 'Nueva carpeta'}</p>
           <div className="flex gap-2">
             {/* Emoji picker */}
             <div className="relative">
@@ -491,7 +491,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           onClick={() => setMovingDoc(null)}>
           <div className={`${card} border rounded-2xl p-5 w-80 shadow-2xl space-y-3`}
             onClick={e => e.stopPropagation()}>
-            <p className={`text-sm font-black ${txt1}`}>Mover a carpeta</p>
+            <p className={`text-sm font-bold ${txt1}`}>Mover a carpeta</p>
             <p className={`text-xs truncate ${txt3}`}>{movingDoc.file_name}</p>
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {/* Root option */}
@@ -525,7 +525,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       {showUpload && (
         <div className={`${card} border rounded-2xl p-5 space-y-4`}>
           <div className="flex items-center justify-between">
-            <p className={`text-sm font-black ${txt1}`}>Subir documento</p>
+            <p className={`text-sm font-bold ${txt1}`}>Subir documento</p>
             <button onClick={() => { setShowUpload(false); setSelectedFiles([]) }}
               className={`p-1.5 rounded-lg ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-100'}`}>
               <X size={14} className={txt3} />
@@ -534,7 +534,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
 
           {/* Selector de carpeta destino */}
           <div>
-            <label className={`block text-[11px] font-black uppercase tracking-widest mb-1.5 ${txt3}`}>Guardar en carpeta</label>
+            <label className={`block text-[11px] font-bold uppercase tracking-widest mb-1.5 ${txt3}`}>Guardar en carpeta</label>
             <select value={uploadFolder ?? ''} onChange={e => setUploadFolder(e.target.value || null)}
               className={`w-full px-3 py-2.5 rounded-xl text-sm border outline-none focus:border-blue-500 ${inputCls}`}>
               <option value="">📁 Inicio (sin carpeta)</option>
@@ -576,7 +576,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </div>
           )}
           <div>
-            <label className={`block text-[10px] font-black uppercase tracking-widest mb-2 ${txt3}`}>Categoría</label>
+            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${txt3}`}>Categoría</label>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORIES.filter(c => c.id !== 'all').map(c => (
                 <button key={c.id} onClick={() => setNewCat(c.id)}
@@ -594,7 +594,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             )}
           </div>
           <div>
-            <label className={`block text-[10px] font-black uppercase tracking-widest mb-2 ${txt3}`}>Descripción (opcional)</label>
+            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${txt3}`}>Descripción (opcional)</label>
             <input value={newDesc} onChange={e => setNewDesc(e.target.value)}
               placeholder="Ej: Tarea de la semana 3..."
               className={`w-full px-3 py-2.5 rounded-xl text-sm border-2 outline-none transition-all ${inputCls}`} />
@@ -609,7 +609,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </label>
           )}
           <button onClick={handleUpload} disabled={uploading || selectedFiles.length === 0}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
             {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             {uploading ? 'Subiendo...' : selectedFiles.length > 0 ? `Subir ${selectedFiles.length} archivo${selectedFiles.length > 1 ? 's' : ''}` : 'Subir documento'}
           </button>
@@ -638,7 +638,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
       ) : isEmpty ? (
         <div className={`${card} border rounded-2xl p-10 text-center`}>
           <FolderOpen size={36} className={`mx-auto mb-3 ${txt3}`} />
-          <p className={`font-black text-sm ${txt3}`}>
+          <p className={`font-bold text-sm ${txt3}`}>
             {currentFolder ? 'Carpeta vacía' : 'Sin documentos aún'}
           </p>
           <p className={`text-xs mt-1 ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>
@@ -712,12 +712,12 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                   ) : (
                     <p className={`text-sm font-bold truncate ${txt1}`}>{doc.file_name}</p>
                   )}
-                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full
                     ${isDark ? 'bg-[#21262d] text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
                     {CATEGORIES.find(c => c.id === doc.category)?.emoji} {doc.category}
                   </span>
                   {!doc.visible_to_parent && !isPadre && (
-                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full
                       ${isDark ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
                       🔒 Solo clínico
                     </span>

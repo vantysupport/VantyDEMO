@@ -154,8 +154,8 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
       <div className="rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col" style={{ background: 'var(--card)', maxHeight: '92vh' }} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: 'var(--card-border)' }}>
-          <h2 className="font-black text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <CalendarClock size={20} className="text-indigo-500" /> Reservas online
+          <h2 className="font-bold text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <CalendarClock size={20} className="text-sky-500" /> Reservas online
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'var(--text-muted)' }}><X size={18} /></button>
         </div>
@@ -164,7 +164,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
         <div className="flex gap-1 p-3 border-b" style={{ borderColor: 'var(--card-border)' }}>
           {[{ id: 'config', label: 'Disponibilidad', icon: Settings }, { id: 'links', label: 'Generar links', icon: Link2 }].map(t => (
             <button key={t.id} onClick={() => setTab(t.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === t.id ? 'bg-indigo-600 text-white' : ''}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === t.id ? 'bg-sky-600 text-white' : ''}`}
               style={tab === t.id ? {} : { color: 'var(--text-muted)' }}>
               <t.icon size={15} /> {t.label}
             </button>
@@ -174,7 +174,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
         <div className="overflow-y-auto p-5 flex-1">
           {/* ─── TAB CONFIG ─── */}
           {tab === 'config' && (
-            loadingCfg || !cfg ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-indigo-500" /></div> : (
+            loadingCfg || !cfg ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-sky-500" /></div> : (
               <div className="space-y-5">
                 {/* Duración + descanso → el sistema arma los turnos solo */}
                 {(() => {
@@ -209,7 +209,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
 
                 {/* Horario por día */}
                 <div>
-                  <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Horario de atención</p>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Horario de atención</p>
                   <div className="space-y-2">
                     {DIAS.map(d => {
                       const dia = cfg.working_hours[d.k] || { activo: false, bloques: [] }
@@ -221,7 +221,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                               {d.label}
                             </label>
                             {dia.activo && (
-                              <button onClick={() => addBloque(d.k)} className="text-xs font-bold text-indigo-500 flex items-center gap-1"><Plus size={12} /> bloque</button>
+                              <button onClick={() => addBloque(d.k)} className="text-xs font-bold text-sky-500 flex items-center gap-1"><Plus size={12} /> bloque</button>
                             )}
                           </div>
                           {dia.activo && (
@@ -245,7 +245,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
 
                 {/* Días cerrados — calendario navegable por mes */}
                 <div>
-                  <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Días cerrados (feriados / vacaciones)</p>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Días cerrados (feriados / vacaciones)</p>
                   <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Tocá los días que el centro estará cerrado. Podés marcar varios y cambiar de mes con las flechas.</p>
                   <CalendarioDiasCerrados
                     mes={calMonth}
@@ -265,7 +265,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                 </div>
 
                 <button onClick={guardarConfig} disabled={savingCfg}
-                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+                  className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
                   {savingCfg ? <><Loader2 size={16} className="animate-spin" /> Guardando…</> : <><CheckCircle2 size={16} /> Guardar disponibilidad</>}
                 </button>
               </div>
@@ -277,7 +277,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
             <div className="space-y-5">
               {/* Crear link */}
               <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)' }}>
-                <p className="text-sm font-black mb-3" style={{ color: 'var(--text-primary)' }}>Nuevo link de reserva</p>
+                <p className="text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Nuevo link de reserva</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Campo label="Paciente (opcional)">
                     <select value={form.child_id} onChange={e => setForm(f => ({ ...f, child_id: e.target.value }))} className={inp}>
@@ -295,12 +295,12 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                     <div className="flex gap-2">
                       <button type="button"
                         onClick={() => setForm(f => ({ ...f, plan_type: 'individual', max_slots: 1 }))}
-                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold border-2 transition ${form.plan_type === 'individual' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-500'}`}>
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold border-2 transition ${form.plan_type === 'individual' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-500'}`}>
                         Individual<br /><span className="text-[10px] font-medium">1 cita</span>
                       </button>
                       <button type="button"
                         onClick={() => setForm(f => ({ ...f, plan_type: 'mensual', max_slots: f.max_slots > 1 ? f.max_slots : 4 }))}
-                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold border-2 transition ${form.plan_type === 'mensual' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-500'}`}>
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold border-2 transition ${form.plan_type === 'mensual' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-500'}`}>
                         Mensual / Paquete<br /><span className="text-[10px] font-medium">varias citas</span>
                       </button>
                     </div>
@@ -326,15 +326,15 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                   </Campo>
                 </div>
                 <button onClick={crearLink} disabled={creando}
-                  className="mt-3 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+                  className="mt-3 w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
                   {creando ? <><Loader2 size={16} className="animate-spin" /> Generando…</> : <><Link2 size={16} /> Generar link</>}
                 </button>
               </div>
 
               {/* Lista de links */}
               <div>
-                <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Links generados</p>
-                {loadingLinks ? <div className="flex justify-center py-6"><Loader2 className="animate-spin text-indigo-500" /></div> : (
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Links generados</p>
+                {loadingLinks ? <div className="flex justify-center py-6"><Loader2 className="animate-spin text-sky-500" /></div> : (
                   <div className="space-y-2">
                     {links.length === 0 && <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>Aún no generaste links.</p>}
                     {links.map(l => {
@@ -355,7 +355,7 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
                             </div>
                             <div className="flex items-center gap-1.5">
                               <button onClick={() => copiar(l.token)} title="Copiar link"
-                                className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5">
+                                className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5">
                                 {copiado === l.token ? <><CheckCircle2 size={13} /> Copiado</> : <><Copy size={13} /> Copiar link</>}
                               </button>
                               <button onClick={() => toggleLink(l.id, l.active)} title={l.active ? 'Desactivar' : 'Activar'}
@@ -383,8 +383,8 @@ export default function ReservasOnlinePanel({ ninos, especialistas, onClose }: P
   )
 }
 
-const inp = 'w-full px-3 py-2 rounded-lg border outline-none text-sm focus:border-indigo-500'
-const inpSm = 'px-2 py-1.5 rounded-lg border outline-none text-sm focus:border-indigo-500'
+const inp = 'w-full px-3 py-2 rounded-lg border outline-none text-sm focus:border-sky-500'
+const inpSm = 'px-2 py-1.5 rounded-lg border outline-none text-sm focus:border-sky-500'
 
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -423,13 +423,13 @@ function CalendarioDiasCerrados({ mes, onCambiarMes, cerrados, onToggle }: {
       <div className="flex items-center justify-between mb-2">
         <button onClick={() => onCambiarMes(new Date(year, month - 1, 1))}
           className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: 'var(--text-secondary)' }}><ChevronLeft size={16} /></button>
-        <p className="text-sm font-black capitalize" style={{ color: 'var(--text-primary)' }}>{nombreMes}</p>
+        <p className="text-sm font-bold capitalize" style={{ color: 'var(--text-primary)' }}>{nombreMes}</p>
         <button onClick={() => onCambiarMes(new Date(year, month + 1, 1))}
           className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: 'var(--text-secondary)' }}><ChevronRight size={16} /></button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center mb-1">
         {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
-          <span key={i} className="text-[10px] font-black" style={{ color: 'var(--text-muted)' }}>{d}</span>
+          <span key={i} className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{d}</span>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
@@ -442,7 +442,7 @@ function CalendarioDiasCerrados({ mes, onCambiarMes, cerrados, onToggle }: {
             <button key={i} disabled={pasado}
               onClick={() => onToggle(fecha)}
               className={`aspect-square rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
-                cerrado ? 'bg-red-500 text-white' : 'hover:bg-indigo-100'
+                cerrado ? 'bg-red-500 text-white' : 'hover:bg-sky-100'
               }`}
               style={cerrado ? {} : { background: 'var(--card)', color: 'var(--text-primary)', border: '1px solid var(--card-border)' }}
               title={cerrado ? 'Cerrado — tocá para abrir' : 'Abierto — tocá para cerrar'}>

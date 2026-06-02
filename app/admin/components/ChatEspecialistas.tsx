@@ -75,7 +75,7 @@ function Avatar({
         />
       ) : (
         <div
-          className={`${sz} bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-black shadow-sm`}
+          className={`${sz} bg-gradient-to-br from-blue-500 to-sky-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm`}
         >
           {name.charAt(0).toUpperCase()}
         </div>
@@ -759,7 +759,7 @@ export default function ChatEspecialistas({
                 onUpdate={(url) => { setMyAvatar(url); onAvatarUpdate?.(url) }}
               />
               <div className="flex-1 min-w-0">
-                <p className={`text-xs font-black truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{userName}</p>
+                <p className={`text-xs font-bold truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{userName}</p>
                 <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Toca la foto para cambiarla</p>
               </div>
               <button
@@ -771,7 +771,7 @@ export default function ChatEspecialistas({
             </div>
 
             <div className="flex items-center justify-between mb-2">
-              <h2 className={`text-xs font-black flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              <h2 className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 <Users size={13} className="text-blue-500" /> Contactos
               </h2>
             </div>
@@ -802,8 +802,8 @@ export default function ChatEspecialistas({
                 {filtradosAdmins.length > 0 && (
                   <>
                     <div className={`px-4 py-2 border-b sticky top-0 z-10 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-slate-100/80 border-slate-200/60'}`}>
-                      <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-                        <span className="w-1.5 h-1.5 bg-violet-500 rounded-full inline-block" />
+                      <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                        <span className="w-1.5 h-1.5 bg-sky-500 rounded-full inline-block" />
                         Administradores
                       </p>
                     </div>
@@ -813,7 +813,7 @@ export default function ChatEspecialistas({
                         onClick={() => { setSeleccionado(esp); setMobileShowChat(true) }}
                         className={`w-full text-left px-4 py-3.5 border-b transition-colors relative
                           ${seleccionado?.id === esp.id
-                            ? isDark ? 'bg-violet-900/30 border-l-[3px] border-l-violet-500 border-[#21262d]' : 'bg-violet-50 border-l-[3px] border-l-violet-500 border-slate-100/70'
+                            ? isDark ? 'bg-sky-900/30 border-l-[3px] border-l-sky-500 border-[#21262d]' : 'bg-sky-50 border-l-[3px] border-l-sky-500 border-slate-100/70'
                             : isDark ? 'hover:bg-[#21262d] border-[#21262d]' : 'hover:bg-white/80 border-slate-100/70'
                           }`}
                       >
@@ -821,7 +821,7 @@ export default function ChatEspecialistas({
                           <div className="relative flex-shrink-0">
                             <Avatar name={esp.full_name} avatarUrl={esp.avatar_url} size="sm" />
                             {esp.unread > 0 && (
-                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
+                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
                                 {esp.unread > 9 ? '9+' : esp.unread}
                               </span>
                             )}
@@ -830,7 +830,7 @@ export default function ChatEspecialistas({
                             <p className={`text-xs font-bold truncate ${esp.unread > 0 ? (isDark ? 'text-white' : 'text-slate-900') : (isDark ? 'text-slate-300' : 'text-slate-700')}`}>
                               {esp.full_name}
                             </p>
-                            <p className="text-[10px] text-violet-400 truncate mt-0.5 font-semibold">
+                            <p className="text-[10px] text-sky-400 truncate mt-0.5 font-semibold">
                               {esp.specialty || (esp.role === 'jefe' ? 'Director(a)' : 'Administrador')}
                             </p>
                             {esp.lastMessage && (
@@ -854,7 +854,7 @@ export default function ChatEspecialistas({
                 {filtradosEspecialistas.length > 0 && (
                   <>
                     <div className={`px-4 py-2 border-b sticky top-0 z-10 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-slate-100/80 border-slate-200/60'}`}>
-                      <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" />
                         Especialistas
                       </p>
@@ -873,7 +873,7 @@ export default function ChatEspecialistas({
                           <div className="relative flex-shrink-0">
                             <Avatar name={esp.full_name} avatarUrl={esp.avatar_url} size="sm" />
                             {esp.unread > 0 && (
-                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
+                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
                                 {esp.unread > 9 ? '9+' : esp.unread}
                               </span>
                             )}
@@ -914,7 +914,7 @@ export default function ChatEspecialistas({
                 <MessageCircle size={40} className="text-blue-200" />
               </div>
               <div>
-                <p className={`font-black text-base ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Selecciona un contacto</p>
+                <p className={`font-bold text-base ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Selecciona un contacto</p>
                 <p className={`text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                   Elige un especialista o administrador de la lista para ver su conversación
                 </p>
@@ -944,7 +944,7 @@ export default function ChatEspecialistas({
                   }}
                 />
                 <div className="flex-1">
-                  <p className={`text-sm font-black ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{seleccionado.full_name}</p>
+                  <p className={`text-sm font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{seleccionado.full_name}</p>
                   <p className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
                     {seleccionado.specialty || seleccionado.role}
@@ -960,7 +960,7 @@ export default function ChatEspecialistas({
                 <div className={`border-b px-4 py-2 flex items-start gap-2 ${isDark ? 'bg-blue-900/20 border-blue-800/40' : 'bg-blue-50 border-blue-100'}`}>
                   <Reply size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-blue-500">{replyTo.sender_name}</p>
+                    <p className="text-[10px] font-bold text-blue-500">{replyTo.sender_name}</p>
                     <p className={`text-[11px] truncate ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{replyTo.content.slice(0, 80)}</p>
                   </div>
                   <button

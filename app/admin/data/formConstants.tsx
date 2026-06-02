@@ -23,9 +23,9 @@ export const FORM_TABLE_MAPPING = {
 
 export const EVALUATION_COLORS = {
   'brief2': {
-    primary: 'from-indigo-500 to-indigo-600',
-    light: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    hover: 'hover:border-indigo-400'
+    primary: 'from-sky-500 to-sky-600',
+    light: 'bg-sky-50 text-sky-700 border-sky-200',
+    hover: 'hover:border-sky-400'
   },
   'ados2': {
     primary: 'from-teal-500 to-teal-600',
@@ -38,9 +38,9 @@ export const EVALUATION_COLORS = {
     hover: 'hover:border-emerald-400'
   },
   'wiscv': {
-    primary: 'from-violet-500 to-violet-600',
-    light: 'bg-violet-50 text-violet-700 border-violet-200',
-    hover: 'hover:border-violet-400'
+    primary: 'from-sky-500 to-sky-600',
+    light: 'bg-sky-50 text-sky-700 border-sky-200',
+    hover: 'hover:border-sky-400'
   },
   'basc3': {
     primary: 'from-rose-500 to-rose-600',

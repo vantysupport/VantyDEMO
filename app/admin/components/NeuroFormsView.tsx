@@ -30,7 +30,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
           {(question.options || freq).map((opt: string, i: number) => (
             <button key={opt} type="button"
               onClick={() => onChange(opt)}
-              className={`p-2.5 rounded-xl border-2 text-xs font-bold transition-all text-left ${value === opt ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+              className={`p-2.5 rounded-xl border-2 text-xs font-bold transition-all text-left ${value === opt ? 'bg-sky-600 text-white border-sky-600 shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           ))}
@@ -47,7 +47,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
           {(question.options || []).map((opt: string) => (
             <button key={opt} type="button"
               onClick={() => { const s = selected.includes(opt) ? selected.filter(x => x !== opt) : [...selected, opt]; onChange(s) }}
-              className={`px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all ${selected.includes(opt) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+              className={`px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all ${selected.includes(opt) ? 'bg-sky-600 text-white border-sky-600' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           ))}
@@ -63,7 +63,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
         <div className="flex gap-3">
           {scale.map(n => (
             <button key={n} type="button" onClick={() => onChange(n)}
-              className={`w-12 h-12 rounded-xl border-2 font-black text-lg transition-all ${value === n ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg scale-110' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
+              className={`w-12 h-12 rounded-xl border-2 font-bold text-lg transition-all ${value === n ? 'bg-sky-600 text-white border-sky-600 shadow-lg scale-110' : 'bg-white border-slate-200 text-slate-500 hover:border-sky-300'}`}>
               {n}
             </button>
           ))}
@@ -82,7 +82,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
         {question.helpText && <p className="text-xs text-slate-400 mb-2">{question.helpText}</p>}
         <textarea rows={3} value={value || ''} onChange={e => onChange(e.target.value)}
           placeholder={question.placeholder}
-          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-indigo-400 transition-all resize-none" />
+          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-sky-400 transition-all resize-none" />
       </div>
     )
   }
@@ -92,7 +92,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
         <label className="text-sm font-bold text-slate-700 block mb-2">{question.label}</label>
         {question.helpText && <p className="text-xs text-slate-400 mb-2">{question.helpText}</p>}
         <select value={value || ''} onChange={e => onChange(e.target.value)}
-          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-400 transition-all">
+          className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all">
           <option value="">{t('ui.select_option')}</option>
           {(question.options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
@@ -106,7 +106,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
         <div className="flex gap-3">
           {['Sí', 'No'].map(opt => (
             <button key={opt} type="button" onClick={() => onChange(opt)}
-              className={`px-8 py-3 rounded-xl border-2 font-bold transition-all ${value === opt ? (opt === 'Sí' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-600 text-white border-slate-600') : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+              className={`px-8 py-3 rounded-xl border-2 font-bold transition-all ${value === opt ? (opt === 'Sí' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-600 text-white border-slate-600') : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           ))}
@@ -122,7 +122,7 @@ function DynamicFormQuestion({ question, value, onChange }: any) {
       <input type={question.type === 'number' ? 'number' : question.type === 'date' ? 'date' : question.type === 'time' ? 'time' : 'text'}
         value={value || ''} onChange={e => onChange(e.target.value)}
         placeholder={question.placeholder}
-        className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-400 transition-all" />
+        className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all" />
     </div>
   )
 }
@@ -141,11 +141,11 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
   const msgValue = editableMessage !== undefined ? editableMessage : (analysis.mensaje_padres || '')
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-white rounded-3xl border-2 border-indigo-100 p-6 space-y-5">
+    <div className="bg-gradient-to-br from-sky-50 to-white rounded-3xl border-2 border-sky-100 p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-indigo-100 rounded-xl"><Sparkles className="text-indigo-600" size={22}/></div>
-          <h3 className="font-black text-slate-800 text-lg">{t('ui.analisisClinicoIA')}</h3>
+          <div className="p-2.5 bg-sky-100 rounded-xl"><Sparkles className="text-sky-600" size={22}/></div>
+          <h3 className="font-bold text-slate-800 text-lg">{t('ui.analisisClinicoIA')}</h3>
         </div>
         <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 transition-all"><X size={18}/></button>
       </div>
@@ -153,13 +153,13 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       {/* Alert level */}
       <div className={`px-4 py-3 rounded-xl border-2 font-bold text-sm flex items-center gap-2 ${alertColors[level]}`}>
         <AlertTriangle size={16}/>
-        Nivel de Alerta Clínica: <span className="uppercase font-black">{level}</span>
+        Nivel de Alerta Clínica: <span className="uppercase font-bold">{level}</span>
       </div>
 
       {/* Análisis */}
       {analysis.analisis_clinico && (
         <div>
-          <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{t('evaluaciones.analisisClin2')}</h4>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{t('evaluaciones.analisisClin2')}</h4>
           <p className="text-sm text-slate-700 leading-relaxed bg-white rounded-xl p-4 border border-slate-100">{analysis.analisis_clinico}</p>
         </div>
       )}
@@ -168,7 +168,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       <div className="grid grid-cols-2 gap-4">
         {analysis.areas_fortaleza?.length > 0 && (
           <div>
-            <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</h4>
+            <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</h4>
             <ul className="space-y-1">
               {analysis.areas_fortaleza.map((f: string, i: number) => (
                 <li key={i} className="text-xs text-slate-600 flex items-start gap-2 bg-emerald-50 rounded-lg p-2">
@@ -180,7 +180,7 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
         )}
         {analysis.areas_trabajo?.length > 0 && (
           <div>
-            <h4 className="text-xs font-black text-orange-600 uppercase tracking-widest mb-2">{t('evaluaciones.areasTrabajar2')}</h4>
+            <h4 className="text-xs font-bold text-orange-600 uppercase tracking-widest mb-2">{t('evaluaciones.areasTrabajar2')}</h4>
             <ul className="space-y-1">
               {analysis.areas_trabajo.map((a: string, i: number) => (
                 <li key={i} className="text-xs text-slate-600 flex items-start gap-2 bg-orange-50 rounded-lg p-2">
@@ -195,11 +195,11 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       {/* Recomendaciones */}
       {analysis.recomendaciones?.length > 0 && (
         <div>
-          <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">{t('evaluaciones.recomendaciones')}</h4>
+          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">{t('evaluaciones.recomendaciones')}</h4>
           <ul className="space-y-2">
             {analysis.recomendaciones.map((r: string, i: number) => (
-              <li key={i} className="text-sm text-slate-700 flex items-start gap-3 bg-indigo-50 rounded-xl p-3">
-                <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-xs font-black flex items-center justify-center flex-shrink-0">{i+1}</span>
+              <li key={i} className="text-sm text-slate-700 flex items-start gap-3 bg-sky-50 rounded-xl p-3">
+                <span className="w-6 h-6 bg-sky-600 text-white rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">{i+1}</span>
                 {r}
               </li>
             ))}
@@ -210,10 +210,10 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
       {/* Formularios recomendados */}
       {analysis.formularios_recomendados?.length > 0 && (
         <div>
-          <h4 className="text-xs font-black text-violet-600 uppercase tracking-widest mb-2">{t('evaluaciones.proxEvals2')}</h4>
+          <h4 className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">{t('evaluaciones.proxEvals2')}</h4>
           <div className="flex flex-wrap gap-2">
             {analysis.formularios_recomendados.map((f: string, i: number) => (
-              <span key={i} className="px-3 py-1.5 bg-violet-50 border border-violet-200 text-violet-700 rounded-full text-xs font-bold">{f}</span>
+              <span key={i} className="px-3 py-1.5 bg-sky-50 border border-sky-200 text-sky-700 rounded-full text-xs font-bold">{f}</span>
             ))}
           </div>
         </div>
@@ -226,8 +226,8 @@ function AIAnalysisPanel({ analysis, onClose, editableMessage, onEditMessage }: 
             <div className="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center">
               <MessageCircle size={14} className="text-white"/>
             </div>
-            <h4 className="font-black text-amber-800">{t('ui.mensajePadres')}</h4>
-            <span className="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full border border-amber-300 uppercase">✏️ Editable</span>
+            <h4 className="font-bold text-amber-800">{t('ui.mensajePadres')}</h4>
+            <span className="ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-300 uppercase">✏️ Editable</span>
           </div>
           {onEditMessage ? (
             <textarea
@@ -269,19 +269,19 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-black text-xl text-slate-800 flex items-center gap-2"><Send size={20} className="text-blue-600"/> Enviar Formulario</h3>
+          <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2"><Send size={20} className="text-blue-600"/> Enviar Formulario</h3>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100"><X size={20}/></button>
         </div>
 
-        <div className="bg-indigo-50 rounded-xl p-4 mb-6 border border-indigo-100">
-          <p className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">{t('evaluaciones.formularioEnviar')}</p>
-          <p className="font-bold text-indigo-800">{form.title}</p>
-          <p className="text-xs text-indigo-600 mt-0.5">{form.estimatedMinutes} min aprox.</p>
+        <div className="bg-sky-50 rounded-xl p-4 mb-6 border border-sky-100">
+          <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-1">{t('evaluaciones.formularioEnviar')}</p>
+          <p className="font-bold text-sky-800">{form.title}</p>
+          <p className="text-xs text-sky-600 mt-0.5">{form.estimatedMinutes} min aprox.</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.pacienteStar')}</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('evaluaciones.pacienteStar')}</label>
             <select value={childId} onChange={e => setChildId(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all">
               <option value="">{t('ui.select_patient_option')}</option>
               {children.map((c: any) => <option key={c.id} value={c.id}>{c.name}{c.age ? ` - ${c.age}` : ''}</option>)}
@@ -289,18 +289,18 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
             <p className="text-xs text-slate-400 mt-1.5">{t('evaluaciones.irABiblioteca')}</p>
           </div>
           <div>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">{t('ui.mensajePadres2')}</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('ui.mensajePadres2')}</label>
             <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
               {...{placeholder: t('ui.send_form_msg')}}
               className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all resize-none"/>
           </div>
           <div>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">{t('ui.fechaLimite')}</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">{t('ui.fechaLimite')}</label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all"/>
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-black uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
-            <button onClick={handleSend} disabled={sending || !childId} className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+            <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
+            <button onClick={handleSend} disabled={sending || !childId} className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {sending ? <Loader2 size={18} className="animate-spin"/> : <Send size={18}/>}
               {sending ? 'Enviando...' : 'Enviar Formulario'}
             </button>
@@ -549,14 +549,14 @@ export default function NeuroFormsView() {
           <CheckCircle2 size={40} className="text-emerald-500" />
         </div>
         <div className="text-center">
-          <h2 className="text-2xl font-black text-slate-800 mb-2" style={{ color: 'var(--text-primary)' }}>Formulario guardado</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2" style={{ color: 'var(--text-primary)' }}>Formulario guardado</h2>
           <p className="text-slate-500 font-medium">{selectedForm.title}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
           <button
             onClick={handleGenerateAndDownload}
             disabled={isGeneratingReport}
-            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-black text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-2xl font-bold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
             {isGeneratingReport ? (
               <><Loader2 size={18} className="animate-spin" /> Generando reporte...</>
@@ -566,13 +566,13 @@ export default function NeuroFormsView() {
           </button>
           <button
             onClick={resetAll}
-            className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-sm transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-sm transition-all"
           >
             <ChevronLeft size={18} /> Volver
           </button>
         </div>
         {aiAnalysis && (
-          <p className="text-xs text-violet-600 font-bold flex items-center gap-1">
+          <p className="text-xs text-sky-600 font-bold flex items-center gap-1">
             <Sparkles size={12} /> Análisis IA disponible — se incluirá en el reporte
           </p>
         )}
@@ -583,21 +583,21 @@ export default function NeuroFormsView() {
   // ── FORM FILL MODE ──────────────────────────────────────────────────────────
   if (selectedForm) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/30 p-4 md:p-6 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-sky-50/50 via-white to-sky-50/30 p-4 md:p-6 lg:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-          <button onClick={() => setSelectedForm(null)} className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold transition-all group">
+          <button onClick={() => setSelectedForm(null)} className="flex items-center gap-2 text-slate-500 hover:text-sky-600 font-bold transition-all group">
             <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform"/> Volver a Formularios
           </button>
           <div className="flex items-center gap-3">
             {/* Patient selector */}
             <select value={selectedChild} onChange={e => setSelectedChild(e.target.value)}
-              className="p-3 bg-white border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-400 transition-all">
+              className="p-3 bg-white border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all">
               <option value="">{t('common.seleccionarPaciente')}</option>
               {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <button onClick={handleSaveForm} disabled={isSaving || !selectedChild || answeredCount < 3}
-              className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all disabled:opacity-40 flex items-center gap-2">
+              className="px-5 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-sm transition-all disabled:opacity-40 flex items-center gap-2">
               {isSaving ? <Loader2 size={16} className="animate-spin"/> : <CheckCircle2 size={16}/>}
               Guardar
             </button>
@@ -612,11 +612,11 @@ export default function NeuroFormsView() {
                 <span className="text-2xl">{selectedForm.icon}</span>
               </div>
               <div className="flex-1">
-                <h2 className="font-black text-slate-800 text-xl">{selectedForm.title}</h2>
+                <h2 className="font-bold text-slate-800 text-xl">{selectedForm.title}</h2>
                 <p className="text-slate-500 text-sm mt-0.5">{selectedForm.subtitle}</p>
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
                   {selectedForm.tags.slice(0, 3).map(t => (
-                    <span key={t} className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full">{t}</span>
+                    <span key={t} className="px-2 py-0.5 bg-sky-50 text-sky-600 text-xs font-bold rounded-full">{t}</span>
                   ))}
                   <span className="text-xs text-slate-400 flex items-center gap-1"><Clock size={12}/>{selectedForm.estimatedMinutes} min</span>
                 </div>
@@ -630,12 +630,12 @@ export default function NeuroFormsView() {
                 <span>{Math.round(progress)}% {t('ui.porcentajeCompletado').replace('% ','')}</span>
               </div>
               <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}/>
+                <div className="h-full bg-gradient-to-r from-sky-500 to-cyan-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}/>
               </div>
               <div className="flex gap-1.5">
                 {selectedForm.sections.map((_, i) => (
                   <button key={i} onClick={() => setCurrentStep(i)}
-                    className={`flex-1 h-1.5 rounded-full transition-all ${i < currentStep ? 'bg-indigo-500' : i === currentStep ? 'bg-violet-500' : 'bg-slate-200'}`}/>
+                    className={`flex-1 h-1.5 rounded-full transition-all ${i < currentStep ? 'bg-sky-500' : i === currentStep ? 'bg-sky-500' : 'bg-slate-200'}`}/>
                 ))}
               </div>
             </div>
@@ -644,7 +644,7 @@ export default function NeuroFormsView() {
           {/* Current section */}
           {currentSection && (
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-6">
-              <h3 className="font-black text-slate-800 text-lg mb-1">{currentSection.title}</h3>
+              <h3 className="font-bold text-slate-800 text-lg mb-1">{currentSection.title}</h3>
               {currentSection.description && <p className="text-slate-500 text-sm mb-6">{currentSection.description}</p>}
               <div className="space-y-7">
                 {currentSection.questions.map(q => (
@@ -658,17 +658,17 @@ export default function NeuroFormsView() {
           <div className="flex flex-col gap-4">
             <div className="flex gap-3">
               {currentStep > 0 && (
-                <button onClick={() => setCurrentStep(s => s - 1)} className="flex-1 py-4 border-2 border-slate-200 text-slate-600 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                <button onClick={() => setCurrentStep(s => s - 1)} className="flex-1 py-4 border-2 border-slate-200 text-slate-600 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
                   <ChevronLeft size={16}/> Anterior
                 </button>
               )}
               {currentStep < totalSteps - 1 ? (
-                <button onClick={() => setCurrentStep(s => s + 1)} className="flex-[2] py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 hover:from-indigo-700">
+                <button onClick={() => setCurrentStep(s => s + 1)} className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 hover:from-sky-700">
                   Siguiente <ChevronRight size={16}/>
                 </button>
               ) : (
                 <button onClick={handleAnalyzeWithAI} disabled={isAnalyzing || answeredCount < 3}
-                  className="flex-[2] py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-violet-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:from-violet-700">
+                  className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg shadow-sky-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:from-sky-700">
                   {isAnalyzing ? <Loader2 size={18} className="animate-spin"/> : <Sparkles size={18}/>}
                   {isAnalyzing ? 'Analizando...' : 'Analizar con IA'}
                 </button>
@@ -692,12 +692,12 @@ export default function NeuroFormsView() {
 
   // ── LIBRARY MODE ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/30 p-4 md:p-6 lg:p-8 animate-fade-in-up">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50/50 via-white to-sky-50/30 p-4 md:p-6 lg:p-8 animate-fade-in-up">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h2 className="font-black text-2xl md:text-3xl text-slate-800 tracking-tight flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-100 rounded-2xl"><Brain className="text-indigo-600" size={28}/></div>
+          <h2 className="font-bold text-2xl md:text-3xl text-slate-800 tracking-tight flex items-center gap-3">
+            <div className="p-2.5 bg-sky-100 rounded-2xl"><Brain className="text-sky-600" size={28}/></div>
             NeuroFormas Clínicas
           </h2>
           <p className="text-slate-400 text-sm font-medium mt-1 ml-1">
@@ -705,13 +705,13 @@ export default function NeuroFormsView() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setActiveTab('biblioteca')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'biblioteca' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+          <button onClick={() => setActiveTab('biblioteca')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'biblioteca' ? 'bg-sky-600 text-white shadow-lg shadow-sky-200' : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-sky-300'}`}>
             <BookOpen size={16} className="inline mr-2"/>Biblioteca
           </button>
-          <button onClick={() => setActiveTab('respuestas')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all relative ${activeTab === 'respuestas' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+          <button onClick={() => setActiveTab('respuestas')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all relative ${activeTab === 'respuestas' ? 'bg-sky-600 text-white shadow-lg shadow-sky-200' : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-sky-300'}`}>
             <FileText size={16} className="inline mr-2"/>Enviados
             {sentForms.filter(f => f.status === 'completed').length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                 {sentForms.filter(f => f.status === 'completed').length}
               </span>
             )}
@@ -726,7 +726,7 @@ export default function NeuroFormsView() {
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18}/>
               <input type="text" {...{placeholder: t('ui.search_label')}} value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-400 transition-all"/>
+                className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all"/>
             </div>
           </div>
 
@@ -761,7 +761,7 @@ export default function NeuroFormsView() {
                       <div>
                         <span className="text-3xl">{form.icon}</span>
                         <div className="mt-2">
-                          <span className={`text-[9px] font-black px-2 py-1 rounded-full bg-white/20 text-white uppercase tracking-widest`}>
+                          <span className={`text-[9px] font-bold px-2 py-1 rounded-full bg-white/20 text-white uppercase tracking-widest`}>
                             {cat.label}
                           </span>
                         </div>
@@ -779,7 +779,7 @@ export default function NeuroFormsView() {
 
                   {/* Card body */}
                   <div className="p-5">
-                    <h3 className="font-black text-slate-800 text-base leading-tight mb-1 group-hover:text-indigo-700 transition-colors">
+                    <h3 className="font-bold text-slate-800 text-base leading-tight mb-1 group-hover:text-sky-700 transition-colors">
                       {form.title}
                     </h3>
                     <p className="text-xs text-slate-500 font-medium mb-3">{form.subtitle}</p>
@@ -798,7 +798,7 @@ export default function NeuroFormsView() {
                         <FileText size={14}/> Completar
                       </button>
                       {(form.targetRole === 'parent' || form.targetRole === 'both') && (
-                        <button onClick={() => setSendFormModal(form)} className="px-3 py-2.5 rounded-xl border-2 border-slate-200 text-slate-500 hover:border-indigo-400 hover:text-indigo-600 transition-all" title="Enviar a padres">
+                        <button onClick={() => setSendFormModal(form)} className="px-3 py-2.5 rounded-xl border-2 border-slate-200 text-slate-500 hover:border-sky-400 hover:text-sky-600 transition-all" title="Enviar a padres">
                           <Send size={14}/>
                         </button>
                       )}
@@ -815,12 +815,12 @@ export default function NeuroFormsView() {
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm mb-6">
             <div className="grid grid-cols-3 gap-4 text-center">
               {[
-                { label: 'Enviados', value: sentForms.length, color: 'text-indigo-600' },
+                { label: 'Enviados', value: sentForms.length, color: 'text-sky-600' },
                 { label: 'Pendientes', value: sentForms.filter(f => f.status === 'pending').length, color: 'text-amber-600' },
                 { label: 'Completados', value: sentForms.filter(f => f.status === 'completed').length, color: 'text-emerald-600' },
               ].map(({ label, value, color }) => (
                 <div key={label}>
-                  <p className={`text-2xl font-black ${color}`}>{value}</p>
+                  <p className={`text-2xl font-bold ${color}`}>{value}</p>
                   <p className="text-xs font-bold text-slate-400">{label}</p>
                 </div>
               ))}
@@ -840,7 +840,7 @@ export default function NeuroFormsView() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <p className="font-bold text-slate-800 text-sm truncate">{sf.form_title}</p>
-                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase ${sf.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${sf.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                       {sf.status === 'completed' ? 'Completado' : 'Pendiente'}
                     </span>
                   </div>
@@ -852,7 +852,7 @@ export default function NeuroFormsView() {
 
               {expandedResponse === sf.id && sf.status === 'completed' && sf.responses && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-5">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">{t('ui.respuestasFormulario')}</h4>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">{t('ui.respuestasFormulario')}</h4>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(sf.responses).map(([k, v]) => (
                       <div key={k} className="bg-white rounded-xl p-3 border border-slate-100">

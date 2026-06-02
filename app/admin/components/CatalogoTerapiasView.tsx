@@ -41,14 +41,14 @@ const MODALIDADES: { id: string; label: string; icon: any }[] = [
 
 // Paleta de colores: cada tema → gradiente, accent, banner sólido y badge soft.
 const COLORES: Record<string, { gradient: string; accent: string; accentDark: string; soft: string; softDark: string; nombre: string; emoji: string }> = {
-  indigo:   { gradient: 'from-indigo-500 to-blue-500',     accent: '#6366f1', accentDark: '#818cf8', soft: '#eef2ff', softDark: '#1e1b4b', nombre: 'Índigo',   emoji: '💙' },
-  purple:   { gradient: 'from-purple-500 to-fuchsia-500',  accent: '#a855f7', accentDark: '#c084fc', soft: '#f5f3ff', softDark: '#3b0764', nombre: 'Púrpura',  emoji: '💜' },
+  indigo:   { gradient: 'from-sky-500 to-blue-500',     accent: '#0284c7', accentDark: '#38bdf8', soft: '#eef2ff', softDark: '#082f49', nombre: 'Índigo',   emoji: '💙' },
+  purple:   { gradient: 'from-sky-500 to-cyan-500',  accent: '#0ea5e9', accentDark: '#7dd3fc', soft: '#f0f9ff', softDark: '#3b0764', nombre: 'Púrpura',  emoji: '💜' },
   pink:     { gradient: 'from-pink-500 to-rose-500',       accent: '#ec4899', accentDark: '#f472b6', soft: '#fdf2f8', softDark: '#500724', nombre: 'Rosa',     emoji: '🌸' },
   rose:     { gradient: 'from-rose-500 to-red-500',        accent: '#f43f5e', accentDark: '#fb7185', soft: '#fff1f2', softDark: '#4c0519', nombre: 'Coral',    emoji: '🌹' },
   amber:    { gradient: 'from-amber-500 to-orange-500',    accent: '#f59e0b', accentDark: '#fbbf24', soft: '#fffbeb', softDark: '#451a03', nombre: 'Ámbar',    emoji: '☀️' },
   emerald:  { gradient: 'from-emerald-500 to-teal-500',    accent: '#10b981', accentDark: '#34d399', soft: '#ecfdf5', softDark: '#022c22', nombre: 'Esmeralda',emoji: '🌿' },
   cyan:     { gradient: 'from-cyan-500 to-sky-500',        accent: '#06b6d4', accentDark: '#22d3ee', soft: '#ecfeff', softDark: '#083344', nombre: 'Cian',     emoji: '🌊' },
-  blue:     { gradient: 'from-blue-500 to-indigo-500',     accent: '#3b82f6', accentDark: '#60a5fa', soft: '#eff6ff', softDark: '#172554', nombre: 'Azul',     emoji: '🌀' },
+  blue:     { gradient: 'from-blue-500 to-sky-500',     accent: '#3b82f6', accentDark: '#60a5fa', soft: '#eff6ff', softDark: '#172554', nombre: 'Azul',     emoji: '🌀' },
   orange:   { gradient: 'from-orange-500 to-red-500',      accent: '#f97316', accentDark: '#fb923c', soft: '#fff7ed', softDark: '#431407', nombre: 'Naranja',  emoji: '🔥' },
   slate:    { gradient: 'from-slate-600 to-slate-700',     accent: '#64748b', accentDark: '#94a3b8', soft: '#f8fafc', softDark: '#0f172a', nombre: 'Gris',     emoji: '⚪' },
 }
@@ -142,7 +142,7 @@ export default function CatalogoTerapiasView() {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5">
       {/* ─── HERO ──────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl p-6 text-white shadow-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600">
+      <div className="relative overflow-hidden rounded-3xl p-6 text-white shadow-xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500">
         <div className="absolute inset-0 opacity-20"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 0%, transparent 50%)' }} />
         <div className="relative flex items-center justify-between gap-4 flex-wrap">
@@ -151,14 +151,14 @@ export default function CatalogoTerapiasView() {
               <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                 <Sparkles size={20} />
               </div>
-              <h1 className="text-2xl font-black tracking-tight">Catálogo de Terapias</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Catálogo de Terapias</h1>
             </div>
             <p className="text-white/90 text-sm max-w-xl">
               Las terapias que verán los padres tras la evaluación inicial. La IA usará estos datos para recomendar las más adecuadas según cada caso.
             </p>
           </div>
           <button onClick={() => setEditing({ ...VACIA })}
-            className="px-4 py-2.5 rounded-xl bg-white text-indigo-700 font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition">
+            className="px-4 py-2.5 rounded-xl bg-white text-sky-700 font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition">
             <Plus size={16} /> Nueva terapia
           </button>
         </div>
@@ -172,12 +172,12 @@ export default function CatalogoTerapiasView() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar terapia…"
-            className="w-full pl-9 pr-3 py-2.5 rounded-xl border outline-none text-sm focus:border-indigo-500"
+            className="w-full pl-9 pr-3 py-2.5 rounded-xl border outline-none text-sm focus:border-sky-500"
             style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
           />
         </div>
         <select value={filtroCat} onChange={e => setFiltroCat(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border outline-none text-sm focus:border-indigo-500"
+          className="px-3 py-2.5 rounded-xl border outline-none text-sm focus:border-sky-500"
           style={{ background: 'var(--card)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
           <option value="">Todas las categorías</option>
           {/* Categorías dinámicas extraídas de las terapias existentes */}
@@ -261,7 +261,7 @@ function TerapiaCard({
         {/* Badges arriba */}
         <div className="absolute top-3 left-3 flex gap-1.5">
           {t.categoria && (
-            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full text-white shadow-lg bg-gradient-to-r ${c.gradient}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full text-white shadow-lg bg-gradient-to-r ${c.gradient}`}>
               {t.categoria}
             </span>
           )}
@@ -294,7 +294,7 @@ function TerapiaCard({
 
       {/* CUERPO */}
       <div className="p-5 space-y-3">
-        <h4 className="font-black text-lg leading-tight" style={{ color: 'var(--text-primary)' }}>
+        <h4 className="font-bold text-lg leading-tight" style={{ color: 'var(--text-primary)' }}>
           {t.nombre}
         </h4>
 
@@ -315,7 +315,7 @@ function TerapiaCard({
               color: 'var(--text-secondary)',
             }}
           >
-            <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: c.accent }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: c.accent }}>
               ✨ ¿Por qué llevarla?
             </p>
             <p>{t.por_que}</p>
@@ -347,7 +347,7 @@ function TerapiaCard({
             {t.precio != null ? (
               <div className="flex items-baseline gap-1">
                 <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>S/.</span>
-                <span className="text-2xl font-black" style={{ color: c.accent }}>
+                <span className="text-2xl font-bold" style={{ color: c.accent }}>
                   {Number(t.precio).toFixed(0)}
                 </span>
               </div>
@@ -381,7 +381,7 @@ function EditorModal({
               <Sparkles size={20} />
             </div>
             <div>
-              <h3 className="font-black text-lg">{editing.id ? 'Editar terapia' : 'Nueva terapia'}</h3>
+              <h3 className="font-bold text-lg">{editing.id ? 'Editar terapia' : 'Nueva terapia'}</h3>
               <p className="text-xs opacity-90">{c.nombre} {c.emoji}</p>
             </div>
           </div>
@@ -394,7 +394,7 @@ function EditorModal({
 
           {/* PALETA DE COLORES */}
           <div>
-            <label className="text-xs font-black uppercase tracking-wider block mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+            <label className="text-xs font-bold uppercase tracking-wider block mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
               <Palette size={12} /> Color de la tarjeta
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -415,7 +415,7 @@ function EditorModal({
           {/* NOMBRE */}
           <Field label="Nombre *">
             <input value={editing.nombre || ''} onChange={e => setEditing({ ...editing, nombre: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
+              className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-sky-500"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
           </Field>
 
@@ -462,7 +462,7 @@ function EditorModal({
                 value={editing.categoria || ''}
                 onChange={e => setEditing({ ...editing, categoria: e.target.value })}
                 placeholder="Ej: ABA, Lenguaje, Aprendizaje, Conducta…"
-                className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
+                className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-sky-500"
                 style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
             </Field>
             <Field label="Modalidad">
@@ -491,14 +491,14 @@ function EditorModal({
                 <input type="number" step="0.01" value={editing.precio ?? ''}
                   onChange={e => setEditing({ ...editing, precio: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="0.00"
-                  className="w-full pl-11 pr-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
+                  className="w-full pl-11 pr-3 py-2.5 rounded-lg border outline-none text-sm focus:border-sky-500"
                   style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
               </div>
             </Field>
             <Field label="Duración">
               <input value={editing.duracion || ''} onChange={e => setEditing({ ...editing, duracion: e.target.value })}
                 placeholder="2 sesiones semanales de 45 min"
-                className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-indigo-500"
+                className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm focus:border-sky-500"
                 style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
             </Field>
           </div>
@@ -507,7 +507,7 @@ function EditorModal({
           <Field label="Descripción">
             <textarea value={editing.descripcion || ''} onChange={e => setEditing({ ...editing, descripcion: e.target.value })}
               rows={3} placeholder="Qué hace la terapia, en qué consiste…"
-              className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm resize-none focus:border-indigo-500"
+              className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm resize-none focus:border-sky-500"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
           </Field>
 
@@ -518,13 +518,13 @@ function EditorModal({
           >
             <textarea value={editing.por_que || ''} onChange={e => setEditing({ ...editing, por_que: e.target.value })}
               rows={3} placeholder="Beneficios, casos en que ayuda especialmente…"
-              className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm resize-none focus:border-indigo-500"
+              className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm resize-none focus:border-sky-500"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }} />
           </Field>
 
           {/* PREVIEW */}
           <div>
-            <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
               Vista previa
             </p>
             <div className="max-w-sm">
@@ -556,7 +556,7 @@ function EditorModal({
         <div className="sticky bottom-0 px-6 py-4 border-t flex gap-3"
           style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <button onClick={onGuardar} disabled={saving}
-            className={`flex-1 px-4 py-3 rounded-xl text-white font-black flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-r ${c.gradient} shadow-lg`}>
+            className={`flex-1 px-4 py-3 rounded-xl text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-r ${c.gradient} shadow-lg`}>
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             Guardar terapia
           </button>
@@ -574,7 +574,7 @@ function EditorModal({
 function Field({ label, hint, children }: { label: string; hint?: string; children: any }) {
   return (
     <div>
-      <label className="text-xs font-black uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-muted)' }}>
+      <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: 'var(--text-muted)' }}>
         {label}
       </label>
       {children}

@@ -27,7 +27,7 @@ const TIPOS_GRAFICO_PROGRAMA = [
 
 function colorPorPct(pct: number) {
   if (pct >= 90) return '#059669'
-  if (pct >= 70) return '#6366f1'
+  if (pct >= 70) return '#0284c7'
   if (pct >= 45) return '#f59e0b'
   return '#ef4444'
 }
@@ -46,16 +46,16 @@ const AREA_COLOR: Record<string, { dot: string }> = {
 const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string }> = {
   comunicacion: { color: 'text-blue-700 dark:text-blue-300',   bg: 'bg-blue-50 dark:bg-blue-900/25 border-blue-200 dark:border-blue-800',   label: 'Comunicación',   emoji: '💬' },
   conducta:     { color: 'text-red-700 dark:text-red-300',     bg: 'bg-red-50 dark:bg-red-900/25 border-red-200 dark:border-red-800',       label: 'Conducta',       emoji: '🎯' },
-  cognitivo:    { color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50 dark:bg-violet-900/25 border-violet-200 dark:border-violet-800', label: 'Cognitivo', emoji: '🧠' },
+  cognitivo:    { color: 'text-sky-700 dark:text-sky-300', bg: 'bg-sky-50 dark:bg-sky-900/25 border-sky-200 dark:border-sky-800', label: 'Cognitivo', emoji: '🧠' },
   social:       { color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-900/25 border-emerald-200 dark:border-emerald-800', label: 'Social', emoji: '👥' },
   autonomia:    { color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/25 border-amber-200 dark:border-amber-800', label: 'Autonomía',    emoji: '🌟' },
-  academico:    { color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-50 dark:bg-indigo-900/25 border-indigo-200 dark:border-indigo-800', label: 'Académico', emoji: '📚' },
+  academico:    { color: 'text-sky-700 dark:text-sky-300', bg: 'bg-sky-50 dark:bg-sky-900/25 border-sky-200 dark:border-sky-800', label: 'Académico', emoji: '📚' },
   sensorial:    { color: 'text-pink-700 dark:text-pink-300',   bg: 'bg-pink-50 dark:bg-pink-900/25 border-pink-200 dark:border-pink-800',   label: 'Sensorial',      emoji: '✋' },
 }
 
 // Removed 'seguimiento' — mantenimiento covers it
 const FASE_COLORS: Record<string, string> = {
-  linea_base: '#94a3b8', intervencion: '#6366f1',
+  linea_base: '#94a3b8', intervencion: '#0284c7',
   mantenimiento: '#10b981',
 }
 
@@ -290,7 +290,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             <Activity size={16} style={{ color: 'var(--text-secondary)' }} />
           </div>
           <div>
-            <h2 className="font-black text-lg leading-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <h2 className="font-bold text-lg leading-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {t('programas.titulo')}
             </h2>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Registro conductual · {childName}</p>
@@ -324,7 +324,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
           <div key={s.label} className="rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ background: s.bar }} />
-            <p className="text-3xl font-black pl-1 leading-none mb-1"
+            <p className="text-3xl font-bold pl-1 leading-none mb-1"
               style={{ color: s.bar }}>
               {s.value}
             </p>
@@ -347,7 +347,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
         return (
           <div className="space-y-2 mb-5">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+              <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
                 style={{ color: 'var(--text-muted)' }}>
                 <Brain size={10} style={{ color: 'var(--text-muted)' }} /> Análisis ARIA
               </p>
@@ -461,13 +461,13 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
       {/* Lista de programas */}
       {loading ? (
         <div className="flex flex-col items-center py-16 gap-3">
-          <Loader2 className="animate-spin text-indigo-400" size={28} />
+          <Loader2 className="animate-spin text-sky-400" size={28} />
           <p className="text-sm" style={{color:"var(--text-muted)"}}>{t('programas.sinProgramas')}</p>
         </div>
       ) : programasFiltrados.length === 0 ? (
         <div className="border-2 border-dashed border-[var(--card-border)] bg-[var(--card)] rounded-3xl p-14 text-center">
-          <div className="w-14 h-14 dark:bg-indigo-900/30 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
-            <BarChart3 size={26} className="text-indigo-300" />
+          <div className="w-14 h-14 dark:bg-sky-900/30 bg-sky-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <BarChart3 size={26} className="text-sky-300" />
           </div>
           <p className="font-bold text-slate-500 mb-1">{busqueda ? `Sin resultados para "${busqueda}"` : (t('programas.sinProgramas') + (filtroArea !== 'todos' ? ` ${t('programas.enArea').replace('{area}', AREA_CONFIG[filtroArea]?.label || '')}` : ''))}</p>
           <p className="text-xs" style={{color:"var(--text-muted)",opacity:0.6}}>{!busqueda && t('programas.creaElPrimero').replace('{nombre}', childName)}</p>
@@ -516,7 +516,7 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-px flex-1" style={{ background: 'var(--card-border)' }} />
-                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full"
+                <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
                   style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
                   ✓ Criterio alcanzado — {programasCriterioAuto.length} programa{programasCriterioAuto.length !== 1 ? 's' : ''}
                 </span>
@@ -596,7 +596,7 @@ function AlertaCard({ alerta, onDescartar }: { alerta: any; key?: any; onDescart
   return (
     <div className="rounded-xl p-4" style={{ background: 'var(--muted-bg)', border: `1px solid var(--card-border)`, borderLeft: `3px solid ${c.border}` }}>
       <div className="flex items-start gap-2 mb-1">
-        <span className="text-[10px] font-black w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
+        <span className="text-[10px] font-bold w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
           style={{ background: `${c.border}18`, color: c.border }}>
           {c.icon}
         </span>
@@ -653,7 +653,7 @@ function MiniChart({ chartData, minSlots, criterio }: { chartData: any[]; minSlo
     : chartData
 
   // Paleta consistente entre sets (mismo orden que el gráfico grande)
-  const colors = ['#6366f1', '#ef4444', '#0ea5e9', '#a855f7', '#f59e0b', '#10b981']
+  const colors = ['#0284c7', '#ef4444', '#0ea5e9', '#0ea5e9', '#f59e0b', '#10b981']
 
   return (
     <div ref={containerRef} className="mt-3 h-16 w-full" style={{ overflow: 'hidden' }}>
@@ -665,7 +665,7 @@ function MiniChart({ chartData, minSlots, criterio }: { chartData: any[]; minSlo
             ? setKeys.map((sk, i) => (
                 <Line key={sk} type="linear" dataKey={`pct_${sk}`} stroke={colors[i % colors.length]} strokeWidth={2} dot={false} connectNulls={false} />
               ))
-            : <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} connectNulls={false} />
+            : <Line type="linear" dataKey="pct" stroke="#0284c7" strokeWidth={2} dot={false} connectNulls={false} />
           }
           <ReferenceLine y={criterio} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
         </LineChart>
@@ -702,7 +702,7 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
     setDividers.push({
       x: 0,
       label: firstSet,
-      nextColor: firstSeg ? firstSeg.color : '#6366f1',
+      nextColor: firstSeg ? firstSeg.color : '#0284c7',
       isFirst: true,
     })
   }
@@ -717,7 +717,7 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
       setDividers.push({
         x: xPos,
         label: realPoints[i].set || '',
-        nextColor: mseg ? mseg.color : '#6366f1',
+        nextColor: mseg ? mseg.color : '#0284c7',
       })
     }
   }
@@ -1026,7 +1026,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                     if (e.key === 'Escape') { setTempTitulo(localTitulo); setEditingTitulo(false) }
                   }}
                   onClick={e => e.stopPropagation()}
-                  className="font-bold text-sm rounded-lg px-2 py-0.5 outline-none border-2 border-indigo-400"
+                  className="font-bold text-sm rounded-lg px-2 py-0.5 outline-none border-2 border-sky-400"
                   style={{ color: 'var(--text-primary)', background: 'var(--input-bg)', minWidth: '160px', maxWidth: '260px' }}
                 />
               ) : (
@@ -1038,7 +1038,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   <button
                     title="Editar título"
                     onClick={e => { e.stopPropagation(); setTempTitulo(localTitulo); setEditingTitulo(true) }}
-                    className="flex items-center justify-center w-5 h-5 rounded-md opacity-40 hover:opacity-100 hover:bg-indigo-100 transition-all shrink-0"
+                    className="flex items-center justify-center w-5 h-5 rounded-md opacity-40 hover:opacity-100 hover:bg-sky-100 transition-all shrink-0"
                     style={{ color: 'var(--text-muted)' }}
                   >
                     <Edit3 size={11} />
@@ -1050,7 +1050,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <button
                   onClick={e => { e.stopPropagation(); setEditingArea(v => !v); setEditingFase(false) }}
                   title="Cambiar área"
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-black border transition-all hover:opacity-80 ${AREA_CONFIG[localArea]?.bg || ''} ${AREA_CONFIG[localArea]?.color || ''}`}>
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all hover:opacity-80 ${AREA_CONFIG[localArea]?.bg || ''} ${AREA_CONFIG[localArea]?.color || ''}`}>
                   {AREA_CONFIG[localArea]?.emoji} {AREA_CONFIG[localArea]?.label || localArea}
                 </button>
                 {editingArea && (
@@ -1064,10 +1064,10 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           setEditingArea(false)
                           saveField('area', key)
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-left hover:bg-[var(--muted-bg)] transition-colors ${key === localArea ? 'font-black' : ''}`}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-left hover:bg-[var(--muted-bg)] transition-colors ${key === localArea ? 'font-bold' : ''}`}
                         style={{ color: key === localArea ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         {cfg.emoji} {cfg.label}
-                        {key === localArea && <span className="ml-auto text-indigo-500">✓</span>}
+                        {key === localArea && <span className="ml-auto text-sky-500">✓</span>}
                       </button>
                     ))}
                   </div>
@@ -1101,19 +1101,19 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-left hover:bg-[var(--muted-bg)] transition-colors`}
                         style={{ color: key === localFase ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: key === localFase ? 800 : 600 }}>
                         {label}
-                        {key === localFase && <span className="ml-auto text-indigo-500">✓</span>}
+                        {key === localFase && <span className="ml-auto text-sky-500">✓</span>}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
               {criterioAlcanzado && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 border border-emerald-200">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
                   🏆 Criterio alcanzado
                 </span>
               )}
               {unaFalta && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-200">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
                   ⚡ ¡Vas bien! Falta 1 sesión
                 </span>
               )}
@@ -1186,7 +1186,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
         <div className="p-5 space-y-5" style={{ borderTop: '1px solid var(--card-border)', background: 'var(--muted-bg)' }}>
           {loadingDetalle ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin text-indigo-400" size={24} />
+              <Loader2 className="animate-spin text-sky-400" size={24} />
             </div>
           ) : detalle ? (
             <>
@@ -1195,7 +1195,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <div>
                   {/* Header con selector de tipo */}
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       📈 Gráfica de progreso
                     </p>
                     {/* Selector de tipo */}
@@ -1256,7 +1256,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       }
 
                       // Color palette — stable by unique fase||set key so Set 1 always = same color
-                      const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
+                      const segColors = ['#0284c7','#ef4444','#3b82f6','#0ea5e9','#f59e0b','#10b981','#ec4899']
                       const uniqueSegKeys: string[] = []
                       segments.forEach(seg => {
                         const k = `${seg.fase}||${seg.set}`
@@ -1286,7 +1286,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       // Build per-point color: dot color matches its segment
                       const dotColorByIdx = chartData.map((_: any, i: number) => {
                         const segIdx = segments.findIndex(s => i >= s.startIdx && i <= s.endIdx)
-                        return segIdx >= 0 ? segColorMap[segIdx] : '#6366f1'
+                        return segIdx >= 0 ? segColorMap[segIdx] : '#0284c7'
                       })
 
                       const chartHeight = 260
@@ -1346,7 +1346,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         }
                       }
                       const total = realDataB.length
-                      const segColors = ['#6366f1','#ef4444','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ec4899']
+                      const segColors = ['#0284c7','#ef4444','#3b82f6','#0ea5e9','#f59e0b','#10b981','#ec4899']
                       const uniqueBarKeys: string[] = []
                       segs.forEach(seg => { const k = `${seg.fase}||${seg.set}`; if (!uniqueBarKeys.includes(k)) uniqueBarKeys.push(k) })
                       const barColorMap = segs.map(seg => segColors[uniqueBarKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length])
@@ -1362,7 +1362,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 return (
                                   <div key={i} className="flex flex-col items-center justify-end pb-1 border-r last:border-r-0"
                                     style={{ width: `${width}%`, minWidth: '28px', borderColor: '#cbd5e1' }}>
-                                    <span className="text-[10px] font-black truncate px-1 text-center w-full" style={{ color }}>{seg.label}</span>
+                                    <span className="text-[10px] font-bold truncate px-1 text-center w-full" style={{ color }}>{seg.label}</span>
                                     <span className="text-[9px] font-semibold text-slate-400 truncate px-1 text-center w-full">
                                       {seg.set ? (faseLabel[seg.fase] || seg.fase) : ''}
                                     </span>
@@ -1393,7 +1393,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 {chartData.map((entry: any, index: number) => (
                                   <Cell key={index} fill={
                                     entry.pct >= programa.criterio_dominio_pct ? '#059669'
-                                    : entry.pct >= 70 ? '#6366f1'
+                                    : entry.pct >= 70 ? '#0284c7'
                                     : entry.pct >= 45 ? '#D97706' : '#DC2626'
                                   } />
                                 ))}
@@ -1410,7 +1410,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       const histData = [
                         { rango: '0-25%',        count: chartData.filter((d: any) => d.pct < 26).length,                    color: '#DC2626' },
                         { rango: '26-50%',       count: chartData.filter((d: any) => d.pct >= 26 && d.pct < 51).length,     color: '#D97706' },
-                        { rango: '51-75%',       count: chartData.filter((d: any) => d.pct >= 51 && d.pct < 76).length,     color: '#6366f1' },
+                        { rango: '51-75%',       count: chartData.filter((d: any) => d.pct >= 51 && d.pct < 76).length,     color: '#0284c7' },
                         { rango: '76-89%',       count: chartData.filter((d: any) => d.pct >= 76 && d.pct < critPct).length, color: '#0891B2' },
                         { rango: `${critPct}%+`, count: chartData.filter((d: any) => d.pct >= critPct).length,              color: '#059669' },
                       ]
@@ -1442,7 +1442,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       const realPie = chartData.filter((d: any) => d.pct !== null)
                       const pieRaw = [
                         { name: `≥${critPct}% · Criterio`, value: realPie.filter((d: any) => d.pct >= critPct).length, color: '#059669', bg: '#d1fae5' },
-                        { name: '70-89% · Cerca',          value: realPie.filter((d: any) => d.pct >= 70 && d.pct < critPct).length, color: '#6366f1', bg: '#ede9fe' },
+                        { name: '70-89% · Cerca',          value: realPie.filter((d: any) => d.pct >= 70 && d.pct < critPct).length, color: '#0284c7', bg: '#e0f2fe' },
                         { name: '45-69% · En proceso',     value: realPie.filter((d: any) => d.pct >= 45 && d.pct < 70).length, color: '#D97706', bg: '#fef3c7' },
                         { name: '<45% · Inicial',          value: realPie.filter((d: any) => d.pct < 45).length, color: '#DC2626', bg: '#fee2e2' },
                       ].filter(p => p.value > 0)
@@ -1489,7 +1489,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 <div key={p.name} className="rounded-xl p-3 flex items-center gap-2.5" style={{ background: p.bg }}>
                                   <div className="w-3 h-3 rounded-full shrink-0" style={{ background: p.color }} />
                                   <div className="min-w-0">
-                                    <p className="text-[11px] font-black truncate" style={{ color: p.color }}>{p.value} sesiones</p>
+                                    <p className="text-[11px] font-bold truncate" style={{ color: p.color }}>{p.value} sesiones</p>
                                     <p className="text-[10px] text-slate-500 font-semibold truncate">{p.name}</p>
                                   </div>
                                 </div>
@@ -1505,17 +1505,17 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
 
               {/* Sets / Objetivos CP */}
               <div>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">🎯 Sets / Objetivos</p>
                 {detalle.objetivos_cp?.length > 0 && (
                   <div className="space-y-2">
                     {[...detalle.objetivos_cp].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((obj: any) => (
                       <div key={obj.id} className="space-y-0">
                       <div className={`flex items-center gap-3 p-3 rounded-xl border text-sm cursor-pointer select-none ${
                         obj.estado === 'dominado' ? 'bg-emerald-50 border-emerald-200' :
-                        obj.estado === 'en_progreso' ? 'bg-indigo-50 border-indigo-200' :
+                        obj.estado === 'en_progreso' ? 'bg-sky-50 border-sky-200' :
                         'bg-white border-slate-100'
                       }`} onClick={() => setSetExpandidoId(prev => prev === obj.id ? null : obj.id)}>
-                        <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0">
+                        <span className="w-6 h-6 bg-sky-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center shrink-0">
                           {obj.numero_set}
                         </span>
                         {obj._editando ? (
@@ -1542,7 +1542,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                               fetchDetalle()
                             }}
                             onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                            className="flex-1 text-sm font-medium bg-white border border-indigo-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 text-slate-700"
+                            className="flex-1 text-sm font-medium bg-white border border-sky-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700"
                           />
                         ) : (
                           <span className="flex-1 font-medium text-slate-700">{obj.descripcion}</span>
@@ -1552,7 +1552,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             ...prev,
                             objetivos_cp: prev.objetivos_cp.map((o: any) => o.id === obj.id ? { ...o, _editando: !o._editando } : o)
                           } : prev)}
-                          className="p-1 text-slate-300 hover:text-indigo-400 transition-all shrink-0"
+                          className="p-1 text-slate-300 hover:text-sky-400 transition-all shrink-0"
                           title="Editar descripción"
                         >
                           <Edit3 size={12} />
@@ -1572,9 +1572,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             // Recargar detalle completo para que el gráfico refleje el nuevo estado
                             fetchDetalle()
                           }}
-                          className={`text-[10px] font-black px-2 py-1 rounded-full border-0 cursor-pointer outline-none ${
+                          className={`text-[10px] font-bold px-2 py-1 rounded-full border-0 cursor-pointer outline-none ${
                             obj.estado === 'dominado' ? 'bg-emerald-100 text-emerald-700' :
-                            obj.estado === 'en_progreso' ? 'bg-indigo-100 text-indigo-700' :
+                            obj.estado === 'en_progreso' ? 'bg-sky-100 text-sky-700' :
                             'bg-[var(--muted-bg)] text-[var(--text-muted)]'
                           }`}
                         >
@@ -1584,9 +1584,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         </select>
                       </div>
                       {setExpandidoId === obj.id && (
-                        <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-indigo-100 bg-indigo-50 space-y-2 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
+                        <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-sky-100 bg-sky-50 space-y-2 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">📌 Procedimiento del Set</p>
+                            <p className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">📌 Procedimiento del Set</p>
                             {editandoSetId !== obj.id && (
                               <div className="flex items-center gap-1">
                                 {/* Descargar guía de ejercicio para casa (para enviar a la familia) */}
@@ -1601,7 +1601,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 </button>
                                 <button
                                   onClick={() => { setEditandoSetId(obj.id); setEditSetForm({ descripcion: obj.descripcion || '', materiales: obj.materiales || '', sd_estimulo: obj.sd_estimulo || '', unidad_positiva: obj.unidad_positiva || '', unidad_negativa: obj.unidad_negativa || '', reforzadores: obj.reforzadores || obj.ayudas || '', correction_errores: obj.correction_errores || '', generalizacion: obj.generalizacion || '' }) }}
-                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-indigo-500 hover:bg-indigo-100 transition-colors">
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-sky-500 hover:bg-sky-100 transition-colors">
                                   <Edit3 size={10} /> Editar
                                 </button>
                               </div>
@@ -1620,7 +1620,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                 { key: 'generalizacion',    label: '➡️ Generalización',    placeholder: 'Promover con la familia...' },
                               ].map(({ key, label, placeholder }) => (
                                 <div key={key}>
-                                  <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">{label}</label>
+                                  <label className="block text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-0.5">{label}</label>
                                   <textarea
                                     value={editSetForm[key] || ''}
                                     onChange={e => setEditSetForm((f: any) => ({ ...f, [key]: e.target.value }))}
@@ -1656,7 +1656,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                       setSavingEditSet(false)
                                     }
                                   }}
-                                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 flex items-center justify-center gap-1">
+                                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-40 flex items-center justify-center gap-1">
                                   {savingEditSet ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
                                   {savingEditSet ? 'Guardando...' : 'Guardar'}
                                 </button>
@@ -1685,7 +1685,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   {/* Agregar set adicional */}
                   <button
                     onClick={() => setShowAgregarSet(true)}
-                    className="mt-2 w-full py-2 border-2 border-dashed border-[var(--card-border)] rounded-xl text-xs font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500 transition-all"
+                    className="mt-2 w-full py-2 border-2 border-dashed border-[var(--card-border)] rounded-xl text-xs font-bold text-slate-400 hover:border-sky-300 hover:text-sky-500 transition-all"
                   >
                     + Agregar set
                   </button>
@@ -1696,7 +1696,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       <div className="rounded-3xl bg-[var(--card)] w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
                         <div className="p-6">
                           <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-black text-lg" style={{color:'var(--text-primary)'}}>➕ Nuevo Set</h3>
+                            <h3 className="font-bold text-lg" style={{color:'var(--text-primary)'}}>➕ Nuevo Set</h3>
                             <button onClick={() => setShowAgregarSet(false)} className="p-2 rounded-full hover:bg-[var(--muted-bg)]"><X size={18} /></button>
                           </div>
                           <div className="space-y-3">
@@ -1745,7 +1745,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                   fetchDetalle()
                                 } finally { setSavingSet(false) }
                               }}
-                              className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                              className="flex-[2] py-3 bg-sky-600 text-white rounded-xl font-bold text-sm hover:bg-sky-700 disabled:opacity-50 flex items-center justify-center gap-2">
                               {savingSet ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                               {savingSet ? 'Guardando...' : 'Crear Set'}
                             </button>
@@ -1759,7 +1759,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               {/* Últimas sesiones */}
               {detalle.sesiones_datos_aba?.length > 0 && (
                 <div>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📋 {t('programas.ultimasSesiones')}</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">📋 {t('programas.ultimasSesiones')}</p>
                   <div className="space-y-1.5">
                     {[...detalle.sesiones_datos_aba].sort((a: any, b: any) => (b.fecha || "").localeCompare(a.fecha || "")).slice(0, 6).map((s: any) => (
                       <SesionRow
@@ -1890,7 +1890,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               {/* Detalles del procedimiento */}
               {(detalle.sd_estimulo || detalle.unidad_positiva || detalle.unidad_negativa || detalle.reforzadores || detalle.materiales || detalle.correction_errores) && (
                 <div>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">📌 Procedimiento</p>
                   <div className="rounded-xl p-4 border border-[var(--card-border)] bg-[var(--card)] space-y-2 text-xs text-slate-600 dark:text-slate-300">
                     {detalle.sd_estimulo && <p><span className="font-bold">📍 Sd:</span> {detalle.sd_estimulo}</p>}
                     {detalle.unidad_positiva && <p><span className="font-bold">✅ Unidad +:</span> {detalle.unidad_positiva}</p>}
@@ -1976,11 +1976,11 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
           🏠 Práctica en casa (padre)
         </p>
         {!loading && (
-          <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: `${adherenciaColor}18`, color: adherenciaColor, border: `1px solid ${adherenciaColor}30` }}>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${adherenciaColor}18`, color: adherenciaColor, border: `1px solid ${adherenciaColor}30` }}>
             {adherenciaLabel} · {adherencia}%
           </span>
         )}
@@ -2025,7 +2025,7 @@ function PracticaCasaPanel({ programaId, programaNombre, objetivos = [] }: { pro
                         }
                       </div>
                       {obj && (
-                        <span className="text-[8px] font-black text-center leading-tight" style={{ color: '#059669' }}>
+                        <span className="text-[8px] font-bold text-center leading-tight" style={{ color: '#059669' }}>
                           Set {obj.numero_set}
                         </span>
                       )}
@@ -2089,13 +2089,13 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
             if (e.key === 'Escape') { setTempDate(s.fecha); setEditingDate(false) }
           }}
-          className="w-32 rounded-lg px-2 py-0.5 text-xs font-bold outline-none border-2 border-indigo-400"
+          className="w-32 rounded-lg px-2 py-0.5 text-xs font-bold outline-none border-2 border-sky-400"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}
         />
       ) : (
         <button
           onClick={() => { setTempDate(s.fecha); setEditingDate(true) }}
-          className="w-20 shrink-0 text-left text-slate-400 hover:text-indigo-500 hover:underline transition-colors"
+          className="w-20 shrink-0 text-left text-slate-400 hover:text-sky-500 hover:underline transition-colors"
           title="Haz clic para editar la fecha"
         >
           {s.fecha}
@@ -2110,8 +2110,8 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
               onClick={() => { setEditingFase(false); if (f.value !== s.fase) onFaseChange(f.value) }}
               className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
                 f.value === s.fase
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300'
+                  ? 'bg-sky-600 text-white border-sky-600'
+                  : 'bg-white text-slate-600 border-slate-300 hover:bg-sky-50 hover:border-sky-300'
               }`}
             >{f.label}</button>
           ))}
@@ -2135,8 +2135,8 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
               onClick={() => { setEditingSet(false); if (setLabel !== s.set) onSetChange(setLabel) }}
               className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
                 setLabel === s.set
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-white text-indigo-500 border-indigo-300 hover:bg-indigo-50'
+                  ? 'bg-sky-600 text-white border-sky-600'
+                  : 'bg-white text-sky-500 border-sky-300 hover:bg-sky-50'
               }`}
             >{setLabel}</button>
           ))}
@@ -2146,7 +2146,7 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
         <button
           onClick={() => setEditingSet(true)}
           title="Clic para cambiar de set"
-          className="text-indigo-500 font-semibold text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded-md hover:bg-indigo-100 transition-colors"
+          className="text-sky-500 font-semibold text-[10px] bg-sky-50 px-1.5 py-0.5 rounded-md hover:bg-sky-100 transition-colors"
         >
           {s.set || <span className="text-slate-400">set?</span>}
         </button>
@@ -2160,7 +2160,7 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
               onChange={e => setTempCorrectas(e.target.value)}
               onBlur={commitPct}
               onKeyDown={e => { if (e.key === 'Enter') commitPct(); if (e.key === 'Escape') setEditingPct(false) }}
-              className="w-10 rounded-md px-1 py-0.5 text-xs font-bold outline-none border-2 border-indigo-400 text-center"
+              className="w-10 rounded-md px-1 py-0.5 text-xs font-bold outline-none border-2 border-sky-400 text-center"
               style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}
               title="Respuestas correctas"
             />
@@ -2171,7 +2171,7 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
               onChange={e => setTempTotales(e.target.value)}
               onBlur={commitPct}
               onKeyDown={e => { if (e.key === 'Enter') commitPct(); if (e.key === 'Escape') setEditingPct(false) }}
-              className="w-10 rounded-md px-1 py-0.5 text-xs font-bold outline-none border-2 border-indigo-400 text-center"
+              className="w-10 rounded-md px-1 py-0.5 text-xs font-bold outline-none border-2 border-sky-400 text-center"
               style={{ background: 'var(--input-bg)', color: 'var(--text-primary)' }}
               title="Oportunidades totales"
             />
@@ -2180,7 +2180,7 @@ function SesionRow({ s, programa, onDelete, onDateChange, onPctChange, onSetChan
           <button
             onClick={() => { setTempCorrectas(String(s.respuestas_correctas ?? '')); setTempTotales(String(s.oportunidades_totales ?? '')); setEditingPct(true) }}
             title="Clic para editar"
-            className={`font-black hover:underline transition-colors ${
+            className={`font-bold hover:underline transition-colors ${
               s.porcentaje_exito >= programa.criterio_dominio_pct ? 'text-emerald-600' :
               s.porcentaje_exito >= 70 ? 'text-amber-600' : 'text-red-500'
             }`}
@@ -2303,7 +2303,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
         <div className="p-6">
           <div className="flex justify-between items-center mb-5">
             <div>
-              <h3 className="font-black text-lg" style={{color:"var(--text-primary)"}}>{t('programas.registrarSesion')}</h3>
+              <h3 className="font-bold text-lg" style={{color:"var(--text-primary)"}}>{t('programas.registrarSesion')}</h3>
               <p className="text-sm text-slate-400 mt-0.5">{programa.titulo}</p>
             </div>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--muted-bg)]"><X size={18} /></button>
@@ -2312,15 +2312,15 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1.5">{t('common.fecha')}</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1.5">{t('common.fecha')}</label>
                 <input type="date" value={form.fecha}
                   onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))}
                   className="w-full p-3 rounded-xl text-sm font-bold outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
               </div>
               <div>
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1.5">{t('ui.phase')}</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1.5">{t('ui.phase')}</label>
                 <select value={form.fase} onChange={e => setForm(f => ({ ...f, fase: e.target.value }))}
-                  className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-indigo-400">
+                  className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-sky-400">
                   <option value="linea_base">Baseline</option>
                   <option value="intervencion">{t('ui.intervention')}</option>
                   <option value="mantenimiento">{t('programas.mantenimiento')}</option>
@@ -2329,24 +2329,24 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
             </div>
 
             {/* % de éxito */}
-            <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
-              <p className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3">{t('programas.pctExito')}</p>
+            <div className="bg-sky-50 rounded-2xl p-4 border border-sky-100">
+              <p className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-3">{t('programas.pctExito')}</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-slate-500 font-bold block mb-1">{t('ui.total_opportunities')}</label>
                   <input type="number" min="0" value={form.oportunidades_totales}
                     onChange={e => setForm(f => ({ ...f, oportunidades_totales: e.target.value }))}
-                    placeholder="10" className="w-full p-3 bg-white border-2 border-indigo-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 text-center text-lg" />
+                    placeholder="10" className="w-full p-3 bg-white border-2 border-sky-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 text-center text-lg" />
                 </div>
                 <div>
                   <label className="text-xs text-slate-500 font-bold block mb-1">{t('ui.correct_responses')}</label>
                   <input type="number" min="0" value={form.respuestas_correctas}
                     onChange={e => setForm(f => ({ ...f, respuestas_correctas: e.target.value }))}
-                    placeholder="8" className="w-full p-3 bg-white border-2 border-indigo-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 text-center text-lg" />
+                    placeholder="8" className="w-full p-3 bg-white border-2 border-sky-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 text-center text-lg" />
                 </div>
               </div>
               {pct && (
-                <div className={`mt-3 text-center py-2 rounded-xl font-black text-2xl ${
+                <div className={`mt-3 text-center py-2 rounded-xl font-bold text-2xl ${
                   Number(pct) >= crit ? 'bg-emerald-100 text-emerald-700' :
                   Number(pct) >= 70 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'
                 }`}>
@@ -2368,7 +2368,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
             {/* Sets — reemplaza nivel de ayuda */}
             {sets.length > 0 && (
               <div>
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">🎯 Set activo</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">🎯 Set activo</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {sets.map((s: any) => {
                     const setKey = s.numero_set ? `Set ${s.numero_set}` : s.descripcion
@@ -2380,10 +2380,10 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
                         title={s.descripcion || undefined}
                         className={`flex flex-col items-start px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-left ${
                           isActive
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                            ? 'bg-sky-600 text-white border-sky-600'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-sky-300 hover:bg-sky-50'
                         }`}>
-                        <span className={`font-black text-[11px] uppercase tracking-wide ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>
+                        <span className={`font-bold text-[11px] uppercase tracking-wide ${isActive ? 'text-sky-100' : 'text-slate-400'}`}>
                           {s.numero_set ? `Set ${s.numero_set}` : 'Set'}
                         </span>
                         {shortDesc && (
@@ -2405,7 +2405,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
 
             {/* Notas */}
             <div>
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1.5">📝 Notas</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1.5">📝 Notas</label>
               <textarea value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
                 rows={2} placeholder="Observaciones de la sesión..."
                 className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
@@ -2417,7 +2417,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
               Cancelar
             </button>
             <button onClick={handleSave} disabled={saving}
-              className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+              className="flex-[2] py-3 bg-sky-600 text-white rounded-xl font-bold text-sm hover:bg-sky-700 disabled:opacity-50 flex items-center justify-center gap-2">
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               {saving ? 'Guardando...' : 'Guardar Sesión'}
             </button>
@@ -2485,20 +2485,20 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
       <div className="rounded-3xl bg-[var(--card)] w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-black text-lg" style={{color:"var(--text-primary)"}}>{t('programas.nuevoPrograma')}</h3>
+            <h3 className="font-bold text-lg" style={{color:"var(--text-primary)"}}>{t('programas.nuevoPrograma')}</h3>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-[var(--muted-bg)]"><X size={18} /></button>
           </div>
 
           {/* Steps */}
           <div className="flex gap-1 mb-5">
             {[1, 2, 3].map(s => (
-              <div key={s} className={`flex-1 h-1.5 rounded-full transition-all ${s <= step ? 'bg-indigo-500' : 'bg-slate-100'}`} />
+              <div key={s} className={`flex-1 h-1.5 rounded-full transition-all ${s <= step ? 'bg-sky-500' : 'bg-slate-100'}`} />
             ))}
           </div>
 
           {step === 1 && (
             <div className="space-y-4">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('programas.paso1Info')}</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('programas.paso1Info')}</p>
               {/* Área — texto libre */}
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.area')} *</label>
@@ -2533,14 +2533,14 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
 
           {step === 2 && (
             <div className="space-y-4">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Paso 2 · Sets / Objetivos CP</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Paso 2 · Sets / Objetivos CP</p>
               <p className="text-xs" style={{color:"var(--text-muted)"}}>{t('programas.definePasos')}</p>
               {objetivos.map((obj, i) => (
                 <div key={i} className="rounded-2xl border border-[var(--card-border)] overflow-hidden">
                   {/* Header del set */}
                   <div className="flex items-center gap-2 p-3 cursor-pointer hover:bg-[var(--muted-bg)]"
                     onClick={() => setSetExpandido(setExpandido === i ? null : i)}>
-                    <span className="w-6 h-6 bg-indigo-600 text-white rounded-full text-[10px] font-black flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="w-6 h-6 bg-sky-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
                     <input value={obj.descripcion}
                       onClick={e => e.stopPropagation()}
                       onChange={e => {
@@ -2584,7 +2584,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
                 </div>
               ))}
               <button onClick={() => { setObjetivos([...objetivos, { descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correction_errores: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' }]); setSetExpandido(objetivos.length) }}
-                className="w-full py-2.5 border-2 border-dashed border-[var(--card-border)] rounded-xl text-sm font-bold text-slate-400 hover:border-indigo-300 hover:text-indigo-500">
+                className="w-full py-2.5 border-2 border-dashed border-[var(--card-border)] rounded-xl text-sm font-bold text-slate-400 hover:border-sky-300 hover:text-sky-500">
                 + Agregar set
               </button>
               <div className="grid grid-cols-2 gap-3">
@@ -2592,13 +2592,13 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
                   <label className="text-xs font-bold text-slate-500 block mb-1.5">{t('programas.criterioDominio')}</label>
                   <input type="number" min="0" max="100" value={form.criterio_dominio_pct}
                     onChange={e => set('criterio_dominio_pct', Number(e.target.value))}
-                    className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-indigo-400 text-center" />
+                    className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-sky-400 text-center" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-500 block mb-1.5">Sesiones consecutivas</label>
                   <input type="number" min="1" value={form.criterio_sesiones_consecutivas}
                     onChange={e => set('criterio_sesiones_consecutivas', Number(e.target.value))}
-                    className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-indigo-400 text-center" />
+                    className="w-full p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-sm font-bold outline-none focus:border-sky-400 text-center" />
                 </div>
               </div>
             </div>
@@ -2606,7 +2606,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
 
           {step === 3 && (
             <div className="space-y-3">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Paso 3 · Procedimiento</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Paso 3 · Procedimiento</p>
               {[
                 { key: 'generalizacion',   label: '➡️ Generalización',               placeholder: 'Promover con la familia que realicen este ejercicio en casa.' },
                 { key: 'notas_programa',   label: '🙈 Notas',                         placeholder: 'Observaciones generales del programa...' },
@@ -2637,12 +2637,12 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
             )}
             {step < 3 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={!form.titulo || !form.objetivo_lp || !form.area}
-                className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                className="flex-[2] py-3 bg-sky-600 text-white rounded-xl font-bold text-sm hover:bg-sky-700 disabled:opacity-50 flex items-center justify-center gap-2">
                 {t('programas.siguiente')} <ArrowRight size={16} />
               </button>
             ) : (
               <button onClick={handleSave} disabled={saving}
-                className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                className="flex-[2] py-3 bg-sky-600 text-white rounded-xl font-bold text-sm hover:bg-sky-700 disabled:opacity-50 flex items-center justify-center gap-2">
                 {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                 {saving ? 'Creando...' : 'Crear Programa'}
               </button>

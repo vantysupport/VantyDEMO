@@ -16,15 +16,15 @@ import { supabase } from '@/lib/supabase'
 const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string }> = {
   comunicacion: { color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200',     label: 'Comunicación', emoji: '💬' },
   conducta:     { color: 'text-red-700',     bg: 'bg-red-50 border-red-200',       label: 'Conducta',     emoji: '🎯' },
-  cognitivo:    { color: 'text-violet-700',  bg: 'bg-violet-50 border-violet-200', label: 'Cognitivo',    emoji: '🧠' },
+  cognitivo:    { color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200', label: 'Cognitivo',    emoji: '🧠' },
   social:       { color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200',label: 'Social',      emoji: '👥' },
   autonomia:    { color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200',   label: 'Autonomía',    emoji: '🌟' },
-  academico:    { color: 'text-indigo-700',  bg: 'bg-indigo-50 border-indigo-200', label: 'Académico',    emoji: '📚' },
+  academico:    { color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200', label: 'Académico',    emoji: '📚' },
   sensorial:    { color: 'text-pink-700',    bg: 'bg-pink-50 border-pink-200',     label: 'Sensorial',    emoji: '✋' },
 }
 
 const FASE_COLORS: Record<string, string> = {
-  linea_base: '#94a3b8', intervencion: '#6366f1',
+  linea_base: '#94a3b8', intervencion: '#0284c7',
   mantenimiento: '#10b981', seguimiento: '#f59e0b',
 }
 
@@ -60,11 +60,11 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
   return (
     <div className="bg-white rounded-xl border border-slate-100 p-4">
       <div className="flex items-start gap-2 mb-2 flex-wrap">
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${area.bg} ${area.color}`}>
+        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${area.bg} ${area.color}`}>
           {area.emoji} {area.label}
         </span>
         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-          programa.fase_actual === 'intervencion' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
+          programa.fase_actual === 'intervencion' ? 'bg-sky-50 border-sky-200 text-sky-700' :
           programa.fase_actual === 'mantenimiento' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
           programa.fase_actual === 'dominado' ? 'bg-green-100 border-green-200 text-green-700' :
           'bg-slate-50 border-slate-200 text-slate-500'
@@ -72,12 +72,12 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
           {faseLabel[programa.fase_actual] || programa.fase_actual}
         </span>
         {logroABA && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-black border bg-emerald-100 border-emerald-300 text-emerald-700 flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-100 border-emerald-300 text-emerald-700 flex items-center gap-1">
             🏆 LOGRO ABA
           </span>
         )}
         {ultimoPct !== null && (
-          <span className={`ml-auto font-black text-sm flex items-center gap-1 ${
+          <span className={`ml-auto font-bold text-sm flex items-center gap-1 ${
             tendencia === 'up' ? 'text-emerald-600' : tendencia === 'down' ? 'text-red-500' : 'text-slate-500'
           }`}>
             {tendencia === 'up' && <TrendingUp size={12} />}
@@ -126,15 +126,15 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
                 ))}
                 <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="5 3" strokeWidth={1.5}
                   label={{ value: `${programa.criterio_dominio_pct}%`, position: 'right', fontSize: 9, fill: '#10b981' }} />
-                <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2.5}
-                  dot={{ r: 4, fill: '#6366f1', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                <Line type="linear" dataKey="pct" stroke="#0284c7" strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#0284c7', strokeWidth: 0 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           </>
         ) : (
           <ResponsiveContainer width="100%" height={56}>
             <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 0 }}>
-              <Line type="linear" dataKey="pct" stroke="#6366f1" strokeWidth={2} dot={false} />
+              <Line type="linear" dataKey="pct" stroke="#0284c7" strokeWidth={2} dot={false} />
               <ReferenceLine y={programa.criterio_dominio_pct} stroke="#10b981" strokeDasharray="4 2" strokeWidth={1} />
             </LineChart>
           </ResponsiveContainer>
@@ -202,7 +202,7 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-3">
-      <Loader2 className="animate-spin text-indigo-400" size={32} />
+      <Loader2 className="animate-spin text-sky-400" size={32} />
       <p className="text-sm text-slate-400">{t('common.cargandoPacientes')}</p>
     </div>
   )
@@ -212,8 +212,8 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
       {/* Resumen global */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: t('nav.pacientes'), value: pacientes.length, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Programas', value: totalProgramas, icon: Activity, color: 'text-violet-600', bg: 'bg-violet-50' },
+          { label: t('nav.pacientes'), value: pacientes.length, icon: Users, color: 'text-sky-600', bg: 'bg-sky-50' },
+          { label: 'Programas', value: totalProgramas, icon: Activity, color: 'text-sky-600', bg: 'bg-sky-50' },
           { label: 'Sesiones', value: totalSesiones, icon: BarChart3, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Dominados', value: totalDominados, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
@@ -222,7 +222,7 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
               <Icon size={18} className={color} />
             </div>
             <div>
-              <p className="text-xl font-black text-slate-800">{value}</p>
+              <p className="text-xl font-bold text-slate-800">{value}</p>
               <p className="text-xs text-slate-400">{label}</p>
             </div>
           </div>
@@ -237,20 +237,20 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
             {...{placeholder: t('ui.search_patient')}}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300"
           />
         </div>
         <button
           onClick={() => setSoloConDatos(!soloConDatos)}
           className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
             soloConDatos
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'
+              ? 'bg-sky-600 text-white border-sky-600'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-sky-300'
           }`}
         >
           Solo con datos
         </button>
-        <button onClick={cargarTodo} className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 transition-all">
+        <button onClick={cargarTodo} className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:border-sky-300 transition-all">
           Actualizar
         </button>
       </div>
@@ -268,7 +268,7 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
               : 'Intenta con otro término de búsqueda'}
           </p>
           <button onClick={onIrAPacientes}
-            className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 mx-auto">
+            className="px-5 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-bold hover:bg-sky-700 transition-all flex items-center gap-2 mx-auto">
             <Users size={15} /> Ir a Pacientes
           </button>
         </div>
@@ -289,21 +289,21 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
                   className="p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-all"
                   onClick={() => togglePaciente(paciente.id)}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                     {paciente.name?.[0]?.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-black text-slate-800 text-sm">{paciente.name}</p>
+                      <p className="font-bold text-slate-800 text-sm">{paciente.name}</p>
                       {paciente.diagnosis && (
-                        <span className="text-[10px] font-bold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold text-sky-600 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full">
                           {paciente.diagnosis}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-[11px] text-slate-400">{programas.length} programa{programas.length !== 1 ? 's' : ''}</span>
-                      {programasActivos > 0 && <span className="text-[11px] text-indigo-500 font-bold">{programasActivos} activo{programasActivos !== 1 ? 's' : ''}</span>}
+                      {programasActivos > 0 && <span className="text-[11px] text-sky-500 font-bold">{programasActivos} activo{programasActivos !== 1 ? 's' : ''}</span>}
                       {programasDominados > 0 && <span className="text-[11px] text-emerald-500 font-bold flex items-center gap-0.5"><CheckCircle2 size={10} /> {programasDominados} dominado{programasDominados !== 1 ? 's' : ''}</span>}
                       {!hasDatos && <span className="text-[11px] text-amber-500 flex items-center gap-0.5"><AlertTriangle size={10} /> Sin sesiones</span>}
                       {hasDatos && <span className="text-[11px] text-slate-400">{sesionesTotales} sesión{sesionesTotales !== 1 ? 'es' : ''}</span>}

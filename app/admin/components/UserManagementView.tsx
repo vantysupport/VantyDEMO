@@ -13,10 +13,10 @@ import {
 import { useToast } from '@/components/Toast'
 
 const ROLES = [
-  { value: 'jefe',        label: 'Director',      description: 'Acceso total al sistema',  icon: Crown,         dotColor: 'bg-purple-500', badgeClass: 'role-director'    },
+  { value: 'jefe',        label: 'Director',      description: 'Acceso total al sistema',  icon: Crown,         dotColor: 'bg-sky-500', badgeClass: 'role-director'    },
   { value: 'especialista',label: 'Especialista',  description: 'Terapeuta / Clínico',      icon: Stethoscope,   dotColor: 'bg-blue-500',   badgeClass: 'role-especialista' },
   { value: 'padre',       label: 'Padre / Tutor', description: 'Portal de familias',       icon: Heart,         dotColor: 'bg-pink-500',   badgeClass: 'role-padre'       },
-  { value: 'secretaria',  label: 'Secretaria(o)', description: 'Apoyo administrativo',     icon: ClipboardList, dotColor: 'bg-violet-500', badgeClass: 'role-secretaria'  },
+  { value: 'secretaria',  label: 'Secretaria(o)', description: 'Apoyo administrativo',     icon: ClipboardList, dotColor: 'bg-sky-500', badgeClass: 'role-secretaria'  },
 ]
 
 // Especialidades sugeridas (datalist) — el usuario puede elegir una o escribir la suya.
@@ -159,7 +159,7 @@ function StatCard({ value, label, icon: Icon, color }: any) {
         <Icon size={18} className="text-white" />
       </div>
       <div>
-        <p className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>{value}</p>
+        <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</p>
         <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
       </div>
     </div>
@@ -187,7 +187,7 @@ function PacientesVinculados({ userId, children, onUnlink }: {
 
   return (
     <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
-      <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
         Pacientes vinculados ({hijos.length})
       </p>
       <div className="flex flex-wrap gap-2">
@@ -511,7 +511,7 @@ export default function UserManagementView() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>{t('usuarios.gestion')}</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{t('usuarios.gestion')}</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{users.length} usuarios registrados</p>
         </div>
         <div className="flex items-center gap-2">
@@ -530,10 +530,10 @@ export default function UserManagementView() {
       <div className="flex gap-1 border-b overflow-x-auto scrollbar-hide" style={{ borderColor: 'var(--card-border)' }}>
         {[
           { id: 'todos',       label: t('common.todos'),        count: users.length,        icon: Users,       color: 'text-slate-500' },
-          { id: 'jefe',        label: 'Directores',   count: totalJefes,          icon: Crown,       color: 'text-purple-600' },
+          { id: 'jefe',        label: 'Directores',   count: totalJefes,          icon: Crown,       color: 'text-sky-600' },
           { id: 'especialista',label: 'Especialistas', count: totalEspecialistas,  icon: Stethoscope, color: 'text-blue-600' },
           { id: 'padre',       label: 'Padres',       count: totalPadres,         icon: Heart,       color: 'text-pink-600' },
-          { id: 'secretaria',  label: 'Secretarias', count: totalSecretarias,    icon: ClipboardList, color: 'text-violet-600' },
+          { id: 'secretaria',  label: 'Secretarias', count: totalSecretarias,    icon: ClipboardList, color: 'text-sky-600' },
         ].map(tab => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -545,7 +545,7 @@ export default function UserManagementView() {
               style={{ color: isActive ? undefined : 'var(--text-muted)', background: isActive ? 'rgba(37,99,235,0.07)' : 'transparent' }}>
               <Icon size={13} />
               {tab.label}
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black"
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                 style={{ background: isActive ? '#2563eb' : 'var(--muted-bg)', color: isActive ? '#fff' : 'var(--text-muted)' }}>
                 {tab.count}
               </span>
@@ -557,10 +557,10 @@ export default function UserManagementView() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard value={totalActivos}       label="Activos"       icon={UserCheck}   color="bg-emerald-500" />
-        <StatCard value={totalJefes}         label="Directores"    icon={Crown}        color="bg-purple-500" />
+        <StatCard value={totalJefes}         label="Directores"    icon={Crown}        color="bg-sky-500" />
         <StatCard value={totalEspecialistas} label="Especialistas" icon={Stethoscope}  color="bg-blue-500" />
         <StatCard value={totalPadres}        label="Padres"        icon={Heart}        color="bg-pink-500" />
-        <StatCard value={totalSecretarias}   label="Secretarias"  icon={ClipboardList}color="bg-violet-500" />
+        <StatCard value={totalSecretarias}   label="Secretarias"  icon={ClipboardList}color="bg-sky-500" />
       </div>
 
       {/* Buscador + filtro por especialidad */}
@@ -608,8 +608,8 @@ export default function UserManagementView() {
               {/* Fila principal */}
               <div className="px-4 py-3 flex items-center gap-3">
                 {/* Avatar */}
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0
-                  ${isDirector ? 'bg-gradient-to-br from-purple-500 to-purple-700'
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0
+                  ${isDirector ? 'bg-gradient-to-br from-sky-500 to-sky-700'
                     : role === 'especialista' ? 'bg-gradient-to-br from-blue-500 to-blue-700'
                     : 'bg-gradient-to-br from-pink-500 to-pink-700'}`}>
                   {(user.profile?.full_name || user.email).charAt(0).toUpperCase()}
@@ -630,10 +630,10 @@ export default function UserManagementView() {
                       </span>
                     )}
                     {isSelf && (
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">TÚ</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">TÚ</span>
                     )}
                     {!isActive && (
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">{t('usuarios.inactivo2')}</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">{t('usuarios.inactivo2')}</span>
                     )}
                   </div>
                   <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{user.email}</p>
@@ -797,7 +797,7 @@ export default function UserManagementView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-scale-in" style={{ background: 'var(--card)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-black" style={{ color: 'var(--text-primary)' }}>{t('ui.change_password')}</h3>
+              <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{t('ui.change_password')}</h3>
               <button onClick={() => setChangingPasswordFor(null)} className="p-1.5 rounded-lg hover:opacity-80" style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
             </div>
             <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
@@ -830,7 +830,7 @@ export default function UserManagementView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="rounded-2xl shadow-2xl p-6 w-full max-w-md animate-scale-in" style={{ background: 'var(--card)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 <Plus size={18} className="text-blue-500" /> Crear nuevo usuario
               </h3>
               <button onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg hover:opacity-80" style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
@@ -872,7 +872,7 @@ export default function UserManagementView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-scale-in" style={{ background: 'var(--card)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 <Heart size={18} className="text-pink-500" /> Vincular paciente
               </h3>
               <button onClick={() => setLinkingParent(null)} className="p-1.5 rounded-lg hover:opacity-80" style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
@@ -883,7 +883,7 @@ export default function UserManagementView() {
             <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
               Si el paciente ya tiene tutor asignado, será reemplazado. Para acceso de dos tutores simultáneos, creá dos cuentas de padre y vincinalas por separado.
             </p>
-            <label className="text-xs font-black uppercase tracking-widest block mb-2" style={{ color: 'var(--text-muted)' }}>
+            <label className="text-xs font-bold uppercase tracking-widest block mb-2" style={{ color: 'var(--text-muted)' }}>
               Seleccioná el paciente
             </label>
             <select value={selectedChildId} onChange={e => setSelectedChildId(e.target.value)}

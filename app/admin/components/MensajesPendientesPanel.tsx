@@ -136,7 +136,7 @@ export default function MensajesPendientesPanel() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h2 className="font-black text-2xl text-slate-800 flex items-center gap-3">
+          <h2 className="font-bold text-2xl text-slate-800 flex items-center gap-3">
             <div className="p-2.5 bg-amber-100 rounded-2xl">
               <ShieldCheck className="text-amber-600" size={26}/>
             </div>
@@ -156,7 +156,7 @@ export default function MensajesPendientesPanel() {
       <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 flex gap-3">
         <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={18}/>
         <div>
-          <p className="font-black text-amber-800 text-sm">{t('ui.approval_flow')}</p>
+          <p className="font-bold text-amber-800 text-sm">{t('ui.approval_flow')}</p>
           <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
             {t('ui.no_messages_reach_parents')}
           </p>
@@ -171,10 +171,10 @@ export default function MensajesPendientesPanel() {
           { key: 'rejected',         label: '🗑️ Descartados' },
         ] as const).map(({ key, label }) => (
           <button key={key} onClick={() => setStatusFilter(key)}
-            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${statusFilter === key ? 'bg-white text-slate-800 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}>
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${statusFilter === key ? 'bg-white text-slate-800 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}>
             {label}
             {key === 'pending_approval' && pendingCount > 0 && (
-              <span className="w-5 h-5 bg-amber-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+              <span className="w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {pendingCount}
               </span>
             )}
@@ -223,14 +223,14 @@ export default function MensajesPendientesPanel() {
                 <div className="p-5 cursor-pointer hover:bg-slate-50/50 transition-all"
                   onClick={() => setExpanded(isExpanded ? null : msg.id)}>
                   <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl flex items-center justify-center text-xl shrink-0 border border-violet-100">
+                    <div className="w-11 h-11 bg-gradient-to-br from-sky-50 to-cyan-50 rounded-2xl flex items-center justify-center text-xl shrink-0 border border-sky-100">
                       {sourceLabel[msg.source]?.split(' ')[0] || '📝'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <p className="font-black text-slate-800 text-sm">{msg.source_title || 'Mensaje generado por IA'}</p>
-                        {hasBeenEdited && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black border border-blue-200">✏️ Editado</span>}
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase ${
+                        <p className="font-bold text-slate-800 text-sm">{msg.source_title || 'Mensaje generado por IA'}</p>
+                        {hasBeenEdited && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[9px] font-bold border border-blue-200">✏️ Editado</span>}
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase ${
                           msg.status === 'pending_approval' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                           msg.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                           'bg-slate-100 text-slate-500 border-slate-200'}`}>
@@ -255,15 +255,15 @@ export default function MensajesPendientesPanel() {
                     {/* AI Analysis Preview */}
                     {analysis.resumen_ejecutivo && (
                       <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3">
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                          <Sparkles size={12} className="text-violet-500"/> Análisis Clínico Generado
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <Sparkles size={12} className="text-sky-500"/> Análisis Clínico Generado
                         </p>
                         <p className="text-sm text-slate-700 leading-relaxed">{analysis.resumen_ejecutivo}</p>
 
                         <div className="grid grid-cols-2 gap-3">
                           {analysis.areas_fortaleza?.length > 0 && (
                             <div>
-                              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</p>
+                              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</p>
                               <ul className="space-y-1">
                                 {analysis.areas_fortaleza.slice(0,3).map((f: string, i: number) => (
                                   <li key={i} className="text-xs text-slate-600 bg-emerald-50 rounded-lg p-2 border border-emerald-100">• {f}</li>
@@ -273,7 +273,7 @@ export default function MensajesPendientesPanel() {
                           )}
                           {analysis.areas_trabajo?.length > 0 && (
                             <div>
-                              <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2">{t('mensajes.areasTrabajar')}</p>
+                              <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mb-2">{t('mensajes.areasTrabajar')}</p>
                               <ul className="space-y-1">
                                 {analysis.areas_trabajo.slice(0,3).map((a: string, i: number) => (
                                   <li key={i} className="text-xs text-slate-600 bg-orange-50 rounded-lg p-2 border border-orange-100">• {a}</li>
@@ -285,11 +285,11 @@ export default function MensajesPendientesPanel() {
 
                         {analysis.actividades_en_casa?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">{t('mensajes.actividades')}</p>
+                            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">{t('mensajes.actividades')}</p>
                             <ul className="space-y-1">
                               {analysis.actividades_en_casa.map((a: string, i: number) => (
                                 <li key={i} className="text-xs text-slate-600 bg-blue-50 rounded-lg p-2 border border-blue-100 flex items-start gap-2">
-                                  <span className="w-4 h-4 bg-blue-600 text-white rounded-full text-[9px] font-black flex items-center justify-center shrink-0">{i+1}</span>{a}
+                                  <span className="w-4 h-4 bg-blue-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center shrink-0">{i+1}</span>{a}
                                 </li>
                               ))}
                             </ul>
@@ -298,10 +298,10 @@ export default function MensajesPendientesPanel() {
 
                         {analysis.recomendaciones?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-2">{t('mensajes.recomendaciones')}</p>
+                            <p className="text-[10px] font-bold text-sky-600 uppercase tracking-widest mb-2">{t('mensajes.recomendaciones')}</p>
                             <ul className="space-y-1">
                               {analysis.recomendaciones.slice(0,3).map((r: string, i: number) => (
-                                <li key={i} className="text-xs text-slate-600 bg-violet-50 rounded-lg p-2 border border-violet-100">• {r}</li>
+                                <li key={i} className="text-xs text-slate-600 bg-sky-50 rounded-lg p-2 border border-sky-100">• {r}</li>
                               ))}
                             </ul>
                           </div>
@@ -311,10 +311,10 @@ export default function MensajesPendientesPanel() {
 
                     {/* Original AI message */}
                     <div>
-                      <p className="text-xs font-black text-violet-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         <Sparkles size={12}/> Mensaje original de la IA
                       </p>
-                      <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl p-4 text-white">
+                      <div className="bg-gradient-to-br from-sky-600 to-cyan-600 rounded-2xl p-4 text-white">
                         <p className="text-sm leading-relaxed text-blue-100 whitespace-pre-wrap">{msg.ai_message}</p>
                       </div>
                     </div>
@@ -323,7 +323,7 @@ export default function MensajesPendientesPanel() {
                     {msg.status === 'pending_approval' && (
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                             <Edit3 size={12}/> {isEditing ? t('evaluaciones.editandoMsg') : t('evaluaciones.mensajeEnviar')}
                           </p>
                           {!isEditing && (
@@ -355,7 +355,7 @@ export default function MensajesPendientesPanel() {
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-4 text-white">
+                          <div className="bg-gradient-to-br from-blue-600 to-sky-600 rounded-2xl p-4 text-white">
                             <p className="text-sm leading-relaxed text-blue-100 whitespace-pre-wrap">{msg.edited_message || msg.ai_message}</p>
                           </div>
                         )}
@@ -368,7 +368,7 @@ export default function MensajesPendientesPanel() {
                             Descartar
                           </button>
                           <button onClick={() => approveMessage(msg.id)} disabled={!!isLoadingApprove}
-                            className="flex-[2] py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-black text-sm hover:opacity-90 transition-all shadow-lg shadow-emerald-200 disabled:opacity-50 flex items-center justify-center gap-2">
+                            className="flex-[2] py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-emerald-200 disabled:opacity-50 flex items-center justify-center gap-2">
                             {isLoadingApprove ? <Loader2 size={16} className="animate-spin"/> : <Send size={16}/>}
                             {isLoadingApprove ? 'Enviando...' : '✅ Aprobar y Enviar al Padre/Madre'}
                           </button>
