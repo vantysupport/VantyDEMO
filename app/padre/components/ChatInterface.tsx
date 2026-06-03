@@ -5,7 +5,7 @@ import { toBCP47 } from '@/lib/i18n'
 
 import { useState, useEffect, useRef, useCallback, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Send, Sparkles, Heart, ShoppingBag, Mic, MicOff, Volume2, VolumeX, RefreshCw, StopCircle } from 'lucide-react'
+import { Send, Sparkles, Heart, ShoppingBag, Mic, MicOff, Volume2, VolumeX, RefreshCw, StopCircle, ClipboardList, Home, Target } from 'lucide-react'
 
 // ── Tipos para Web Speech API ─────────────────────────────────────────────────
 declare global {
@@ -182,43 +182,25 @@ function RobotAvatar({ size = 36, animated = false }: { size?: number; animated?
 
   return (
     <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"
-      style={animated ? { animation: 'robotBob 2s ease-in-out infinite' } : {}}>
-      {/* Antena */}
-      <line x1="40" y1="6" x2="40" y2="16" stroke="#0284c7" strokeWidth="3" strokeLinecap="round"/>
-      <circle cx="40" cy="4" r="4" fill="#38bdf8"/>
-      {/* Cabeza */}
-      <rect x="16" y="16" width="48" height="36" rx="12" fill="url(#robotHead)"/>
-      {/* Ojos */}
-      <circle cx="29" cy="32" r="7" fill="white"/>
-      <circle cx="51" cy="32" r="7" fill="white"/>
-      <circle cx="31" cy="32" r="3.5" fill="#0369a1" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite' } : {}}/>
-      <circle cx="53" cy="32" r="3.5" fill="#0369a1" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite .2s' } : {}}/>
-      <circle cx="32" cy="31" r="1.2" fill="white"/>
-      <circle cx="54" cy="31" r="1.2" fill="white"/>
-      {/* Boca */}
-      <rect x="26" y="42" width="28" height="5" rx="2.5" fill="white" opacity=".6"/>
-      <rect x="29" y="43" width="6" height="3" rx="1.5" fill="#38bdf8"/>
-      <rect x="37" y="43" width="6" height="3" rx="1.5" fill="#38bdf8"/>
-      {/* Cuello */}
-      <rect x="34" y="52" width="12" height="6" rx="3" fill="#0284c7"/>
-      {/* Cuerpo */}
-      <rect x="20" y="58" width="40" height="20" rx="8" fill="url(#robotBody)"/>
-      {/* Pecho indicador */}
-      <circle cx="40" cy="68" r="5" fill="url(#chestLight)" style={animated ? { animation: 'chestPulse 1.5s ease-in-out infinite' } : {}}/>
-      {/* Gradientes */}
+      style={animated ? { animation: 'robotBob 2.4s ease-in-out infinite' } : {}}>
+      {/* Halo suave */}
+      <circle cx="40" cy="42" r="26" fill="white" opacity=".10"/>
+      {/* Spark principal — glifo de IA */}
+      <path d="M40 12 C43.5 30, 50 36.5, 68 40 C50 43.5, 43.5 50, 40 68 C36.5 50, 30 43.5, 12 40 C30 36.5, 36.5 30, 40 12 Z"
+        fill="url(#ariaSpark)"/>
+      {/* Brillo interno */}
+      <path d="M40 24 C41.6 33, 47 38.4, 56 40 C47 41.6, 41.6 47, 40 56 C38.4 47, 33 41.6, 24 40 C33 38.4, 38.4 33, 40 24 Z"
+        fill="white" opacity=".55"/>
+      {/* Spark secundario */}
+      <path d="M61 16 C62 20.5, 63.5 22, 68 23 C63.5 24, 62 25.5, 61 30 C60 25.5, 58.5 24, 54 23 C58.5 22, 60 20.5, 61 16 Z"
+        fill="#a5f3fc" style={animated ? { animation: 'eyeGlow 1.8s ease-in-out infinite' } : {}}/>
+      {/* Punto orbital */}
+      <circle cx="18" cy="58" r="3" fill="#bae6fd" style={animated ? { animation: 'chestPulse 1.6s ease-in-out infinite .3s' } : {}}/>
       <defs>
-        <linearGradient id="robotHead" x1="16" y1="16" x2="64" y2="52" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#0284c7"/>
-          <stop offset="1" stopColor="#0369a1"/>
+        <linearGradient id="ariaSpark" x1="12" y1="12" x2="68" y2="68" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#ffffff"/>
+          <stop offset="1" stopColor="#e0f2fe"/>
         </linearGradient>
-        <linearGradient id="robotBody" x1="20" y1="58" x2="60" y2="78" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#38bdf8"/>
-          <stop offset="1" stopColor="#0284c7"/>
-        </linearGradient>
-        <radialGradient id="chestLight" cx="50%" cy="50%" r="50%">
-          <stop stopColor="#a5f3fc"/>
-          <stop offset="1" stopColor="#38bdf8"/>
-        </radialGradient>
       </defs>
     </svg>
   )
@@ -421,17 +403,21 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
   const { t } = useI18n()
 
   const quick = [
-    { icon: '📋', text: '¿Cómo le fue en la última sesión?', accent: '#0284c7' },
-    { icon: '🏠', text: 'Dame consejos para casa',             accent: '#10b981' },
-    { icon: '🎯', text: '¿Qué objetivos está trabajando?',    accent: '#f59e0b' },
-    { icon: '💙', text: 'Necesito apoyo emocional',           accent: '#ec4899' },
+    { Icon: ClipboardList, text: '¿Cómo le fue en la última sesión?', accent: '#0284c7' },
+    { Icon: Home,          text: 'Dame consejos para casa',             accent: '#10b981' },
+    { Icon: Target,        text: '¿Qué objetivos está trabajando?',    accent: '#f59e0b' },
+    { Icon: Heart,         text: 'Necesito apoyo emocional',           accent: '#ec4899' },
   ]
   return (
     <div className="flex flex-col items-center justify-center px-5 py-8 text-center" style={{ animation: 'fadeUp .4s ease', flex: 1 }}>
-      {/* Avatar compacto */}
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
-        style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1)', padding: 8 }}>
-        <RobotAvatar size={36} />
+      {/* Avatar premium con halo */}
+      <div className="relative mb-4">
+        <div className="absolute inset-0 rounded-[20px] blur-xl opacity-50" style={{ background: 'radial-gradient(circle,#38bdf8,transparent 70%)' }}/>
+        <div className="relative w-16 h-16 rounded-[20px] flex items-center justify-center shadow-lg"
+          style={{ background: 'linear-gradient(135deg,#0ea5e9,#0284c7 55%,#0369a1)', boxShadow: '0 10px 28px rgba(2,132,199,.35)' }}>
+          <RobotAvatar size={40} animated />
+        </div>
+        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white dark:border-[#161b22]" style={{ background: '#10b981' }}/>
       </div>
 
       <h3 className="text-xl font-bold mb-1" style={{ color: "var(--c-text-primary)" }}>
@@ -446,12 +432,13 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
       {/* Quick actions — cleaner */}
       <div className="flex flex-col gap-2 w-full max-w-[320px]">
         <p className="text-[10px] font-bold mb-1" style={{ color: "var(--c-text-muted)" }}>¿Por dónde empezamos?</p>
-        {(quick as any[]).map(({ icon, text, accent }: any) => (
+        {(quick as any[]).map(({ Icon, text, accent }: any) => (
           <button key={text} onClick={() => onQuickSend(text)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all active:scale-[.98] relative overflow-hidden"
+            className="group flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all active:scale-[.98] hover:-translate-y-0.5 hover:shadow-md"
             style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)' }}>
-            <div style={{ position:'absolute', left:0, top:0, bottom:0, width:3, background:accent, borderRadius:'8px 0 0 8px' }}/>
-            <span className="text-base shrink-0 ml-1">{icon}</span>
+            <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${accent}1a`, color: accent }}>
+              <Icon size={16} />
+            </span>
             <span className="text-sm font-semibold" style={{ color: 'var(--c-text-primary)' }}>{text}</span>
           </button>
         ))}
