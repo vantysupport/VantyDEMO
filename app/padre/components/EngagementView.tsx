@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import {
   Brain, CheckCircle, Circle, Clock, ChevronDown,
   Sparkles, Heart, Target, Loader2, RefreshCw, TrendingUp, Trophy,
-  Zap, Star
+  Zap, Star, MessageCircle, Users, Pin, ClipboardList
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeContext'
 
@@ -21,14 +21,14 @@ interface Plan {
   actividades: Actividad[]; child_name: string; completadas_pct?: number
 }
 
-const AREA_CFG: Record<string,{bg:string;text:string;border:string;emoji:string;grad:string}> = {
-  comunicacion: { bg:'var(--c-stat-blue)',   text:'#0284c7', border:'var(--c-border)', emoji:'💬', grad:'linear-gradient(135deg,#0284c7,#0369a1)' },
-  conducta:     { bg:'rgba(249,115,22,0.1)', text:'#f97316', border:'var(--c-border)', emoji:'⚡', grad:'linear-gradient(135deg,#f97316,#c2410c)' },
-  habilidades:  { bg:'var(--c-stat-purple)', text:'#0ea5e9', border:'var(--c-border)', emoji:'🧠', grad:'linear-gradient(135deg,#0ea5e9,#0369a1)' },
-  socializacion:{ bg:'var(--c-stat-green)',  text:'#10b981', border:'var(--c-border)', emoji:'👥', grad:'linear-gradient(135deg,#22c55e,#15803d)' },
-  autonomia:    { bg:'var(--c-stat-amber)',   text:'#f59e0b', border:'var(--c-border)', emoji:'⭐', grad:'linear-gradient(135deg,#eab308,#b45309)' },
+const AREA_CFG: Record<string,{bg:string;text:string;border:string;Icon:any;grad:string}> = {
+  comunicacion: { bg:'var(--c-stat-blue)',   text:'#0284c7', border:'var(--c-border)', Icon:MessageCircle, grad:'linear-gradient(135deg,#0284c7,#0369a1)' },
+  conducta:     { bg:'rgba(249,115,22,0.1)', text:'#f97316', border:'var(--c-border)', Icon:Zap, grad:'linear-gradient(135deg,#f97316,#c2410c)' },
+  habilidades:  { bg:'var(--c-stat-purple)', text:'#0ea5e9', border:'var(--c-border)', Icon:Brain, grad:'linear-gradient(135deg,#0ea5e9,#0369a1)' },
+  socializacion:{ bg:'var(--c-stat-green)',  text:'#10b981', border:'var(--c-border)', Icon:Users, grad:'linear-gradient(135deg,#22c55e,#15803d)' },
+  autonomia:    { bg:'var(--c-stat-amber)',   text:'#f59e0b', border:'var(--c-border)', Icon:Star, grad:'linear-gradient(135deg,#eab308,#b45309)' },
 }
-const AREA_DEFAULT = { bg:'var(--c-surface)', text:'var(--c-text-muted)', border:'var(--c-border)', emoji:'📌', grad:'linear-gradient(135deg,#94a3b8,#64748b)' }
+const AREA_DEFAULT = { bg:'var(--c-surface)', text:'var(--c-text-muted)', border:'var(--c-border)', Icon:Pin, grad:'linear-gradient(135deg,#94a3b8,#64748b)' }
 
 const DIFF_CFG: Record<string,{label:string;color:string;bg:string;dot:string}> = {
   facil: { label:'Fácil',   color:'#16a34a', bg:'var(--c-stat-green)', dot:'#4ade80' },
@@ -298,7 +298,7 @@ export default function EngagementView({ childId }: { childId: string }) {
 
           {/* Disclaimer */}
           <div className="eng-card" style={{ background:'var(--c-stat-blue)',border:'1.5px solid var(--c-border)',borderRadius:12,padding:'9px 14px',display:'flex',alignItems:'center',gap:8 }}>
-            <span style={{ fontSize:15,flexShrink:0 }}>📋</span>
+            <ClipboardList size={15} color="#0284c7" style={{ flexShrink:0 }} />
             <p style={{ fontSize:12,color:'var(--c-text-muted)',margin:0,lineHeight:1.5 }}>Plan diseñado con IA. Consultá con el terapeuta ante cualquier duda.</p>
           </div>
 
@@ -340,8 +340,8 @@ export default function EngagementView({ childId }: { childId: string }) {
                           <p style={{ fontWeight:800,fontSize:14,color:done?'#10b981':'var(--c-text-primary)',margin:0,lineHeight:1.3,textDecoration:done?'line-through':'none',textDecorationColor:'#86efac' }}>
                             {act.titulo}
                           </p>
-                          <div style={{ display:'flex',alignItems:'center',gap:4,flexShrink:0 }}>
-                            <span style={{ fontSize:16 }}>{aCol.emoji}</span>
+                          <div style={{ display:'flex',alignItems:'center',gap:6,flexShrink:0 }}>
+                            {(() => { const AIcon = aCol.Icon; return <AIcon size={16} color={aCol.text} /> })()}
                             <ChevronDown size={14} color="var(--c-text-placeholder)" style={{ transition:'transform .2s',transform:open?'rotate(180deg)':'rotate(0)' }}/>
                           </div>
                         </button>
@@ -415,7 +415,7 @@ export default function EngagementView({ childId }: { childId: string }) {
           {/* Celebración */}
           {pct === 100 && all > 0 && (
             <div className="eng-card" style={{ background:'rgba(16,185,129,0.1)',border:'1.5px solid rgba(16,185,129,0.3)',borderRadius:22,padding:'20px 22px',display:'flex',alignItems:'center',gap:16,boxShadow:'0 8px 24px rgba(16,185,129,.1)' }}>
-              <div style={{ fontSize:40,flexShrink:0 }}>🏆</div>
+              <div style={{ width:52, height:52, borderRadius:16, background:'rgba(16,185,129,0.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color:'#059669' }}><Trophy size={28} /></div>
               <div>
                 <p style={{ fontWeight:900,fontSize:16,color:'var(--c-text-primary)',margin:'0 0 4px' }}>¡Semana completada!</p>
                 <p style={{ fontSize:13,color:'var(--c-text-secondary)',lineHeight:1.5,margin:0 }}>Excelente trabajo acompañando a {plan.child_name||'tu hijo/a'} esta semana. 🌱</p>

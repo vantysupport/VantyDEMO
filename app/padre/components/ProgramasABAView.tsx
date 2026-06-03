@@ -4,10 +4,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { 
-  ChevronDown, ChevronUp, CheckCircle, Circle, 
+import {
+  ChevronDown, ChevronUp, CheckCircle, Circle,
   BookOpen, Target, Clock, TrendingUp, Loader2,
-  Star, Award, Calendar, BarChart2, Info
+  Star, Award, Calendar, BarChart2, Info,
+  MessageCircle, Zap, Brain, Users, Activity, Languages, Pin, Lightbulb, Gift
 } from 'lucide-react'
 
 interface Programa {
@@ -42,16 +43,16 @@ interface Programa {
 
 interface Props { childId: string; childName: string }
 
-const AREA_CFG: Record<string, { color: string; bg: string; emoji: string }> = {
-  'comunicacion':   { color: '#0284c7', bg: 'rgba(2,132,199,0.1)',    emoji: '💬' },
-  'conducta':       { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',   emoji: '⚡' },
-  'habilidades':    { color: '#0ea5e9', bg: 'rgba(139,92,246,0.1)',   emoji: '🧠' },
-  'socializacion':  { color: '#10b981', bg: 'rgba(16,185,129,0.1)',   emoji: '👥' },
-  'autonomia':      { color: '#ec4899', bg: 'rgba(236,72,153,0.1)',   emoji: '⭐' },
-  'imitacion':      { color: '#06b6d4', bg: 'rgba(6,182,212,0.1)',    emoji: '🎭' },
-  'lenguaje':       { color: '#0284c7', bg: 'rgba(59,130,246,0.1)',   emoji: '🗣️' },
+const AREA_CFG: Record<string, { color: string; bg: string; Icon: any }> = {
+  'comunicacion':   { color: '#0284c7', bg: 'rgba(2,132,199,0.1)',    Icon: MessageCircle },
+  'conducta':       { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',   Icon: Zap },
+  'habilidades':    { color: '#0891b2', bg: 'rgba(8,145,178,0.1)',    Icon: Brain },
+  'socializacion':  { color: '#10b981', bg: 'rgba(16,185,129,0.1)',   Icon: Users },
+  'autonomia':      { color: '#db2777', bg: 'rgba(219,39,119,0.1)',   Icon: Star },
+  'imitacion':      { color: '#06b6d4', bg: 'rgba(6,182,212,0.1)',    Icon: Activity },
+  'lenguaje':       { color: '#0284c7', bg: 'rgba(2,132,199,0.1)',    Icon: Languages },
 }
-const AREA_DEFAULT = { color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '📌' }
+const AREA_DEFAULT = { color: '#6b7280', bg: 'rgba(107,114,128,0.1)', Icon: Pin }
 
 const FASE_CFG: Record<string, { label: string; color: string }> = {
   'linea_base':   { label: 'Línea base',    color: '#64748b' },
@@ -200,8 +201,8 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
       <button
         onClick={() => setOpen(o => !o)}
         style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
-        <div style={{ width: 44, height: 44, borderRadius: 14, background: area.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
-          {area.emoji}
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: area.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: area.color }}>
+          {(() => { const AIcon = area.Icon; return <AIcon size={22} /> })()}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -237,13 +238,13 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
               </p>
               {prog.instrucciones_casa && (
                 <div style={{ marginBottom: prog.reforzadores ? 8 : 0 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#0284c7', textTransform: 'uppercase', letterSpacing: 0.5 }}>📋 Instrucciones</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0284c7', display: 'inline-flex', alignItems: 'center', gap: 5 }}><Info size={12} /> Instrucciones</span>
                   <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{prog.instrucciones_casa}</p>
                 </div>
               )}
               {prog.reforzadores && (
                 <div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#0284c7', textTransform: 'uppercase', letterSpacing: 0.5 }}>🎁 Reforzadores</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0284c7', display: 'inline-flex', alignItems: 'center', gap: 5 }}><Gift size={12} /> Reforzadores</span>
                   <p style={{ fontSize: 12, color: 'var(--c-text-primary)', margin: '4px 0 0', lineHeight: 1.6 }}>{prog.reforzadores}</p>
                 </div>
               )}
@@ -338,7 +339,7 @@ function ProgramCard({ prog, childId }: { prog: Programa; childId: string }) {
 
                             {!hayClinico && (
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'rgba(16,185,129,0.08)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.15)' }}>
-                                <span style={{ fontSize: 11 }}>💡</span>
+                                <Lightbulb size={13} color="#059669" style={{ flexShrink: 0 }} />
                                 <p style={{ fontSize: 11, color: '#065f46', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
                                   El terapeuta aún no agregó detalles de este set. Consúltale en la próxima sesión.
                                 </p>

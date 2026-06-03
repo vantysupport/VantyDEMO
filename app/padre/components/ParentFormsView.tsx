@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import {
   FileText, CheckCircle2, Clock, ChevronRight, ChevronLeft, X, Loader2,
   Send, AlertCircle, Star, Heart, BookOpen, Video, Link as LinkIcon,
-  Download, Eye, Play, Image as ImageIcon, Music, Sparkles, Bell, Gift
+  Download, Eye, Play, Image as ImageIcon, Music, Sparkles, Bell, Gift, FolderOpen
 } from 'lucide-react'
 import StoreView from './StoreView'
 import DocumentosView from '@/app/admin/components/DocumentosView'
@@ -670,7 +670,7 @@ function ParentFormsResourcesView({ profile, selectedChild, onFormsLoaded, initi
             />
           ) : (
             <div style={{ textAlign:'center',padding:'60px 20px' }}>
-              <div style={{ fontSize:40,marginBottom:12 }}>📁</div>
+              <div style={{ width:64, height:64, borderRadius:20, background:'rgba(2,132,199,0.1)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px', color:'#0284c7' }}><FolderOpen size={30} /></div>
               <p style={{ fontWeight:700,fontSize:14,color:'#64748b',margin:'0 0 6px' }}>Selecciona un hijo/a</p>
               <p style={{ fontSize:12,color:'#94a3b8' }}>Elige un paciente para ver sus documentos.</p>
             </div>
