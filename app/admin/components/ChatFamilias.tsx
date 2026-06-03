@@ -24,7 +24,7 @@ interface Props { profile?: any; userId?: string; userName?: string; isDark?: bo
 
 const ROLE_CFG: Record<string, { label: string; color: string; bg: string }> = {
   jefe:         { label: 'Dirección',   color: '#0284c7', bg: '#f0f9ff' },
-  admin:        { label: 'Admin',       color: '#2563eb', bg: '#eff6ff' },
+  admin:        { label: 'Admin',       color: '#0284c7', bg: '#eff6ff' },
   especialista: { label: 'Terapeuta',   color: '#059669', bg: '#f0fdf4' },
   terapeuta:    { label: 'Terapeuta',   color: '#059669', bg: '#f0fdf4' },
   secretaria:   { label: 'Secretaría',  color: '#d97706', bg: '#fffbeb' },
@@ -94,7 +94,7 @@ function AudioPlayer({ url, isMe }: { url: string; isMe: boolean }) {
     if (playing) { a.pause(); setPlaying(false) } else { a.play(); setPlaying(true) }
   }
   const progress = duration ? (current / duration) * 100 : 0
-  const fill   = isMe ? '#fff' : '#2563eb'
+  const fill   = isMe ? '#fff' : '#0284c7'
   const track  = isMe ? 'rgba(255,255,255,0.25)' : '#e2e8f0'
   const btnBg  = isMe ? 'rgba(255,255,255,0.2)' : '#eff6ff'
   return (
@@ -102,7 +102,7 @@ function AudioPlayer({ url, isMe }: { url: string; isMe: boolean }) {
       <audio ref={audioRef} src={url} preload="metadata" />
       <button onClick={toggle} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none',
         background: btnBg, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, color: isMe ? '#fff' : '#2563eb' }}>
+        flexShrink: 0, color: isMe ? '#fff' : '#0284c7' }}>
         {playing ? <Pause size={16}/> : <Play size={16}/>}
       </button>
       <div style={{ flex: 1 }}>
@@ -375,7 +375,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
             <Users size={16} style={{ color: textMuted }}/>
             <p style={{ fontWeight: 800, fontSize: 13, color: textPrimary, margin: 0 }}>Familias</p>
             {families.some(f => f.unread > 0) && (
-              <span style={{ marginLeft: 'auto', background: '#2563eb', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20 }}>
+              <span style={{ marginLeft: 'auto', background: '#0284c7', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20 }}>
                 {families.filter(f => f.unread > 0).length} sin leer
               </span>
             )}
@@ -400,8 +400,8 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
                 border: 'none', borderBottom: `1px solid ${borderColor}`,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#eff6ff,#dbeafe)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#2563eb', flexShrink: 0,
-                border: f.unread > 0 ? '2px solid #2563eb' : '2px solid transparent' }}>
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0284c7', flexShrink: 0,
+                border: f.unread > 0 ? '2px solid #0284c7' : '2px solid transparent' }}>
                 {f.child_name[0]?.toUpperCase()}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -415,7 +415,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
                   {f.lastSender ? `${f.lastSender.split(' ')[0]}: ` : ''}{f.lastMsg}
                 </p>}
               </div>
-              {f.unread > 0 && <span style={{ background: '#2563eb', color: '#fff', fontSize: 10, fontWeight: 800,
+              {f.unread > 0 && <span style={{ background: '#0284c7', color: '#fff', fontSize: 10, fontWeight: 800,
                 width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {f.unread > 9 ? '9+' : f.unread}
               </span>}
@@ -442,7 +442,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
               <ChevronLeft size={20}/>
             </button>
             <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#eff6ff,#dbeafe)', borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#2563eb', flexShrink: 0 }}>
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#0284c7', flexShrink: 0 }}>
               {selected.child_name[0]?.toUpperCase()}
             </div>
             <div style={{ flex: 1 }}>
@@ -490,7 +490,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
                     )}
                     <div style={{ maxWidth: isMedia ? 250 : '68%', padding: isMedia ? '5px 5px 0' : '9px 13px',
                       borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: isMe ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : (isDark ? '#1c2128' : '#fff'),
+                      background: isMe ? 'linear-gradient(135deg,#0284c7,#0369a1)' : (isDark ? '#1c2128' : '#fff'),
                       color: isMe ? '#fff' : textPrimary,
                       border: isMe ? 'none' : `1px solid ${borderColor}`,
                       boxShadow: isMe ? '0 2px 10px rgba(37,99,235,.2)' : '0 1px 3px rgba(0,0,0,.05)',
@@ -513,7 +513,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
                         display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end', marginBottom: 2 }}>
                         {msg.sender_avatar
                           ? <img src={msg.sender_avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-                          : <span style={{ fontSize: 13, fontWeight: 800, color: '#2563eb' }}>{msg.sender_name?.[0]?.toUpperCase()||'?'}</span>}
+                          : <span style={{ fontSize: 13, fontWeight: 800, color: '#0284c7' }}>{msg.sender_name?.[0]?.toUpperCase()||'?'}</span>}
                       </div>
                     )}
                   </div>
@@ -577,8 +577,8 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '12px 0',
                     background: isDark ? '#1c2128' : '#eff6ff', border: `1.5px solid ${isDark ? '#30363d' : '#bfdbfe'}`,
                     borderRadius: 14, cursor: 'pointer', flex: 1 }}>
-                  <Image size={22} color="#2563eb"/>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb' }}>Imagen</span>
+                  <Image size={22} color="#0284c7"/>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0284c7' }}>Imagen</span>
                 </button>
                 <button onClick={() => { fileInputRef.current?.click(); setShowAttach(false) }}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '12px 0',
@@ -595,7 +595,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
               {!recording && (
                 <button onClick={() => setShowAttach(v => !v)} disabled={sending || uploading} title="Adjuntar"
                   style={{ width: 36, height: 36, borderRadius: 11, border: 'none', flexShrink: 0,
-                    background: showAttach ? '#2563eb' : (isDark ? '#21262d' : '#f1f5f9'),
+                    background: showAttach ? '#0284c7' : (isDark ? '#21262d' : '#f1f5f9'),
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'all .2s', opacity: (sending||uploading) ? .5 : 1 }}>
                   {showAttach ? <X size={15} color="#fff"/> : <Paperclip size={15} color={textMuted}/>}
@@ -626,7 +626,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
               ) : canSend ? (
                 <button onClick={() => sendMessage()} disabled={sending || uploading}
                   style={{ width: 36, height: 36, borderRadius: 11, border: 'none', flexShrink: 0,
-                    background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', cursor: 'pointer',
+                    background: 'linear-gradient(135deg,#0284c7,#0369a1)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: '0 2px 8px rgba(37,99,235,.35)' }}>
                   {(sending||uploading)
@@ -641,7 +641,7 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
                   disabled={sending || uploading}
                   title="Mantén (PC) o toca (móvil) para grabar"
                   style={{ width: 36, height: 36, borderRadius: 11, border: 'none', flexShrink: 0,
-                    background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', cursor: 'pointer',
+                    background: 'linear-gradient(135deg,#0284c7,#0369a1)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: '0 2px 8px rgba(37,99,235,.3)', opacity: (sending||uploading) ? .5 : 1 }}>
                   <Mic size={15} color="#fff"/>

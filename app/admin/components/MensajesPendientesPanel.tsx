@@ -229,7 +229,7 @@ export default function MensajesPendientesPanel() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <p className="font-bold text-slate-800 text-sm">{msg.source_title || 'Mensaje generado por IA'}</p>
-                        {hasBeenEdited && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[9px] font-bold border border-blue-200">✏️ Editado</span>}
+                        {hasBeenEdited && <span className="px-1.5 py-0.5 bg-sky-50 text-sky-600 rounded-full text-[9px] font-bold border border-sky-200">✏️ Editado</span>}
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase ${
                           msg.status === 'pending_approval' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                           msg.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
@@ -285,11 +285,11 @@ export default function MensajesPendientesPanel() {
 
                         {analysis.actividades_en_casa?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-bold text-blue-600 mb-2">{t('mensajes.actividades')}</p>
+                            <p className="text-[10px] font-bold text-sky-600 mb-2">{t('mensajes.actividades')}</p>
                             <ul className="space-y-1">
                               {analysis.actividades_en_casa.map((a: string, i: number) => (
-                                <li key={i} className="text-xs text-slate-600 bg-blue-50 rounded-lg p-2 border border-blue-100 flex items-start gap-2">
-                                  <span className="w-4 h-4 bg-blue-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center shrink-0">{i+1}</span>{a}
+                                <li key={i} className="text-xs text-slate-600 bg-sky-50 rounded-lg p-2 border border-sky-100 flex items-start gap-2">
+                                  <span className="w-4 h-4 bg-sky-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center shrink-0">{i+1}</span>{a}
                                 </li>
                               ))}
                             </ul>
@@ -315,7 +315,7 @@ export default function MensajesPendientesPanel() {
                         <Sparkles size={12}/> Mensaje original de la IA
                       </p>
                       <div className="bg-gradient-to-br from-sky-600 to-cyan-600 rounded-2xl p-4 text-white">
-                        <p className="text-sm leading-relaxed text-blue-100 whitespace-pre-wrap">{msg.ai_message}</p>
+                        <p className="text-sm leading-relaxed text-sky-100 whitespace-pre-wrap">{msg.ai_message}</p>
                       </div>
                     </div>
 
@@ -328,7 +328,7 @@ export default function MensajesPendientesPanel() {
                           </p>
                           {!isEditing && (
                             <button onClick={() => startEdit(msg)}
-                              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-all">
+                              className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 px-3 py-1.5 bg-sky-50 rounded-lg border border-sky-200 hover:bg-sky-100 transition-all">
                               <Edit3 size={11}/> {t('mensajes.editar')}
                             </button>
                           )}
@@ -340,7 +340,7 @@ export default function MensajesPendientesPanel() {
                               value={editText}
                               onChange={e => setEditText(e.target.value)}
                               rows={4}
-                              className="w-full p-4 bg-white border-2 border-blue-300 rounded-2xl text-sm font-medium outline-none focus:border-blue-500 transition-all resize-none shadow-sm"
+                              className="w-full p-4 bg-white border-2 border-sky-300 rounded-2xl text-sm font-medium outline-none focus:border-sky-500 transition-all resize-none shadow-sm"
                               {...{placeholder: t('ui.edit_message')}}
                             />
                             <div className="flex gap-2">
@@ -349,14 +349,14 @@ export default function MensajesPendientesPanel() {
                                 Cancelar
                               </button>
                               <button onClick={() => saveEdit(msg.id)} disabled={!!isLoadingSave}
-                                className="px-4 py-2 text-blue-600 font-bold text-sm bg-blue-50 border-2 border-blue-200 rounded-xl hover:bg-blue-100 transition-all disabled:opacity-50 flex items-center gap-1.5">
+                                className="px-4 py-2 text-sky-600 font-bold text-sm bg-sky-50 border-2 border-sky-200 rounded-xl hover:bg-sky-100 transition-all disabled:opacity-50 flex items-center gap-1.5">
                                 {isLoadingSave ? <Loader2 size={14} className="animate-spin"/> : null} {t('mensajes.guardarCambios2')}
                               </button>
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-gradient-to-br from-blue-600 to-sky-600 rounded-2xl p-4 text-white">
-                            <p className="text-sm leading-relaxed text-blue-100 whitespace-pre-wrap">{msg.edited_message || msg.ai_message}</p>
+                          <div className="bg-gradient-to-br from-sky-600 to-cyan-600 rounded-2xl p-4 text-white">
+                            <p className="text-sm leading-relaxed text-sky-100 whitespace-pre-wrap">{msg.edited_message || msg.ai_message}</p>
                           </div>
                         )}
 

@@ -159,7 +159,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-3">
               <CalendarCheck size={26} className="text-white" />
             </div>
-            <h1 className="text-xl font-black text-slate-900">Reservá tu cita</h1>
+            <h1 className="text-xl font-bold text-slate-900">Reservá tu cita</h1>
             <p className="text-sm text-slate-500 mt-1">Iniciá sesión para elegir tu horario</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-3">
@@ -189,7 +189,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
           <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 size={34} className="text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 mb-2">¡Cita{exito.length > 1 ? 's' : ''} reservada{exito.length > 1 ? 's' : ''}!</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">¡Cita{exito.length > 1 ? 's' : ''} reservada{exito.length > 1 ? 's' : ''}!</h1>
           <p className="text-sm text-slate-600 mb-5">Te esperamos. Tu{exito.length > 1 ? 's' : ''} cita{exito.length > 1 ? 's' : ''} ya aparece{exito.length > 1 ? 'n' : ''} en tu portal.</p>
           <div className="space-y-2 mb-6">
             {exito.map((c, i) => (
@@ -217,7 +217,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
           <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <AlertCircle size={26} className="text-red-600" />
           </div>
-          <h1 className="text-xl font-black text-slate-900 mb-1">No se puede reservar</h1>
+          <h1 className="text-xl font-bold text-slate-900 mb-1">No se puede reservar</h1>
           <p className="text-sm text-slate-600">{error}</p>
         </div>
       </Centro>
@@ -233,7 +233,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
         <div className="rounded-3xl p-6 mb-5 text-white shadow-xl" style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)' }}>
           <div className="flex items-center gap-3 mb-2">
             <CalendarCheck size={26} />
-            <h1 className="text-2xl font-black">Reservá tu cita</h1>
+            <h1 className="text-2xl font-bold">Reservá tu cita</h1>
           </div>
           <p className="text-white/90 text-sm">
             {meta?.serviceType || 'Terapia'}
@@ -248,7 +248,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
         {/* Selección de paciente (si el link no lo fijó) */}
         {!linkInfo?.link?.child_id && (
           <div className="rounded-2xl bg-white p-4 mb-4 shadow-sm border border-slate-100">
-            <label className="text-xs font-black uppercase tracking-widest text-slate-500 block mb-2">¿Para quién es la cita?</label>
+            <label className="text-xs font-bold text-slate-500 block mb-2">¿Para quién es la cita?</label>
             {children.length === 0 ? (
               <p className="text-sm text-slate-400 italic">No hay pacientes vinculados a tu cuenta. Contactá al centro.</p>
             ) : (
@@ -294,7 +294,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
                 if (!dia) return <p className="text-sm text-slate-400 italic text-center py-10">Elegí un día disponible (en verde) para ver los horarios.</p>
                 return (
                   <>
-                    <p className="text-base font-black text-slate-800 capitalize mb-3 flex items-center gap-2">
+                    <p className="text-base font-bold text-slate-800 capitalize mb-3 flex items-center gap-2">
                       <Clock size={16} className="text-indigo-500" /> {dia.label}
                     </p>
                     <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto pr-1">
@@ -324,7 +324,7 @@ export default function ReservarPage({ params }: { params: Promise<{ token: stri
           <div className="sticky bottom-4 mt-5">
             <div className="rounded-2xl bg-white shadow-2xl border border-indigo-100 p-4 flex items-center justify-between gap-3">
               <div className="text-sm">
-                <p className="font-black text-slate-800">{seleccion.length} horario{seleccion.length > 1 ? 's' : ''} elegido{seleccion.length > 1 ? 's' : ''}</p>
+                <p className="font-bold text-slate-800">{seleccion.length} horario{seleccion.length > 1 ? 's' : ''} elegido{seleccion.length > 1 ? 's' : ''}</p>
                 <p className="text-xs text-slate-500 truncate">{seleccion.map(s => `${s.fecha.slice(5)} ${s.time}`).join(' · ')}</p>
               </div>
               <button onClick={confirmar} disabled={confirmando}
@@ -371,12 +371,12 @@ function CalendarioReserva({ mes, onCambiarMes, disponibles, seleccionadas, diaA
     <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-sm border border-slate-100">
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => onCambiarMes(new Date(year, month - 1, 1))} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronLeft size={20} /></button>
-        <p className="text-base sm:text-lg font-black capitalize text-slate-800">{nombreMes}</p>
+        <p className="text-base sm:text-lg font-bold capitalize text-slate-800">{nombreMes}</p>
         <button onClick={() => onCambiarMes(new Date(year, month + 1, 1))} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronRight size={20} /></button>
       </div>
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center mb-1.5">
         {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
-          <span key={i} className="text-[11px] sm:text-xs font-black text-slate-400">{d}</span>
+          <span key={i} className="text-[11px] sm:text-xs font-bold text-slate-400">{d}</span>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">

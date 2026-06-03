@@ -21,7 +21,7 @@ type Props = { childId: string; childName: string }
 
 const ESTADO_LABEL: Record<string, { label: string; color: string; pasos: number }> = {
   pendiente_intake:       { label: '1/7 · Esperando intake del padre',         color: 'bg-slate-100 text-slate-700',    pasos: 1 },
-  analizando:             { label: '2/7 · IA analizando',                       color: 'bg-blue-100 text-blue-700',      pasos: 2 },
+  analizando:             { label: '2/7 · IA analizando',                       color: 'bg-sky-100 text-sky-700',      pasos: 2 },
   recomendado:            { label: '3/7 · Esperando que el padre confirme',     color: 'bg-sky-100 text-sky-700',  pasos: 3 },
   confirmado:             { label: '4/7 · Padre llenando 2ª anamnesis',         color: 'bg-sky-100 text-sky-700',  pasos: 4 },
   anamnesis_completa:     { label: '5/7 · Padre eligiendo terapias',            color: 'bg-sky-100 text-sky-700',  pasos: 5 },
@@ -220,7 +220,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-blue-500" size={32} /></div>
+    return <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-sky-500" size={32} /></div>
   }
 
   if (!evaluacion) {

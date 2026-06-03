@@ -15,7 +15,7 @@ import { useToast } from '@/components/Toast'
 const FILE_ICON_CFG: Record<string, { Icon: any; color: string }> = {
   pdf:   { Icon: FileText,        color: '#ef4444' },
   image: { Icon: Image,          color: '#0ea5e9' },
-  word:  { Icon: FileText,        color: '#2563eb' },
+  word:  { Icon: FileText,        color: '#0284c7' },
   excel: { Icon: FileSpreadsheet, color: '#10b981' },
   other: { Icon: File,            color: '#64748b' },
 }
@@ -191,8 +191,8 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
   const txt1    = isDark ? 'text-slate-100' : 'text-slate-800'
   const txt3    = isDark ? 'text-slate-500' : 'text-slate-400'
   const inputCls = isDark
-    ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600 focus:border-blue-500'
-    : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400'
+    ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600 focus:border-sky-500'
+    : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-sky-400'
 
   const loadDocs = useCallback(async () => {
     setLoading(true)
@@ -458,7 +458,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             <div className="relative">
               <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === 'emoji' ? null : 'emoji') }}
                 className={`w-10 h-10 rounded-xl border-2 text-xl flex items-center justify-center transition-all
-                  ${isDark ? 'border-[#30363d] bg-[#0d1117] hover:border-blue-500' : 'border-slate-200 bg-slate-50 hover:border-blue-400'}`}>
+                  ${isDark ? 'border-[#30363d] bg-[#0d1117] hover:border-sky-500' : 'border-slate-200 bg-slate-50 hover:border-sky-400'}`}>
                 {newFolderEmoji}
               </button>
               {openMenuId === 'emoji' && (
@@ -468,7 +468,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                   {EMOJIS_FOLDER.map(em => (
                     <button key={em} onClick={() => { setNewFolderEmoji(em); setOpenMenuId(null) }}
                       className={`w-8 h-8 rounded-lg text-base flex items-center justify-center hover:scale-110 transition-transform
-                        ${newFolderEmoji === em ? (isDark ? 'bg-blue-900/40' : 'bg-blue-50') : ''}`}>
+                        ${newFolderEmoji === em ? (isDark ? 'bg-sky-900/40' : 'bg-sky-50') : ''}`}>
                       {em}
                     </button>
                   ))}
@@ -546,7 +546,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
           <div>
             <label className={`block text-[11px] font-bold mb-1.5 ${txt3}`}>Guardar en carpeta</label>
             <select value={uploadFolder ?? ''} onChange={e => setUploadFolder(e.target.value || null)}
-              className={`w-full px-3 py-2.5 rounded-xl text-sm border outline-none focus:border-blue-500 ${inputCls}`}>
+              className={`w-full px-3 py-2.5 rounded-xl text-sm border outline-none focus:border-sky-500 ${inputCls}`}>
               <option value="">📁 Inicio (sin carpeta)</option>
               {fs.carpetas.map(c => (
                 <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
@@ -560,8 +560,8 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
               ${isDragging
-                ? isDark ? 'border-blue-500 bg-blue-900/20' : 'border-blue-400 bg-blue-50'
-                : isDark ? 'border-[#30363d] hover:border-blue-700 hover:bg-blue-900/10' : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'}`}>
+                ? isDark ? 'border-sky-500 bg-sky-900/20' : 'border-sky-400 bg-sky-50'
+                : isDark ? 'border-[#30363d] hover:border-sky-700 hover:bg-sky-900/10' : 'border-slate-200 hover:border-sky-300 hover:bg-sky-50'}`}>
             <Upload size={28} className={`mx-auto mb-2 ${isDragging ? 'text-sky-500' : txt3}`} />
             <p className={`text-sm font-bold ${txt1}`}>
               {isDragging ? 'Suelta los archivos aquí' : 'Arrastra archivos o haz clic para seleccionar'}
@@ -619,7 +619,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             </label>
           )}
           <button onClick={handleUpload} disabled={uploading || selectedFiles.length === 0}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
+            className="w-full py-3 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
             {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             {uploading ? 'Subiendo...' : selectedFiles.length > 0 ? `Subir ${selectedFiles.length} archivo${selectedFiles.length > 1 ? 's' : ''}` : 'Subir documento'}
           </button>

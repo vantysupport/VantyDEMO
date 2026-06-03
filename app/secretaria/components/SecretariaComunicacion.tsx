@@ -25,8 +25,7 @@ interface Familia {
 function MiniKPI({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
   return (
     <div className="rounded-xl p-4 relative overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-      <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: color }} />
-      <div className="flex items-center gap-3 pl-3">
+      <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${color}15` }}>
           <Icon size={15} style={{ color }} />
         </div>
@@ -149,7 +148,7 @@ export default function SecretariaComunicacion({ profile }: { profile: any }) {
   return (
     <div className="space-y-5">
       <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #3a68a0, #0ea5e9, #10b981)' }} />
+        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #0284c7, #0ea5e9, #10b981)' }} />
         <div className="px-5 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Comunicación con familias</h2>

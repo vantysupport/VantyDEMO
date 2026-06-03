@@ -103,7 +103,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   confirmed: { label: 'Confirmada', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
   pending:   { label: 'Pendiente',  color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200'   },
   cancelled: { label: 'Cancelada',  color: 'text-red-700',     bg: 'bg-red-50 border-red-200'       },
-  completed: { label: 'Completada', color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200'     },
+  completed: { label: 'Completada', color: 'text-sky-700',    bg: 'bg-sky-50 border-sky-200'     },
 }
 
 function MonthlyCalendarView() {
@@ -544,7 +544,7 @@ function MonthlyCalendarView() {
           <div>
             <h2 className="font-bold text-2xl md:text-3xl tracking-tight flex items-center gap-3" style={{ color: "var(--text-primary)" }}>
               <div className="p-2.5 rounded-2xl flex-shrink-0" style={{ background: "rgba(37,99,235,0.15)" }}>
-                <Calendar className="text-blue-500" size={28}/>
+                <Calendar className="text-sky-500" size={28}/>
               </div>
               Agenda
             </h2>
@@ -568,8 +568,8 @@ function MonthlyCalendarView() {
             <button
               onClick={() => setShow(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white
-                bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700
-                shadow-lg shadow-blue-500/25 transition-all whitespace-nowrap"
+                bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700
+                shadow-lg shadow-sky-500/25 transition-all whitespace-nowrap"
             >
               <Plus size={16}/> {t('agenda.nuevaCita2')}
             </button>
@@ -618,11 +618,11 @@ function MonthlyCalendarView() {
                 const ds = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
                 const isToday=ds===todayStr; const isPast=ds<todayStr
                 return (
-                  <div key={day} onClick={()=>{setNewApt(p=>({...p,date:ds}));setShow(true)}} className={`min-h-[80px] border-b border-r p-2 cursor-pointer transition-all group ${isToday?'ring-2 ring-inset ring-blue-500':''}`} style={{ borderColor: 'var(--card-border)', background: isToday ? 'rgba(37,99,235,0.08)' : isPast ? 'var(--muted-bg)' : 'var(--card)' }}>
-                    <div className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full mb-1 ${isToday?'bg-blue-600 text-white':isPast?'text-slate-300':'text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-700'}`}>{day}</div>
+                  <div key={day} onClick={()=>{setNewApt(p=>({...p,date:ds}));setShow(true)}} className={`min-h-[80px] border-b border-r p-2 cursor-pointer transition-all group ${isToday?'ring-2 ring-inset ring-sky-500':''}`} style={{ borderColor: 'var(--card-border)', background: isToday ? 'rgba(37,99,235,0.08)' : isPast ? 'var(--muted-bg)' : 'var(--card)' }}>
+                    <div className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full mb-1 ${isToday?'bg-sky-600 text-white':isPast?'text-slate-300':'text-slate-700 group-hover:bg-sky-100 group-hover:text-sky-700'}`}>{day}</div>
                     <div className="space-y-0.5">
                       {dayApts.slice(0,2).map(apt => (
-                        <div key={apt.id} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md truncate flex items-center gap-1 ${apt.modalidad==='virtual'?'bg-sky-100 text-sky-700':apt.is_group?'bg-sky-100 text-sky-700':'bg-blue-100 text-blue-700'}`}>
+                        <div key={apt.id} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md truncate flex items-center gap-1 ${apt.modalidad==='virtual'?'bg-sky-100 text-sky-700':apt.is_group?'bg-sky-100 text-sky-700':'bg-sky-100 text-sky-700'}`}>
                           {apt.modalidad==='virtual' && <Video size={8}/>}
                           {apt.appointment_time?.slice(0,5)} {apt.children?.name||'?'}
                         </div>
@@ -641,19 +641,19 @@ function MonthlyCalendarView() {
             {/* Filtros */}
             <div className="rounded-2xl p-5 shadow-sm space-y-3" style={{ background: "var(--card)", border: "1px solid var(--card-border)" }}>
               <p className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>{t('ui.filters')}</p>
-              <input type="date" value={filterDate} onChange={e=>setFilterDate(e.target.value)} className="w-full p-3 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }}/>
-              <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="w-full p-3 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }}>
+              <input type="date" value={filterDate} onChange={e=>setFilterDate(e.target.value)} className="w-full p-3 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }}/>
+              <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="w-full p-3 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }}>
                 <option value="todos">{t('ui.all_statuses')}</option>
                 <option value="confirmed">{t('ui.confirmed_pl')}</option>
                 <option value="pending">{t('ui.pending_pl')}</option>
                 <option value="completed">{t('ui.completed_pl')}</option>
                 <option value="cancelled">{t('ui.cancelled_pl')}</option>
               </select>
-              <select value={filterEspecialista} onChange={e=>setFilterEspecialista(e.target.value)} className="w-full p-3 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }}>
+              <select value={filterEspecialista} onChange={e=>setFilterEspecialista(e.target.value)} className="w-full p-3 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }}>
                 <option value="todos">Todos los especialistas</option>
                 {especialistas.map(e=><option key={e.id} value={e.id}>{e.full_name}{e.specialty ? ` · ${e.specialty}` : ''}</option>)}
               </select>
-              {(filterDate||filterStatus!=='todos'||filterEspecialista!=='todos') && <button onClick={()=>{setFilterDate('');setFilterStatus('todos');setFilterEspecialista('todos')}} className="text-xs text-blue-600 font-bold hover:underline">{t('ui.clear_filters')}</button>}
+              {(filterDate||filterStatus!=='todos'||filterEspecialista!=='todos') && <button onClick={()=>{setFilterDate('');setFilterStatus('todos');setFilterEspecialista('todos')}} className="text-xs text-sky-600 font-bold hover:underline">{t('ui.clear_filters')}</button>}
             </div>
 
             {/* Lista citas */}
@@ -663,7 +663,7 @@ function MonthlyCalendarView() {
               </div>
               <div className="max-h-[520px] overflow-y-auto divide-y divide-slate-50">
                 {isLoading ? (
-                  <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-blue-400" size={28}/></div>
+                  <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-sky-400" size={28}/></div>
                 ) : filteredApts.length===0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                     <div className="p-4 bg-slate-100 rounded-2xl mb-3"><Calendar size={32} className="text-slate-300"/></div>
@@ -688,7 +688,7 @@ function MonthlyCalendarView() {
                           <p className="font-bold text-sm truncate" style={{ color: "var(--text-primary)" }}>{a.children?.name||'Paciente'}</p>
                           <p className="text-xs font-medium mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{a.service_type}</p>
                           {a.specialist?.full_name && (
-                            <p className="text-[11px] font-semibold mt-0.5 flex items-center gap-1 truncate" style={{ color: '#3a68a0' }}>
+                            <p className="text-[11px] font-semibold mt-0.5 flex items-center gap-1 truncate" style={{ color: '#0284c7' }}>
                               <User size={10}/>
                               <span className="truncate">
                                 {a.specialist.full_name}
@@ -710,7 +710,7 @@ function MonthlyCalendarView() {
                                   value={editDate}
                                   onChange={e => setEditDate(e.target.value)}
                                   onClick={e => e.stopPropagation()}
-                                  className="px-2 py-1 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-400"
+                                  className="px-2 py-1 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-sky-400"
                                   style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)' }}
                                 />
                               </div>
@@ -721,7 +721,7 @@ function MonthlyCalendarView() {
                                   value={editTime}
                                   onChange={e => setEditTime(e.target.value)}
                                   onClick={e => e.stopPropagation()}
-                                  className="px-2 py-1 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-400"
+                                  className="px-2 py-1 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-sky-400"
                                   style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)' }}
                                 />
                               </div>
@@ -778,7 +778,7 @@ function MonthlyCalendarView() {
                             <>
                               <button
                                 onClick={e => iniciarEdicion(a, e)}
-                                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 bg-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 bg-slate-100 text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-all"
                                 title="Editar horario"
                               >
                                 <Pencil size={14}/>
@@ -807,7 +807,7 @@ function MonthlyCalendarView() {
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="p-6 md:p-8 rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" style={{ background: "var(--card)" }}>
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-xl flex items-center gap-2" style={{ color: "var(--text-primary)" }}><Plus size={20} className="text-blue-600"/> {t('agenda.nuevaCita')}</h3>
+                <h3 className="font-bold text-xl flex items-center gap-2" style={{ color: "var(--text-primary)" }}><Plus size={20} className="text-sky-600"/> {t('agenda.nuevaCita')}</h3>
                 <button onClick={resetForm} className="p-2 rounded-full hover:bg-slate-100"><X size={20}/></button>
               </div>
 
@@ -818,7 +818,7 @@ function MonthlyCalendarView() {
                   <div className="grid grid-cols-2 gap-3">
                     {(['individual','grupal'] as const).map(tipo => (
                       <button key={tipo} onClick={()=>{setTipoSesion(tipo);setSelectedParticipants([]);setNewApt(p=>({...p,child_id:''}))}}
-                        className={`p-4 rounded-2xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${tipoSesion===tipo?(tipo==='individual'?'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200':'bg-sky-600 text-white border-sky-600 shadow-lg shadow-sky-200'):'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
+                        className={`p-4 rounded-2xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${tipoSesion===tipo?(tipo==='individual'?'bg-sky-600 text-white border-sky-600 shadow-lg shadow-sky-200':'bg-sky-600 text-white border-sky-600 shadow-lg shadow-sky-200'):'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
                         {tipo==='individual'?<><User size={16}/> Individual</>:<><Users size={16}/> Grupal</>}
                       </button>
                     ))}
@@ -851,7 +851,7 @@ function MonthlyCalendarView() {
                 {tipoSesion==='individual' && (
                   <div>
                     <label className="text-xs font-bold block mb-2" style={{ color: "var(--text-muted)" }}>{t('agenda.pacienteStar')}</label>
-                    <select className="w-full p-4 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }} onChange={e=>setNewApt(p=>({...p,child_id:e.target.value}))} value={newApt.child_id}>
+                    <select className="w-full p-4 rounded-xl text-sm font-bold outline-none focus:border-sky-500 transition-all" style={{ background: "var(--input-bg)", border: "2px solid var(--input-border)", color: "var(--text-primary)" }} onChange={e=>setNewApt(p=>({...p,child_id:e.target.value}))} value={newApt.child_id}>
                       <option value="">{t('ui.select_patient_option')}</option>
                       {ninos.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
                     </select>
@@ -928,7 +928,7 @@ function MonthlyCalendarView() {
                 </div>
                 <div>
                   <label className="text-xs font-bold block mb-2" style={{ color: "var(--text-muted)" }}>Notas (opcional)</label>
-                  <textarea rows={2} placeholder="Observaciones..." className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all resize-none" value={newApt.notes} onChange={e=>setNewApt(p=>({...p,notes:e.target.value}))}/>
+                  <textarea rows={2} placeholder="Observaciones..." className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all resize-none" value={newApt.notes} onChange={e=>setNewApt(p=>({...p,notes:e.target.value}))}/>
                 </div>
 
                 {/* Recurrencia */}
@@ -943,7 +943,7 @@ function MonthlyCalendarView() {
                       { value: 'biweekly',  label: 'Quincenal' },
                     ] as const).map(opt => (
                       <button key={opt.value} onClick={() => setRecurrencia(opt.value)}
-                        className={`py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${recurrencia === opt.value ? 'border-blue-500 text-blue-600' : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                        className={`py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${recurrencia === opt.value ? 'border-sky-500 text-sky-600' : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
                         style={{ background: recurrencia === opt.value ? 'rgba(37,99,235,0.08)' : 'var(--card)' }}>
                         {opt.label}
                       </button>
@@ -956,7 +956,7 @@ function MonthlyCalendarView() {
                         className="w-full p-3 rounded-xl text-sm font-bold outline-none border-2" style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}>
                         {[2,3,4,6,8,12].map(n => <option key={n} value={n}>{n} citas ({recurrencia === 'weekly' ? `${n} semanas` : `${n*2} semanas`})</option>)}
                       </select>
-                      <p className="text-[10px] mt-1.5 font-medium text-blue-500">
+                      <p className="text-[10px] mt-1.5 font-medium text-sky-500">
                         Se crearán {recurrenciaSemanas} citas {recurrencia === 'weekly' ? 'cada semana' : 'cada 2 semanas'} a partir de la fecha seleccionada.
                       </p>
                     </div>
@@ -966,7 +966,7 @@ function MonthlyCalendarView() {
                 <div className="flex gap-3 pt-2">
                   <button onClick={resetForm} className="flex-1 py-4 text-slate-400 font-bold uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl transition-all border-2 border-slate-100">{t('common.cancelar')}</button>
                   <button onClick={handleSave} disabled={isSaving}
-                    className={`flex-[2] py-4 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-white ${modalidadCita==='virtual'?'bg-gradient-to-r from-sky-600 to-cyan-600 shadow-sky-200':tipoSesion==='grupal'?'bg-gradient-to-r from-sky-600 to-cyan-600 shadow-sky-200':'bg-gradient-to-r from-blue-600 to-sky-600 shadow-blue-200'}`}>
+                    className={`flex-[2] py-4 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-white ${modalidadCita==='virtual'?'bg-gradient-to-r from-sky-600 to-cyan-600 shadow-sky-200':tipoSesion==='grupal'?'bg-gradient-to-r from-sky-600 to-cyan-600 shadow-sky-200':'bg-gradient-to-r from-sky-600 to-cyan-600 shadow-sky-200'}`}>
                     {isSaving?<Loader2 size={18} className="animate-spin"/>:modalidadCita==='virtual'?<Video size={18}/>:<Plus size={18}/>}
                     {isSaving?'Guardando...':modalidadCita==='virtual'?'Agendar Virtual':tipoSesion==='grupal'?'Agendar Grupo':'Confirmar Cita'}
                   </button>

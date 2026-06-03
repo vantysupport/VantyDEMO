@@ -80,7 +80,7 @@ export function NavItem({ icon, label, active, onClick }: any) {
   return (
     <button 
       onClick={onClick} 
-      className={`flex items-center gap-3 md:gap-4 w-full p-3 md:p-4 rounded-xl md:rounded-2xl transition-all ${active ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 scale-105' : 'text-slate-500 hover:bg-slate-50 hover:pl-4 md:hover:pl-6'}`}
+      className={`flex items-center gap-3 md:gap-4 w-full p-3 md:p-4 rounded-xl md:rounded-2xl transition-all ${active ? 'bg-sky-600 text-white shadow-xl shadow-sky-200 scale-105' : 'text-slate-500 hover:bg-slate-50 hover:pl-4 md:hover:pl-6'}`}
     >
       {icon} 
       <span className="block md:hidden lg:block font-bold text-[10px] md:text-xs uppercase tracking-[0.15em]">{label}</span>

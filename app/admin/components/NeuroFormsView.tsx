@@ -269,7 +269,7 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2"><Send size={20} className="text-blue-600"/> Enviar Formulario</h3>
+          <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2"><Send size={20} className="text-sky-600"/> Enviar Formulario</h3>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100"><X size={20}/></button>
         </div>
 
@@ -282,7 +282,7 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
         <div className="space-y-4">
           <div>
             <label className="text-xs font-bold text-slate-400 block mb-2">{t('evaluaciones.pacienteStar')}</label>
-            <select value={childId} onChange={e => setChildId(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all">
+            <select value={childId} onChange={e => setChildId(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all">
               <option value="">{t('ui.select_patient_option')}</option>
               {children.map((c: any) => <option key={c.id} value={c.id}>{c.name}{c.age ? ` - ${c.age}` : ''}</option>)}
             </select>
@@ -292,15 +292,15 @@ function SendFormModal({ form, children, onSend, onClose }: any) {
             <label className="text-xs font-bold text-slate-400 block mb-2">{t('ui.mensajePadres2')}</label>
             <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
               {...{placeholder: t('ui.send_form_msg')}}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all resize-none"/>
+              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all resize-none"/>
           </div>
           <div>
             <label className="text-xs font-bold text-slate-400 block mb-2">{t('ui.fechaLimite')}</label>
-            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-400 transition-all"/>
+            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-400 transition-all"/>
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={onClose} className="flex-1 py-4 text-slate-400 font-bold uppercase text-xs tracking-widest hover:bg-slate-50 rounded-xl border-2 border-slate-100 transition-all">{t('common.cancelar')}</button>
-            <button onClick={handleSend} disabled={sending || !childId} className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+            <button onClick={handleSend} disabled={sending || !childId} className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {sending ? <Loader2 size={18} className="animate-spin"/> : <Send size={18}/>}
               {sending ? 'Enviando...' : 'Enviar Formulario'}
             </button>
@@ -556,7 +556,7 @@ export default function NeuroFormsView() {
           <button
             onClick={handleGenerateAndDownload}
             disabled={isGeneratingReport}
-            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-2xl font-bold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white rounded-2xl font-bold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
             {isGeneratingReport ? (
               <><Loader2 size={18} className="animate-spin" /> Generando reporte...</>

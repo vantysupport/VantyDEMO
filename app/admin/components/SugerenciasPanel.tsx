@@ -28,7 +28,7 @@ interface Sugerencia {
 
 const TIPO_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
   objetivo_estancado:  { icon: Clock,         color: 'text-red-600',    bg: 'bg-red-50 border-red-200',    label: 'Estancamiento' },
-  cambio_fase:         { icon: TrendingUp,     color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',  label: 'Listo para avanzar' },
+  cambio_fase:         { icon: TrendingUp,     color: 'text-sky-600',   bg: 'bg-sky-50 border-sky-200',  label: 'Listo para avanzar' },
   reforzador:          { icon: Star,           color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200',label: 'Reforzadores' },
   conducta_desafiante: { icon: AlertTriangle,  color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200', label: 'Conductas' },
   logro_celebrar:      { icon: Trophy,         color: 'text-emerald-600',bg: 'bg-emerald-50 border-emerald-200', label: '¡Logro!' },
@@ -172,7 +172,7 @@ export default function SugerenciasPanel({ childId }: { childId?: string }) {
 
       {/* Insight global */}
       {insight && (
-        <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100 rounded-xl flex gap-2">
+        <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-sky-50 to-sky-50 border border-sky-100 rounded-xl flex gap-2">
           <Lightbulb size={14} className="text-sky-500 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-sky-800 leading-relaxed">{insight}</p>
         </div>

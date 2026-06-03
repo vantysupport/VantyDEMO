@@ -220,7 +220,7 @@ export default function SecretariaHome({ onNavigate }: Props) {
               </span>
               {!loading && stats.pendientes > 0 && (
                 <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
-                  style={{ background: 'rgba(245,158,11,0.1)', color: '#b07830', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}>
                   <AlertCircle size={10} className="inline mr-1" />{stats.pendientes} pendientes
                 </span>
               )}
@@ -249,17 +249,16 @@ export default function SecretariaHome({ onNavigate }: Props) {
             onClick={() => nav && onNavigate?.(nav)}
             className={`rounded-xl p-5 relative overflow-hidden transition-all text-left ${nav ? 'cursor-pointer hover:shadow-md' : ''}`}
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-            <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
-            <div className="flex items-start justify-between pl-3 mb-2">
+            <div className="flex items-start justify-between mb-2">
               <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${bar}18` }}>
                 <Icon size={14} style={{ color: bar }} />
               </div>
             </div>
-            <p className="text-4xl font-bold leading-none pl-3 mb-1" style={{ color: loading ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+            <p className="text-4xl font-bold leading-none mb-1" style={{ color: loading ? 'var(--text-muted)' : 'var(--text-primary)' }}>
               {loading ? '—' : value}
             </p>
-            <p className="text-xs pl-3" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub}</p>
           </button>
         ))}
       </div>

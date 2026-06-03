@@ -108,7 +108,7 @@ function ProgressBar({ value, max = 100, color = 'blue' }: { value: number; max?
 }
 
 // ─── Sparkline con Recharts ──────────────────────────────────────────────────
-function Sparkline({ data, color = '#3b82f6' }: { data: number[]; color?: string }) {
+function Sparkline({ data, color = '#0284c7' }: { data: number[]; color?: string }) {
   const { t } = useI18n()
   if (!data || data.length < 2) return <span className="text-xs text-slate-400">{t('common.sinDatos')}</span>
   const pts = data.map((v, i) => ({ i, v }))
@@ -335,7 +335,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {prediccion && !loading && selectedPaciente && (
           <div className="p-4 md:p-5 space-y-4">
             {/* Header paciente */}
-            <div className="bg-gradient-to-r from-sky-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
+            <div className="bg-gradient-to-r from-sky-600 to-cyan-600 rounded-2xl p-4 md:p-5 text-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sky-200 text-xs font-bold mb-1">{t('hub.analisPorPrograma')}</p>
@@ -472,7 +472,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               className="w-full text-left px-3.5 py-3 transition-colors flex items-center gap-3 border-b"
               style={{
                 borderColor: 'var(--card-border)',
-                borderLeft: selectedPaciente?.id === p.id ? '3px solid #3b82f6' : '3px solid transparent',
+                borderLeft: selectedPaciente?.id === p.id ? '3px solid #0284c7' : '3px solid transparent',
                 background: selectedPaciente?.id === p.id ? 'rgba(37,99,235,0.12)' : 'transparent',
               }}
               onMouseEnter={e => { if (selectedPaciente?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'var(--card)' }}
@@ -517,7 +517,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               className="w-full text-left px-3.5 py-3 transition-colors flex items-center gap-3 border-b"
               style={{
                 borderColor: 'var(--card-border)',
-                borderLeft: selectedPaciente?.id === p.id ? '3px solid #3b82f6' : '3px solid transparent',
+                borderLeft: selectedPaciente?.id === p.id ? '3px solid #0284c7' : '3px solid transparent',
                 background: selectedPaciente?.id === p.id ? 'rgba(37,99,235,0.12)' : 'transparent',
               }}
               onMouseEnter={e => { if (selectedPaciente?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'var(--card)' }}
@@ -562,7 +562,7 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
         {prediccion && !loading && selectedPaciente && (
           <div className="p-4 md:p-5 space-y-4">
             {/* Header paciente */}
-            <div className="bg-gradient-to-r from-sky-600 to-sky-600 rounded-2xl p-4 md:p-5 text-white">
+            <div className="bg-gradient-to-r from-sky-600 to-cyan-600 rounded-2xl p-4 md:p-5 text-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sky-200 text-xs font-bold mb-1">{t('hub.analisPorPrograma')}</p>
@@ -841,7 +841,7 @@ function TabCompetitividad() {
 
   if (!datos) return null
 
-  const scoreColor = datos.scoreGlobal >= 80 ? '#10b981' : datos.scoreGlobal >= 65 ? '#3b82f6' : datos.scoreGlobal >= 50 ? '#f59e0b' : '#ef4444'
+  const scoreColor = datos.scoreGlobal >= 80 ? '#10b981' : datos.scoreGlobal >= 65 ? '#0284c7' : datos.scoreGlobal >= 50 ? '#f59e0b' : '#ef4444'
   const ventajaPositiva = datos.ventaja > 0
 
   return (
@@ -1053,12 +1053,12 @@ function RenderMD({ text }: { text: string }) {
 }
 
 const SECTION_CFG = [
-  { keys: ['INTERPRETACIÓN CLÍNICA', 'INTERPRETACIÓN'],      color: '#6355a0', icon: '🔬', bg: 'transparent' },
-  { keys: ['HIPÓTESIS CLÍNICA', 'HIPÓTESIS'],                color: '#b07830', icon: '🧩', bg: 'transparent' },
-  { keys: ['ANÁLISIS FUNCIONAL'],                            color: '#6355a0', icon: '📐', bg: 'transparent' },
-  { keys: ['INDICACIONES TERAPÉUTICAS', 'INTERVENCIÓN'],     color: '#c0524a', icon: '🎯', bg: 'transparent' },
-  { keys: ['PRONÓSTICO', 'CRITERIOS DE AVANCE'],             color: '#3a68a0', icon: '📈', bg: 'transparent' },
-  { keys: ['SEÑAL POSITIVA', 'FORTALEZAS'],                  color: '#2e7a56', icon: '✦',  bg: 'transparent' },
+  { keys: ['INTERPRETACIÓN CLÍNICA', 'INTERPRETACIÓN'],      color: '#0ea5e9', icon: '🔬', bg: 'transparent' },
+  { keys: ['HIPÓTESIS CLÍNICA', 'HIPÓTESIS'],                color: '#f59e0b', icon: '🧩', bg: 'transparent' },
+  { keys: ['ANÁLISIS FUNCIONAL'],                            color: '#0ea5e9', icon: '📐', bg: 'transparent' },
+  { keys: ['INDICACIONES TERAPÉUTICAS', 'INTERVENCIÓN'],     color: '#ef4444', icon: '🎯', bg: 'transparent' },
+  { keys: ['PRONÓSTICO', 'CRITERIOS DE AVANCE'],             color: '#0284c7', icon: '📈', bg: 'transparent' },
+  { keys: ['SEÑAL POSITIVA', 'FORTALEZAS'],                  color: '#10b981', icon: '✦',  bg: 'transparent' },
 ] as const
 
 function getSectionCfg(text: string) {
@@ -1274,7 +1274,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
         </button>
         {error && (
           <div className="rounded-xl px-4 py-3 text-xs font-medium"
-            style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)', borderLeft: '1px solid #c0524a' }}>
+            style={{ background: 'var(--muted-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)', borderLeft: '1px solid #ef4444' }}>
             {error}
           </div>
         )}
@@ -1307,7 +1307,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="rounded-2xl p-8 text-center border"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
               <p className="text-3xl mb-3">✓</p>
-              <p className="font-bold text-sm mb-1" style={{ color: '#2e7a56' }}>Progreso Estable</p>
+              <p className="font-bold text-sm mb-1" style={{ color: '#10b981' }}>Progreso Estable</p>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 {resultado.resumen || `Sin patrones problemáticos en ${resultado.sesiones_analizadas} sesiones.`}
               </p>
@@ -1319,7 +1319,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#c47070' }} />
-                <p className="text-[10px] font-bold" style={{ color: '#c0524a' }}>
+                <p className="text-[10px] font-bold" style={{ color: '#ef4444' }}>
                   Requieren Atención Inmediata ({urgentes.length})
                 </p>
               </div>
@@ -1332,7 +1332,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#5a9e7a' }} />
-                <p className="text-[10px] font-bold" style={{ color: '#2e7a56' }}>
+                <p className="text-[10px] font-bold" style={{ color: '#10b981' }}>
                   Logros Clínicos ({positivos.length})
                 </p>
               </div>
@@ -1345,7 +1345,7 @@ function TabPatrones({ pacientes }: { pacientes: Paciente[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ background: '#7b6bbf' }} />
-                <p className="text-[10px] font-bold" style={{ color: '#6355a0' }}>
+                <p className="text-[10px] font-bold" style={{ color: '#0ea5e9' }}>
                   Otras Observaciones ({otros.length})
                 </p>
               </div>

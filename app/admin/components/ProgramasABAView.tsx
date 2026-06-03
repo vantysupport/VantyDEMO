@@ -50,7 +50,7 @@ const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; em
   cognitivo:    { color: 'text-cyan-700 dark:text-cyan-300',   bg: 'bg-cyan-50 dark:bg-cyan-900/25 border-cyan-200 dark:border-cyan-800',     label: 'Cognitivo',      emoji: '🧠', Icon: Brain,         accent: '#0891b2' },
   social:       { color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-900/25 border-emerald-200 dark:border-emerald-800', label: 'Social', emoji: '👥', Icon: Users,    accent: '#059669' },
   autonomia:    { color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-900/25 border-amber-200 dark:border-amber-800', label: 'Autonomía',    emoji: '🌟', Icon: Sparkles,      accent: '#d97706' },
-  academico:    { color: 'text-blue-700 dark:text-blue-300',   bg: 'bg-blue-50 dark:bg-blue-900/25 border-blue-200 dark:border-blue-800',     label: 'Académico',      emoji: '📚', Icon: BookOpen,      accent: '#2563eb' },
+  academico:    { color: 'text-sky-700 dark:text-sky-300',   bg: 'bg-sky-50 dark:bg-sky-900/25 border-sky-200 dark:border-sky-800',     label: 'Académico',      emoji: '📚', Icon: BookOpen,      accent: '#0284c7' },
   sensorial:    { color: 'text-pink-700 dark:text-pink-300',   bg: 'bg-pink-50 dark:bg-pink-900/25 border-pink-200 dark:border-pink-800',     label: 'Sensorial',      emoji: '✋', Icon: Hand,          accent: '#db2777' },
 }
 
@@ -592,8 +592,8 @@ export default function ProgramasABAView({ childId, childName }: { childId: stri
 // ── Tarjeta de alerta IA ─────────────────────────────────────────────────────
 function AlertaCard({ alerta, onDescartar }: { alerta: any; key?: any; onDescartar?: () => void }) {
   const cfg: Record<string, { border: string; icon: string; label: string }> = {
-    alta:  { border: '#c0524a', icon: '⚠', label: '#c0524a' },
-    media: { border: '#b07830', icon: '!', label: '#b07830' },
+    alta:  { border: '#ef4444', icon: '⚠', label: '#ef4444' },
+    media: { border: '#f59e0b', icon: '!', label: '#f59e0b' },
     baja:  { border: '#4a7aaa', icon: 'i', label: '#4a7aaa' },
   }
   const c = cfg[alerta.prioridad] || cfg.media
@@ -1263,7 +1263,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       }
 
                       // Color palette — stable by unique fase||set key so Set 1 always = same color
-                      const segColors = ['#0284c7','#ef4444','#3b82f6','#0ea5e9','#f59e0b','#10b981','#ec4899']
+                      const segColors = ['#0284c7','#ef4444','#0284c7','#0ea5e9','#f59e0b','#10b981','#ec4899']
                       const uniqueSegKeys: string[] = []
                       segments.forEach(seg => {
                         const k = `${seg.fase}||${seg.set}`
@@ -1353,7 +1353,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                         }
                       }
                       const total = realDataB.length
-                      const segColors = ['#0284c7','#ef4444','#3b82f6','#0ea5e9','#f59e0b','#10b981','#ec4899']
+                      const segColors = ['#0284c7','#ef4444','#0284c7','#0ea5e9','#f59e0b','#10b981','#ec4899']
                       const uniqueBarKeys: string[] = []
                       segs.forEach(seg => { const k = `${seg.fase}||${seg.set}`; if (!uniqueBarKeys.includes(k)) uniqueBarKeys.push(k) })
                       const barColorMap = segs.map(seg => segColors[uniqueBarKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length])

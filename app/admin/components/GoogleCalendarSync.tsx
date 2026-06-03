@@ -82,7 +82,7 @@ export default function GoogleCalendarSync() {
           text-slate-600 text-xs font-semibold transition-all disabled:opacity-50"
       >
         {connecting
-          ? <Loader2 size={14} className="animate-spin text-blue-500" />
+          ? <Loader2 size={14} className="animate-spin text-sky-500" />
           : <CalendarDays size={14} className="text-slate-400" />
         }
         {connecting ? 'Conectando...' : 'Conectar Google'}
@@ -110,8 +110,8 @@ export default function GoogleCalendarSync() {
         disabled={syncing}
         title="Sincronizar con Google Calendar"
         className="p-2 rounded-xl border transition-all disabled:opacity-50
-          border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50
-          dark:border-[#30363d] dark:text-slate-500 dark:hover:text-blue-400 dark:hover:border-blue-700 dark:hover:bg-blue-900/20"
+          border-slate-200 text-slate-400 hover:text-sky-600 hover:border-sky-300 hover:bg-sky-50
+          dark:border-[#30363d] dark:text-slate-500 dark:hover:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-900/20"
       >
         {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
       </button>

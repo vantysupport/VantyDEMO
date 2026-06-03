@@ -19,7 +19,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
   const esValido = !!doc && doc.valido
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-indigo-50/40 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl">
         {/* Logo institucional */}
         <div className="text-center mb-8">
@@ -30,7 +30,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
               <path d="M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <h1 className="text-xl font-black text-slate-900">Neuropsicología y Terapias SANTI</h1>
+          <h1 className="text-xl font-bold text-slate-900">Neuropsicología y Terapias SANTI</h1>
           <p className="text-xs text-slate-500 mt-1">Sistema de verificación de documentos</p>
         </div>
 
@@ -49,8 +49,8 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-80">Documento no encontrado</p>
-                  <h2 className="text-2xl font-black">Código no válido</h2>
+                  <p className="text-xs font-bold opacity-80">Documento no encontrado</p>
+                  <h2 className="text-2xl font-bold">Código no válido</h2>
                 </div>
               </div>
             </div>
@@ -65,8 +65,8 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-80">Documento invalidado</p>
-                  <h2 className="text-2xl font-black">Versión obsoleta</h2>
+                  <p className="text-xs font-bold opacity-80">Documento invalidado</p>
+                  <h2 className="text-2xl font-bold">Versión obsoleta</h2>
                 </div>
               </div>
             </div>
@@ -80,8 +80,8 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-80">Documento verificado</p>
-                  <h2 className="text-2xl font-black">Auténtico y vigente</h2>
+                  <p className="text-xs font-bold opacity-80">Documento verificado</p>
+                  <h2 className="text-2xl font-bold">Auténtico y vigente</h2>
                 </div>
               </div>
             </div>
@@ -114,18 +114,18 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
 
                 <dl className="space-y-4">
                   <div className="flex items-start gap-4 pb-4 border-b border-slate-100">
-                    <dt className="text-xs font-black uppercase tracking-widest text-slate-500 w-32 shrink-0 pt-1">Tipo</dt>
+                    <dt className="text-xs font-bold text-slate-500 w-32 shrink-0 pt-1">Tipo</dt>
                     <dd className="text-base font-bold text-slate-900">{doc.tipo_label}</dd>
                   </div>
 
                   <div className="flex items-start gap-4 pb-4 border-b border-slate-100">
-                    <dt className="text-xs font-black uppercase tracking-widest text-slate-500 w-32 shrink-0 pt-1">Código</dt>
-                    <dd className="font-mono text-sm font-bold text-blue-700">{doc.codigo_doc}</dd>
+                    <dt className="text-xs font-bold text-slate-500 w-32 shrink-0 pt-1">Código</dt>
+                    <dd className="font-mono text-sm font-bold text-sky-700">{doc.codigo_doc}</dd>
                   </div>
 
                   {doc.paciente_iniciales && (
                     <div className="flex items-start gap-4 pb-4 border-b border-slate-100">
-                      <dt className="text-xs font-black uppercase tracking-widest text-slate-500 w-32 shrink-0 pt-1">Paciente</dt>
+                      <dt className="text-xs font-bold text-slate-500 w-32 shrink-0 pt-1">Paciente</dt>
                       <dd className="text-base text-slate-700">
                         <span className="font-bold text-slate-900">{doc.paciente_iniciales}</span>
                         <span className="text-xs ml-2 text-slate-400 italic">(iniciales por privacidad)</span>
@@ -134,7 +134,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                   )}
 
                   <div className="flex items-start gap-4 pb-4 border-b border-slate-100">
-                    <dt className="text-xs font-black uppercase tracking-widest text-slate-500 w-32 shrink-0 pt-1">Emitido</dt>
+                    <dt className="text-xs font-bold text-slate-500 w-32 shrink-0 pt-1">Emitido</dt>
                     <dd className="text-base text-slate-700">
                       {new Date(doc.fecha_emision).toLocaleDateString('es-PE', {
                         weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
@@ -147,7 +147,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
 
                   {doc.especialista && (
                     <div className="flex items-start gap-4">
-                      <dt className="text-xs font-black uppercase tracking-widest text-slate-500 w-32 shrink-0 pt-1">Responsable</dt>
+                      <dt className="text-xs font-bold text-slate-500 w-32 shrink-0 pt-1">Responsable</dt>
                       <dd className="text-base text-slate-700">
                         <span className="font-bold text-slate-900">{doc.especialista}</span>
                         <p className="text-xs text-slate-500 italic mt-0.5">Centro de Neuropsicología y Terapias SANTI</p>
@@ -172,9 +172,9 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
         <div className="text-center mt-8 text-xs text-slate-500 space-y-1">
           <p className="font-bold">Neuropsicología y Terapias SANTI · Centro Especializado en Neurodesarrollo</p>
           <p>
-            <a href="https://wa.me/51991070734" className="hover:text-blue-700">📞 +51 991 070 734</a>
+            <a href="https://wa.me/51991070734" className="hover:text-sky-700">📞 +51 991 070 734</a>
             <span className="mx-2">·</span>
-            <Link href="/" className="hover:text-blue-700">santiterapias.com</Link>
+            <Link href="/" className="hover:text-sky-700">santiterapias.com</Link>
           </p>
           <p className="text-slate-400 italic mt-3">
             Sistema de verificación oficial · Consultado el {new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}

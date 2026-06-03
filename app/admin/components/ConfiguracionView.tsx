@@ -62,8 +62,8 @@ function Input({ className = '', ...props }: React.InputHTMLAttributes<HTMLInput
       {...props}
       className={`w-full px-4 py-3 rounded-xl text-sm font-medium outline-none transition-all border-2 ${
         isDark
-          ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder-slate-600 focus:border-blue-500'
-          : 'bg-slate-50 border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-400 focus:bg-white shadow-sm'
+          ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder-slate-600 focus:border-sky-500'
+          : 'bg-slate-50 border-transparent text-slate-800 placeholder-slate-400 focus:border-sky-400 focus:bg-white shadow-sm'
       } ${className}`}
     />
   )
@@ -126,7 +126,7 @@ function SeccionPerfil({ onAvatarUpdate }: { onAvatarUpdate?: (url: string) => v
 
   if (loading) return (
     <div className="flex items-center justify-center py-12">
-      <Loader2 size={24} className="animate-spin text-blue-600" />
+      <Loader2 size={24} className="animate-spin text-sky-600" />
     </div>
   )
 
@@ -135,13 +135,13 @@ function SeccionPerfil({ onAvatarUpdate }: { onAvatarUpdate?: (url: string) => v
       <SectionTitle label="Mi Perfil" />
 
       {/* Avatar & nombre */}
-      <Card title="Foto y Nombre" subtitle="Tu identidad en el sistema" icon={User} iconColor="bg-gradient-to-br from-blue-500 to-sky-600">
+      <Card title="Foto y Nombre" subtitle="Tu identidad en el sistema" icon={User} iconColor="bg-gradient-to-br from-sky-500 to-sky-600">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 text-center sm:text-left">
           <div className="relative group cursor-pointer" onClick={() => fileRef.current?.click()}>
             {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover ring-4 ring-blue-100" />
+              <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover ring-4 ring-sky-100" />
             ) : (
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center ring-4 ring-blue-100">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center ring-4 ring-sky-100">
                 <span className="text-2xl font-bold text-white">{initial}</span>
               </div>
             )}
@@ -186,7 +186,7 @@ function SeccionPerfil({ onAvatarUpdate }: { onAvatarUpdate?: (url: string) => v
             <p className={`font-bold text-lg ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{form.full_name || 'Sin nombre'}</p>
             <p className={`text-sm mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{form.email}</p>
             {form.role && (
-              <span className={`inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full ${isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700'}`}>
+              <span className={`inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full ${isDark ? 'bg-sky-900/30 text-sky-300' : 'bg-sky-50 text-sky-700'}`}>
                 {ROLE_LABEL[form.role] || form.role}
               </span>
             )}
@@ -227,7 +227,7 @@ function SeccionPerfil({ onAvatarUpdate }: { onAvatarUpdate?: (url: string) => v
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm active:scale-[0.98]"
+        className="w-full py-4 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-sky-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm active:scale-[0.98]"
       >
         {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {saving ? 'Guardando…' : 'Guardar cambios'}
@@ -392,7 +392,7 @@ function SeccionApariencia() {
     <div className="space-y-4">
       <SectionTitle label="Apariencia" />
 
-      <Card title="Tema de la Interfaz" subtitle="Personaliza cómo se ve el panel" icon={Palette} iconColor="bg-gradient-to-br from-sky-500 to-blue-600">
+      <Card title="Tema de la Interfaz" subtitle="Personaliza cómo se ve el panel" icon={Palette} iconColor="bg-gradient-to-br from-sky-500 to-sky-600">
         <div className="grid grid-cols-2 gap-3">
           {[
             { id: 'light', label: 'Claro', emoji: '☀️', desc: 'Fondo blanco y colores vivos' },
@@ -403,13 +403,13 @@ function SeccionApariencia() {
               <button key={t.id}
                 onClick={() => { if (!isActive) toggleTheme() }}
                 className={`relative p-5 rounded-2xl border-2 text-left transition-all hover:-translate-y-0.5 ${isActive
-                  ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100'
+                  ? 'border-sky-500 bg-sky-50 shadow-md shadow-sky-100'
                   : isDark ? 'border-[#30363d] hover:border-[#4a5568]' : 'border-slate-200 hover:border-slate-300 bg-white'}`}>
                 <span className="text-3xl block mb-3">{t.emoji}</span>
-                <p className={`font-bold text-sm ${isActive ? 'text-blue-700' : isDark ? 'text-slate-300' : 'text-slate-700'}`}>{t.label}</p>
+                <p className={`font-bold text-sm ${isActive ? 'text-sky-700' : isDark ? 'text-slate-300' : 'text-slate-700'}`}>{t.label}</p>
                 <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t.desc}</p>
                 {isActive && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-sky-600 flex items-center justify-center">
                     <CheckCircle size={11} className="text-white" />
                   </div>
                 )}
@@ -445,7 +445,7 @@ function SeccionCuenta() {
 
   const ROLE_INFO: Record<string, { label: string; color: string; perms: string[] }> = {
     jefe:        { label: '👑 Jefe / Owner',   color: isDark ? 'bg-yellow-900/20 text-yellow-300 border-yellow-800/40' : 'bg-yellow-50 text-yellow-800 border-yellow-200', perms: ['Todo el sistema', 'Usuarios', 'Configuración', 'Tienda', 'Agenda'] },
-    admin:       { label: '🛡️ Administrador', color: isDark ? 'bg-blue-900/20 text-blue-300 border-blue-800/40'       : 'bg-blue-50 text-blue-800 border-blue-200',         perms: ['Pacientes', 'Agenda', 'Recursos', 'Reportes', 'Análisis Predictivo'] },
+    admin:       { label: '🛡️ Administrador', color: isDark ? 'bg-sky-900/20 text-sky-300 border-sky-800/40'       : 'bg-sky-50 text-sky-800 border-sky-200',         perms: ['Pacientes', 'Agenda', 'Recursos', 'Reportes', 'Análisis Predictivo'] },
     especialista:{ label: '🩺 Especialista',   color: isDark ? 'bg-sky-900/20 text-sky-300 border-sky-800/40': 'bg-sky-50 text-sky-800 border-sky-200',   perms: ['Pacientes asignados', 'Evaluaciones', 'Análisis Predictivo', 'Recursos'] },
     terapeuta:   { label: '💚 Terapeuta',       color: isDark ? 'bg-green-900/20 text-green-300 border-green-800/40'  : 'bg-green-50 text-green-800 border-green-200',       perms: ['Pacientes asignados', 'Evaluaciones', 'Recursos'] },
   }

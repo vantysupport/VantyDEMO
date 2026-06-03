@@ -24,15 +24,14 @@ const STATUS_COLORS: Record<string, string> = {
 function KPI({ label, value, sub, icon: Icon, bar }: any) {
   return (
     <div className="rounded-xl p-5 relative overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-      <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
-      <div className="flex items-start justify-between pl-3 mb-2">
+      <div className="flex items-start justify-between mb-2">
         <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${bar}15` }}>
           <Icon size={14} style={{ color: bar }} />
         </div>
       </div>
-      <p className="text-4xl font-bold leading-none pl-3 mb-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
-      <p className="text-xs pl-3" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+      <p className="text-4xl font-bold leading-none mb-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
+      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub}</p>
     </div>
   )
 }
@@ -123,7 +122,7 @@ export default function SecretariaReportes() {
 
       {/* Header */}
       <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #3a68a0, #10b981, #f59e0b)' }} />
+        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #0284c7, #10b981, #f59e0b)' }} />
         <div className="px-5 py-4 flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Reportes de Asistencia</h2>
@@ -153,7 +152,7 @@ export default function SecretariaReportes() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KPI label="Total citas"   value={loading ? '—' : stats.total}          sub="Este período"      icon={Calendar}     bar="#3a68a0" />
+        <KPI label="Total citas"   value={loading ? '—' : stats.total}          sub="Este período"      icon={Calendar}     bar="#0284c7" />
         <KPI label="Completadas"   value={loading ? '—' : stats.completed}      sub="Sesiones realizadas" icon={CheckCircle2} bar="#10b981" />
         <KPI label="Canceladas"    value={loading ? '—' : stats.cancelled}      sub="No realizadas"    icon={XCircle}      bar="#ef4444" />
         <KPI label="% Asistencia"  value={loading ? '—' : `${stats.tasaAsistencia}%`} sub="Tasa efectividad" icon={TrendingUp}   bar="#f59e0b" />
@@ -178,7 +177,7 @@ export default function SecretariaReportes() {
                   <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={20} allowDecimals={false} />
                   <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--card-border)', borderRadius: 12, fontSize: 12 }}
                     labelStyle={{ color: 'var(--text-primary)', fontWeight: 700 }} cursor={{ fill: 'var(--muted-bg)' }} />
-                  <Bar dataKey="citas" name="Citas" fill="#3a68a0" radius={[4,4,0,0]} />
+                  <Bar dataKey="citas" name="Citas" fill="#0284c7" radius={[4,4,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -232,14 +231,14 @@ export default function SecretariaReportes() {
                 return (
                   <div key={t.name} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
-                      style={{ background: '#3a68a0' }}>{t.name.charAt(0)}</div>
+                      style={{ background: '#0284c7' }}>{t.name.charAt(0)}</div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{t.name}</span>
                         <span className="text-xs font-bold ml-2" style={{ color: 'var(--text-muted)' }}>{t.count}</span>
                       </div>
                       <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
-                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#3a68a0' }} />
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#0284c7' }} />
                       </div>
                     </div>
                   </div>

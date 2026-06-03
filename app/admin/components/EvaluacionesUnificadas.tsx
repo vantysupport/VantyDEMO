@@ -29,7 +29,7 @@ const CAT_ICON: Record<string, any> = {
 }
 const CAT_ACCENT: Record<string, string> = {
   all: '#64748b', conductual: '#0284c7', familia: '#06b6d4', clinico: '#0369a1',
-  tea: '#0ea5e9', tdah: '#2563eb', habilidades: '#10b981', cognitivo: '#0891b2', sensorial: '#0d9488',
+  tea: '#0ea5e9', tdah: '#0284c7', habilidades: '#10b981', cognitivo: '#0891b2', sensorial: '#0d9488',
 }
 const formIcon = (f: any) => CAT_ICON[f?.category] || FileText
 const formAccent = (f: any) => CAT_ACCENT[f?.category] || '#0284c7'
@@ -51,7 +51,7 @@ const UNIFIED_CATEGORIES = [
   { id: 'familia',    label: 'Familia / Hogar',       icon: '🏠', color: 'bg-pink-50 text-pink-700 border-pink-200' },
   { id: 'clinico',    label: 'Historia Clínica',      icon: '📋', color: 'bg-slate-50 text-slate-700 border-slate-200' },
   { id: 'tea',        label: 'TEA / Diagnóstico',     icon: '🧩', color: 'bg-sky-50 text-sky-700 border-sky-200' },
-  { id: 'tdah',       label: 'TDAH',                  icon: '⚡', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { id: 'tdah',       label: 'TDAH',                  icon: '⚡', color: 'bg-sky-50 text-sky-700 border-sky-200' },
   { id: 'habilidades',label: 'Conducta Adaptativa',   icon: '🌟', color: 'bg-green-50 text-green-700 border-green-200' },
   { id: 'cognitivo',  label: 'Cognitivo / CI',        icon: '🧠', color: 'bg-sky-50 text-sky-700 border-sky-200' },
   { id: 'sensorial',  label: 'Sensorial',             icon: '🌀', color: 'bg-teal-50 text-teal-700 border-teal-200' },
@@ -103,7 +103,7 @@ const CLINICAL_FORMS = [
   {
     id: 'wiscv', title: 'WISC-V', subtitle: 'Registro de inteligencia (6-16 años)',
     category: 'cognitivo', icon: '📊', tags: ['CI', 'Inteligencia', 'WISC'],
-    color: 'from-blue-600 to-cyan-600', estimatedMinutes: 10, targetRole: 'admin',
+    color: 'from-sky-600 to-cyan-600', estimatedMinutes: 10, targetRole: 'admin',
     description: '⚠️ Corre en plataforma oficial WISC-V. Aquí solo registrá IQ y percentiles.',
     formKey: 'wiscv', area: 'Resultados', externalPlatform: true
   },
@@ -509,24 +509,24 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
 
           {/* Sección 2: Actividad para casa */}
           {(analysis.actividades_casa || analysis.actividad_casa || editableActividades !== undefined) && (
-            <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-5 border-2 border-blue-200">
+            <div className="bg-gradient-to-br from-sky-50 to-sky-50 rounded-2xl p-5 border-2 border-sky-200">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+                <div className="w-7 h-7 bg-sky-500 rounded-lg flex items-center justify-center">
                   <span className="text-white text-xs font-bold">🏠</span>
                 </div>
-                <h4 className="font-bold text-blue-800">{t('ui.home_activity')}</h4>
-                <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full border border-blue-300">✏️ Editable</span>
+                <h4 className="font-bold text-sky-800">{t('ui.home_activity')}</h4>
+                <span className="ml-auto px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full border border-sky-300">✏️ Editable</span>
               </div>
               {onEditActividades ? (
                 <textarea
                   rows={5}
                   value={editableActividades !== undefined ? editableActividades : (analysis.actividades_casa || analysis.actividad_casa || '')}
                   onChange={e => onEditActividades(e.target.value)}
-                  className="w-full p-3 /80 border-2 border-blue-200 rounded-xl text-blue-800 text-sm leading-relaxed resize-none outline-none focus:border-blue-400 transition-all font-medium" style={{ background: "var(--card)" }}
+                  className="w-full p-3 /80 border-2 border-sky-200 rounded-xl text-sky-800 text-sm leading-relaxed resize-none outline-none focus:border-sky-400 transition-all font-medium" style={{ background: "var(--card)" }}
                   {...{placeholder: t('ui.home_activity_desc')}}
                 />
               ) : (
-                <p className="text-blue-700 text-sm leading-relaxed italic whitespace-pre-wrap">{editableActividades || analysis.actividades_casa || analysis.actividad_casa}</p>
+                <p className="text-sky-700 text-sm leading-relaxed italic whitespace-pre-wrap">{editableActividades || analysis.actividades_casa || analysis.actividad_casa}</p>
               )}
             </div>
           )}
@@ -662,7 +662,7 @@ function HistorialFormCard({ sf, onReportGenerated }: { sf: any; onReportGenerat
           <button
             onClick={handleGenerateReport}
             disabled={generating}
-            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
             {generating ? (
               <><Loader2 size={12} className="animate-spin" /> {t('common.generando')}</>
@@ -1051,7 +1051,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
           <button
             onClick={handleGenerateAndDownload}
             disabled={isGeneratingReport}
-            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-2xl font-bold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white rounded-2xl font-bold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
             {isGeneratingReport ? (
               <><Loader2 size={18} className="animate-spin" /> Generando reporte...</>

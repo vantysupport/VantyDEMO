@@ -92,7 +92,7 @@ function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
             onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all
               ${tab === t.id
-                ? 'bg-blue-600 text-white shadow-md'
+                ? 'bg-sky-600 text-white shadow-md'
                 : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'
               }`}
           >
@@ -417,7 +417,7 @@ export default function AdminDashboard() {
             {currentView === 'reportes' && selectedChildReport && (
               <button
                 onClick={() => setShowAnalytics(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg font-bold text-xs shadow hover:shadow-md transition-all"
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-lg font-bold text-xs shadow hover:shadow-md transition-all"
               >
                 <BarChart3 size={14} /> Analytics
               </button>
@@ -429,7 +429,7 @@ export default function AdminDashboard() {
               title="Pantalla completa (ocultar paneles)"
               className={`hidden md:flex p-2 rounded-lg transition-colors
                 ${focusMode
-                  ? (isDark ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-600')
+                  ? (isDark ? 'bg-sky-900/30 text-sky-400' : 'bg-sky-50 text-sky-600')
                   : (isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500')
                 }`}
             >
@@ -495,8 +495,8 @@ export default function AdminDashboard() {
                         </p>
                         {notifications.map(n => (
                           <div key={n.id} className={`flex items-start gap-3 p-3 rounded-xl
-                            ${isDark ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                            ${isDark ? 'bg-sky-900/20' : 'bg-sky-50'}`}>
+                            <div className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 flex-shrink-0" />
                             <p className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                               {n.detalle}
                             </p>

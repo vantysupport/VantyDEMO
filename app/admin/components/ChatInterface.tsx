@@ -243,14 +243,14 @@ function MessageBubble({ m, onNavigateToStore }: { m: any; onNavigateToStore?: (
         {/* Burbuja principal */}
         <div className={`rounded-3xl rounded-tl-lg px-5 py-4 shadow-sm text-sm font-medium leading-relaxed text-slate-700 dark:text-slate-100
           ${m.type === 'emotional'
-            ? 'border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/40 dark:to-sky-900/40 dark:border-blue-700'
+            ? 'border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-sky-50 dark:from-sky-900/40 dark:to-sky-900/40 dark:border-sky-700'
             : 'bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600'
           }`}
           style={{ boxShadow: '0 2px 16px rgba(0,0,0,.06)' }}>
           {m.type === 'emotional' && (
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-blue-100">
-              <Heart size={13} className="text-blue-500 fill-blue-500" />
-              <span className="text-xs font-bold text-blue-500">{t('ui.from_therapist')}</span>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-sky-100">
+              <Heart size={13} className="text-sky-500 fill-sky-500" />
+              <span className="text-xs font-bold text-sky-500">{t('ui.from_therapist')}</span>
             </div>
           )}
           <p className="whitespace-pre-wrap">{m.text}</p>

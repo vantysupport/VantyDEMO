@@ -546,7 +546,7 @@ export default function UserManagementView() {
               <Icon size={13} />
               {tab.label}
               <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                style={{ background: isActive ? '#2563eb' : 'var(--muted-bg)', color: isActive ? '#fff' : 'var(--text-muted)' }}>
+                style={{ background: isActive ? '#0284c7' : 'var(--muted-bg)', color: isActive ? '#fff' : 'var(--text-muted)' }}>
                 {tab.count}
               </span>
             </button>

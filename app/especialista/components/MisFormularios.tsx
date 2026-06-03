@@ -671,7 +671,7 @@ export default function MisFormularios({ userId }: { userId: string }) {
                 className="rounded-xl overflow-hidden transition-all hover:shadow-md group bg-white"
                 style={{ border: '1px solid #e2e8f0' }}>
                 {/* Top accent bar */}
-                <div className="h-0.5" style={{ background: `linear-gradient(90deg, ${isExternal ? '#b07830' : isPro ? '#7a4a4a' : '#4a6eaa'}, transparent)` }} />
+                <div className="h-0.5" style={{ background: `linear-gradient(90deg, ${isExternal ? '#f59e0b' : isPro ? '#7a4a4a' : '#4a6eaa'}, transparent)` }} />
                 <div className="p-4">
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-2 mb-3">
@@ -693,7 +693,7 @@ export default function MisFormularios({ userId }: { userId: string }) {
                       )}
                       {isExternal && (
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                          style={{ background: 'rgba(176,120,48,0.1)', color: '#b07830', border: '1px solid rgba(176,120,48,0.2)' }}>
+                          style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }}>
                           Ext.
                         </span>
                       )}

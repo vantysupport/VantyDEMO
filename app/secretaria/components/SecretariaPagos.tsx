@@ -939,7 +939,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                 <button onClick={() => setExpanded(s => { const n = new Set(s); n.has(g.key) ? n.delete(g.key) : n.add(g.key); return n })}
                   className="w-full flex items-center justify-between px-5 py-4 text-left hover:opacity-80 transition-opacity">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: '#3a68a0' }}>{g.child.charAt(0).toUpperCase()}</div>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: '#0284c7' }}>{g.child.charAt(0).toUpperCase()}</div>
                     <div>
                       <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{g.child}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
@@ -1073,7 +1073,6 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {rates.map((r, i) => (
                 <div key={r.id} className="rounded-2xl p-5 group relative" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-                  <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ background: COLORS[i % COLORS.length] }} />
                   <div className="flex items-start justify-between pl-2 mb-3">
                     <p className="text-sm font-bold leading-tight flex-1 pr-2" style={{ color: 'var(--text-primary)' }}>{r.name}</p>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">

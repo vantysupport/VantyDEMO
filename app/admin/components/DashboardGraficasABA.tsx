@@ -9,7 +9,7 @@ import {
 import {
   TrendingUp, TrendingDown, Minus, BarChart3, Loader2,
   Users, CheckCircle2, AlertTriangle, ChevronDown, ChevronUp,
-  Search, Plus, Activity, MessageCircle, Target, Brain, Star, BookOpen, Hand, Pin
+  Search, Plus, Activity, MessageCircle, Target, Brain, Star, BookOpen, Hand, Pin, Trophy
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -19,7 +19,7 @@ const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; Ic
   cognitivo:    { color: 'text-cyan-700',  bg: 'bg-cyan-50 border-cyan-200', label: 'Cognitivo',    Icon: Brain },
   social:       { color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200',label: 'Social',      Icon: Users },
   autonomia:    { color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200',   label: 'Autonomía',    Icon: Star },
-  academico:    { color: 'text-blue-700',  bg: 'bg-blue-50 border-blue-200', label: 'Académico',    Icon: BookOpen },
+  academico:    { color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200', label: 'Académico',    Icon: BookOpen },
   sensorial:    { color: 'text-pink-700',    bg: 'bg-pink-50 border-pink-200',     label: 'Sensorial',    Icon: Hand },
 }
 
@@ -72,8 +72,8 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
           {faseLabel[programa.fase_actual] || programa.fase_actual}
         </span>
         {logroABA && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-100 border-emerald-300 text-emerald-700 flex items-center gap-1">
-            🏆 LOGRO ABA
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-100 border-emerald-300 text-emerald-700 inline-flex items-center gap-1">
+            <Trophy size={11} /> LOGRO ABA
           </span>
         )}
         {ultimoPct !== null && (
@@ -214,7 +214,7 @@ export default function DashboardGraficasABA({ onIrAPacientes }: { onIrAPaciente
         {[
           { label: t('nav.pacientes'), value: pacientes.length, icon: Users, color: 'text-sky-600', bg: 'bg-sky-50' },
           { label: 'Programas', value: totalProgramas, icon: Activity, color: 'text-sky-600', bg: 'bg-sky-50' },
-          { label: 'Sesiones', value: totalSesiones, icon: BarChart3, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Sesiones', value: totalSesiones, icon: BarChart3, color: 'text-sky-600', bg: 'bg-sky-50' },
           { label: 'Dominados', value: totalDominados, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-3">

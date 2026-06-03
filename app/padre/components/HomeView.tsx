@@ -421,7 +421,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
     cognitivo:    { Icon: Brain,         color: '#0891b2' },
     social:       { Icon: Users,         color: '#059669' },
     autonomia:    { Icon: Sparkles,      color: '#d97706' },
-    academico:    { Icon: BookOpen,      color: '#2563eb' },
+    academico:    { Icon: BookOpen,      color: '#0284c7' },
     sensorial:    { Icon: Hand,          color: '#db2777' },
     imitacion:    { Icon: Activity,      color: '#0ea5e9' },
     default:      { Icon: Lightbulb,     color: '#0284c7' },

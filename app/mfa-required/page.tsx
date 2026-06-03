@@ -92,7 +92,7 @@ export default function MFARequiredPage() {
             <Shield size={26} className="text-indigo-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Autenticación de 2 factores</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Autenticación de 2 factores</h1>
             <p className="text-xs text-slate-500">Requerido para tu rol ({profile?.role || '…'})</p>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function MFARequiredPage() {
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 size={32} className="text-emerald-600" />
             </div>
-            <h2 className="text-xl font-black text-slate-900 mb-2">2FA activado</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">2FA activado</h2>
             <p className="text-sm text-slate-600">Redirigiendo a tu panel…</p>
           </div>
         )}

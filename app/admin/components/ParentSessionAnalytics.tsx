@@ -123,7 +123,6 @@ export default function ParentSessionAnalytics() {
         ].map(stat => (
           <div key={stat.label} className="rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-            <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ background: stat.color }} />
             <div className="flex items-center gap-1.5 mb-1 pl-1" style={{ color: stat.color }}>
               {stat.icon}
             </div>

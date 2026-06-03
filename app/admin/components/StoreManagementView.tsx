@@ -241,7 +241,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
         <div className={`sticky bottom-0 px-7 py-5 border-t flex gap-3 ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white/95 backdrop-blur-sm border-slate-100'}`}>
           <button onClick={onClose} className={`flex-1 py-3.5 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-[#21262d] text-slate-300 hover:bg-[#30363d]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>Cancelar</button>
           <button onClick={handleSave} disabled={saving}
-            className="flex-1 py-3.5 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-sky-200">
+            className="flex-1 py-3.5 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-sky-200">
             {saving ? <Loader2 size={16} className="animate-spin"/> : <Save size={16}/>}
             {saving ? 'Guardando…' : product ? 'Guardar cambios' : 'Crear producto'}
           </button>
@@ -490,7 +490,7 @@ export default function StoreManagementView() {
                 <p className={`text-sm mt-1.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Crea el primer artículo de la tienda</p>
               </div>
               <button onClick={() => { setEditProduct(null); setShowModal(true) }}
-                className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-200 transition-all hover:-translate-y-0.5 active:scale-95">
+                className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-200 transition-all hover:-translate-y-0.5 active:scale-95">
                 <Plus size={16}/> Crear primer producto
               </button>
             </div>

@@ -288,9 +288,9 @@ export default function DiagnosticoBuscador({ onAsignar, showAsignar = false }: 
 
               {/* Nota de codificación */}
               {selected.codingNote && (
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                  <p className="text-[10px] font-bold text-blue-600 mb-1">📋 Nota de codificación</p>
-                  <p className="text-xs leading-relaxed text-blue-800">{selected.codingNote}</p>
+                <div className="p-3 rounded-xl bg-sky-50 border border-sky-100">
+                  <p className="text-[10px] font-bold text-sky-600 mb-1">📋 Nota de codificación</p>
+                  <p className="text-xs leading-relaxed text-sky-800">{selected.codingNote}</p>
                 </div>
               )}
 

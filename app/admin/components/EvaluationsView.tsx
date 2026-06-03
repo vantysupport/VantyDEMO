@@ -374,11 +374,11 @@ function DynamicEvaluationsView() {
             {/* Card Anamnesis */}
             <button 
               onClick={() => setActiveForm('anamnesis')} 
-              className="group relative bg-white rounded-3xl md:rounded-[2.5rem] border-2 border-slate-100 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 p-8 md:p-12 flex flex-col items-center justify-center text-center h-[320px] md:h-[420px] overflow-hidden"
+              className="group relative bg-white rounded-3xl md:rounded-[2.5rem] border-2 border-slate-100 hover:border-sky-400 hover:shadow-2xl transition-all duration-300 p-8 md:p-12 flex flex-col items-center justify-center text-center h-[320px] md:h-[420px] overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10 flex flex-col items-center">
-                <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl md:rounded-[2.5rem] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-blue-200">
+                <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-3xl md:rounded-[2.5rem] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-sky-200">
                    <FileText size={40} className="md:w-16 md:h-16" strokeWidth={2.5}/>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3 md:mb-4 tracking-tight">{t('ui.anamnesis')}</h3>
@@ -452,7 +452,7 @@ function DynamicEvaluationsView() {
                      {currentStep + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                      <p className="text-blue-300 text-[9px] md:text-[10px] font-bold truncate mb-1">
+                      <p className="text-sky-300 text-[9px] md:text-[10px] font-bold truncate mb-1">
                         EVALUACIÓN EN CURSO
                       </p>
                       <h2 className="text-base md:text-xl lg:text-2xl font-bold truncate leading-tight">
@@ -471,7 +471,7 @@ function DynamicEvaluationsView() {
             <div className="relative">
               <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-blue-400 to-blue-500 h-full rounded-full transition-all duration-500 shadow-lg shadow-blue-400/50"
+                  className="bg-gradient-to-r from-sky-400 to-sky-500 h-full rounded-full transition-all duration-500 shadow-lg shadow-sky-400/50"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
@@ -505,7 +505,7 @@ function DynamicEvaluationsView() {
                      Seleccionar Paciente
                    </label>
                    <select 
-                     className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl font-bold text-base md:text-lg text-slate-700 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all" 
+                     className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl font-bold text-base md:text-lg text-slate-700 outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all" 
                      value={selectedChild} 
                      onChange={(e) => setSelectedChild(e.target.value)}
                    >
@@ -523,7 +523,7 @@ function DynamicEvaluationsView() {
                            {q.label}
                            {q.required && <span className="text-red-500">*</span>}
                            {q.aiGenerated && (
-                             <span className="text-xs bg-gradient-to-r from-blue-500 to-sky-500 text-white px-2 py-0.5 rounded-full font-bold">IA</span>
+                             <span className="text-xs bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-2 py-0.5 rounded-full font-bold">IA</span>
                            )}
                          </label>
                      </div>
@@ -532,7 +532,7 @@ function DynamicEvaluationsView() {
                      {q.type === 'date' && (
                        <input 
                          type="date" 
-                         className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all font-medium" 
+                         className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-medium" 
                          value={respuestas[q.id] || ''}
                          onChange={(e) => handleInputChange(q.id, e.target.value)} 
                        />
@@ -545,7 +545,7 @@ function DynamicEvaluationsView() {
                          min={q.min}
                          max={q.max}
                          placeholder={q.placeholder}
-                         className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all font-medium" 
+                         className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-medium" 
                          value={respuestas[q.id] || ''}
                          onChange={(e) => handleInputChange(q.id, e.target.value)} 
                        />
@@ -554,7 +554,7 @@ function DynamicEvaluationsView() {
                      {/* Campo Text */}
                      {q.type === 'text' && (
                        <input 
-                         className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all font-medium" 
+                         className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-medium" 
                          placeholder={q.placeholder} 
                          value={respuestas[q.id] || ''}
                          onChange={(e) => handleInputChange(q.id, e.target.value)} 
@@ -564,7 +564,7 @@ function DynamicEvaluationsView() {
                      {/* Campo Textarea */}
                      {q.type === 'textarea' && (
                        <textarea 
-                           className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all font-medium min-h-[120px] md:min-h-[140px] resize-none leading-relaxed" 
+                           className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 transition-all font-medium min-h-[120px] md:min-h-[140px] resize-none leading-relaxed" 
                            placeholder={q.placeholder} 
                            value={respuestas[q.id] || ''} 
                            onChange={(e) => handleInputChange(q.id, e.target.value)}
@@ -575,7 +575,7 @@ function DynamicEvaluationsView() {
                      {q.type === 'select' && (
                        <div className="relative">
                            <select 
-                             className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 appearance-none cursor-pointer font-medium pr-12" 
+                             className="w-full p-4 md:p-5 bg-white border-2 border-slate-200 rounded-xl md:rounded-2xl text-sm md:text-base outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 appearance-none cursor-pointer font-medium pr-12" 
                              value={respuestas[q.id] || ''}
                              onChange={(e) => handleInputChange(q.id, e.target.value)}
                            >
@@ -594,7 +594,7 @@ function DynamicEvaluationsView() {
                              {q.labels?.[0] || 'Mínimo'}
                            </span>
                            <div className="flex items-center gap-2">
-                             <span className="text-3xl font-bold text-blue-600">
+                             <span className="text-3xl font-bold text-sky-600">
                                {respuestas[q.id] || q.min || 1}
                              </span>
                              <span className="text-sm text-slate-400">/ {q.max || 5}</span>
@@ -610,10 +610,10 @@ function DynamicEvaluationsView() {
                            step="1"
                            value={respuestas[q.id] || q.min || 1}
                            onChange={(e) => handleInputChange(q.id, parseInt(e.target.value))}
-                           className="w-full h-3 bg-slate-200 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer hover:[&::-webkit-slider-thumb]:bg-blue-700"
+                           className="w-full h-3 bg-slate-200 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-600 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer hover:[&::-webkit-slider-thumb]:bg-sky-700"
                          />
                          {q.labels && (
-                           <p className="text-xs text-center font-bold text-slate-600 bg-blue-50 px-3 py-2 rounded-lg">
+                           <p className="text-xs text-center font-bold text-slate-600 bg-sky-50 px-3 py-2 rounded-lg">
                              {q.labels[respuestas[q.id] - 1] || q.labels[0]}
                            </p>
                          )}
@@ -629,8 +629,8 @@ function DynamicEvaluationsView() {
                                key={opt}
                                className={`px-4 py-2 rounded-xl border-2 cursor-pointer transition-all text-sm font-bold ${
                                  (respuestas[q.id] || []).includes(opt)
-                                   ? 'bg-blue-600 border-blue-600 text-white shadow-lg'
-                                   : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'
+                                   ? 'bg-sky-600 border-sky-600 text-white shadow-lg'
+                                   : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300 hover:bg-sky-50'
                                }`}
                              >
                                <input 
@@ -659,8 +659,8 @@ function DynamicEvaluationsView() {
                                  key={opt} 
                                  className={`flex items-center gap-2 px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl border-2 cursor-pointer transition-all text-sm md:text-base font-bold ${
                                      respuestas[q.id] === opt 
-                                     ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' 
-                                     : 'bg-white border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                                     ? 'bg-sky-600 border-sky-600 text-white shadow-lg shadow-sky-200' 
+                                     : 'bg-white border-slate-200 hover:border-sky-300 hover:bg-sky-50'
                                  }`}
                                >
                                    <input 

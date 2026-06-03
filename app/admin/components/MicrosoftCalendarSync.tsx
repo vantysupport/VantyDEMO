@@ -90,7 +90,7 @@ export default function MicrosoftCalendarSync() {
           border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold
           dark:bg-[#21262d] dark:border-[#30363d] dark:text-slate-300 dark:hover:bg-[#30363d]"
       >
-        {connecting ? <Loader2 size={14} className="animate-spin text-blue-500" /> : <MSIcon />}
+        {connecting ? <Loader2 size={14} className="animate-spin text-sky-500" /> : <MSIcon />}
         {connecting ? 'Conectando...' : 'Conectar Outlook'}
       </button>
     )
@@ -103,9 +103,9 @@ export default function MicrosoftCalendarSync() {
         onClick={handleDisconnect}
         title="Click para desconectar"
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all
-          bg-blue-50 text-blue-700 border border-blue-200
+          bg-sky-50 text-sky-700 border border-sky-200
           hover:bg-red-50 hover:text-red-600 hover:border-red-200
-          dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800
+          dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800
           dark:hover:bg-red-900/30 dark:hover:text-red-400 dark:hover:border-red-800"
       >
         <MSIcon /> Outlook
@@ -116,8 +116,8 @@ export default function MicrosoftCalendarSync() {
         disabled={syncing}
         title="Sincronizar con Outlook"
         className="p-2 rounded-xl border transition-all disabled:opacity-50
-          border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50
-          dark:border-[#30363d] dark:text-slate-500 dark:hover:text-blue-400 dark:hover:border-blue-700 dark:hover:bg-blue-900/20"
+          border-slate-200 text-slate-400 hover:text-sky-600 hover:border-sky-300 hover:bg-sky-50
+          dark:border-[#30363d] dark:text-slate-500 dark:hover:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-900/20"
       >
         {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
       </button>

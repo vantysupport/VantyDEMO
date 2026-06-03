@@ -448,7 +448,7 @@ export default function AdminReportesFinancieros() {
                                 }}
                                 title={`Descargar reporte de ${MESES_L[i]}`}
                                 className="p-1.5 rounded-lg transition-all hover:opacity-70"
-                                style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6' }}>
+                                style={{ background: 'rgba(59,130,246,0.1)', color: '#0284c7' }}>
                                 <Download size={12} />
                               </button>
                             )}
