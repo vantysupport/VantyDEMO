@@ -27,7 +27,7 @@
   /* stat card backgrounds */
   --c-stat-blue: #eff6ff;
   --c-stat-green: #f0fdf4;
-  --c-stat-purple: #f5f3ff;
+  --c-stat-purple: #f0f9ff;
   --c-stat-amber: #fffbeb;
   /* shared component vars */
   --c-card: #ffffff;
@@ -61,7 +61,7 @@
   /* stat card backgrounds dark */
   --c-stat-blue: rgba(59,130,246,0.12);
   --c-stat-green: rgba(16,185,129,0.12);
-  --c-stat-purple: rgba(139,92,246,0.12);
+  --c-stat-purple: rgba(14,165,233,0.12);
   --c-stat-amber: rgba(245,158,11,0.12);
   /* shared component vars dark */
   --c-card: #161b22;

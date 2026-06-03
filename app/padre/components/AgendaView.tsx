@@ -14,7 +14,7 @@ const ST: Record<string,{label:string;dot:string;bg:string;text:string;border:st
   confirmed: { label:'Confirmada', dot:'#10b981', bg:'var(--c-stat-green)', text:'#15803d', border:'#bbf7d0', Icon:CheckCircle2 },
   pending:   { label:'Pendiente',  dot:'#f59e0b', bg:'var(--c-stat-amber)', text:'#b45309', border:'#fde68a', Icon:AlertCircle },
   cancelled: { label:'Cancelada',  dot:'#ef4444', bg:'#fef2f2', text:'#dc2626', border:'#fecaca', Icon:XCircle },
-  completed: { label:'Completada', dot:'#0284c7', bg:'var(--c-stat-purple)', text:'#4338ca', border:'#ddd6fe', Icon:CheckCircle2 },
+  completed: { label:'Completada', dot:'#0284c7', bg:'var(--c-stat-purple)', text:'#0369a1', border:'#bae6fd', Icon:CheckCircle2 },
 }
 const MONTHS_S = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']

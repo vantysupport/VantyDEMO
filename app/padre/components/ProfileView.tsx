@@ -232,10 +232,10 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
 
       {/* ── HERO CARD ── */}
       <div className="pv-card relative rounded-3xl overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#0369a1 100%)', minHeight: 180 }}>
+        style={{ background: 'linear-gradient(135deg,#0c2c47 0%,#0369a1 55%,#0ea5e9 100%)', minHeight: 180 }}>
         {/* Decorative circles */}
         <div style={{ position:'absolute',top:-40,right:-40,width:200,height:200,background:'rgba(255,255,255,.07)',borderRadius:'50%',pointerEvents:'none' }}/>
-        <div style={{ position:'absolute',bottom:-30,left:20,width:120,height:120,background:'rgba(99,102,241,.25)',borderRadius:'50%',pointerEvents:'none' }}/>
+        <div style={{ position:'absolute',bottom:-30,left:20,width:120,height:120,background:'rgba(14,165,233,.28)',borderRadius:'50%',pointerEvents:'none' }}/>
 
         <div className="relative z-10 px-6 pt-8 pb-6 flex items-end gap-5">
           {/* Avatar upload */}

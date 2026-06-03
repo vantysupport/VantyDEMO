@@ -29,7 +29,7 @@ const TYPE_CFG: Record<string,{ icon: any; color: string; bg: string; border: st
 const ESTADO_CFG: Record<string,any> = {
   pendiente:  { label:'Pendiente', Icon:Clock,     color:'#d97706', bg:'var(--c-stat-amber)', border:'#fde68a' },
   confirmado: { label:'Confirmado', Icon:CheckCircle, color:'#0284c7', bg:'var(--c-stat-blue)', border:'#bfdbfe' },
-  listo:      { label:'Listo para recoger', Icon:Package, color:'#0284c7', bg:'var(--c-stat-purple)', border:'#ddd6fe' },
+  listo:      { label:'Listo para recoger', Icon:Package, color:'#0284c7', bg:'var(--c-stat-purple)', border:'#bae6fd' },
   entregado:  { label:'Entregado', Icon:CheckCircle, color:'#059669', bg:'var(--c-stat-green)', border:'#bbf7d0' },
   cancelado:  { label:'Cancelado', Icon:XCir,     color:'#dc2626', bg:'#fef2f2', border:'#fecaca' },
 }

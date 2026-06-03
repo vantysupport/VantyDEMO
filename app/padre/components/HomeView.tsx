@@ -636,7 +636,7 @@ export default function HomeViewInnovative({ child, onChangeView, refreshTrigger
               )
             })() : (
               <div style={{ padding:'24px 18px', textAlign:'center' }}>
-                <div style={{ width:56, height:56, background:'var(--c-stat-purple)', borderRadius:16, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}><CalendarDays size={24} color="#a78bfa"/></div>
+                <div style={{ width:56, height:56, background:'var(--c-stat-purple)', borderRadius:16, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}><CalendarDays size={24} color="#0ea5e9"/></div>
                 <p style={{ fontWeight:800, fontSize:14, color:'var(--c-text-primary)', margin:'0 0 6px' }}>Sin citas programadas</p>
                 <p style={{ fontSize:12, color:'var(--c-text-placeholder)', lineHeight:1.6, margin:'0 auto 14px', maxWidth:260 }}>La constancia es clave. Contacta al centro para agendar la próxima cita.</p>
                 <button onClick={()=>onChangeView('miscitas')} className="hv-btn" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'linear-gradient(135deg,#0284c7,#0369a1)', color:'#ffffff', border:'none', padding:'9px 18px', borderRadius:12, fontSize:12, fontWeight:700, cursor:'pointer', boxShadow:'0 4px 14px rgba(2,132,199,.3)' }}><CalendarDays size={14}/>Ver mis citas</button>
