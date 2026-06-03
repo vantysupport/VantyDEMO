@@ -368,7 +368,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
     moderado: 'bg-amber-50 border-amber-200 text-amber-800',
     alto: 'bg-red-50 border-red-200 text-red-800',
   }
-  const alertIcons: Record<string, string> = { bajo: '✅', moderado: '⚠️', alto: '🚨' }
+  const alertIconCfg: Record<string, any> = { bajo: CheckCircle2, moderado: AlertTriangle, alto: AlertTriangle }
 
   // Normalizar todos los campos que pueden venir como string o array
   const areasFortaleza    = toArray(analysis.areas_fortaleza)
@@ -399,7 +399,7 @@ function AIAnalysisPanel({ analysis, editableMessage, onEditMessage, editableAct
       {/* Alert level */}
       {analysis.nivel_alerta && (
         <div className={`px-4 py-3 rounded-xl border-2 font-bold text-sm flex items-center gap-2 ${alertColors[analysis.nivel_alerta] || alertColors.bajo}`}>
-          <span className="text-lg">{alertIcons[analysis.nivel_alerta] || '✅'}</span>
+          {(() => { const AI = alertIconCfg[analysis.nivel_alerta] || CheckCircle2; return <AI size={18} /> })()}
           Nivel de alerta: <span className="uppercase">{analysis.nivel_alerta}</span>
         </div>
       )}
@@ -1517,8 +1517,8 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                     <p className="font-bold text-slate-800 text-sm truncate" style={{ color: "var(--text-primary)" }}>{sf.form_title}</p>
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${sf.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                      {sf.status === 'completed' ? `✅ ${t('evaluaciones.completado')}` : `⏳ ${t('evaluaciones.pendiente')}`}
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase inline-flex items-center gap-1 ${sf.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                      {sf.status === 'completed' ? <><CheckCircle2 size={10} /> {t('evaluaciones.completado')}</> : <><Clock size={10} /> {t('evaluaciones.pendiente')}</>}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400 font-medium">Para: {sf.profiles?.full_name || sf.profiles?.email}</p>

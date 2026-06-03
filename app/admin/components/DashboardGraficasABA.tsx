@@ -9,18 +9,18 @@ import {
 import {
   TrendingUp, TrendingDown, Minus, BarChart3, Loader2,
   Users, CheckCircle2, AlertTriangle, ChevronDown, ChevronUp,
-  Search, Plus, Activity
+  Search, Plus, Activity, MessageCircle, Target, Brain, Star, BookOpen, Hand, Pin
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string }> = {
-  comunicacion: { color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-200',     label: 'Comunicación', emoji: '💬' },
-  conducta:     { color: 'text-red-700',     bg: 'bg-red-50 border-red-200',       label: 'Conducta',     emoji: '🎯' },
-  cognitivo:    { color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200', label: 'Cognitivo',    emoji: '🧠' },
-  social:       { color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200',label: 'Social',      emoji: '👥' },
-  autonomia:    { color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200',   label: 'Autonomía',    emoji: '🌟' },
-  academico:    { color: 'text-sky-700',  bg: 'bg-sky-50 border-sky-200', label: 'Académico',    emoji: '📚' },
-  sensorial:    { color: 'text-pink-700',    bg: 'bg-pink-50 border-pink-200',     label: 'Sensorial',    emoji: '✋' },
+const AREA_CONFIG: Record<string, { color: string; bg: string; label: string; Icon: any }> = {
+  comunicacion: { color: 'text-sky-700',    bg: 'bg-sky-50 border-sky-200',     label: 'Comunicación', Icon: MessageCircle },
+  conducta:     { color: 'text-rose-700',     bg: 'bg-rose-50 border-rose-200',       label: 'Conducta',     Icon: Target },
+  cognitivo:    { color: 'text-cyan-700',  bg: 'bg-cyan-50 border-cyan-200', label: 'Cognitivo',    Icon: Brain },
+  social:       { color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200',label: 'Social',      Icon: Users },
+  autonomia:    { color: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200',   label: 'Autonomía',    Icon: Star },
+  academico:    { color: 'text-blue-700',  bg: 'bg-blue-50 border-blue-200', label: 'Académico',    Icon: BookOpen },
+  sensorial:    { color: 'text-pink-700',    bg: 'bg-pink-50 border-pink-200',     label: 'Sensorial',    Icon: Hand },
 }
 
 const FASE_COLORS: Record<string, string> = {
@@ -55,13 +55,13 @@ function ProgramaChart({ programa, expanded }: { programa: any; expanded: boolea
     data[data.length - 1].pct >= 90 &&
     data[data.length - 2].pct >= 90
 
-  const area = AREA_CONFIG[programa.area] || { color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200', label: programa.area, emoji: '📋' }
+  const area = AREA_CONFIG[programa.area] || { color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200', label: programa.area, Icon: Pin }
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 p-4">
       <div className="flex items-start gap-2 mb-2 flex-wrap">
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${area.bg} ${area.color}`}>
-          {area.emoji} {area.label}
+        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${area.bg} ${area.color}`}>
+          <area.Icon size={11} /> {area.label}
         </span>
         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
           programa.fase_actual === 'intervencion' ? 'bg-sky-50 border-sky-200 text-sky-700' :

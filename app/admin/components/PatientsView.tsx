@@ -9,7 +9,7 @@ import {
   ArrowLeft, Baby, BarChart3, Brain, Calendar, Check, ChevronRight,
   ClipboardList, Edit, Link, Link2Off, Loader2, Mail, Plus, Save,
   Search, Stethoscope, User, UserCheck, Users, X,
-  FolderOpen, FileText, Heart, Trash2, Settings
+  FolderOpen, FileText, Heart, Trash2, Settings, Smile, Meh, Frown
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
@@ -303,10 +303,10 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
 
 // ── Card de bienestar del padre ────────────────────────────────────────────
 // Muestra el último chequeo de bienestar y el historial (collapsable).
-const MOOD_CONFIG: Record<string, { emoji: string; label: string; bg: string; border: string; color: string }> = {
-  bien:    { emoji: '😊', label: 'Bien',    bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
-  regular: { emoji: '😐', label: 'Regular', bg: '#fffbeb', border: '#fde68a', color: '#b45309' },
-  dificil: { emoji: '😔', label: 'Difícil', bg: '#fef2f2', border: '#fecaca', color: '#b91c1c' },
+const MOOD_CONFIG: Record<string, { Icon: any; label: string; bg: string; border: string; color: string }> = {
+  bien:    { Icon: Smile, label: 'Bien',    bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
+  regular: { Icon: Meh,   label: 'Regular', bg: '#fffbeb', border: '#fde68a', color: '#b45309' },
+  dificil: { Icon: Frown, label: 'Difícil', bg: '#fef2f2', border: '#fecaca', color: '#b91c1c' },
 }
 
 function ParentWellbeingCard({ childId }: { childId: string }) {
@@ -386,7 +386,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
         className="rounded-lg p-3 flex items-start gap-3"
         style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
       >
-        <span style={{ fontSize: 28, lineHeight: 1 }}>{cfg.emoji}</span>
+        {(() => { const MI = cfg.Icon; return <MI size={26} style={{ color: cfg.color, flexShrink: 0 }} /> })()}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <p className="text-sm font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
@@ -412,7 +412,7 @@ function ParentWellbeingCard({ childId }: { childId: string }) {
                 className="flex items-start gap-2 rounded-lg p-2"
                 style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}
               >
-                <span style={{ fontSize: 16, lineHeight: 1 }}>{ccfg.emoji}</span>
+                {(() => { const MI = ccfg.Icon; return <MI size={15} style={{ color: ccfg.color, flexShrink: 0 }} /> })()}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <p className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>{ccfg.label}</p>

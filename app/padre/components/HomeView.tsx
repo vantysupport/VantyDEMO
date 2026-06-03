@@ -8,6 +8,7 @@ import {
   CalendarDays, Clock, CheckCircle, XCircle, RefreshCw,
   TrendingUp, Target, Activity, Award, ChevronRight,
   Sparkles, Baby, BarChart3, AlertCircle, Users, BookOpen, Lightbulb, Hand,
+  Smile, Meh, Frown,
   Heart, Trophy, PartyPopper, X,
   MessageCircle, Brain
 } from 'lucide-react'
@@ -67,7 +68,7 @@ function GoalCelebration({ childName, goalsAchieved, onClose }: { childName: str
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(10px)' }}>
       <div style={{ background: 'linear-gradient(135deg,#0284c7,#0369a1,#0ea5e9)', borderRadius: 32, padding: '48px 40px', textAlign: 'center', maxWidth: 400, width: '90%', boxShadow: '0 0 80px rgba(79,70,229,.6)', position: 'relative', overflow: 'hidden', animation: 'celebIn .5s cubic-bezier(.175,.885,.32,1.275)' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: 10, padding: '6px 10px', cursor: 'pointer', color: 'var(--c-card)', fontSize: 18 }}>×</button>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
+        <div style={{ width: 84, height: 84, margin: '0 auto 16px', borderRadius: 26, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><Trophy size={44} /></div>
         <h2 style={{ fontWeight: 900, fontSize: 30, color: 'var(--c-card)', marginBottom: 8 }}>¡Gran logro!</h2>
         <p style={{ color: 'rgba(255,255,255,.85)', fontSize: 16, lineHeight: 1.6, marginBottom: 24 }}>
           <strong style={{ color: '#fbbf24' }}>{childName}</strong> alcanzó <strong style={{ color: '#fbbf24' }}>{goalsAchieved} objetivo{goalsAchieved !== 1 ? 's' : ''}</strong> con dominio ≥80%.
@@ -108,10 +109,10 @@ function WellbeingSurvey({ childName, childId, parentId, onClose }: { childName:
   const [selectedMood, setSelectedMood] = useState<'bien' | 'regular' | 'dificil' | null>(null)
   const [nota, setNota] = useState('')
   const [saving, setSaving] = useState(false)
-  const options: { emoji: string; label: string; mood: 'bien'|'regular'|'dificil'; color: string; bg: string; border: string }[] = [
-    { emoji: '😊', label: 'Bien, con energía para seguir', mood: 'bien',    color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
-    { emoji: '😐', label: 'Regular, algo cansado/a',       mood: 'regular', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
-    { emoji: '😔', label: 'Difícil, necesito más apoyo',   mood: 'dificil', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
+  const options: { Icon: any; label: string; mood: 'bien'|'regular'|'dificil'; color: string; bg: string; border: string }[] = [
+    { Icon: Smile, label: 'Bien, con energía para seguir', mood: 'bien',    color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
+    { Icon: Meh,   label: 'Regular, algo cansado/a',       mood: 'regular', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+    { Icon: Frown, label: 'Difícil, necesito más apoyo',   mood: 'dificil', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
   ]
 
   const persistir = async (mood: 'bien'|'regular'|'dificil', notaTexto?: string) => {
@@ -178,7 +179,7 @@ function WellbeingSurvey({ childName, childId, parentId, onClose }: { childName:
                       opacity: saving && !isSelected ? 0.5 : 1,
                     }}
                   >
-                    <span style={{ fontSize: 22 }}>{opt.emoji}</span> {opt.label}
+                    {(() => { const OIcon = opt.Icon; return <OIcon size={22} style={{ flexShrink: 0 }} /> })()} {opt.label}
                   </button>
                 )
               })}
@@ -218,7 +219,7 @@ function WellbeingSurvey({ childName, childId, parentId, onClose }: { childName:
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>💙</div>
+            <div style={{ width: 56, height: 56, margin: '0 auto 12px', borderRadius: 18, background: 'rgba(2,132,199,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7' }}><Heart size={28} /></div>
             <h3 style={{ fontWeight: 800, fontSize: 18, color: 'var(--c-text-primary)', marginBottom: 8 }}>¡Gracias por compartir!</h3>
             <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>Tu terapeuta tomará esto en cuenta.</p>
           </div>
