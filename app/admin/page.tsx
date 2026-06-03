@@ -132,7 +132,7 @@ export default function AdminDashboard() {
     { id: 'evaluaciones', icon: FileText,        label: t('nav.evaluaciones') },
   ]
   const SECONDARY_NAV = [
-    { id: 'usuarios', icon: Key, label: t('nav.usuarios') },
+    { id: 'usuarios', icon: Key, label: t('nav.usuarios'), roles: ['jefe','admin'] },
     { id: 'config',   icon: User, label: 'Mi Perfil' },
     { id: 'importar', icon: Upload, label: t('nav.importarCSV'), hidden: true },
   ]
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
               ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
               Sistema
             </p>
-            {SECONDARY_NAV.filter((item: any) => !item.hidden).map(item => (
+            {SECONDARY_NAV.filter((item: any) => !item.hidden && (!item.roles || item.roles.includes(role))).map(item => (
               <SidebarLink
                 key={item.id}
                 icon={item.icon}
