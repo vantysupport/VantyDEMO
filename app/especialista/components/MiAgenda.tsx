@@ -28,7 +28,7 @@ function GoogleCalendarMini({ userId, isDark }: { userId: string; isDark: boolea
     check()
     const p = new URLSearchParams(window.location.search)
     if (p.get('gcal') === 'connected') {
-      toast.success('✅ Google Calendar conectado'); check()
+      toast.success('Google Calendar conectado'); check()
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [userId])
@@ -63,8 +63,8 @@ function GoogleCalendarMini({ userId, isDark }: { userId: string; isDark: boolea
     <button onClick={connect} disabled={busy}
       className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50
         ${isDark
-          ? 'bg-[#21262d] text-slate-300 border border-[#30363d] hover:bg-blue-900/30 hover:text-blue-400 hover:border-blue-700'
-          : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+          ? 'bg-[#21262d] text-slate-300 border border-[#30363d] hover:bg-sky-900/30 hover:text-sky-400 hover:border-sky-700'
+          : 'bg-white text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-200'
         }`}>
       {busy ? <Loader2 size={13} className="animate-spin" /> : <CalendarDays size={13} />}
       Conectar Google
@@ -91,7 +91,7 @@ function MicrosoftCalendarMini({ userId, isDark }: { userId: string; isDark: boo
     check()
     const p = new URLSearchParams(window.location.search)
     if (p.get('mscal') === 'connected') {
-      toast.success('✅ Outlook Calendar conectado'); check()
+      toast.success('Outlook Calendar conectado'); check()
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [userId])
@@ -126,8 +126,8 @@ function MicrosoftCalendarMini({ userId, isDark }: { userId: string; isDark: boo
     <button onClick={disconnect}
       className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all
         ${isDark
-          ? 'bg-blue-900/30 text-blue-400 border border-blue-800 hover:bg-red-900/30 hover:text-red-400 hover:border-red-800'
-          : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+          ? 'bg-sky-900/30 text-sky-400 border border-sky-800 hover:bg-red-900/30 hover:text-red-400 hover:border-red-800'
+          : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
         }`}>
       <MSIcon /> Outlook
     </button>
@@ -135,8 +135,8 @@ function MicrosoftCalendarMini({ userId, isDark }: { userId: string; isDark: boo
     <button onClick={connect} disabled={busy}
       className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50
         ${isDark
-          ? 'bg-[#21262d] text-slate-300 border border-[#30363d] hover:bg-blue-900/30 hover:text-blue-400 hover:border-blue-700'
-          : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+          ? 'bg-[#21262d] text-slate-300 border border-[#30363d] hover:bg-sky-900/30 hover:text-sky-400 hover:border-sky-700'
+          : 'bg-white text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-200'
         }`}>
       {busy ? <Loader2 size={13} className="animate-spin" /> : <MSIcon />}
       Conectar Outlook
@@ -149,10 +149,10 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const DIAS  = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string; badgeLight: string; badgeDark: string; bar: string }> = {
-  confirmed: { bg: 'bg-blue-500',    text: 'text-white', dot: 'bg-emerald-500', badgeLight: 'bg-emerald-50 text-emerald-700 border-emerald-200',  badgeDark: 'bg-emerald-900/40 text-emerald-400 border-emerald-800', bar: '#10b981' },
+  confirmed: { bg: 'bg-sky-500',    text: 'text-white', dot: 'bg-emerald-500', badgeLight: 'bg-emerald-50 text-emerald-700 border-emerald-200',  badgeDark: 'bg-emerald-900/40 text-emerald-400 border-emerald-800', bar: '#10b981' },
   pending:   { bg: 'bg-amber-400',   text: 'text-white', dot: 'bg-amber-400',   badgeLight: 'bg-amber-50 text-amber-700 border-amber-200',        badgeDark: 'bg-amber-900/40 text-amber-400 border-amber-800',       bar: '#f59e0b' },
   cancelled: { bg: 'bg-red-400',     text: 'text-white', dot: 'bg-red-400',     badgeLight: 'bg-red-50 text-red-700 border-red-200',              badgeDark: 'bg-red-900/40 text-red-400 border-red-800',             bar: '#ef4444' },
-  completed: { bg: 'bg-violet-500',  text: 'text-white', dot: 'bg-blue-500',    badgeLight: 'bg-blue-50 text-blue-700 border-blue-200',           badgeDark: 'bg-blue-900/40 text-blue-400 border-blue-800',          bar: '#3b82f6' },
+  completed: { bg: 'bg-sky-500',  text: 'text-white', dot: 'bg-sky-500',    badgeLight: 'bg-sky-50 text-sky-700 border-sky-200',           badgeDark: 'bg-sky-900/40 text-sky-400 border-sky-800',          bar: '#0284c7' },
 }
 const STATUS_LABEL: Record<string, string> = {
   confirmed: 'Confirmada', pending: 'Pendiente', cancelled: 'Cancelada', completed: 'Completada',
@@ -224,9 +224,9 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
       {/* ── Header — igual al admin ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h2 className={`font-black text-2xl md:text-3xl tracking-tight flex items-center gap-3 ${txt1}`}>
-            <div className="p-2.5 rounded-2xl flex-shrink-0" style={{ background: 'rgba(37,99,235,0.15)' }}>
-              <Calendar className="text-blue-500" size={28} />
+          <h2 className={`font-bold text-2xl md:text-3xl tracking-tight flex items-center gap-3 ${txt1}`}>
+            <div className="p-2.5 rounded-2xl flex-shrink-0" style={{ background: 'rgba(2,132,199,0.15)' }}>
+              <Calendar className="text-sky-500" size={28} />
             </div>
             Agenda
           </h2>
@@ -258,7 +258,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
             >
               <ChevronLeft size={18} />
             </button>
-            <h3 className={`font-black text-lg capitalize ${txt1}`}>
+            <h3 className={`font-bold text-lg capitalize ${txt1}`}>
               {MESES[mesN]} <span className={`font-semibold ${txt3}`}>{año}</span>
             </h3>
             <button
@@ -273,7 +273,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
           {/* Cabecera días */}
           <div className={`grid grid-cols-7 border-b ${divLine}`}>
             {DIAS.map(d => (
-              <div key={d} className={`text-center py-3 text-[10px] font-black uppercase tracking-widest ${txt3}`}>
+              <div key={d} className={`text-center py-3 text-[10px] font-bold ${txt3}`}>
                 {d}
               </div>
             ))}
@@ -282,7 +282,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
           {/* Celdas — misma estructura que admin */}
           {loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 size={22} className="animate-spin text-blue-500" />
+              <Loader2 size={22} className="animate-spin text-sky-500" />
             </div>
           ) : (
             <div className="grid grid-cols-7">
@@ -305,18 +305,18 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                     className={`min-h-[80px] border-b border-r ${cellBorder} p-1.5 text-left transition-all
                       flex flex-col gap-1 group
                       ${esSel
-                        ? isDark ? 'bg-blue-900/30' : 'bg-blue-50'
+                        ? isDark ? 'bg-sky-900/30' : 'bg-sky-50'
                         : esHoy
-                          ? isDark ? 'bg-blue-950/40' : 'bg-blue-50/60'
+                          ? isDark ? 'bg-sky-950/40' : 'bg-sky-50/60'
                           : isDark ? 'hover:bg-[#1c2128]' : 'hover:bg-slate-50'
                       }`}
                   >
                     {/* Número del día */}
-                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 transition-all
+                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all
                       ${esSel
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-sky-600 text-white'
                         : esHoy
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-sky-600 text-white'
                           : isDark ? 'text-slate-300 group-hover:text-slate-100' : 'text-slate-700 group-hover:text-slate-900'
                       }`}>
                       {dia}
@@ -359,16 +359,16 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
           <div className={`${card} rounded-3xl border shadow-sm overflow-hidden flex flex-col`}>
             <div className={`px-5 py-4 border-b ${divLine} flex items-center gap-3`}>
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0
-                ${isDark ? 'bg-blue-900/40' : 'bg-blue-50'}`}>
-                <Calendar size={15} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
+                ${isDark ? 'bg-sky-900/40' : 'bg-sky-50'}`}>
+                <Calendar size={15} className={isDark ? 'text-sky-400' : 'text-sky-600'} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-[10px] font-black uppercase tracking-widest ${txt3}`}>HOY</p>
-                <p className={`text-sm font-black capitalize truncate ${txt1}`}>
+                <p className={`text-[10px] font-bold ${txt3}`}>HOY</p>
+                <p className={`text-sm font-bold capitalize truncate ${txt1}`}>
                   {new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </p>
               </div>
-              <span className={`text-xs font-black px-2.5 py-1 rounded-full flex-shrink-0
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0
                 ${isDark ? 'bg-[#21262d] text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                 {citasDelDia.length} citas
               </span>
@@ -380,7 +380,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                   ${isDark ? 'bg-[#1c2128]' : 'bg-slate-50'}`}>
                   <CalendarDays size={22} className={isDark ? 'text-slate-600' : 'text-slate-300'} />
                 </div>
-                <p className={`text-sm font-black ${txt3}`}>Sin citas este día</p>
+                <p className={`text-sm font-bold ${txt3}`}>Sin citas este día</p>
                 <p className={`text-xs mt-1 ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>
                   Selecciona otro día del calendario
                 </p>
@@ -396,13 +396,13 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                         className={`px-4 py-3 flex items-center gap-3 transition-colors ${hoverBg}`}>
                         <div className="w-0.5 h-9 rounded-full flex-shrink-0" style={{ background: col.bar }} />
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-black truncate ${txt1}`}>{c.children?.name}</p>
+                          <p className={`text-sm font-bold truncate ${txt1}`}>{c.children?.name}</p>
                           <p className={`text-xs flex items-center gap-1 mt-0.5 ${txt3}`}>
                             <Clock size={9} /> {c.appointment_time?.slice(0,5)}
                             {c.service_type && <> · {c.service_type}</>}
                           </p>
                         </div>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border flex-shrink-0
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0
                           ${isDark ? col.badgeDark : col.badgeLight}`}>
                           {STATUS_LABEL[c.status] || 'Confirmada'}
                         </span>
@@ -420,8 +420,8 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                 ${isDark ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
                 <Clock size={15} className={isDark ? 'text-emerald-400' : 'text-emerald-600'} />
               </div>
-              <h3 className={`font-black text-sm flex-1 ${txt1}`}>Citas</h3>
-              <span className={`text-xs font-black px-2 py-0.5 rounded-full border
+              <h3 className={`font-bold text-sm flex-1 ${txt1}`}>Citas</h3>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full border
                 ${isDark
                   ? 'bg-[#21262d] text-slate-500 border-[#30363d]'
                   : 'bg-slate-50 text-slate-400 border-slate-100'
@@ -432,7 +432,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
 
             {loading ? (
               <div className="flex justify-center py-10">
-                <Loader2 size={18} className="animate-spin text-blue-500" />
+                <Loader2 size={18} className="animate-spin text-sky-500" />
               </div>
             ) : proximasCitas.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 px-5 text-center">
@@ -440,7 +440,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                   ${isDark ? 'bg-[#1c2128]' : 'bg-slate-50'}`}>
                   <Users size={22} className={isDark ? 'text-slate-600' : 'text-slate-300'} />
                 </div>
-                <p className={`text-sm font-black ${txt3}`}>Sin citas próximas</p>
+                <p className={`text-sm font-bold ${txt3}`}>Sin citas próximas</p>
               </div>
             ) : (
               <div className={`divide-y ${divLine} max-h-80 overflow-y-auto`}>
@@ -454,19 +454,19 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${hoverBg}`}>
                       <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center flex-shrink-0
                         ${esHoyItem
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-sky-600 text-white'
                           : isDark ? 'bg-[#21262d] text-slate-400' : 'bg-slate-100 text-slate-600'
                         }`}>
                         <span className="text-[8px] font-bold leading-none uppercase">
                           {MESES[fecha.getMonth()].slice(0,3)}
                         </span>
-                        <span className="text-sm font-black leading-tight">{fecha.getDate()}</span>
+                        <span className="text-sm font-bold leading-tight">{fecha.getDate()}</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-black truncate ${txt1}`}>{c.children?.name}</p>
+                        <p className={`text-sm font-bold truncate ${txt1}`}>{c.children?.name}</p>
                         <p className={`text-xs flex items-center gap-1 mt-0.5 ${txt3}`}>
                           <Clock size={9} /> {c.appointment_time?.slice(0,5)}
-                          {esHoyItem && <span className={`font-black ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>· Hoy</span>}
+                          {esHoyItem && <span className={`font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>· Hoy</span>}
                         </p>
                       </div>
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${col.dot}`} />

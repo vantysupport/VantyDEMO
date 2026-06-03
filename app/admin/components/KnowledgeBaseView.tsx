@@ -85,7 +85,7 @@ export default function KnowledgeBaseView() {
       if (json.error) throw new Error(json.error)
       setLogAprender(json.log || [])
       setResultadoAprender(json)
-      toast.success(`✅ ${json.totalChunks} fragmentos aprendidos`)
+      toast.success(`${json.totalChunks} fragmentos aprendidos`)
       await loadDocs()
     } catch (e: any) {
       toast.error(e.message)
@@ -101,7 +101,7 @@ export default function KnowledgeBaseView() {
         body: JSON.stringify({ id, locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
-      if (json.ok) { toast.success(`✅ Re-indexado: ${json.chunks} fragmentos`); await loadDocs() }
+      if (json.ok) { toast.success(`Re-indexado: ${json.chunks} fragmentos`); await loadDocs() }
       else toast.error(json.error || 'Error al re-indexar')
     } catch (e: any) { toast.error(e.message) }
   }
@@ -132,7 +132,7 @@ export default function KnowledgeBaseView() {
         `🎉 La IA ya aprendió el contenido de esa página`,
       ])
       setResultadoAprender({ keywords: urlAprender, terminos: [urlAprender], fuentes: 1, documentos: 1, totalChunks: json.chunks || 0 })
-      toast.success(`✅ ${json.chunks} fragmentos aprendidos de la URL`)
+      toast.success(`${json.chunks} fragmentos aprendidos de la URL`)
       await loadDocs()
     } catch (e: any) {
       toast.error(e.message)
@@ -549,7 +549,7 @@ export default function KnowledgeBaseView() {
             const result = await extractAndIngestPdfBatched(
               selectedFile, form.titulo, form.tipo, form.descripcion, setUploadProgress, locale
             )
-            toast.success(`✅ ${result.chunksIndexados} fragmentos indexados en ${result.partes} lotes`)
+            toast.success(`${result.chunksIndexados} fragmentos indexados en ${result.partes} lotes`)
             setForm({ titulo: '', tipo: 'libro', descripcion: '', texto: '', url: '' })
             setSelectedFile(null)
             setShowForm(false)
@@ -657,7 +657,7 @@ export default function KnowledgeBaseView() {
           if (!res.ok) throw new Error(json.error || `Error en parte ${i + 1}`)
           totalChunksIndexados += json.chunks || 0
         }
-        toast.success(`✅ ${totalChunksIndexados} fragmentos indexados en ${partes.length} partes`)
+        toast.success(`${totalChunksIndexados} fragmentos indexados en ${partes.length} partes`)
       } else {
         // Texto pequeño o no es texto → request único normal
         setUploadProgress('Indexando en el Cerebro IA... (puede tardar 1-3 min)')
@@ -670,7 +670,7 @@ export default function KnowledgeBaseView() {
         catch { throw new Error(await res.text() || `Error HTTP ${res.status}`) }
         if (!res.ok) throw new Error(json.error || 'Error al indexar')
         if (!json.success) throw new Error(json.error || 'El indexado falló')
-        toast.success(`✅ ${json.chunks} fragmentos indexados correctamente`)
+        toast.success(`${json.chunks} fragmentos indexados correctamente`)
       }
 
       setShowForm(false)

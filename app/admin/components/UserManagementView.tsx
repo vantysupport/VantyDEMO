@@ -309,7 +309,7 @@ export default function UserManagementView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success(`✅ Rol actualizado → ${newRole}`)
+      toast.success(`Rol actualizado → ${newRole}`)
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, profile: { ...u.profile, role: newRole } } : u))
     } catch (err: any) {
       toast.error('Error: ' + err.message)
@@ -353,7 +353,7 @@ export default function UserManagementView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Contraseña actualizada')
+      toast.success('Contraseña actualizada')
       setChangingPasswordFor(null); setNewPassword(''); setConfirmPassword('')
     } catch (err: any) {
       toast.error('Error: ' + err.message)
@@ -370,7 +370,7 @@ export default function UserManagementView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Tokens actualizados')
+      toast.success('Tokens actualizados')
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, profile: { ...u.profile, tokens: newTokens } } : u))
       setEditingTokensFor(null)
     } catch (err: any) {
@@ -388,7 +388,7 @@ export default function UserManagementView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Especialidad actualizada')
+      toast.success('Especialidad actualizada')
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, profile: { ...u.profile, specialty: newSpecialty.trim() } } : u))
       setEditingSpecialtyFor(null)
     } catch (err: any) {
@@ -405,7 +405,7 @@ export default function UserManagementView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success(`📧 Email enviado a ${user.email}`)
+      toast.success(`Email enviado a ${user.email}`)
     } catch (err: any) { toast.error('Error: ' + err.message) }
   }
 
@@ -427,7 +427,7 @@ export default function UserManagementView() {
       })
       const linkJson = await linkRes.json()
       if (linkJson.error) throw new Error(linkJson.error)
-      toast.success(`✅ ${child.name} vinculado a ${linkingParent.profile?.full_name || linkingParent.email}`)
+      toast.success(`${child.name} vinculado a ${linkingParent.profile?.full_name || linkingParent.email}`)
 
       setChildren(prev => prev.map(c => c.id === selectedChildId ? { ...c, parent_id: linkingParent.id } : c))
       setLinkingParent(null); setSelectedChildId('')
@@ -461,7 +461,7 @@ export default function UserManagementView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Usuario creado')
+      toast.success('Usuario creado')
       setShowCreateModal(false)
       setCreateForm({ email: '', password: '', full_name: '', role: 'especialista', specialty: '' })
       cargarUsuarios()
@@ -757,7 +757,7 @@ export default function UserManagementView() {
                             const res = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' }, body: JSON.stringify({ action: 'confirm_email', userId: user.id }) })
                             const json = await res.json()
                             if (json.error) throw new Error(json.error)
-                            toast.success('✅ Email confirmado')
+                            toast.success('Email confirmado')
                             cargarUsuarios()
                           } catch (err: any) { toast.error('Error: ' + err.message) }
                         }}

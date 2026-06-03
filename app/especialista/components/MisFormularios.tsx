@@ -38,14 +38,14 @@ const ALL_SPECIALIST_FORMS = [
 // ─── QUESTION RENDERER ───────────────────────────────────────────────────────
 function QuestionField({ q, value, onChange }: any) {
   const { t } = useI18n()
-  const base = "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+  const base = "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
 
   if (q.type === 'select' || q.type === 'frequency') return (
     <div className="space-y-2">
       {(q.options || []).map((opt: string) => (
         <button key={opt} type="button" onClick={() => onChange(opt)}
           className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all
-            ${value === opt ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50'}`}>
+            ${value === opt ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50'}`}>
           {opt}
         </button>
       ))}
@@ -62,7 +62,7 @@ function QuestionField({ q, value, onChange }: any) {
             <button key={opt} type="button"
               onClick={() => onChange(on ? sel.filter((x: string) => x !== opt) : [...sel, opt])}
               className={`px-4 py-2 rounded-xl border-2 text-sm font-bold transition-all
-                ${on ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+                ${on ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
               {opt}
             </button>
           )
@@ -78,7 +78,7 @@ function QuestionField({ q, value, onChange }: any) {
         {Array.from({ length: max - min + 1 }, (_, i) => i + min).map(n => (
           <button key={n} onClick={() => onChange(n)}
             className={`w-11 h-11 rounded-xl font-bold text-sm border-2 transition-all
-              ${value === n ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+              ${value === n ? 'bg-sky-600 text-white border-sky-600' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
             {n}
           </button>
         ))}
@@ -93,7 +93,7 @@ function QuestionField({ q, value, onChange }: any) {
         {opts.map((v: string) => (
           <button key={v} onClick={() => onChange(v)}
             className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all
-              ${value === v ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+              ${value === v ? 'bg-sky-600 text-white border-sky-600' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300'}`}>
             {v}
           </button>
         ))}
@@ -106,7 +106,7 @@ function QuestionField({ q, value, onChange }: any) {
       {(q.options || []).map((opt: string) => (
         <button key={opt} type="button" onClick={() => onChange(opt)}
           className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all
-            ${value === opt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-700 hover:border-blue-300'}`}>
+            ${value === opt ? 'bg-sky-600 text-white border-sky-600' : 'bg-white border-slate-200 text-slate-700 hover:border-sky-300'}`}>
           {opt}
         </button>
       ))}
@@ -124,20 +124,20 @@ function QuestionField({ q, value, onChange }: any) {
     if (q.type === 'textarea') {
       return hasVal ? (
         <textarea value={value} onChange={e => onChange(e.target.value)} rows={4}
-          className={`${base} bg-purple-50 border-purple-200 resize-none`} />
+          className={`${base} bg-sky-50 border-sky-200 resize-none`} />
       ) : (
         <div className="w-full px-4 py-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400 flex items-center gap-2">
-          <Sparkles size={14} className="text-purple-400 flex-shrink-0" />
-          <span>{t('evaluaciones.seCompletara')} <strong className="text-purple-600">{t('evaluaciones.analizarConIA2')}</strong></span>
+          <Sparkles size={14} className="text-sky-400 flex-shrink-0" />
+          <span>{t('evaluaciones.seCompletara')} <strong className="text-sky-600">{t('evaluaciones.analizarConIA2')}</strong></span>
         </div>
       )
     }
     return hasVal ? (
-      <input type="text" value={value} onChange={e => onChange(e.target.value)} className={`${base} bg-purple-50 border-purple-200`} />
+      <input type="text" value={value} onChange={e => onChange(e.target.value)} className={`${base} bg-sky-50 border-sky-200`} />
     ) : (
       <div className="w-full px-4 py-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400 flex items-center gap-2">
-        <Sparkles size={14} className="text-purple-400 flex-shrink-0" />
-        <span>{t('evaluaciones.seCompletara2')} <strong className="text-purple-600">{t('evaluaciones.analizarConIA2')}</strong></span>
+        <Sparkles size={14} className="text-sky-400 flex-shrink-0" />
+        <span>{t('evaluaciones.seCompletara2')} <strong className="text-sky-600">{t('evaluaciones.analizarConIA2')}</strong></span>
       </div>
     )
   }
@@ -145,7 +145,7 @@ function QuestionField({ q, value, onChange }: any) {
   if (q.readonly) {
     const hasVal = value !== undefined && value !== null && String(value).trim().length > 0
     return hasVal ? (
-      <div className="w-full px-4 py-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-800">
+      <div className="w-full px-4 py-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-sm font-bold text-emerald-800">
         {value}
       </div>
     ) : (
@@ -180,8 +180,8 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
   const total = sections.length
   const section = sections[step]
   const progress = total > 0 ? ((step + 1) / total) * 100 : 0
-  const CAT_COLOR: Record<string, string> = { tdah: '#f59e0b', tea: '#8b5cf6', conductual: '#ef4444', sensorial: '#06b6d4', habilidades: '#10b981', familia: '#ec4899', seguimiento: '#64748b', clinico: '#3b82f6', cognitivo: '#6366f1' }
-  const accentColor = CAT_COLOR[(form as any).category] || '#3b82f6'
+  const CAT_COLOR: Record<string, string> = { tdah: '#f59e0b', tea: '#0ea5e9', conductual: '#ef4444', sensorial: '#06b6d4', habilidades: '#10b981', familia: '#ec4899', seguimiento: '#64748b', clinico: '#0284c7', cognitivo: '#0284c7' }
+  const accentColor = CAT_COLOR[(form as any).category] || '#0284c7'
 
   const answer = (id: string, val: any) => setResponses(p => ({ ...p, [id]: val }))
 
@@ -251,7 +251,7 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
         analysis?.informe_padres || ''
       )
       setEditedActividades(analysis?.actividades_casa || analysis?.actividad_casa || '')
-      toast.success('✨ Análisis IA generado')
+      toast.success('Análisis IA generado')
     } catch (e: any) { toast.error('Error: ' + e.message) }
     finally { setAnalyzing(false) }
   }
@@ -329,7 +329,7 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
         }
       }
       setDone(true)
-      toast.success('✅ Formulario guardado correctamente')
+      toast.success('Formulario guardado correctamente')
     } catch (e: any) { toast.error('Error: ' + e.message) }
     finally { setSaving(false) }
   }
@@ -340,13 +340,13 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
         <CheckCircle2 size={40} className="text-emerald-600" />
       </div>
       <div>
-        <h3 className="text-2xl font-black text-slate-800 mb-2">{t('evaluaciones.formularioEnviado')}</h3>
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">{t('evaluaciones.formularioEnviado')}</h3>
         <p className="text-sm text-slate-500 max-w-xs mx-auto leading-relaxed">
           El análisis fue guardado y está disponible en el expediente del paciente.
         </p>
       </div>
       <button onClick={onBack}
-        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-bold text-sm transition-colors shadow-sm">
+        className="px-8 py-3 bg-sky-600 hover:bg-sky-700 rounded-xl text-white font-bold text-sm transition-colors shadow-sm">
         ← Volver a formularios
       </button>
     </div>
@@ -357,18 +357,18 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
       {/* Top progress bar */}
       <div className="flex-shrink-0 border-b border-slate-200 bg-white shadow-sm z-20">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-4">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-500 hover:text-violet-600 font-bold transition-all text-sm group">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-500 hover:text-sky-600 font-bold transition-all text-sm group">
             <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Volver
           </button>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+              <p className="text-xs font-bold text-slate-400">
                 Sección {step + 1} de {total}
               </p>
-              <p className="text-xs font-bold text-violet-600">{Math.round(progress)}% completado</p>
+              <p className="text-xs font-bold text-sky-600">{Math.round(progress)}% completado</p>
             </div>
             <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+              <div className="h-full bg-gradient-to-r from-sky-500 to-cyan-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
             </div>
           </div>
         </div>
@@ -378,11 +378,11 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
 
           {/* Color banner with patient selector — identical to admin */}
-          <div className={`bg-gradient-to-r ${form.color || 'from-violet-600 to-indigo-600'} rounded-2xl p-5 text-white shadow-lg`}>
+          <div className={`bg-gradient-to-r ${form.color || 'from-sky-600 to-cyan-600'} rounded-2xl p-5 text-white shadow-lg`}>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
-                <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">{form.icon} {(form.category || 'clínico').toUpperCase()}</p>
-                <h2 className="font-black text-xl">{form.title}</h2>
+                <p className="text-white/70 text-xs font-bold mb-1">{form.icon} {(form.category || 'clínico').toUpperCase()}</p>
+                <h2 className="font-bold text-xl">{form.title}</h2>
                 <p className="text-white/80 text-sm mt-0.5">{form.subtitle}</p>
               </div>
               <select value={childId} onChange={e => setChildId(e.target.value)}
@@ -399,7 +399,7 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
           {section && (
             <div className="rounded-2xl shadow-sm overflow-hidden bg-white border border-slate-200">
               <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                <h3 className="font-black text-lg text-slate-800">{section.title}</h3>
+                <h3 className="font-bold text-lg text-slate-800">{section.title}</h3>
                 {section.description && <p className="text-sm text-slate-500 mt-1">{section.description}</p>}
               </div>
               <div className="p-6 space-y-6">
@@ -419,20 +419,20 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
           {/* Navigation */}
           <div className="flex items-center justify-between gap-4">
             <button onClick={() => setStep(s => s - 1)} disabled={step === 0}
-              className="flex items-center gap-2 px-6 py-3 border-2 border-slate-200 bg-white text-slate-600 rounded-xl font-bold hover:border-violet-300 disabled:opacity-40 transition-all">
+              className="flex items-center gap-2 px-6 py-3 border-2 border-slate-200 bg-white text-slate-600 rounded-xl font-bold hover:border-sky-300 disabled:opacity-40 transition-all">
               <ChevronLeft size={18} /> Anterior
             </button>
             <div className="flex items-center gap-3">
               {(step === total - 1 || (form.formKey === 'aba' && step >= 5)) && (
                 <button onClick={handleAnalyze} disabled={analyzing || !childId}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold disabled:opacity-40 transition-all shadow-lg shadow-violet-200 hover:opacity-90">
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold disabled:opacity-40 transition-all shadow-lg shadow-sky-200 hover:opacity-90">
                   {analyzing ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                   {analyzing ? 'Analizando...' : 'Analizar con IA'}
                 </button>
               )}
               {step < total - 1 ? (
                 <button onClick={() => setStep(s => s + 1)}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-violet-200 hover:opacity-90">
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-sky-200 hover:opacity-90">
                   Siguiente <ChevronLeft size={18} className="rotate-180" />
                 </button>
               ) : (
@@ -459,10 +459,10 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
         const textoAnalisis   = aiAnalysis.resumen_ejecutivo || aiAnalysis.analisis_clinico || aiAnalysis.analisis_ia || aiAnalysis.analisis_vineland_ia || aiAnalysis.analisis_diagnostico_ia || aiAnalysis.analisis_basc_ia || aiAnalysis.perfil_cognitivo_ia || ''
 
         return (
-        <div className="bg-white rounded-2xl border border-purple-200 p-5 space-y-4 shadow-sm">
+        <div className="bg-white rounded-2xl border border-sky-200 p-5 space-y-4 shadow-sm">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Brain size={16} className="text-purple-600" />
+            <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center">
+              <Brain size={16} className="text-sky-600" />
             </div>
             <h4 className="font-bold text-slate-800">{t('especialista.analisisIA2')}</h4>
             {aiAnalysis.nivel_alerta && (
@@ -482,7 +482,7 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {areasFortaleza.length > 0 && (
               <div>
-                <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">💪 Fortalezas</p>
+                <p className="text-xs font-bold text-emerald-600 mb-2">💪 Fortalezas</p>
                 <ul className="space-y-1">
                   {areasFortaleza.map((f: string, i: number) => (
                     <li key={i} className="text-xs text-slate-600 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">• {f}</li>
@@ -492,10 +492,10 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
             )}
             {recomendaciones.length > 0 && (
               <div>
-                <p className="text-xs font-black text-blue-600 uppercase tracking-widest mb-2">💡 Recomendaciones</p>
+                <p className="text-xs font-bold text-sky-600 mb-2">💡 Recomendaciones</p>
                 <ul className="space-y-1">
                   {recomendaciones.slice(0, 4).map((r: string, i: number) => (
-                    <li key={i} className="text-xs text-slate-600 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">• {r}</li>
+                    <li key={i} className="text-xs text-slate-600 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2">• {r}</li>
                   ))}
                 </ul>
               </div>
@@ -506,29 +506,29 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
             <div className="space-y-4">
               {/* Sección 1: Mensaje al padre */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-bold text-slate-500 mb-2">
                   💬 Mensaje al padre/madre (editable)
                 </label>
 
                 <textarea value={editedMsg} onChange={e => setEditedMsg(e.target.value)} rows={5}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
               </div>
 
               {/* Sección 2: Actividad para casa */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-bold text-slate-500 mb-2">
                   🏠 Actividad para realizar en casa (editable)
                 </label>
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex gap-2">
-                  <span className="text-blue-600 flex-shrink-0 text-xs font-bold">1</span>
-                  <p className="text-xs text-blue-700 leading-relaxed">
+                <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-3 flex gap-2">
+                  <span className="text-sky-600 flex-shrink-0 text-xs font-bold">1</span>
+                  <p className="text-xs text-sky-700 leading-relaxed">
                     Una sola actividad basada en lo trabajado hoy en sesión.
                   </p>
                 </div>
                 <textarea
                   value={editedActividades || aiAnalysis?.actividades_casa || aiAnalysis?.actividad_casa || ''}
                   onChange={e => setEditedActividades(e.target.value)} rows={5}
-                  className="w-full px-4 py-3 rounded-xl border border-blue-200 bg-blue-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-sky-200 bg-sky-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
               </div>
             </div>
           )}
@@ -538,7 +538,7 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
             <div className="rounded-2xl overflow-hidden border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50">
               <div className="bg-gradient-to-r from-amber-500 to-yellow-500 px-4 py-2.5 flex items-center gap-2">
                 <span className="text-lg">🛒</span>
-                <span className="text-xs font-black text-white uppercase tracking-wider">{t('especialista.productoIA')}</span>
+                <span className="text-xs font-bold text-white">{t('especialista.productoIA')}</span>
               </div>
               <div className="flex gap-4 p-4 items-start">
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-amber-100 flex-shrink-0 flex items-center justify-center">
@@ -548,11 +548,11 @@ function FormFillView({ form, children, onBack, userId, toast }: any) {
                   }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-black text-amber-900 text-sm mb-1">{aiAnalysis.producto_sugerido_info.nombre}</p>
+                  <p className="font-bold text-amber-900 text-sm mb-1">{aiAnalysis.producto_sugerido_info.nombre}</p>
                   {aiAnalysis.producto_sugerido_info.razon && (
                     <p className="text-xs text-amber-800 leading-relaxed mb-2">💡 {aiAnalysis.producto_sugerido_info.razon}</p>
                   )}
-                  <p className="text-lg font-black text-amber-700">S/ {Number(aiAnalysis.producto_sugerido_info.precio_soles).toFixed(2)}</p>
+                  <p className="text-lg font-bold text-amber-700">S/ {Number(aiAnalysis.producto_sugerido_info.precio_soles).toFixed(2)}</p>
                 </div>
               </div>
               <div className="px-4 pb-3">
@@ -619,7 +619,7 @@ export default function MisFormularios({ userId }: { userId: string }) {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-black text-slate-800">{t('especialista.formsClinicos')}</h2>
+        <h2 className="text-2xl font-bold text-slate-800">{t('especialista.formsClinicos')}</h2>
         <p className="text-sm text-slate-500 mt-1">
           Todos los instrumentos de evaluación clínica
         </p>
@@ -645,7 +645,7 @@ export default function MisFormularios({ userId }: { userId: string }) {
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`text-xs font-bold px-3.5 py-1.5 rounded-full border transition-all
-                ${isActive ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600'}`}>
+                ${isActive ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300 hover:text-sky-600'}`}>
               {tab.label}
             </button>
           )
@@ -686,19 +686,19 @@ export default function MisFormularios({ userId }: { userId: string }) {
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       {isParent && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                           style={{ background: 'rgba(74,110,170,0.1)', color: '#4a6eaa', border: '1px solid rgba(74,110,170,0.2)' }}>
                           Padres
                         </span>
                       )}
                       {isExternal && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                           style={{ background: 'rgba(176,120,48,0.1)', color: '#b07830', border: '1px solid rgba(176,120,48,0.2)' }}>
                           Ext.
                         </span>
                       )}
                       {isPro && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide"
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                           style={{ background: 'rgba(122,74,74,0.1)', color: '#7a4a4a', border: '1px solid rgba(122,74,74,0.2)' }}>
                           PRO
                         </span>

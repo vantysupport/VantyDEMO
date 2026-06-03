@@ -251,11 +251,11 @@ function FormBuilder({ isDark, template, onSave, onCancel }: {
       if (template?.id) {
         const { error } = await supabase.from('clinical_templates').update(payload).eq('id', template.id)
         if (error) throw error
-        toast.success('✅ Ficha actualizada')
+        toast.success('Ficha actualizada')
       } else {
         const { error } = await supabase.from('clinical_templates').insert({ ...payload, created_by: user?.id })
         if (error) throw error
-        toast.success('✅ Ficha creada')
+        toast.success('Ficha creada')
       }
       onSave()
     } catch (e: any) { toast.error('Error: ' + e.message) }
@@ -639,7 +639,7 @@ export function RellenarFicha({
         responses: answers, notes: notes.trim() || null,
       }).select('id').single()
       if (error) throw error
-      toast.success('✅ Ficha guardada')
+      toast.success('Ficha guardada')
       setAnswers({}); setNotes(''); setSelected(null)
       if (inserted?.id) onSaved?.(inserted.id)
       loadData()

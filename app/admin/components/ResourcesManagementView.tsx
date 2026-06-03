@@ -91,7 +91,7 @@ export default function ResourcesManagementView() {
           tags: newResource.tags,
         }).eq('id', editingId)
         if (error) throw new Error(error.message)
-        toast.success('✅ Recurso actualizado correctamente')
+        toast.success('Recurso actualizado correctamente')
       } else {
         const res = await fetch('/api/admin/resources', {
           method: 'POST',
@@ -104,7 +104,7 @@ export default function ResourcesManagementView() {
         })
         const json = await res.json()
         if (json.error) throw new Error(json.error)
-        toast.success('✅ Recurso compartido correctamente')
+        toast.success('Recurso compartido correctamente')
       }
       setShowForm(false)
       setEditingId(null)

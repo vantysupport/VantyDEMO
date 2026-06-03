@@ -16,7 +16,7 @@ const STATUS_COLOR: Record<string, string> = {
   confirmed: 'bg-emerald-50 border-emerald-200 text-emerald-700',
   pending:   'bg-amber-50 border-amber-200 text-amber-700',
   cancelled: 'bg-red-50 border-red-200 text-red-500 line-through',
-  completed: 'bg-blue-50 border-blue-200 text-blue-700',
+  completed: 'bg-sky-50 border-sky-200 text-sky-700',
 }
 
 function getMondayOfWeek(date: Date) {
@@ -106,7 +106,7 @@ export default function SecretariaCronograma() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-black text-slate-800">Cronograma de Sesiones</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Cronograma de Sesiones</h2>
           <p className="text-sm text-slate-400 mt-0.5">Vista semanal y mensual de citas programadas</p>
         </div>
         <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function SecretariaCronograma() {
           <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
             {(['semana','mes'] as const).map(m => (
               <button key={m} onClick={() => setMode(m)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${mode === m ? 'bg-white shadow-sm text-violet-700' : 'text-slate-500 hover:text-slate-700'}`}>
+                className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${mode === m ? 'bg-white shadow-sm text-sky-700' : 'text-slate-500 hover:text-slate-700'}`}>
                 {m === 'semana' ? 'Semanal' : 'Mensual'}
               </button>
             ))}
@@ -135,7 +135,7 @@ export default function SecretariaCronograma() {
             <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-600">
               <ChevronLeft size={18} />
             </button>
-            <span className="font-black text-slate-800 min-w-[180px] text-center text-sm">
+            <span className="font-bold text-slate-800 min-w-[180px] text-center text-sm">
               {mode === 'semana'
                 ? `${weekStart.getDate()} ${MESES[weekStart.getMonth()].slice(0,3)} — ${weekEnd.getDate()} ${MESES[weekEnd.getMonth()].slice(0,3)} ${weekEnd.getFullYear()}`
                 : `${MESES[monthYear.month]} ${monthYear.year}`
@@ -155,10 +155,10 @@ export default function SecretariaCronograma() {
           {/* Stats */}
           <div className="flex items-center gap-4 text-sm">
             <span className="flex items-center gap-1.5 font-bold text-slate-600">
-              <CalendarDays size={15} className="text-violet-500" /> {totalSessions} sesiones
+              <CalendarDays size={15} className="text-sky-500" /> {totalSessions} sesiones
             </span>
             <span className="flex items-center gap-1.5 font-bold text-slate-600">
-              <Users size={15} className="text-violet-500" /> {uniquePatients} pacientes
+              <Users size={15} className="text-sky-500" /> {uniquePatients} pacientes
             </span>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function SecretariaCronograma() {
       {/* Schedule grid */}
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 size={24} className="animate-spin text-violet-400" />
+          <Loader2 size={24} className="animate-spin text-sky-400" />
         </div>
       ) : mode === 'semana' ? (
         /* WEEKLY VIEW */
@@ -178,10 +178,10 @@ export default function SecretariaCronograma() {
               const isToday = dateStr === fmtDate(new Date())
               const count = byDay[dateStr]?.length || 0
               return (
-                <div key={dateStr} className={`px-2 py-3 text-center border-r border-slate-100 last:border-0 ${isToday ? 'bg-violet-50' : ''}`}>
-                  <p className={`text-[10px] font-black uppercase tracking-wide ${isToday ? 'text-violet-600' : 'text-slate-400'}`}>{DIAS_ABREV[idx]}</p>
-                  <p className={`text-lg font-black ${isToday ? 'text-violet-700' : 'text-slate-700'}`}>{date.getDate()}</p>
-                  {count > 0 && <span className="text-[9px] font-bold text-violet-500">{count} cita{count !== 1 ? 's' : ''}</span>}
+                <div key={dateStr} className={`px-2 py-3 text-center border-r border-slate-100 last:border-0 ${isToday ? 'bg-sky-50' : ''}`}>
+                  <p className={`text-[10px] font-bold ${isToday ? 'text-sky-600' : 'text-slate-400'}`}>{DIAS_ABREV[idx]}</p>
+                  <p className={`text-lg font-bold ${isToday ? 'text-sky-700' : 'text-slate-700'}`}>{date.getDate()}</p>
+                  {count > 0 && <span className="text-[9px] font-bold text-sky-500">{count} cita{count !== 1 ? 's' : ''}</span>}
                 </div>
               )
             })}
@@ -191,7 +191,7 @@ export default function SecretariaCronograma() {
               const dayApts = byDay[dateStr] || []
               const isToday = dateStr === fmtDate(new Date())
               return (
-                <div key={dateStr} className={`p-2 space-y-1.5 ${isToday ? 'bg-violet-50/50' : ''}`}>
+                <div key={dateStr} className={`p-2 space-y-1.5 ${isToday ? 'bg-sky-50/50' : ''}`}>
                   {dayApts.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
                       <p className="text-[10px] text-slate-200 text-center">—</p>
@@ -225,16 +225,16 @@ export default function SecretariaCronograma() {
               const dayApts = byDay[dateStr] || []
               const dayOfWeek = date.getDay()
               return (
-                <div key={dateStr} className={`flex gap-4 px-5 py-4 ${isToday ? 'bg-violet-50/50' : 'hover:bg-slate-50'} transition-colors`}>
-                  <div className={`w-12 flex-shrink-0 flex flex-col items-center justify-center rounded-xl py-2 ${isToday ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                <div key={dateStr} className={`flex gap-4 px-5 py-4 ${isToday ? 'bg-sky-50/50' : 'hover:bg-slate-50'} transition-colors`}>
+                  <div className={`w-12 flex-shrink-0 flex flex-col items-center justify-center rounded-xl py-2 ${isToday ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
                     <span className="text-[9px] font-bold uppercase">{DIAS_ABREV[dayOfWeek === 0 ? 6 : dayOfWeek - 1]}</span>
-                    <span className="text-lg font-black leading-none">{date.getDate()}</span>
+                    <span className="text-lg font-bold leading-none">{date.getDate()}</span>
                   </div>
                   <div className="flex-1 flex flex-wrap gap-2">
                     {dayApts.map(apt => (
                       <div key={apt.id} className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold ${STATUS_COLOR[apt.status] || 'bg-slate-50 border-slate-200 text-slate-600'}`}>
                         <Clock size={10} /> {apt.appointment_time?.slice(0,5)}
-                        <span className="font-black">{apt.children?.name}</span>
+                        <span className="font-bold">{apt.children?.name}</span>
                         {apt.service_type && <span className="font-normal opacity-70">· {apt.service_type}</span>}
                       </div>
                     ))}
@@ -251,8 +251,8 @@ export default function SecretariaCronograma() {
 
       {/* Summary */}
       {!loading && totalSessions > 0 && (
-        <div className="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-2xl p-5">
-          <h3 className="font-black text-violet-800 mb-3 text-sm">Resumen del período</h3>
+        <div className="bg-gradient-to-br from-sky-50 to-sky-50 border border-sky-200 rounded-2xl p-5">
+          <h3 className="font-bold text-sky-800 mb-3 text-sm">Resumen del período</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: 'Total sesiones', value: totalSessions, icon: CalendarDays },
@@ -261,9 +261,9 @@ export default function SecretariaCronograma() {
               { label: 'Pendientes', value: apts.filter(a => a.status === 'pending').length, icon: Clock },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="text-center">
-                <Icon size={18} className="mx-auto mb-1 text-violet-500" />
-                <p className="text-2xl font-black text-violet-800">{value}</p>
-                <p className="text-xs font-medium text-violet-600">{label}</p>
+                <Icon size={18} className="mx-auto mb-1 text-sky-500" />
+                <p className="text-2xl font-bold text-sky-800">{value}</p>
+                <p className="text-xs font-medium text-sky-600">{label}</p>
               </div>
             ))}
           </div>

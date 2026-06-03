@@ -387,7 +387,7 @@ export default function NeuroFormsView() {
       if (json.error) throw new Error(json.error)
       setAiAnalysis(json.analysis)
       setEditedMessage(json.analysis?.mensaje_padres || '')
-      toast.success('✨ Análisis generado')
+      toast.success('Análisis generado')
     } catch (err: any) {
       toast.error('Error en análisis: ' + err.message)
     } finally {
@@ -430,7 +430,7 @@ export default function NeuroFormsView() {
 
       setSavedRecordId((savedRecord as any)?.id || null)
       setShowSuccessScreen(true)
-      toast.success('✅ Formulario guardado correctamente')
+      toast.success('Formulario guardado correctamente')
     } catch (err: any) {
       toast.error('Error al guardar: ' + err.message)
     } finally {
@@ -446,7 +446,7 @@ export default function NeuroFormsView() {
 
       // Validar que el niño tenga un padre vinculado antes de enviar
       if (!parentId) {
-        toast.error('❌ Este paciente no tiene un padre vinculado. Ve a Pacientes y vincula un padre primero.')
+        toast.error('Este paciente no tiene un padre vinculado. Ve a Pacientes y vincula un padre primero.')
         return
       }
 
@@ -465,7 +465,7 @@ export default function NeuroFormsView() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success(`📤 Formulario enviado correctamente`)
+      toast.success(`Formulario enviado correctamente`)
       loadSentForms()
     } catch (err: any) {
       toast.error('Error al enviar: ' + err.message)
@@ -526,7 +526,7 @@ export default function NeuroFormsView() {
         document.body.appendChild(a); a.click()
         URL.revokeObjectURL(url); document.body.removeChild(a)
 
-        toast.success('✅ Reporte Word descargado')
+        toast.success('Reporte Word descargado')
       } catch (err: any) {
         toast.error('Error generando reporte: ' + (err.message || 'Intenta de nuevo'))
       } finally {

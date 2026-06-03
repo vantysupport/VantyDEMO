@@ -128,7 +128,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       })
       const d = await r.json()
       if (!d.ok) throw new Error(d.error)
-      alert(`✅ Informe generado: ${d.file_name}\nDisponible en la pestaña "Historial & IA" del paciente.`)
+      alert(`Informe generado: ${d.file_name}\nDisponible en la pestaña "Historial & IA" del paciente.`)
     } catch (e: any) { alert('Error: ' + e.message) }
     finally { setGenerandoWord(false) }
   }

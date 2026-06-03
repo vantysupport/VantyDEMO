@@ -884,7 +884,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     const json = await res.json()
     if (json.error) { toast.error(json.error); return }
     onSuccess?.()
-    toast.success('✅ Actualizado')
+    toast.success('Actualizado')
   }
 
   // Close dropdowns when clicking outside
@@ -907,7 +907,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     })
     const json = await res.json()
     if (json.error) { toast.error(json.error); setLocalTitulo(programa.titulo); setTempTitulo(programa.titulo); return }
-    toast.success('✏️ Título actualizado')
+    toast.success('Título actualizado')
   }
 
   const area = AREA_CONFIG[programa.area] || AREA_CONFIG.comunicacion
@@ -1545,7 +1545,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                               })
                               const json = await res.json()
                               if (json.error) { toast.error(json.error); return }
-                              toast.success('✏️ Set actualizado')
+                              toast.success('Set actualizado')
                               fetchDetalle()
                             }}
                             onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
@@ -1746,7 +1746,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                                   })
                                   const json = await res.json()
                                   if (json.error) { toast.error(json.error); return }
-                                  toast.success('✅ Set agregado')
+                                  toast.success('Set agregado')
                                   setShowAgregarSet(false)
                                   setNuevoSet({ descripcion: '', materiales: '', sd_estimulo: '', unidad_positiva: '', unidad_negativa: '', reforzadores: '', correction_errores: '', generalizacion: 'Promover con la familia que realicen este ejercicio en casa.' })
                                   fetchDetalle()
@@ -1782,7 +1782,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           })
                           const json = await res.json()
                           if (json.error) { toast.error(json.error); return }
-                          toast.success('🗑 Sesión eliminada')
+                          toast.success('Sesión eliminada')
                           onDeleteSesion?.(s.id)
                           setDetalle((prev: any) => {
                             const base = prev ?? programa
@@ -1800,7 +1800,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           })
                           const json = await res.json()
                           if (json.error) { toast.error(json.error); return }
-                          toast.success('📅 Fecha actualizada')
+                          toast.success('Fecha actualizada')
                           setDetalle((prev: any) => {
                             const base = prev ?? programa
                             return {
@@ -1823,7 +1823,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           })
                           const json = await res.json()
                           if (json.error) { toast.error(json.error); return }
-                          toast.success('✏️ Porcentaje actualizado')
+                          toast.success('Porcentaje actualizado')
                           setDetalle((prev: any) => {
                             const base = prev ?? programa
                             return {
@@ -1848,7 +1848,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           })
                           const json = await res.json()
                           if (json.error) { toast.error(json.error); return }
-                          toast.success(`🎯 Set cambiado a ${nuevoSet}`)
+                          toast.success(`Set cambiado a ${nuevoSet}`)
                           setDetalle((prev: any) => {
                             const base = prev ?? programa
                             return {
@@ -1877,7 +1877,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             mantenimiento: 'Mantenimiento',
                             dominado: 'Criterio alcanzado',
                           }
-                          toast.success(`🔄 Fase cambiada a ${labelMap[nuevaFase] || nuevaFase}`)
+                          toast.success(`Fase cambiada a ${labelMap[nuevaFase] || nuevaFase}`)
                           setDetalle((prev: any) => {
                             const base = prev ?? programa
                             return {
@@ -2294,7 +2294,7 @@ function RegistrarSesionModal({ programa, childId, onClose, onSaved }: any) {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Sesión registrada')
+      toast.success('Sesión registrada')
       onSaved()
     } catch (e: any) {
       toast.error(e.message)
@@ -2479,7 +2479,7 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Programa creado')
+      toast.success('Programa creado')
       onCreated()
     } catch (e: any) { toast.error(e.message) }
     finally { setSaving(false) }

@@ -243,7 +243,7 @@ export default function ParentDashboard() {
         const { error: delError } = await supabase.from('appointments').delete().eq('id', appointmentId)
         if(delError) throw delError
         setRefreshTrigger(prev => prev + 1) 
-        triggerCelebration('✅ Solicitud enviada al centro')
+        triggerCelebration('Solicitud enviada al centro')
     } catch (error: any) {
         alert("Error al cancelar: " + error.message)
     } finally {
@@ -259,17 +259,17 @@ export default function ParentDashboard() {
     const diagnosis = e.target.diagnosis?.value || 'En evaluación'
     
     if(!profile?.id) {
-        alert("❌ Error: No se encontró tu perfil")
+        alert("Error: No se encontró tu perfil")
         return
     }
 
     if(!name.trim()) {
-        alert("❌ El nombre es obligatorio")
+        alert("El nombre es obligatorio")
         return
     }
 
     if(!dob) {
-        alert("❌ La fecha de nacimiento es obligatoria")
+        alert("La fecha de nacimiento es obligatoria")
         return
     }
 
@@ -285,23 +285,23 @@ export default function ParentDashboard() {
         }]).select()
 
         if (error) {
-            alert("❌ Error al guardar: " + error.message)
+            alert("Error al guardar: " + error.message)
             return
         }
 
         if (!data || data.length === 0) {
-            alert("⚠️ No se pudo crear el registro. Verifica los permisos en Supabase.")
+            alert("No se pudo crear el registro. Verifica los permisos en Supabase.")
             return
         }
 
         setMyChildren([...myChildren, data[0]])
         if(!selectedChild) setSelectedChild(data[0])
         setShowAddChild(false)
-        triggerCelebration(`🎊 ${name} agregado correctamente`)
+        triggerCelebration(`${name} agregado correctamente`)
         setRefreshTrigger(prev => prev + 1)
 
     } catch (err: any) {
-        alert("❌ Error inesperado: " + err.message)
+        alert("Error inesperado: " + err.message)
     }
   }
 
@@ -322,7 +322,7 @@ export default function ParentDashboard() {
       if (error) throw error
       
       setProfile({...profile, full_name: fullName, phone: phone})
-      triggerCelebration('✨ Perfil actualizado')
+      triggerCelebration('Perfil actualizado')
       setShowEditProfile(false)
       setRefreshTrigger(prev => prev + 1)
     } catch (error: any) {
@@ -336,12 +336,12 @@ export default function ParentDashboard() {
     const confirmPass = e.target.confirmPassword.value
     
     if (newPass !== confirmPass) {
-      alert("❌ Las contraseñas no coinciden")
+      alert("Las contraseñas no coinciden")
       return
     }
     
     if (newPass.length < 6) {
-      alert("❌ La contraseña debe tener al menos 6 caracteres")
+      alert("La contraseña debe tener al menos 6 caracteres")
       return
     }
     
@@ -349,7 +349,7 @@ export default function ParentDashboard() {
       const { error } = await supabase.auth.updateUser({ password: newPass })
       if (error) throw error
       
-      triggerCelebration('🔐 Contraseña actualizada')
+      triggerCelebration('Contraseña actualizada')
       setShowChangePass(false)
     } catch (error: any) {
       alert("Error: " + error.message)

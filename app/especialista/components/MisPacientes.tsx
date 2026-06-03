@@ -35,19 +35,19 @@ function formatDate(d: string) {
 }
 
 const AVATAR_COLORS = [
-  'from-cyan-500 to-purple-600', 'from-emerald-500 to-cyan-500',
-  'from-amber-500 to-red-500', 'from-purple-500 to-pink-500',
-  'from-blue-500 to-cyan-500', 'from-emerald-500 to-amber-500',
+  'from-cyan-500 to-sky-600', 'from-emerald-500 to-cyan-500',
+  'from-amber-500 to-red-500', 'from-sky-500 to-pink-500',
+  'from-sky-500 to-cyan-500', 'from-emerald-500 to-amber-500',
 ]
 
 const TYPE_CONFIG: Record<string, { bg: string; text: string; border: string; icon: any }> = {
-  'Sesión ABA':          { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200',    icon: Target },
-  'Anamnesis':           { bg: 'bg-violet-50',  text: 'text-violet-700',  border: 'border-violet-200',  icon: ClipboardList },
+  'Sesión ABA':          { bg: 'bg-sky-50',    text: 'text-sky-700',    border: 'border-sky-200',    icon: Target },
+  'Anamnesis':           { bg: 'bg-sky-50',  text: 'text-sky-700',  border: 'border-sky-200',  icon: ClipboardList },
   'Visita Domiciliaria': { bg: 'bg-amber-50',   text: 'text-amber-700',   border: 'border-amber-200',   icon: Home },
-  'BRIEF-2':             { bg: 'bg-indigo-50',  text: 'text-indigo-700',  border: 'border-indigo-200',  icon: Brain },
+  'BRIEF-2':             { bg: 'bg-sky-50',  text: 'text-sky-700',  border: 'border-sky-200',  icon: Brain },
   'ADOS-2':              { bg: 'bg-teal-50',    text: 'text-teal-700',    border: 'border-teal-200',    icon: Stethoscope },
   'Vineland-3':          { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: CheckCircle2 },
-  'WISC-V':              { bg: 'bg-purple-50',  text: 'text-purple-700',  border: 'border-purple-200',  icon: BarChart3 },
+  'WISC-V':              { bg: 'bg-sky-50',  text: 'text-sky-700',  border: 'border-sky-200',  icon: BarChart3 },
   'BASC-3':              { bg: 'bg-rose-50',    text: 'text-rose-700',    border: 'border-rose-200',    icon: Heart },
   'Formulario padre':    { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200',  icon: MessageSquare },
   'default':             { bg: 'bg-slate-50',   text: 'text-slate-600',   border: 'border-slate-200',   icon: FileText },
@@ -63,7 +63,7 @@ function Field({ label, value }: { label: string; value: any; key?: any }) {
   if (!display || display === 'undefined' || display === 'null') return null
   return (
     <div>
-      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-0.5">{label}</p>
       <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{display}</p>
     </div>
   )
@@ -78,7 +78,7 @@ function Bloque({ title, icon: Icon, color, children }: any) {
     <div className="bg-white dark:bg-[#161b22] rounded-xl border border-slate-200 dark:border-[#21262d] overflow-hidden">
       <div className={`flex items-center gap-2 px-4 py-3 ${color || 'bg-slate-50'} border-b border-slate-100`}>
         {Icon && <Icon size={13} className="text-slate-600" />}
-        <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">{title}</p>
+        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{title}</p>
       </div>
       <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">{children}</div>
     </div>
@@ -115,10 +115,10 @@ function AIBlock({ analysis }: { analysis: any }) {
   const visible = fields.filter(({ k }) => analysis[k])
   if (!visible.length) return null
   return (
-    <div className="bg-gradient-to-br from-violet-50 dark:from-violet-950/40 to-indigo-50 dark:to-indigo-950/40 border border-violet-200 dark:border-violet-800 rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-violet-100">
-        <Sparkles size={13} className="text-violet-600" />
-        <p className="text-xs font-black text-violet-700 uppercase tracking-widest">{t('especialista.analisisDeIA')}</p>
+    <div className="bg-gradient-to-br from-sky-50 dark:from-sky-950/40 to-sky-50 dark:to-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-sky-100">
+        <Sparkles size={13} className="text-sky-600" />
+        <p className="text-xs font-bold text-sky-700">{t('especialista.analisisDeIA')}</p>
       </div>
       <div className="p-4 space-y-3">
         {visible.map(({ k, l }) => {
@@ -126,7 +126,7 @@ function AIBlock({ analysis }: { analysis: any }) {
           const txt = Array.isArray(val) ? `• ${val.join('\n• ')}` : String(val)
           return (
             <div key={k}>
-              <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mb-1">{l}</p>
+              <p className="text-[10px] font-bold text-sky-500 mb-1">{l}</p>
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{txt}</p>
             </div>
           )
@@ -146,7 +146,7 @@ function WordBtn({ report }: { report: any }) {
     a.click(); URL.revokeObjectURL(a.href)
   }
   return (
-    <button onClick={dl} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+    <button onClick={dl} className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
       <Download size={13} /> {t('pacientes.descargarReporte')}
     </button>
   )
@@ -186,25 +186,25 @@ function ABADetail({ r }: { r: any }) {
   const d = r.datos || r
   return (
     <div className="space-y-3">
-      <Bloque title={t('ui.session')} icon={Calendar} color="bg-blue-50">
+      <Bloque title={t('ui.session')} icon={Calendar} color="bg-sky-50">
         <Field label="Objetivo principal" value={d.objetivo_principal} />
         <Field label={t("pacientes.tipoSesion")} value={d.tipo_sesion} />
         <Field label={t("ui.duracion")} value={d.duracion_minutos ? `${d.duracion_minutos} min` : null} />
       </Bloque>
-      <Bloque title={t('ui.abc_record')} icon={Activity} color="bg-blue-50">
+      <Bloque title={t('ui.abc_record')} icon={Activity} color="bg-sky-50">
         <Field label="Antecedente (A)" value={d.antecedente} />
         <Field label="Conducta (B)" value={d.conducta} />
         <Field label="Consecuencia (C)" value={d.consecuencia} />
         <Field label={t("ui.funcionEstimada")} value={d.funcion_estimada} />
       </Bloque>
-      <Bloque title={t('ui.performance')} icon={BarChart3} color="bg-blue-50">
+      <Bloque title={t('ui.performance')} icon={BarChart3} color="bg-sky-50">
         <Field label={t("ui.atencion")} value={d.nivel_atencion} />
         <Field label="Respuesta a instrucciones" value={d.respuesta_instrucciones} />
         <Field label={t("ui.toleranciaFrustrac")} value={d.tolerancia_frustracion} />
         <Field label={t("ui.interaccionSocial")} value={d.interaccion_social} />
         <Field label={t("ui.nivelLogro")} value={d.nivel_logro_objetivos} />
       </Bloque>
-      <Bloque title={t('ui.observations')} icon={ClipboardList} color="bg-blue-50">
+      <Bloque title={t('ui.observations')} icon={ClipboardList} color="bg-sky-50">
         <div className="col-span-2"><Field label={t("ui.clinicas")} value={d.observaciones_clinicas} /></div>
         <Field label={t("ui.tareaParaCasa")} value={d.tarea_casa} />
         <div className="col-span-2"><Field label={t("pacientes.mensajeFamilia")} value={d.mensaje_familia} /></div>
@@ -213,7 +213,7 @@ function ABADetail({ r }: { r: any }) {
       <button
         onClick={descargarReporteWord}
         disabled={downloading}
-        className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+        className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
       >
         <Download size={13} />
         {downloading ? 'Generando reporte...' : 'Descargar Reporte Word'}
@@ -256,30 +256,30 @@ function AnamnesisDetail({ r }: { r: any }) {
   const d = r.datos || r
   return (
     <div className="space-y-3">
-      <Bloque title={t('ui.general_data')} icon={User} color="bg-violet-50">
+      <Bloque title={t('ui.general_data')} icon={User} color="bg-sky-50">
         <Field label="Informante" value={d.informante} />
         <Field label="Parentesco" value={d.parentesco} />
         <Field label={t("ui.viveCon")} value={d.vive_con} />
         <Field label="Escolaridad" value={d.escolaridad} />
       </Bloque>
-      <Bloque title={t('ui.reason_consult')} icon={AlertCircle} color="bg-violet-50">
+      <Bloque title={t('ui.reason_consult')} icon={AlertCircle} color="bg-sky-50">
         <div className="col-span-2"><Field label="Motivo principal" value={d.motivo_principal} /></div>
         <Field label="Derivado por" value={d.derivado_por} />
         <div className="col-span-2"><Field label="Expectativas" value={d.expectativas} /></div>
       </Bloque>
-      <Bloque title={t('ui.prenatal_history')} icon={Heart} color="bg-violet-50">
+      <Bloque title={t('ui.prenatal_history')} icon={Heart} color="bg-sky-50">
         <Field label={t("ui.tipoEmbarazo")} value={d.tipo_embarazo} />
         <Field label={t("ui.tipoParto")} value={d.tipo_parto} />
         <Field label="Complicaciones" value={d.complicaciones_emb} />
         <Field label="Incubadora" value={d.incubadora} />
       </Bloque>
-      <Bloque title={t('ui.language_dev')} icon={MessageSquare} color="bg-violet-50">
+      <Bloque title={t('ui.language_dev')} icon={MessageSquare} color="bg-sky-50">
         <Field label="Primeras palabras" value={d.primeras_palabras} />
         <Field label="Frases" value={d.frases} />
         <Field label={t("ui.comprension")} value={d.comprension} />
         <Field label={t("ui.intencionComun")} value={d.intencion_comunicativa} />
       </Bloque>
-      <Bloque title={t("ui.conductaSocial")} icon={Brain} color="bg-violet-50">
+      <Bloque title={t("ui.conductaSocial")} icon={Brain} color="bg-sky-50">
         <Field label="Contacto visual" value={d.contacto_visual} />
         <Field label={t("ui.tipoJuego")} value={d.juego} />
         <Field label="Rabietas" value={d.rabietas} />
@@ -289,7 +289,7 @@ function AnamnesisDetail({ r }: { r: any }) {
       <button
         onClick={descargarReporteWord}
         disabled={downloading}
-        className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+        className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
       >
         <Download size={13} />
         {downloading ? 'Generando Historia Clínica...' : 'Descargar Historia Clínica (Word)'}
@@ -475,7 +475,7 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
 
   const nivelColor: Record<string, string> = {
     excelente: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-    bueno: 'text-blue-600 bg-blue-50 border-blue-200',
+    bueno: 'text-sky-600 bg-sky-50 border-sky-200',
     moderado: 'text-amber-600 bg-amber-50 border-amber-200',
     requiere_atencion: 'text-rose-600 bg-rose-50 border-rose-200',
   }
@@ -483,25 +483,25 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
   const prioridadColor: Record<string, string> = {
     alta: 'bg-rose-100 text-rose-700 border-rose-200',
     media: 'bg-amber-100 text-amber-700 border-amber-200',
-    baja: 'bg-blue-100 text-blue-700 border-blue-200',
+    baja: 'bg-sky-100 text-sky-700 border-sky-200',
   }
 
   const catColor: Record<string, string> = {
-    'ABA/Conductual': 'bg-blue-100 text-blue-700',
-    'Cognitiva': 'bg-purple-100 text-purple-700',
+    'ABA/Conductual': 'bg-sky-100 text-sky-700',
+    'Cognitiva': 'bg-sky-100 text-sky-700',
     'Social': 'bg-teal-100 text-teal-700',
-    'Comunicación': 'bg-indigo-100 text-indigo-700',
+    'Comunicación': 'bg-sky-100 text-sky-700',
     'Familia': 'bg-orange-100 text-orange-700',
     'Escolar': 'bg-emerald-100 text-emerald-700',
   }
 
   if (!summary && !loading) {
     return (
-      <div className="bg-gradient-to-br from-violet-50 dark:from-violet-950/40 to-indigo-50 dark:to-indigo-950/40 rounded-2xl border border-violet-200 dark:border-violet-800 p-8 text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+      <div className="bg-gradient-to-br from-sky-50 dark:from-sky-950/40 to-sky-50 dark:to-sky-950/40 rounded-2xl border border-sky-200 dark:border-sky-800 p-8 text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Sparkles size={28} className="text-white" />
         </div>
-        <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg mb-2">{t('especialista.resumenClinico')}</h3>
+        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">{t('especialista.resumenClinico')}</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto leading-relaxed">
           Genera un análisis completo del paciente con perfil clínico, áreas prioritarias, plan de tratamiento personalizado y estrategias para el hogar.
         </p>
@@ -509,7 +509,7 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
           <p className="text-sm text-slate-400 dark:text-slate-500 italic">{t('pacientes.sinRegistros').split('para')[0]} resumen.</p>
         ) : (
           <button onClick={generarResumen}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-md transition-all">
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-sky-700 text-white rounded-xl font-bold text-sm shadow-md transition-all">
             <Sparkles size={16} /> Generar resumen con IA
           </button>
         )}
@@ -520,11 +520,11 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-violet-50 dark:from-violet-950/40 to-indigo-50 dark:to-indigo-950/40 rounded-2xl border border-violet-200 dark:border-violet-800 p-12 text-center">
-        <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+      <div className="bg-gradient-to-br from-sky-50 dark:from-sky-950/40 to-sky-50 dark:to-sky-950/40 rounded-2xl border border-sky-200 dark:border-sky-800 p-12 text-center">
+        <div className="w-14 h-14 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Loader2 size={24} className="text-white animate-spin" />
         </div>
-        <h3 className="font-black text-slate-700 text-base mb-1">Analizando expediente completo...</h3>
+        <h3 className="font-bold text-slate-700 text-base mb-1">Analizando expediente completo...</h3>
         <p className="text-sm text-slate-400">La IA está procesando toda la información del paciente</p>
       </div>
     )
@@ -534,13 +534,13 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl flex items-center justify-center">
             <Sparkles size={14} className="text-white" />
           </div>
-          <p className="font-black text-slate-800 dark:text-slate-100 text-sm">{t('especialista.resumenClinico2')}</p>
+          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{t('especialista.resumenClinico2')}</p>
         </div>
         <button onClick={generarResumen}
-          className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800 px-3 py-1.5 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors">
+          className="flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 px-3 py-1.5 rounded-xl hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors">
           <RefreshCw size={11} /> Regenerar
         </button>
       </div>
@@ -554,7 +554,7 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
 
       {summary.resumen_ejecutivo && (
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white">
-          <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <p className="text-[10px] font-bold text-white/50 mb-2 flex items-center gap-1.5">
             <FileText size={10} /> Resumen ejecutivo
           </p>
           <p className="text-sm leading-relaxed text-white/90">{summary.resumen_ejecutivo}</p>
@@ -564,7 +564,7 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {summary.perfil_fortalezas?.length > 0 && (
           <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4">
-            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <p className="text-[10px] font-bold text-emerald-600 mb-3 flex items-center gap-1.5">
               <Star size={10} /> Fortalezas
             </p>
             <div className="space-y-2">
@@ -579,7 +579,7 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
         )}
         {summary.perfil_desafios?.length > 0 && (
           <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-2xl p-4">
-            <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <p className="text-[10px] font-bold text-rose-600 mb-3 flex items-center gap-1.5">
               <AlertCircle size={10} /> Desafíos
             </p>
             <div className="space-y-2">
@@ -598,12 +598,12 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
         <div className="bg-white dark:bg-[#161b22] border border-slate-200 dark:border-[#21262d] rounded-2xl overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-[#1c2128] border-b border-slate-100 dark:border-[#21262d]">
             <Target size={13} className="text-slate-600" />
-            <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">{t('especialista.areasPrioritarias')}</p>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{t('especialista.areasPrioritarias')}</p>
           </div>
           <div className="p-4 space-y-3">
             {summary.areas_prioridad.map((a: any, i: number) => (
               <div key={i} className="flex items-start gap-3">
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border flex-shrink-0 mt-0.5 ${prioridadColor[a.nivel] || prioridadColor.media}`}>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 mt-0.5 ${prioridadColor[a.nivel] || prioridadColor.media}`}>
                   {a.nivel}
                 </span>
                 <div>
@@ -618,14 +618,14 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
 
       {summary.recomendaciones_terapeuticas?.length > 0 && (
         <div className="bg-white dark:bg-[#161b22] border border-slate-200 dark:border-[#21262d] rounded-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 bg-violet-50 border-b border-violet-100">
-            <Lightbulb size={13} className="text-violet-600" />
-            <p className="text-xs font-black text-violet-700 uppercase tracking-widest">{t('especialista.planTratamiento')}</p>
+          <div className="flex items-center gap-2 px-4 py-3 bg-sky-50 border-b border-sky-100">
+            <Lightbulb size={13} className="text-sky-600" />
+            <p className="text-xs font-bold text-sky-700">{t('especialista.planTratamiento')}</p>
           </div>
           <div className="p-4 space-y-3">
             {summary.recomendaciones_terapeuticas.map((r: any, i: number) => (
               <div key={i} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-[#1c2128] rounded-xl">
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg flex-shrink-0 mt-0.5 ${catColor[r.categoria] || 'bg-slate-200 text-slate-600'}`}>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg flex-shrink-0 mt-0.5 ${catColor[r.categoria] || 'bg-slate-200 text-slate-600'}`}>
                   {r.categoria}
                 </span>
                 <div className="flex-1">
@@ -644,7 +644,7 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
 
       {summary.estrategias_casa?.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-          <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+          <p className="text-[10px] font-bold text-amber-700 mb-3 flex items-center gap-1.5">
             <Home size={10} /> Estrategias para los Padres en Casa
           </p>
           <div className="space-y-2">
@@ -659,17 +659,17 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
       )}
 
       {summary.objetivos_proximas_sesiones?.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-          <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+        <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4">
+          <p className="text-[10px] font-bold text-sky-700 mb-3 flex items-center gap-1.5">
             <Zap size={10} /> Objetivos para Próximas Sesiones
           </p>
           <div className="space-y-2">
             {summary.objetivos_proximas_sesiones.map((o: string, i: number) => (
               <div key={i} className="flex items-start gap-2">
-                <div className="w-5 h-5 rounded-lg bg-blue-200 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-[10px] font-black text-blue-700">{i + 1}</span>
+                <div className="w-5 h-5 rounded-lg bg-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-[10px] font-bold text-sky-700">{i + 1}</span>
                 </div>
-                <p className="text-xs text-blue-900 leading-relaxed">{o}</p>
+                <p className="text-xs text-sky-900 leading-relaxed">{o}</p>
               </div>
             ))}
           </div>
@@ -677,11 +677,11 @@ function ResumenIA({ records, paciente }: { records: any[]; paciente: any }) {
       )}
 
       {summary.mensaje_equipo && (
-        <div className="bg-gradient-to-br from-indigo-50 dark:from-indigo-950/30 to-violet-50 dark:to-violet-950/30 border border-indigo-200 dark:border-indigo-800 rounded-2xl p-4">
-          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+        <div className="bg-gradient-to-br from-sky-50 dark:from-sky-950/30 to-sky-50 dark:to-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-2xl p-4">
+          <p className="text-[10px] font-bold text-sky-600 mb-2 flex items-center gap-1.5">
             <Shield size={10} /> Mensaje al Equipo Terapéutico
           </p>
-          <p className="text-sm text-indigo-900 leading-relaxed italic">"{summary.mensaje_equipo}"</p>
+          <p className="text-sm text-sky-900 leading-relaxed italic">"{summary.mensaje_equipo}"</p>
         </div>
       )}
     </div>
@@ -710,7 +710,7 @@ function PatientInfoViewEspecialista({ paciente, onRefresh }: { paciente: any; o
         diagnosis: form.diagnosis.trim() || null,
       }).eq('id', paciente.id)
       if (error) throw error
-      toast.success('✅ Paciente actualizado')
+      toast.success('Paciente actualizado')
       setEditing(false)
       onRefresh()
     } catch (e: any) { toast.error(e.message) }
@@ -720,10 +720,10 @@ function PatientInfoViewEspecialista({ paciente, onRefresh }: { paciente: any; o
   return (
     <div className="p-6 space-y-4 max-w-2xl">
       <div className="flex items-center justify-between">
-        <h3 className="font-black text-sm uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Datos del paciente</h3>
+        <h3 className="font-bold text-sm" style={{ color: 'var(--text-muted)' }}>Datos del paciente</h3>
         {!editing && (
           <button onClick={() => setEditing(true)}
-            className="text-xs font-bold text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+            className="text-xs font-bold text-sky-600 hover:text-sky-700 px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 transition-colors">
             Editar
           </button>
         )}
@@ -737,7 +737,7 @@ function PatientInfoViewEspecialista({ paciente, onRefresh }: { paciente: any; o
             { key: 'diagnosis',  label: 'Diagnóstico',         type: 'text', req: false },
           ].map(f => (
             <div key={f.key}>
-              <label className="block text-xs font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
+              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-muted)' }}>
                 {f.label}{f.req && <span className="text-red-400 ml-0.5">*</span>}
               </label>
               <input type={f.type}
@@ -753,7 +753,7 @@ function PatientInfoViewEspecialista({ paciente, onRefresh }: { paciente: any; o
               Cancelar
             </button>
             <button onClick={handleSave} disabled={saving || !form.name.trim()}
-              className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-blue-700">
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-sky-600 text-white disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-sky-700">
               {saving ? <Loader2 size={14} className="animate-spin" /> : null}
               Guardar
             </button>
@@ -771,7 +771,7 @@ function PatientInfoViewEspecialista({ paciente, onRefresh }: { paciente: any; o
             { label: 'Teléfono tutor', value: paciente.profiles?.phone || '—' },
           ].map(({ label, value }) => (
             <div key={label} className="flex items-start gap-3 py-2.5 border-b" style={{ borderColor: 'var(--card-border)' }}>
-              <span className="text-xs font-black uppercase tracking-widest w-40 flex-shrink-0 pt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
+              <span className="text-xs font-bold w-40 flex-shrink-0 pt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
               <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{value}</span>
             </div>
           ))}
@@ -823,7 +823,7 @@ function FichasTabEspecialista({ childId, childName }: { childId: string; childN
         description:       'Ficha clínica generada automáticamente',
         visible_to_parent: false,
       })
-      toast.success('📄 Word generado y guardado en Documentos del paciente')
+      toast.success('Word generado y guardado en Documentos del paciente')
     } catch (e: any) {
       console.error('Error auto-generando Word:', e)
     }
@@ -835,11 +835,11 @@ function FichasTabEspecialista({ childId, childName }: { childId: string; childN
       <div className={`flex-shrink-0 px-5 pt-4 pb-3 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
         <div className={`flex rounded-2xl p-1.5 gap-1.5 border ${cc.bar}`}>
           <button onClick={() => setSubTab('plantillas')}
-            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all ${subTab === 'plantillas' ? cc.active : cc.inactive}`}>
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${subTab === 'plantillas' ? cc.active : cc.inactive}`}>
             ⚙️ Gestionar fichas
           </button>
           <button onClick={() => setSubTab('rellenar')}
-            className={`flex-1 py-3 rounded-xl text-sm font-black transition-all ${subTab === 'rellenar' ? cc.active : cc.inactive}`}>
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${subTab === 'rellenar' ? cc.active : cc.inactive}`}>
             📋 Fichas del paciente
           </button>
         </div>
@@ -903,7 +903,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
         is_active: true,
       }).select().single()
       if (error) throw error
-      toast.success('✅ Paciente creado correctamente')
+      toast.success('Paciente creado correctamente')
       setNewForm({ name: '', birth_date: '', diagnosis: '' })
       setShowCrear(false)
       await cargar()
@@ -935,7 +935,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
         .update({ parent_id: parentEncontrado.id })
         .eq('id', pacienteVincular.id)
       if (error) throw error
-      toast.success(`✅ ${pacienteVincular.name} vinculado a ${parentEncontrado.full_name || parentEncontrado.email}`)
+      toast.success(`${pacienteVincular.name} vinculado a ${parentEncontrado.full_name || parentEncontrado.email}`)
       setShowVincular(false)
       setEmailBusqueda('')
       setParentEncontrado(null)
@@ -1066,14 +1066,14 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
               className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#21262d] transition-all flex-shrink-0">
               <ChevronRight size={18} className="rotate-180 text-slate-600" />
             </button>
-            <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${AVATAR_COLORS[seleccionado.name?.charCodeAt(0) % AVATAR_COLORS.length]} flex items-center justify-center text-white font-black text-lg flex-shrink-0 shadow`}>
+            <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${AVATAR_COLORS[seleccionado.name?.charCodeAt(0) % AVATAR_COLORS.length]} flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow`}>
               {seleccionado.name?.[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-black truncate dark:text-slate-100" style={{ color: 'var(--text-primary)' }}>{seleccionado.name}</h1>
+              <h1 className="text-lg font-bold truncate dark:text-slate-100" style={{ color: 'var(--text-primary)' }}>{seleccionado.name}</h1>
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                 {seleccionado.diagnosis && (
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300">
                     {seleccionado.diagnosis}
                   </span>
                 )}
@@ -1086,7 +1086,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
             {TABS_DETAIL.map(tb => (
               <button key={tb.id} onClick={() => setDetailTab(tb.id)}
                 className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 font-bold border-b-2 transition-all min-w-0
-                  ${detailTab === tb.id ? 'border-blue-500 text-blue-600' : 'border-transparent'}`}
+                  ${detailTab === tb.id ? 'border-sky-500 text-sky-600' : 'border-transparent'}`}
                 style={{ color: detailTab === tb.id ? undefined : 'var(--text-muted)' }}
                 title={tb.label}>
                 <tb.icon size={14} />
@@ -1140,11 +1140,11 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
     <div className="space-y-5 pb-20 md:pb-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">{t('nav.mispacientes')}</h2>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('nav.mispacientes')}</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Expedientes clínicos completos</p>
         </div>
         <button onClick={() => setShowCrear(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-sm flex-shrink-0">
+          className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-bold transition-all shadow-sm flex-shrink-0">
           <Plus size={15} /> Nuevo paciente
         </button>
       </div>
@@ -1159,19 +1159,19 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
 
       {!loading && (
         <p className="text-xs text-slate-500 font-semibold px-1">
-          <span className="font-black text-slate-800 dark:text-slate-100">{filtrados.length}</span> paciente{filtrados.length !== 1 ? 's' : ''}
+          <span className="font-bold text-slate-800 dark:text-slate-100">{filtrados.length}</span> paciente{filtrados.length !== 1 ? 's' : ''}
           {busqueda && <span className="text-slate-400"> · "{busqueda}"</span>}
         </p>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-blue-600" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-sky-600" /></div>
       ) : (
         <div className="grid gap-2">
           {filtrados.map((n, idx) => (
             <div key={n.id} onClick={() => verPaciente(n)}
-              className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200 dark:border-[#21262d] p-4 flex items-center gap-4 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer group shadow-sm">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${AVATAR_COLORS[idx % AVATAR_COLORS.length]} flex items-center justify-center text-white font-black text-lg flex-shrink-0 shadow`}>
+              className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200 dark:border-[#21262d] p-4 flex items-center gap-4 hover:border-sky-300 hover:shadow-sm transition-all cursor-pointer group shadow-sm">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${AVATAR_COLORS[idx % AVATAR_COLORS.length]} flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow`}>
                 {n.name?.[0]?.toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -1180,7 +1180,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
                 <p className="text-xs text-slate-400 truncate">{n.profiles?.full_name || 'Sin tutor'}</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800 px-2 py-1 rounded-lg">
+                <div className="flex items-center gap-1 text-[10px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 px-2 py-1 rounded-lg">
                   <Sparkles size={10} /> IA
                 </div>
                 <button onClick={e => { e.stopPropagation(); setPacienteVincular(n); setShowVincular(true) }}
@@ -1188,7 +1188,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
                   title="Vincular cuenta de padre/tutor">
                   <Link2 size={13} /> Vincular
                 </button>
-                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-2 rounded-xl group-hover:bg-blue-100 transition-colors">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-2 rounded-xl group-hover:bg-sky-100 transition-colors">
                   <BookOpen size={13} /> Expediente
                 </div>
               </div>
@@ -1209,10 +1209,10 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
           <div className="bg-white dark:bg-[#161b22] rounded-3xl w-full max-w-md shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <UserPlus size={18} className="text-blue-600" />
+                <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center">
+                  <UserPlus size={18} className="text-sky-600" />
                 </div>
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Nuevo paciente</h3>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Nuevo paciente</h3>
               </div>
               <button onClick={() => setShowCrear(false)} className="p-2 rounded-xl hover:bg-slate-100">
                 <X size={16} className="text-slate-400" />
@@ -1225,13 +1225,13 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
                 { key: 'diagnosis',  label: 'Diagnóstico',         type: 'text', placeholder: 'Ej: TEA Nivel 2', req: false },
               ].map(f => (
                 <div key={f.key}>
-                  <label className="block text-xs font-black uppercase tracking-widest mb-1.5 text-slate-500">
+                  <label className="block text-xs font-bold mb-1.5 text-slate-500">
                     {f.label}{f.req && <span className="text-red-400 ml-0.5">*</span>}
                   </label>
                   <input type={f.type} placeholder={f.placeholder}
                     value={(newForm as any)[f.key]}
                     onChange={e => setNewForm(fm => ({ ...fm, [f.key]: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none border border-slate-200 dark:border-[#30363d] bg-slate-50 dark:bg-[#0d1117] focus:border-blue-400 focus:bg-white dark:focus:bg-[#1c2128] transition-colors text-slate-800 dark:text-slate-200" />
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none border border-slate-200 dark:border-[#30363d] bg-slate-50 dark:bg-[#0d1117] focus:border-sky-400 focus:bg-white dark:focus:bg-[#1c2128] transition-colors text-slate-800 dark:text-slate-200" />
                 </div>
               ))}
             </div>
@@ -1241,7 +1241,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
                 Cancelar
               </button>
               <button onClick={handleCrear} disabled={saving || !newForm.name.trim()}
-                className="flex-1 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-blue-700">
+                className="flex-1 py-3 rounded-xl font-bold text-sm bg-sky-600 text-white disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-sky-700">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Crear paciente
               </button>
@@ -1260,7 +1260,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
                   <Link2 size={18} className="text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Vincular cuenta</h3>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Vincular cuenta</h3>
                   <p className="text-xs text-slate-500">{pacienteVincular.name}</p>
                 </div>
               </div>
@@ -1284,7 +1284,7 @@ export default function MisPacientes({ onPatientSelect }: { onPatientSelect?: (i
             </div>
             {parentEncontrado && (
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-200 flex items-center justify-center font-black text-emerald-700">
+                <div className="w-10 h-10 rounded-xl bg-emerald-200 flex items-center justify-center font-bold text-emerald-700">
                   {parentEncontrado.full_name?.[0] || parentEncontrado.email[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">

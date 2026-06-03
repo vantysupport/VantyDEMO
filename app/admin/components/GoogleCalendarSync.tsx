@@ -28,7 +28,7 @@ export default function GoogleCalendarSync() {
     const params = new URLSearchParams(window.location.search)
     const gcal   = params.get('gcal')
     if (gcal === 'connected') {
-      toast.success('✅ Google Calendar conectado')
+      toast.success('Google Calendar conectado')
       checkStatus()
       window.history.replaceState({}, '', window.location.pathname)
     } else if (gcal === 'error') {
@@ -64,7 +64,7 @@ export default function GoogleCalendarSync() {
         body: JSON.stringify({ action: 'sync-all', userId }),
       })
       const data = await res.json()
-      if (data.ok) toast.success(`✅ ${data.synced} cita${data.synced !== 1 ? 's' : ''} sincronizadas`)
+      if (data.ok) toast.success(`${data.synced} cita${data.synced !== 1 ? 's' : ''} sincronizadas`)
       else toast.error(data.error || 'Error al sincronizar')
     } catch (e: any) { toast.error('Error: ' + e.message) }
     finally { setSyncing(false) }

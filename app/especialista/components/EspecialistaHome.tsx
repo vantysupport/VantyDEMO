@@ -7,7 +7,7 @@ import {
   FileText, Clock, CheckCircle2, XCircle, Calendar,
   Baby, ChevronRight, ArrowUpRight,
   Plus, Brain, Sparkles, Users, Heart, BookOpen,
-  AlertCircle, AlertTriangle, Bell, Target
+  AlertCircle, AlertTriangle, Bell, Target, BarChart3, Trophy
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -18,11 +18,11 @@ interface Props {
 }
 
 const TIPS_CLINICOS = [
-  { emoji: '🎯', texto: 'Registra las conductas objetivo con antecedente, conducta y consecuencia (ABC) para mejorar la calidad de tu análisis ABA.' },
-  { emoji: '📊', texto: 'Cuando un objetivo supera el 80% de dominio por 3 sesiones consecutivas, es momento de proponer un nuevo objetivo al jefe.' },
-  { emoji: '💙', texto: 'Recuerda preguntar brevemente al padre/madre cómo se ha sentido esta semana. El bienestar del cuidador afecta directamente el progreso del niño.' },
-  { emoji: '📝', texto: 'Las notas de sesión con observaciones específicas son más útiles que las generales. Detalla cada avance con datos concretos.' },
-  { emoji: '🏆', texto: 'Celebra los micro-logros con el niño y la familia. Un objetivo nuevo alcanzado, por pequeño que sea, merece reconocimiento.' },
+  { Icon: Target,     texto: 'Registra las conductas objetivo con antecedente, conducta y consecuencia (ABC) para mejorar la calidad de tu análisis ABA.' },
+  { Icon: BarChart3,  texto: 'Cuando un objetivo supera el 80% de dominio por 3 sesiones consecutivas, es momento de proponer un nuevo objetivo al jefe.' },
+  { Icon: Heart,      texto: 'Recuerda preguntar brevemente al padre/madre cómo se ha sentido esta semana. El bienestar del cuidador afecta directamente el progreso del niño.' },
+  { Icon: FileText,   texto: 'Las notas de sesión con observaciones específicas son más útiles que las generales. Detalla cada avance con datos concretos.' },
+  { Icon: Trophy,     texto: 'Celebra los micro-logros con el niño y la familia. Un objetivo nuevo alcanzado, por pequeño que sea, merece reconocimiento.' },
 ]
 
 // ── Mismos componentes visuales que DashboardHome del admin ───────────────────
@@ -67,12 +67,12 @@ function KPI({ label, value, sub, icon: Icon, bar, urgent, onClick }: any) {
       style={{ background: 'var(--card)', border: urgent ? `1px solid ${bar}60` : '1px solid var(--card-border)' }}>
       <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
       <div className="flex items-start justify-between pl-3 mb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</p>
+        <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${bar}12` }}>
           <Icon size={14} style={{ color: bar }} />
         </div>
       </div>
-      <p className="text-4xl font-black leading-none pl-3 mb-1" style={{ color: urgent ? bar : 'var(--text-primary)' }}>{value ?? '—'}</p>
+      <p className="text-4xl font-bold leading-none pl-3 mb-1" style={{ color: urgent ? bar : 'var(--text-primary)' }}>{value ?? '—'}</p>
       <p className="text-xs pl-3" style={{ color: 'var(--text-muted)' }}>{sub}</p>
     </div>
   )
@@ -90,7 +90,7 @@ function EvalRow({ titulo, paciente, fecha, status, onClick }: any) {
       style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)', borderLeft: `3px solid ${c.color}` }}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-[9px] font-black uppercase tracking-wide" style={{ color: c.color }}>{c.label}</span>
+          <span className="text-[9px] font-bold" style={{ color: c.color }}>{c.label}</span>
           {paciente && <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{paciente}</span>}
         </div>
         <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{titulo}</p>
@@ -115,7 +115,7 @@ function CitaRow({ cita, onClick }: any) {
       <div className="w-10 h-10 rounded-lg flex flex-col items-center justify-center flex-shrink-0"
         style={{ background: esHoy ? '#3a68a0' : 'var(--muted-bg)', color: esHoy ? '#fff' : 'var(--text-secondary)' }}>
         <span className="text-[8px] font-bold leading-none">{mes}</span>
-        <span className="text-sm font-black leading-none">{dia}</span>
+        <span className="text-sm font-bold leading-none">{dia}</span>
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{nombre}</p>
@@ -222,7 +222,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
         <div className="p-5 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs capitalize mb-0.5" style={{ color: 'var(--text-muted)' }}>{diaStr}</p>
-            <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {saludo}, {profile?.role === 'especialista' ? 'Especialista' : profile?.full_name?.split(' ')[0] || 'Bienvenida'} 👋
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -239,7 +239,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-5xl font-black tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <p className="text-5xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {horaActual ? horaActual.toLocaleTimeString(toBCP47(locale), { hour: '2-digit', minute: '2-digit' }) : '--:--'}
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{horaActual?.getSeconds()}s</p>
@@ -261,15 +261,15 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
         {/* Sesiones 7 días + Retención */}
         <div className="rounded-xl p-5 flex flex-col justify-between" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[11px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Sesiones — últimos 7 días</p>
-            <span className="text-lg font-black" style={{ color: '#3a68a0' }}>{totalSes}</span>
+            <p className="text-[11px] font-bold" style={{ color: 'var(--text-muted)' }}>Sesiones — últimos 7 días</p>
+            <span className="text-lg font-bold" style={{ color: '#3a68a0' }}>{totalSes}</span>
           </div>
           <BarChart values={sesSemanales} labels={diasLabels} color="#3a68a0" />
           <div className="mt-4 pt-4 border-t flex items-center gap-4" style={{ borderColor: 'var(--card-border)' }}>
             <Donut value={stats.totalPacientes - stats.pendientes} total={stats.totalPacientes} color="#2e7a56" size={56} />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Retención activa</p>
-              <p className="text-base font-black leading-none" style={{ color: 'var(--text-primary)' }}>
+              <p className="text-[11px] font-bold mb-1" style={{ color: 'var(--text-muted)' }}>Retención activa</p>
+              <p className="text-base font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
                 {stats.totalPacientes - stats.pendientes}
                 <span className="text-sm font-medium ml-1" style={{ color: 'var(--text-muted)' }}>/ {stats.totalPacientes}</span>
               </p>
@@ -281,7 +281,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
         {/* Evaluaciones recientes */}
         <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Mis evaluaciones recientes</p>
+            <p className="text-[11px] font-bold" style={{ color: 'var(--text-muted)' }}>Mis evaluaciones recientes</p>
             <button onClick={() => setActiveView('formularios')} className="text-[10px] font-semibold" style={{ color: '#3a68a0' }}>Ver todas →</button>
           </div>
           {loading ? (
@@ -319,7 +319,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
             <div className="flex items-center gap-2">
               <Users size={13} style={{ color: 'var(--text-muted)' }} />
-              <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Mis pacientes</p>
+              <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>Mis pacientes</p>
             </div>
             <button onClick={() => setActiveView('pacientes')} className="text-[10px] font-semibold flex items-center gap-1" style={{ color: '#3a68a0' }}>
               Ver todos <ArrowUpRight size={10} />
@@ -344,7 +344,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
                     <button key={p.id} onClick={() => setActiveView('pacientes')}
                       className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:opacity-80"
                       style={{ background: 'var(--muted-bg)', border: '1px solid var(--card-border)' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-black" style={{ background: clr }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold" style={{ background: clr }}>
                         {initials}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -372,7 +372,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
             <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
               <div className="flex items-center gap-2">
                 <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
-                <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Citas de hoy</p>
+                <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>Citas de hoy</p>
               </div>
               <button onClick={() => setActiveView('agenda')} className="text-[10px] font-semibold flex items-center gap-1" style={{ color: '#3a68a0' }}>
                 Ver agenda <ArrowUpRight size={10} />
@@ -397,11 +397,12 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
           {/* Tip clínico */}
           <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="flex items-center gap-2 mb-3">
-              <Brain size={13} style={{ color: '#6355a0' }} />
-              <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Tip clínico del día</p>
+              <Brain size={13} style={{ color: '#0284c7' }} />
+              <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>Tip clínico del día</p>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-              <span className="mr-1">{tip.emoji}</span>{tip.texto}
+            <p className="text-sm leading-relaxed flex items-start gap-2" style={{ color: 'var(--text-primary)' }}>
+              {(() => { const TIcon = tip.Icon; return <TIcon size={16} style={{ color: '#0284c7', flexShrink: 0, marginTop: 2 }} /> })()}
+              <span>{tip.texto}</span>
             </p>
           </div>
 
@@ -409,7 +410,7 @@ export default function EspecialistaHome({ userId, profile, setActiveView }: Pro
           <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: `1px solid var(--card-border)`, borderLeft: `3px solid #6355a0` }}>
             <div className="flex items-center gap-2 mb-2">
               <Heart size={13} style={{ color: '#6355a0' }} />
-              <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Recordatorio</p>
+              <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>Recordatorio</p>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
               Tu trabajo hace una diferencia real en la vida de cada familia. ¡Gracias por tu dedicación! 💜

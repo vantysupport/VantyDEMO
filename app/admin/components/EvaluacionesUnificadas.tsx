@@ -623,7 +623,7 @@ function HistorialFormCard({ sf, onReportGenerated }: { sf: any; onReportGenerat
       document.body.appendChild(a); a.click()
       URL.revokeObjectURL(url); document.body.removeChild(a)
 
-      toast.success('✅ Reporte Word generado y descargado')
+      toast.success('Reporte Word generado y descargado')
       onReportGenerated()
     } catch (err: any) {
       console.error('Error generando reporte:', err)
@@ -884,7 +884,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         setEditedMessage(analysis?.mensaje_padres || analysis?.informe_padres_vineland || analysis?.informe_padres_wisc || analysis?.informe_padres_basc || analysis?.informe_familia_ados || analysis?.informe_padres_entorno || analysis?.mensaje_padres_entorno || analysis?.informe_padres_ablls || analysis?.informe_padres || '')
         setEditedActividades(analysis?.actividades_casa || analysis?.actividad_casa || '')
       }
-      toast.success('✨ Análisis IA generado')
+      toast.success('Análisis IA generado')
     } catch (err: any) {
       const isQuota = err.message?.includes('Cuota') || err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED')
       toast.error(isQuota 
@@ -950,7 +950,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
       setSavedRecordId((savedRecord as any)?.id || null)
       setSavedChildId(selectedChild)
       setShowSuccessScreen(true)
-      toast.success('✅ Formulario guardado correctamente')
+      toast.success('Formulario guardado correctamente')
 
       // Queue AI-generated parent message for admin approval (if it exists)
       if (aiAnalysis?.mensaje_padres) {
@@ -1030,7 +1030,7 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         document.body.appendChild(a); a.click()
         URL.revokeObjectURL(url); document.body.removeChild(a)
 
-        toast.success('✅ Reporte Word descargado')
+        toast.success('Reporte Word descargado')
       } catch (err: any) {
         toast.error('Error generando reporte: ' + (err.message || 'Intenta de nuevo'))
       } finally {
@@ -1362,7 +1362,7 @@ export default function EvaluacionesUnificadas({ initialChildId, initialChildNam
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('📤 Formulario enviado')
+      toast.success('Formulario enviado')
       loadData()
     } catch (err: any) {
       toast.error('Error al enviar: ' + err.message)

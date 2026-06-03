@@ -95,7 +95,7 @@ export default function MensajesPendientesPanel() {
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success('✅ Mensaje aprobado y enviado al padre/madre')
+      toast.success('Mensaje aprobado y enviado al padre/madre')
       setEditingId(null)
       loadMessages()
     } catch (err: any) {

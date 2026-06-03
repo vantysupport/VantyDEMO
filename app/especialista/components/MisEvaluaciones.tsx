@@ -17,8 +17,8 @@ const STATUS: Record<string, any> = {
 }
 
 const TIPOS = [
-  { id: 'conducta', label: 'Conducta',      desc: 'Análisis ABC',          color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  { id: 'progreso', label: 'Progreso',       desc: 'Avance terapéutico',    color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { id: 'conducta', label: 'Conducta',      desc: 'Análisis ABC',          color: 'bg-sky-50 text-sky-700 border-sky-200' },
+  { id: 'progreso', label: 'Progreso',       desc: 'Avance terapéutico',    color: 'bg-sky-50 text-sky-700 border-sky-200' },
   { id: 'sesion',   label: 'Nota de sesión', desc: 'Registro clínico',      color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   { id: 'familia',  label: 'Para familia',   desc: 'Guías para el hogar',   color: 'bg-amber-50 text-amber-700 border-amber-200' },
 ]
@@ -104,11 +104,11 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800">{t('nav.misevaluaciones')}</h2>
+          <h2 className="text-2xl font-bold text-slate-800">{t('nav.misevaluaciones')}</h2>
           <p className="text-sm text-slate-500 mt-1">{t('ui.require_approval')}</p>
         </div>
         <button onClick={() => setMostrarForm(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-sm shadow-blue-200 transition-all flex-shrink-0">
+          className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold px-5 py-3 rounded-xl shadow-sm shadow-sky-200 transition-all flex-shrink-0">
           <Plus size={16} /> {t('especialista.nueva2')}
         </button>
       </div>
@@ -122,11 +122,11 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
             <button key={f} onClick={() => setFiltro(f)}
               className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border transition-all
                 ${isActive
-                  ? (cfg ? `${cfg.bg} ${cfg.color} ${cfg.border}` : 'bg-blue-600 text-white border-blue-600')
-                  : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'
+                  ? (cfg ? `${cfg.bg} ${cfg.color} ${cfg.border}` : 'bg-sky-600 text-white border-sky-600')
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300'
                 }`}>
               {f === 'all' ? 'Todas' : STATUS[f].label}
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold
                 ${isActive ? 'bg-white/30' : 'bg-slate-100 text-slate-500'}`}>
                 {counts[f]}
               </span>
@@ -138,7 +138,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
       {/* Lista */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 size={24} className="animate-spin text-blue-600" />
+          <Loader2 size={24} className="animate-spin text-sky-600" />
         </div>
       ) : filtradas.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 py-20 text-center shadow-sm">
@@ -146,7 +146,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
             <FileText size={24} className="text-slate-400" />
           </div>
           <p className="text-slate-400 text-sm font-semibold">{t('ui.no_evals')}</p>
-          <button onClick={() => setMostrarForm(true)} className="mt-3 text-xs font-bold text-blue-600 hover:underline">
+          <button onClick={() => setMostrarForm(true)} className="mt-3 text-xs font-bold text-sky-600 hover:underline">
             Crear nueva →
           </button>
         </div>
@@ -184,8 +184,8 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
                       </span>
                     </div>
                     {ev.admin_comment && (
-                      <div className={`mt-3 px-4 py-3 rounded-xl text-xs border-l-4 ${ev.status === 'rejected' ? 'bg-red-50 border-red-400' : 'bg-blue-50 border-blue-400'}`}>
-                        <p className={`text-[10px] font-black uppercase tracking-wide mb-1 ${ev.status === 'rejected' ? 'text-red-600' : 'text-blue-500'}`}>
+                      <div className={`mt-3 px-4 py-3 rounded-xl text-xs border-l-4 ${ev.status === 'rejected' ? 'bg-red-50 border-red-400' : 'bg-sky-50 border-sky-400'}`}>
+                        <p className={`text-[10px] font-bold mb-1 ${ev.status === 'rejected' ? 'text-red-600' : 'text-sky-500'}`}>
                           {ev.status === 'rejected' ? '🚨 Motivo del rechazo — por favor corrígelo' : '💬 Comentario del jefe'}
                         </p>
                         <p className="text-slate-700 leading-relaxed">{ev.admin_comment}</p>
@@ -195,7 +195,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
                               setForm({ child_id: ev.child_id, tipo: ev.tipo, titulo: `[CORREGIDO] ${ev.titulo}`, contenido: ev.contenido, observaciones: ev.observaciones || '', recomendaciones: ev.recomendaciones || '' })
                               setMostrarForm(true)
                             }}
-                            className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-black text-red-700 bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-200 transition-all"
+                            className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold text-red-700 bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-200 transition-all"
                           >
                             ✏️ Crear versión corregida
                           </button>
@@ -227,7 +227,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
           <div className="bg-white w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200">
             <div className="sticky top-0 bg-white px-6 py-5 flex items-center justify-between border-b border-slate-100">
               <div>
-                <h3 className="font-black text-slate-800 text-lg">{t('evaluaciones.nuevo')}</h3>
+                <h3 className="font-bold text-slate-800 text-lg">{t('evaluaciones.nuevo')}</h3>
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full mt-1.5">
                   <Clock size={10} /> {t('evaluaciones.pendienteAprobacion')}
                 </span>
@@ -240,13 +240,13 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
             <div className="p-6 space-y-5">
               {/* Tipo + botón de plantilla */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">{t('especialista.tipoEval')} *</label>
+                <label className="block text-xs font-bold text-slate-500 mb-2">{t('especialista.tipoEval')} *</label>
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   {TIPOS.map(t => (
                     <button key={t.id} type="button"
                       onClick={() => setForm(f => ({ ...f, tipo: t.id }))}
                       className={`p-3 rounded-xl border-2 text-left transition-all ${form.tipo === t.id ? `${t.color} border-current` : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}>
-                      <p className="text-xs font-black">{t.label}</p>
+                      <p className="text-xs font-bold">{t.label}</p>
                       <p className="text-[10px] opacity-70">{t.desc}</p>
                     </button>
                   ))}
@@ -258,7 +258,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
                       const tpl = TEMPLATES[form.tipo]
                       setForm(f => ({ ...f, titulo: tpl.titulo, contenido: tpl.contenido, observaciones: tpl.observaciones, recomendaciones: tpl.recomendaciones }))
                     }}
-                    className="w-full py-2.5 border-2 border-dashed border-blue-300 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 border-2 border-dashed border-sky-300 text-sky-600 rounded-xl text-xs font-bold hover:bg-sky-50 transition-all flex items-center justify-center gap-2"
                   >
                     ✨ Usar plantilla de {TIPOS.find(t => t.id === form.tipo)?.label}
                   </button>
@@ -267,9 +267,9 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
 
               {/* Paciente */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">{t('evaluaciones.pacienteStar')}</label>
+                <label className="block text-xs font-bold text-slate-500 mb-2">{t('evaluaciones.pacienteStar')}</label>
                 <select value={form.child_id} onChange={e => setForm(f => ({ ...f, child_id: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
                   <option value="">{t('ui.select_option')}</option>
                   {ninos.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
                 </select>
@@ -277,13 +277,13 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
 
               {/* Tipo */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">{t('especialista.tipoStar')}</label>
+                <label className="block text-xs font-bold text-slate-500 mb-2">{t('especialista.tipoStar')}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {TIPOS.map(t => (
                     <button key={t.id} onClick={() => setForm(f => ({ ...f, tipo: t.id }))}
                       className={`text-left p-3 rounded-xl border-2 transition-all
-                        ${form.tipo === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'}`}>
-                      <p className={`text-sm font-bold ${form.tipo === t.id ? 'text-blue-700' : 'text-slate-700'}`}>{t.label}</p>
+                        ${form.tipo === t.id ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-300'}`}>
+                      <p className={`text-sm font-bold ${form.tipo === t.id ? 'text-sky-700' : 'text-slate-700'}`}>{t.label}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{t.desc}</p>
                     </button>
                   ))}
@@ -292,38 +292,38 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
 
               {/* Título */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">{t('especialista.tituloEval')}</label>
+                <label className="block text-xs font-bold text-slate-500 mb-2">{t('especialista.tituloEval')}</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   {...{placeholder: t('ui.eval_title')}}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" />
               </div>
 
               {/* Contenido */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Contenido *</label>
+                <label className="block text-xs font-bold text-slate-500 mb-2">Contenido *</label>
                 <textarea value={form.contenido} onChange={e => setForm(f => ({ ...f, contenido: e.target.value }))}
                   rows={5} placeholder={t('ui.clinical_findings_placeholder')}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
               </div>
 
               {/* Observaciones */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-bold text-slate-500 mb-2">
                   Observaciones <span className="text-slate-300 normal-case font-normal">(opcional)</span>
                 </label>
                 <textarea value={form.observaciones} onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
                   rows={3} placeholder={t('ui.additional_notes_placeholder')}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
               </div>
 
               {/* Recomendaciones */}
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-bold text-slate-500 mb-2">
                   Recomendaciones <span className="text-slate-300 normal-case font-normal">(opcional)</span>
                 </label>
                 <textarea value={form.recomendaciones} onChange={e => setForm(f => ({ ...f, recomendaciones: e.target.value }))}
                   rows={3} placeholder={t('ui.strategies_placeholder')}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
               </div>
 
               <div className="flex gap-3 pt-2">
@@ -332,7 +332,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
                   Cancelar
                 </button>
                 <button onClick={enviar} disabled={enviando}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm disabled:opacity-50 transition-all shadow-sm">
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm disabled:opacity-50 transition-all shadow-sm">
                   {enviando ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                   {enviando ? 'Enviando...' : 'Enviar para aprobación'}
                 </button>
@@ -348,7 +348,7 @@ export default function MisEvaluaciones({ userId }: { userId: string }) {
 function ExpandedSection({ title, content }: { title: string; content: string }) {
   return (
     <div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{title}</p>
+      <p className="text-[10px] font-bold text-slate-400 mb-2">{title}</p>
       <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">{content}</p>
     </div>
   )

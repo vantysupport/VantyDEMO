@@ -291,7 +291,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
 
       if (uploaded > 0 && fallidos.length === 0) {
         const destino = uploadFolder ? (fs.carpetas.find(c => c.id === uploadFolder)?.name || 'la carpeta') : 'Inicio'
-        toast.success(`✅ ${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} en "${destino}"`)
+        toast.success(`${uploaded} documento${uploaded > 1 ? 's subidos' : ' subido'} en "${destino}"`)
       } else if (uploaded > 0 && fallidos.length > 0) {
         toast.warning(`Se subieron ${uploaded}, pero fallaron ${fallidos.length}: ${fallidos.join(', ')}`)
       } else {
@@ -383,7 +383,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
     if (!newFolderName.trim()) return
     crearCarpeta(newFolderName.trim(), newFolderEmoji, currentFolder)
     setNewFolderName(''); setNewFolderEmoji('📁'); setShowNewFolder(false)
-    toast.success('📁 Carpeta creada')
+    toast.success('Carpeta creada')
   }
 
   const handleEditarCarpeta = () => {

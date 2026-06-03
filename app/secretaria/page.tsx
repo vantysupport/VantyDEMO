@@ -37,7 +37,7 @@ function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all
               ${tab === t.id
-                ? 'bg-blue-600 text-white shadow-md'
+                ? 'bg-sky-600 text-white shadow-md'
                 : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'
               }`}>
             <t.icon size={15} />
@@ -58,14 +58,14 @@ function SidebarLink({ icon: Icon, label, active, onClick, badge }: any) {
     <button onClick={onClick}
       className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-left text-sm
         ${active
-          ? 'bg-blue-600 text-white shadow-sm'
+          ? 'bg-sky-600 text-white shadow-sm'
           : isDark ? 'text-slate-400 hover:bg-[#21262d] hover:text-slate-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
         }`}>
       <Icon size={17} className={`flex-shrink-0 ${active ? 'text-white' : ''}`} />
       <span className="font-semibold truncate flex-1">{label}</span>
       {badge && (
-        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center
-          ${active ? 'bg-white/25 text-white' : 'bg-blue-100 text-blue-700'}`}>
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center
+          ${active ? 'bg-white/25 text-white' : 'bg-sky-100 text-sky-700'}`}>
           {badge}
         </span>
       )}
@@ -137,11 +137,11 @@ export default function SecretariaDashboard() {
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
       <div className="flex flex-col items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg">
+        <div className="w-14 h-14 rounded-2xl bg-sky-600 flex items-center justify-center shadow-lg">
           <ClipboardList size={26} className="text-white" />
         </div>
-        <p className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Neuropsicología y Terapias SANTI</p>
-        <Loader2 size={18} className="animate-spin text-blue-500" />
+        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Neuropsicología y Terapias SANTI</p>
+        <Loader2 size={18} className="animate-spin text-sky-500" />
       </div>
     </div>
   )
@@ -169,7 +169,7 @@ export default function SecretariaDashboard() {
             <Image src="/images/logo.png" alt="Logo" fill className="object-contain" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-black text-[13px] leading-tight" style={{ color: 'var(--text-primary)' }}>Neuropsicología y Terapias SANTI</p>
+            <p className="font-bold text-[13px] leading-tight" style={{ color: 'var(--text-primary)' }}>Neuropsicología y Terapias SANTI</p>
             <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Panel Secretaría</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1" style={{ color: 'var(--text-muted)' }}>
@@ -190,7 +190,7 @@ export default function SecretariaDashboard() {
         <div className="p-3 flex-shrink-0" style={{ borderTop: '1px solid var(--card-border)' }}>
           <div className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all hover:opacity-80"
             onClick={() => { setActiveView('perfil'); setSidebarOpen(false) }}>
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 overflow-hidden">
+            <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-700 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                 : userInitial}
@@ -220,7 +220,7 @@ export default function SecretariaDashboard() {
               <Menu size={18} />
             </button>
             <div>
-              <h1 className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{PAGE_TITLES[activeView] || 'Panel'}</h1>
+              <h1 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{PAGE_TITLES[activeView] || 'Panel'}</h1>
               <p className="text-[10px] hidden sm:block" style={{ color: 'var(--text-muted)' }}>Neuropsicología y Terapias SANTI · Gestión Integral</p>
             </div>
           </div>

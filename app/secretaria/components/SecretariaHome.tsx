@@ -20,8 +20,8 @@ function AppointmentRow({ apt }: { apt: any }) {
     confirmed: { label: 'Confirmada', dot: '#10b981' },
     pending:   { label: 'Pendiente',  dot: '#f59e0b' },
     cancelled: { label: 'Cancelada',  dot: '#ef4444' },
-    completed: { label: 'Completada', dot: '#3b82f6' },
-    realizada: { label: 'Realizada',  dot: '#3b82f6' },
+    completed: { label: 'Completada', dot: '#0284c7' },
+    realizada: { label: 'Realizada',  dot: '#0284c7' },
   }
   const s = statusCfg[apt.status] || { label: apt.status, dot: '#9ca3af' }
 
@@ -30,10 +30,10 @@ function AppointmentRow({ apt }: { apt: any }) {
       style={{ borderBottom: '1px solid var(--card-border)' }}>
       {/* Fecha pill */}
       <div className="w-11 h-11 rounded-2xl flex flex-col items-center justify-center flex-shrink-0"
-        style={{ background: esHoy ? '#3b82f6' : 'var(--muted-bg)' }}>
-        <span className="text-[9px] font-black uppercase leading-none"
+        style={{ background: esHoy ? '#0284c7' : 'var(--muted-bg)' }}>
+        <span className="text-[9px] font-bold uppercase leading-none"
           style={{ color: esHoy ? 'rgba(255,255,255,0.75)' : 'var(--text-muted)' }}>{mesCorto}</span>
-        <span className="text-sm font-black leading-tight"
+        <span className="text-sm font-bold leading-tight"
           style={{ color: esHoy ? '#fff' : 'var(--text-primary)' }}>{dia}</span>
       </div>
 
@@ -108,7 +108,7 @@ function WeeklyMiniChart() {
         return (
           <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
             {d.total > 0 && (
-              <span className="text-[10px] font-black tabular-nums" style={{ color: 'var(--text-primary)' }}>
+              <span className="text-[10px] font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
                 {d.total}
               </span>
             )}
@@ -117,7 +117,7 @@ function WeeklyMiniChart() {
                 <div className="w-full rounded-md overflow-hidden"
                   style={{
                     height: barH,
-                    background: d.isToday ? '#3b82f6' : '#10b981',
+                    background: d.isToday ? '#0284c7' : '#10b981',
                     opacity: d.isToday ? 1 : 0.7
                   }} />
               ) : (
@@ -127,8 +127,8 @@ function WeeklyMiniChart() {
                 }} />
               )}
             </div>
-            <span className="text-[10px] font-black"
-              style={{ color: d.isToday ? '#3b82f6' : 'var(--text-muted)' }}>
+            <span className="text-[10px] font-bold"
+              style={{ color: d.isToday ? '#0284c7' : 'var(--text-muted)' }}>
               {d.day}
             </span>
           </div>
@@ -206,11 +206,11 @@ export default function SecretariaHome({ onNavigate }: Props) {
 
       {/* ── HERO ── */}
       <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #2563eb, #7c3aed, #059669)' }} />
+        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #0284c7, #0284c7, #059669)' }} />
         <div className="p-5 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs capitalize mb-0.5" style={{ color: 'var(--text-muted)' }}>{diaStr}</p>
-            <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {saludo} 👋
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -227,7 +227,7 @@ export default function SecretariaHome({ onNavigate }: Props) {
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-5xl font-black tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <p className="text-5xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {horaActual ? horaActual.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -240,7 +240,7 @@ export default function SecretariaHome({ onNavigate }: Props) {
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {([
-          { label: 'Citas hoy',   value: stats.hoy,         sub: 'Programadas',     icon: Calendar,     bar: '#2563eb', nav: 'agenda' },
+          { label: 'Citas hoy',   value: stats.hoy,         sub: 'Programadas',     icon: Calendar,     bar: '#0284c7', nav: 'agenda' },
           { label: 'Pendientes',  value: stats.pendientes,  sub: 'Sin confirmar',   icon: AlertCircle,  bar: '#f59e0b', nav: 'agenda' },
           { label: 'Canceladas',  value: stats.canceladas,  sub: 'Últimos 30 días', icon: XCircle,      bar: '#ef4444', nav: undefined },
           { label: 'Completadas', value: stats.completadas, sub: 'Últimos 30 días', icon: CheckCircle2, bar: '#10b981', nav: undefined },
@@ -251,12 +251,12 @@ export default function SecretariaHome({ onNavigate }: Props) {
             style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
             <div className="flex items-start justify-between pl-3 mb-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</p>
+              <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${bar}18` }}>
                 <Icon size={14} style={{ color: bar }} />
               </div>
             </div>
-            <p className="text-4xl font-black leading-none pl-3 mb-1" style={{ color: loading ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+            <p className="text-4xl font-bold leading-none pl-3 mb-1" style={{ color: loading ? 'var(--text-muted)' : 'var(--text-primary)' }}>
               {loading ? '—' : value}
             </p>
             <p className="text-xs pl-3" style={{ color: 'var(--text-muted)' }}>{sub}</p>
@@ -268,18 +268,18 @@ export default function SecretariaHome({ onNavigate }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
         <div className="rounded-xl p-5 flex flex-col" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-black uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Actividad semanal</p>
-            <span className="text-sm font-black" style={{ color: '#2563eb' }}>{loading ? '—' : stats.semana}</span>
+            <p className="text-[11px] font-bold" style={{ color: 'var(--text-muted)' }}>Actividad semanal</p>
+            <span className="text-sm font-bold" style={{ color: '#0284c7' }}>{loading ? '—' : stats.semana}</span>
           </div>
           <WeeklyMiniChart />
         </div>
         <div className="rounded-xl p-5 flex flex-col justify-between" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-          <p className="text-[11px] font-black uppercase tracking-wide mb-4" style={{ color: 'var(--text-muted)' }}>Resumen</p>
+          <p className="text-[11px] font-bold mb-4" style={{ color: 'var(--text-muted)' }}>Resumen</p>
           <div className="flex flex-col gap-4">
             {([
-              { label: 'Pacientes activos', value: stats.pacientes,   icon: Users,        color: '#3b82f6' },
+              { label: 'Pacientes activos', value: stats.pacientes,   icon: Users,        color: '#0284c7' },
               { label: 'Esta semana',       value: stats.semana,      icon: TrendingUp,   color: '#10b981' },
-              { label: 'Completadas (30d)', value: stats.completadas, icon: CheckCircle2, color: '#8b5cf6' },
+              { label: 'Completadas (30d)', value: stats.completadas, icon: CheckCircle2, color: '#0ea5e9' },
             ] as const).map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${color}12` }}>
@@ -288,7 +288,7 @@ export default function SecretariaHome({ onNavigate }: Props) {
                 <div className="flex-1">
                   <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{label}</p>
                 </div>
-                <p className="text-lg font-black tabular-nums" style={{ color: loading ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                <p className="text-lg font-bold tabular-nums" style={{ color: loading ? 'var(--text-muted)' : 'var(--text-primary)' }}>
                   {loading ? '—' : value}
                 </p>
               </div>
@@ -301,15 +301,15 @@ export default function SecretariaHome({ onNavigate }: Props) {
       <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
         <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
           <div className="flex items-center gap-2">
-            <Clock size={14} style={{ color: '#2563eb' }}/>
-            <h3 className="text-[13px] font-black" style={{ color: 'var(--text-primary)' }}>Hoy</h3>
+            <Clock size={14} style={{ color: '#0284c7' }}/>
+            <h3 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>Hoy</h3>
             {citasHoy.length > 0 && (
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: '#2563eb', color: '#fff' }}>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#0284c7', color: '#fff' }}>
                 {citasHoy.length}
               </span>
             )}
           </div>
-          <button onClick={() => onNavigate?.('agenda')} className="flex items-center gap-1 text-[11px] font-bold hover:opacity-70" style={{ color: '#2563eb' }}>
+          <button onClick={() => onNavigate?.('agenda')} className="flex items-center gap-1 text-[11px] font-bold hover:opacity-70" style={{ color: '#0284c7' }}>
             Ver agenda <ChevronRight size={12}/>
           </button>
         </div>
@@ -333,7 +333,7 @@ export default function SecretariaHome({ onNavigate }: Props) {
         <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
           <div className="flex items-center gap-2">
             <CalendarDays size={14} style={{ color: 'var(--text-muted)' }}/>
-            <h3 className="text-[13px] font-black" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>
               {proximasCitas.length > 0 ? 'Próximas citas' : 'Citas recientes'}
             </h3>
           </div>
@@ -352,7 +352,7 @@ export default function SecretariaHome({ onNavigate }: Props) {
           <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
             {listaCitas.length > 6 ? `+${listaCitas.length - 6} más` : `${listaCitas.length} citas`}
           </span>
-          <button onClick={() => onNavigate?.('agenda')} className="flex items-center gap-1 text-[12px] font-bold hover:opacity-70" style={{ color: '#2563eb' }}>
+          <button onClick={() => onNavigate?.('agenda')} className="flex items-center gap-1 text-[12px] font-bold hover:opacity-70" style={{ color: '#0284c7' }}>
             Ver agenda <ArrowRight size={12}/>
           </button>
         </div>

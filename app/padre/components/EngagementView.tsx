@@ -189,7 +189,7 @@ export default function EngagementView({ childId }: { childId: string }) {
   if (loading) return (
     <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'80px 20px',gap:16 }}>
       <div style={{ width:56,height:56,borderRadius:'50%',background:'var(--c-stat-purple)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-        <Loader2 size={28} color="#9333ea" style={{ animation:'spin 1s linear infinite' }}/>
+        <Loader2 size={28} color="#0284c7" style={{ animation:'spin 1s linear infinite' }}/>
       </div>
       <p style={{ fontSize:13,color:'var(--c-text-placeholder)',fontWeight:600 }}>Cargando plan semanal...</p>
       <style>{`
@@ -240,7 +240,7 @@ export default function EngagementView({ childId }: { childId: string }) {
       `}</style>
 
       {/* HERO */}
-      <div className="eng-card" style={{ background:'linear-gradient(135deg,#be185d,#9333ea,#0284c7)',borderRadius:24,padding:'22px 22px 18px',color:'#ffffff',boxShadow:'0 16px 50px rgba(147,51,234,.3)',position:'relative',overflow:'hidden' }}>
+      <div className="eng-card" style={{ background:'linear-gradient(135deg,#0369a1,#0284c7,#06b6d4)',borderRadius:24,padding:'22px 22px 18px',color:'#ffffff',boxShadow:'0 16px 50px rgba(2,132,199,.3)',position:'relative',overflow:'hidden' }}>
         <div style={{ position:'absolute',top:-20,right:-20,width:130,height:130,background:'rgba(255,255,255,.07)',borderRadius:'50%' }}/>
         <div style={{ position:'relative',zIndex:1 }}>
           <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
@@ -280,11 +280,11 @@ export default function EngagementView({ childId }: { childId: string }) {
       {!plan ? (
         <div className="eng-card" style={{ background:'var(--c-card)',borderRadius:24,border:'1.5px solid var(--c-border-light)',padding:'48px 24px',textAlign:'center',boxShadow:'0 4px 20px rgba(0,0,0,.04)' }}>
           <div style={{ width:72,height:72,background:'var(--c-stat-purple)',borderRadius:20,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px' }}>
-            <Brain size={32} color="#9333ea"/>
+            <Brain size={32} color="#0284c7"/>
           </div>
           <p style={{ fontWeight:800,fontSize:16,color:'var(--c-text-primary)',margin:'0 0 8px' }}>Sin plan esta semana</p>
           <p style={{ fontSize:13,color:'var(--c-text-placeholder)',lineHeight:1.6,maxWidth:280,margin:'0 auto 24px' }}>La IA generará actividades personalizadas basadas en el progreso terapéutico.</p>
-          <button onClick={generar} disabled={generando} style={{ display:'inline-flex',alignItems:'center',gap:8,background:'linear-gradient(135deg,#be185d,#0284c7)',color:'#ffffff',border:'none',padding:'13px 24px',borderRadius:16,fontSize:14,fontWeight:700,cursor:generando?'not-allowed':'pointer',boxShadow:'0 6px 20px rgba(147,51,234,.3)',fontFamily:'inherit' }}>
+          <button onClick={generar} disabled={generando} style={{ display:'inline-flex',alignItems:'center',gap:8,background:'linear-gradient(135deg,#0369a1,#0284c7)',color:'#ffffff',border:'none',padding:'13px 24px',borderRadius:16,fontSize:14,fontWeight:700,cursor:generando?'not-allowed':'pointer',boxShadow:'0 6px 20px rgba(2,132,199,.3)',fontFamily:'inherit' }}>
             <Sparkles size={16}/>{generando ? 'Generando...' : 'Generar actividades con IA'}
           </button>
         </div>
@@ -399,7 +399,7 @@ export default function EngagementView({ childId }: { childId: string }) {
 
                       {/* Botón de acción principal en panel expandido */}
                       <button onClick={e => { e.stopPropagation(); toggle(i) }}
-                        style={{ width:'100%',padding:'11px',background:done?'var(--c-surface)':'linear-gradient(135deg,#be185d,#0284c7)',color:done?'var(--c-text-muted)':'var(--c-card)',border:done?'1.5px solid var(--c-border)':'none',borderRadius:14,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:'inherit',transition:'all .2s' }}>
+                        style={{ width:'100%',padding:'11px',background:done?'var(--c-surface)':'linear-gradient(135deg,#0369a1,#0284c7)',color:done?'var(--c-text-muted)':'var(--c-card)',border:done?'1.5px solid var(--c-border)':'none',borderRadius:14,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:'inherit',transition:'all .2s' }}>
                         {done
                           ? <><Circle size={15}/>Marcar como pendiente</>
                           : <><CheckCircle size={15}/>Marcar como completada</>
@@ -434,7 +434,7 @@ export default function EngagementView({ childId }: { childId: string }) {
                   <div key={i} style={{ display:'flex',alignItems:'center',gap:12 }}>
                     <span style={{ fontSize:11,color:'var(--c-text-placeholder)',width:72,flexShrink:0,fontWeight:600 }}>Sem. {h.semana}</span>
                     <div style={{ flex:1,height:8,background:'var(--c-border-light)',borderRadius:20,overflow:'hidden' }}>
-                      <div style={{ height:'100%',width:`${h.completadas_pct||0}%`,background:'linear-gradient(90deg,#be185d,#0284c7)',borderRadius:20,transition:'width .8s ease' }}/>
+                      <div style={{ height:'100%',width:`${h.completadas_pct||0}%`,background:'linear-gradient(90deg,#0369a1,#0284c7)',borderRadius:20,transition:'width .8s ease' }}/>
                     </div>
                     <span style={{ fontSize:12,fontWeight:800,color:h.completadas_pct===100?'#16a34a':'#0284c7',width:38,textAlign:'right' }}>{h.completadas_pct||0}%</span>
                   </div>

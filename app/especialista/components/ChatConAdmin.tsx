@@ -74,7 +74,7 @@ function Avatar({ name, avatarUrl, size = 'md', online = false }: { name: string
     <div className="relative flex-shrink-0">
       {avatarUrl
         ? <img src={avatarUrl} alt={name} className={`${sz} rounded-full object-cover ring-2 ring-white shadow-sm`} />
-        : <div className={`${sz} bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-black shadow-sm`}>{name.charAt(0).toUpperCase()}</div>
+        : <div className={`${sz} bg-gradient-to-br from-sky-500 to-sky-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm`}>{name.charAt(0).toUpperCase()}</div>
       }
       {online && <span className={`absolute bottom-0 right-0 ${dot} bg-emerald-400 rounded-full ring-2 ring-white`} />}
     </div>
@@ -471,7 +471,7 @@ export default function ChatConAdmin({
                   onUpdate={(url) => { setMyAvatar(url); onAvatarUpdate?.(url) }}
                 />
                 <div>
-                  <p className="text-xs font-black text-slate-800 leading-tight">{userName}</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight">{userName}</p>
                   <p className="text-[10px] text-slate-400">Toca la foto para cambiarla</p>
                 </div>
               </div>
@@ -484,7 +484,7 @@ export default function ChatConAdmin({
               <input
                 value={busqueda} onChange={e => setBusqueda(e.target.value)}
                 placeholder="Buscar..."
-                className={`w-full pl-8 pr-3 py-2 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${isDark ? 'bg-[#0d1117] border border-[#30363d] text-slate-300 placeholder:text-slate-600' : 'bg-white border border-slate-200 text-slate-700'}`}
+                className={`w-full pl-8 pr-3 py-2 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-400 shadow-sm ${isDark ? 'bg-[#0d1117] border border-[#30363d] text-slate-300 placeholder:text-slate-600' : 'bg-white border border-slate-200 text-slate-700'}`}
               />
             </div>
           </div>
@@ -492,7 +492,7 @@ export default function ChatConAdmin({
           {/* Lista contactos */}
           <div className="flex-1 overflow-y-auto">
             {loadingContactos ? (
-              <div className="flex justify-center py-10"><Loader2 size={18} className="animate-spin text-blue-400" /></div>
+              <div className="flex justify-center py-10"><Loader2 size={18} className="animate-spin text-sky-400" /></div>
             ) : filtrados.length === 0 ? (
               <div className="text-center py-10 px-4"><p className="text-xs text-slate-400">Sin contactos</p></div>
             ) : (
@@ -501,8 +501,8 @@ export default function ChatConAdmin({
                 {admins.length > 0 && (
                   <>
                     <div className={`px-4 py-2 flex items-center gap-1.5 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100/70'}`}>
-                      <Shield size={11} className="text-blue-500" />
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Administración</p>
+                      <Shield size={11} className="text-sky-500" />
+                      <p className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Administración</p>
                     </div>
                     {admins.map(c => <ContactoItem key={c.id} c={c} seleccionado={seleccionado} onClick={() => setSeleccionado(c)} />)}
                   </>
@@ -511,8 +511,8 @@ export default function ChatConAdmin({
                 {especialistas.length > 0 && (
                   <>
                     <div className={`px-4 py-2 flex items-center gap-1.5 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100/70'}`}>
-                      <Users size={11} className="text-violet-500" />
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Especialistas</p>
+                      <Users size={11} className="text-sky-500" />
+                      <p className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Especialistas</p>
                     </div>
                     {especialistas.map(c => <ContactoItem key={c.id} c={c} seleccionado={seleccionado} onClick={() => setSeleccionado(c)} />)}
                   </>
@@ -525,12 +525,12 @@ export default function ChatConAdmin({
         {/* ── Panel derecho: chat ── */}
         <div className="flex-1 flex flex-col min-w-0">
           {!seleccionado ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-5 text-center px-8 bg-gradient-to-br from-slate-50 to-blue-50/30">
+            <div className="flex-1 flex flex-col items-center justify-center gap-5 text-center px-8 bg-gradient-to-br from-slate-50 to-sky-50/30">
               <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-sm border border-slate-100">
-                <MessageCircle size={40} className="text-blue-200" />
+                <MessageCircle size={40} className="text-sky-200" />
               </div>
               <div>
-                <p className="text-slate-700 font-black text-base">Selecciona un contacto</p>
+                <p className="text-slate-700 font-bold text-base">Selecciona un contacto</p>
                 <p className="text-slate-400 text-sm mt-1">Elige un contacto de la lista para ver su conversación</p>
               </div>
             </div>
@@ -540,7 +540,7 @@ export default function ChatConAdmin({
               <div className={`px-5 py-3.5 border-b flex items-center gap-3 shadow-sm ${isDark ? 'border-[#21262d] bg-[#161b22]' : 'border-slate-100 bg-white'}`}>
                 <Avatar name={seleccionado.full_name} avatarUrl={seleccionado.avatar_url} size="md" online />
                 <div className="flex-1">
-                  <p className={`text-sm font-black ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{seleccionado.full_name}</p>
+                  <p className={`text-sm font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{seleccionado.full_name}</p>
                   <p className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
                     {seleccionado.specialty || roleLabel(seleccionado.role)}
@@ -553,24 +553,24 @@ export default function ChatConAdmin({
 
               {/* Banner reply */}
               {replyTo && (
-                <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-start gap-2">
-                  <Reply size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                <div className="bg-sky-50 border-b border-sky-100 px-4 py-2 flex items-start gap-2">
+                  <Reply size={14} className="text-sky-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-blue-600">{replyTo.sender_name}</p>
+                    <p className="text-[10px] font-bold text-sky-600">{replyTo.sender_name}</p>
                     <p className="text-[11px] text-slate-600 truncate">{replyTo.content.slice(0, 80)}</p>
                   </div>
-                  <button onClick={() => setReplyTo(null)} className="p-1 rounded-lg hover:bg-blue-100 text-blue-400"><X size={12} /></button>
+                  <button onClick={() => setReplyTo(null)} className="p-1 rounded-lg hover:bg-sky-100 text-sky-400"><X size={12} /></button>
                 </div>
               )}
 
               {/* Área mensajes */}
               <div className="flex-1 overflow-y-auto px-4 py-4 pr-6" style={{ background: isDark ? '#0d1117' : 'radial-gradient(ellipse at 20% 50%, rgba(239,246,255,0.6) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(238,242,255,0.4) 0%, transparent 60%), #f8fafc' }}>
                 {loadingMsg ? (
-                  <div className="flex justify-center py-10"><Loader2 size={20} className="animate-spin text-blue-400" /></div>
+                  <div className="flex justify-center py-10"><Loader2 size={20} className="animate-spin text-sky-400" /></div>
                 ) : mensajes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100">
-                      <MessageCircle size={24} className="text-blue-300" />
+                      <MessageCircle size={24} className="text-sky-300" />
                     </div>
                     <p className="text-slate-400 text-sm">Aún no hay mensajes. ¡Empezá la conversación!</p>
                   </div>
@@ -598,7 +598,7 @@ export default function ChatConAdmin({
                               )}
                               <div className={`flex flex-col ${esMio ? 'items-end' : 'items-start'} max-w-[72%]`}>
                                 {!esMio && !mismoEmisor && (
-                                  <p className="text-[10px] font-black text-slate-500 mb-1 ml-1">{msg.sender_name}</p>
+                                  <p className="text-[10px] font-bold text-slate-500 mb-1 ml-1">{msg.sender_name}</p>
                                 )}
                                 {/* Archivo */}
                                 {msg.message_type === 'file' && msg.file_url && (
@@ -607,36 +607,36 @@ export default function ChatConAdmin({
                                       onClick={() => window.open(msg.file_url!, '_blank')} />
                                   ) : (
                                     <a href={msg.file_url} target="_blank" rel="noopener noreferrer"
-                                      className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-sm border ${esMio ? 'bg-blue-600 border-blue-500 text-white' : isDark ? 'bg-[#1c2128] border-[#21262d] text-slate-200' : 'bg-white border-slate-100 text-slate-700'}`}>
-                                      <FileText size={18} className={esMio ? 'text-blue-200' : 'text-slate-400'} />
+                                      className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-sm border ${esMio ? 'bg-sky-600 border-sky-500 text-white' : isDark ? 'bg-[#1c2128] border-[#21262d] text-slate-200' : 'bg-white border-slate-100 text-slate-700'}`}>
+                                      <FileText size={18} className={esMio ? 'text-sky-200' : 'text-slate-400'} />
                                       <div>
                                         <p className="text-xs font-bold truncate max-w-[150px]">{msg.file_name}</p>
-                                        <p className={`text-[10px] ${esMio ? 'text-blue-200' : 'text-slate-400'}`}>Toca para abrir</p>
+                                        <p className={`text-[10px] ${esMio ? 'text-sky-200' : 'text-slate-400'}`}>Toca para abrir</p>
                                       </div>
                                     </a>
                                   )
                                 )}
                                 {/* Audio */}
                                 {msg.message_type === 'audio' && msg.file_url && (
-                                  <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-sm min-w-[180px] ${esMio ? 'bg-blue-600 text-white' : 'bg-white border border-slate-100'}`}>
+                                  <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-sm min-w-[180px] ${esMio ? 'bg-sky-600 text-white' : 'bg-white border border-slate-100'}`}>
                                     <button onClick={() => toggleAudio(msg.id, msg.file_url!)}
-                                      className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${esMio ? 'bg-blue-500 hover:bg-blue-400' : 'bg-blue-100 hover:bg-blue-200'}`}>
+                                      className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${esMio ? 'bg-sky-500 hover:bg-sky-400' : 'bg-sky-100 hover:bg-sky-200'}`}>
                                       {reproduciendo === msg.id
-                                        ? <Pause size={15} className={esMio ? 'text-white' : 'text-blue-600'} />
-                                        : <Play size={15} className={esMio ? 'text-white' : 'text-blue-600'} />}
+                                        ? <Pause size={15} className={esMio ? 'text-white' : 'text-sky-600'} />
+                                        : <Play size={15} className={esMio ? 'text-white' : 'text-sky-600'} />}
                                     </button>
                                     <div className="flex-1">
-                                      <div className={`h-1.5 rounded-full ${esMio ? 'bg-blue-400' : 'bg-slate-200'}`}>
-                                        <div className={`h-full rounded-full transition-all ${esMio ? 'bg-white/60' : 'bg-blue-400'}`} style={{ width: reproduciendo === msg.id ? '60%' : '0%' }} />
+                                      <div className={`h-1.5 rounded-full ${esMio ? 'bg-sky-400' : 'bg-slate-200'}`}>
+                                        <div className={`h-full rounded-full transition-all ${esMio ? 'bg-white/60' : 'bg-sky-400'}`} style={{ width: reproduciendo === msg.id ? '60%' : '0%' }} />
                                       </div>
-                                      <p className={`text-[10px] mt-1 ${esMio ? 'text-blue-200' : 'text-slate-400'}`}>Nota de voz</p>
+                                      <p className={`text-[10px] mt-1 ${esMio ? 'text-sky-200' : 'text-slate-400'}`}>Nota de voz</p>
                                     </div>
                                   </div>
                                 )}
                                 {/* Texto */}
                                 {(!msg.message_type || msg.message_type === 'text') && (
                                   <div className="relative">
-                                    <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${esMio ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white text-slate-800 border border-slate-100 rounded-bl-sm'}`}>
+                                    <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${esMio ? 'bg-sky-600 text-white rounded-br-sm' : 'bg-white text-slate-800 border border-slate-100 rounded-bl-sm'}`}>
                                       <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                                     </div>
                                     {msg.reaction && (
@@ -648,7 +648,7 @@ export default function ChatConAdmin({
                                 <div className={`flex items-center gap-1 mt-1.5 ${esMio ? 'flex-row-reverse' : 'flex-row'}`}>
                                   <span className="text-[10px] text-slate-400">{formatHora(msg.created_at)}</span>
                                   {esMio && (msg.read_at
-                                    ? <CheckCheck size={11} className="text-blue-400" />
+                                    ? <CheckCheck size={11} className="text-sky-400" />
                                     : <Check size={11} className="text-slate-300" />)}
                                 </div>
                               </div>
@@ -670,12 +670,12 @@ export default function ChatConAdmin({
 
               {/* Preview audio */}
               {audioUrl && !grabando && (
-                <div className="bg-blue-50 border-t border-blue-100 px-4 py-3 flex items-center gap-3">
-                  <Mic size={16} className="text-blue-500 flex-shrink-0" />
+                <div className="bg-sky-50 border-t border-sky-100 px-4 py-3 flex items-center gap-3">
+                  <Mic size={16} className="text-sky-500 flex-shrink-0" />
                   <audio src={audioUrl} controls className="flex-1 h-8" style={{ minWidth: 0 }} />
-                  <button onClick={cancelarAudio} className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-400 flex-shrink-0"><X size={14} /></button>
+                  <button onClick={cancelarAudio} className="p-1.5 rounded-lg hover:bg-sky-100 text-sky-400 flex-shrink-0"><X size={14} /></button>
                   <button onClick={enviarAudio} disabled={subiendo}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 disabled:opacity-50 flex-shrink-0">
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 disabled:opacity-50 flex-shrink-0">
                     {subiendo ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} Enviar
                   </button>
                 </div>
@@ -700,7 +700,7 @@ export default function ChatConAdmin({
                     {subiendo ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
                   </button>
                   <input ref={fileInputRef} type="file" className="hidden" onChange={handleArchivo} accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" />
-                  <div className={`flex-1 border rounded-2xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-400 focus-within:border-blue-400 transition-all ${isDark ? 'bg-[#1c2128] border-[#30363d]' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`flex-1 border rounded-2xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-sky-400 transition-all ${isDark ? 'bg-[#1c2128] border-[#30363d]' : 'bg-slate-50 border-slate-200'}`}>
                     <textarea ref={textareaRef} value={texto} onChange={e => setTexto(e.target.value)} onKeyDown={handleKeyDown}
                       placeholder={`Escribe a ${seleccionado.full_name.split(' ')[0]}…`}
                       rows={1} disabled={grabando}
@@ -715,7 +715,7 @@ export default function ChatConAdmin({
                   </button>
                   {texto.trim() && (
                     <button onClick={enviar} disabled={enviando}
-                      className="w-9 h-9 flex-shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white flex items-center justify-center transition-all shadow-sm shadow-blue-200">
+                      className="w-9 h-9 flex-shrink-0 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 text-white flex items-center justify-center transition-all shadow-sm shadow-sky-200">
                       {enviando ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                     </button>
                   )}
@@ -740,14 +740,14 @@ function ContactoItem({ c, seleccionado, onClick }: { c: Contacto; seleccionado:
       className={`w-full text-left px-4 py-3.5 border-b transition-colors relative
         ${isDark ? 'border-[#21262d]' : 'border-slate-100/70'}
         ${seleccionado?.id === c.id
-          ? isDark ? 'bg-blue-900/25 border-l-[3px] border-l-blue-500' : 'bg-blue-50 border-l-[3px] border-l-blue-500'
+          ? isDark ? 'bg-sky-900/25 border-l-[3px] border-l-sky-500' : 'bg-sky-50 border-l-[3px] border-l-sky-500'
           : isDark ? 'hover:bg-[#21262d]' : 'hover:bg-white/80'
         }`}>
       <div className="flex items-start gap-3">
         <div className="relative flex-shrink-0">
           <Avatar name={c.full_name} avatarUrl={c.avatar_url} size="sm" />
           {c.unread > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
               {c.unread > 9 ? '9+' : c.unread}
             </span>
           )}

@@ -29,7 +29,7 @@ function CalBtn({ label, icon, grad, profile, apiBase, paramKey, role='padre' }:
     check()
     const p = new URLSearchParams(window.location.search)
     const v = p.get(paramKey)
-    if (v==='connected') { toast.success(`✅ ${label} conectado.`); check(); window.history.replaceState({},'',window.location.pathname) }
+    if (v==='connected') { toast.success(`${label} conectado.`); check(); window.history.replaceState({},'',window.location.pathname) }
     else if (v==='error') { toast.error(`Error al conectar ${label}`); window.history.replaceState({},'',window.location.pathname) }
   },[profile?.id])
 

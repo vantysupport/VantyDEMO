@@ -194,7 +194,7 @@ function MonthlyCalendarView() {
         body: JSON.stringify({ id, status: 'completed' , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       setApts(prev => prev.map(a => a.id === id ? { ...a, status: 'completed' } : a))
-      toast.success('✅ Sesión finalizada · Cita movida al historial')
+      toast.success('Sesión finalizada · Cita movida al historial')
     } catch {
       cargarCitas()
     }
@@ -260,7 +260,7 @@ function MonthlyCalendarView() {
       if (sync.parentMicrosoft?.ok && sync.parentMicrosoft?.updated) synced.push('Outlook padre')
 
       if (synced.length > 0) {
-        toast.success(`✅ Horario actualizado · Sincronizado en: ${synced.join(', ')}`)
+        toast.success(`Horario actualizado · Sincronizado en: ${synced.join(', ')}`)
       } else {
         toast.success('Horario actualizado')
       }
@@ -357,7 +357,7 @@ function MonthlyCalendarView() {
 
           // Avisar si ningún calendario está conectado para el especialista
           if (!gcalData.connected && !msData.connected) {
-            toast.warning('⚠️ El especialista no tiene Google ni Outlook Calendar conectado. La cita se guardó correctamente.')
+            toast.warning('El especialista no tiene Google ni Outlook Calendar conectado. La cita se guardó correctamente.')
           }
 
           // Construir lista de citas a sincronizar (una por participante en grupal)
@@ -415,8 +415,8 @@ function MonthlyCalendarView() {
             }
           }
 
-          if (gcalSynced > 0) toast.success(`📅 ${gcalSynced} cita${gcalSynced > 1 ? 's' : ''} añadida${gcalSynced > 1 ? 's' : ''} a Google Calendar`)
-          if (msSynced > 0)   toast.success(`📅 ${msSynced} cita${msSynced > 1 ? 's' : ''} añadida${msSynced > 1 ? 's' : ''} a Outlook Calendar`)
+          if (gcalSynced > 0) toast.success(`${gcalSynced} cita${gcalSynced > 1 ? 's' : ''} añadida${gcalSynced > 1 ? 's' : ''} a Google Calendar`)
+          if (msSynced > 0)   toast.success(`${msSynced} cita${msSynced > 1 ? 's' : ''} añadida${msSynced > 1 ? 's' : ''} a Outlook Calendar`)
         }
       } catch (calError) {
         console.error('Calendar sync error:', calError)
@@ -445,9 +445,9 @@ function MonthlyCalendarView() {
         if (citasRecurrentes.length > 0) {
           await supabase.from('appointments').insert(citasRecurrentes)
         }
-        toast.success(`✅ ${recurrenciaSemanas} ${t('agenda.citasRecurrenciaMensaje').replace('{tipo}', recurrencia === 'weekly' ? t('agenda.semanales') : t('agenda.quincenales'))}`)
+        toast.success(`${recurrenciaSemanas} ${t('agenda.citasRecurrenciaMensaje').replace('{tipo}', recurrencia === 'weekly' ? t('agenda.semanales') : t('agenda.quincenales'))}`)
       } else {
-        toast.success(`✅ Cita ${modalidadCita} agendada`)
+        toast.success(`Cita ${modalidadCita} agendada`)
       }
       resetForm(); cargarCitas()
     } catch (err:any) { toast.error('Error: ' + err.message) }
@@ -463,10 +463,10 @@ function MonthlyCalendarView() {
         body: JSON.stringify({ appointment_id: apt.id, child_id: apt.child_id, initiated_by: 'admin' , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const data = await res.json()
-      if (data.limitReached) { toast.error('⚠️ Límite mensual de 10,000 min alcanzado. Se reinicia el próximo mes.'); return }
+      if (data.limitReached) { toast.error('Límite mensual de 10,000 min alcanzado. Se reinicia el próximo mes.'); return }
       if (data.error) throw new Error(data.error)
       setVideoSession({ roomUrl: data.room_url, sessionId: data.session_id, appointmentId: apt.id })
-      toast.success('📹 Sala creada · Padre notificado')
+      toast.success('Sala creada · Padre notificado')
     } catch (err:any) { toast.error('Error: ' + err.message) }
     finally { setStartingCall(null) }
   }

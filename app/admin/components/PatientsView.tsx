@@ -133,7 +133,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
       })
       const json = await res.json()
       if (json.error) throw new Error(json.error)
-      toast.success(`✅ ${nino.name} vinculado a ${user.full_name || user.email}`)
+      toast.success(`${nino.name} vinculado a ${user.full_name || user.email}`)
       setLinkedUser(user)
       setShowLinkModal(false)
       setEmailSearch(''); setSearchResults([])
@@ -696,7 +696,7 @@ function PatientInfoTab({ nino, onSaved, onDeleted }: { nino: any; onSaved: () =
       if (json.registros_limpiados) {
         console.log(`[delete-patient] "${nombre}" eliminado · limpieza:`, json.registros_limpiados)
       }
-      toast.success(`🗑 "${nombre}" eliminado correctamente`)
+      toast.success(`"${nombre}" eliminado correctamente`)
       onDeleted?.()
     } catch (e: any) {
       toast.error(`No se pudo eliminar: ${e?.message || 'error desconocido'}`)
@@ -995,7 +995,7 @@ function RellenarFichaConWord({ childId, childName, isDark }: {
         visible_to_parent: false,
       })
 
-      toast.success('📄 Word generado y guardado en Documentos del paciente')
+      toast.success('Word generado y guardado en Documentos del paciente')
     } catch (e: any) {
       console.error('Error auto-generando Word:', e)
     }

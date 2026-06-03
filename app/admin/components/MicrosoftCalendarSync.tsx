@@ -37,7 +37,7 @@ export default function MicrosoftCalendarSync() {
     const params = new URLSearchParams(window.location.search)
     const mscal  = params.get('mscal')
     if (mscal === 'connected') {
-      toast.success('✅ Microsoft Calendar conectado')
+      toast.success('Microsoft Calendar conectado')
       checkStatus()
       window.history.replaceState({}, '', window.location.pathname)
     } else if (mscal === 'error') {
@@ -73,7 +73,7 @@ export default function MicrosoftCalendarSync() {
         body: JSON.stringify({ action: 'sync-all', userId }),
       })
       const data = await res.json()
-      if (data.ok) toast.success(`✅ ${data.synced} cita${data.synced !== 1 ? 's' : ''} sincronizadas`)
+      if (data.ok) toast.success(`${data.synced} cita${data.synced !== 1 ? 's' : ''} sincronizadas`)
       else toast.error(data.error || 'Error al sincronizar')
     } catch (e: any) { toast.error('Error: ' + e.message) }
     finally { setSyncing(false) }

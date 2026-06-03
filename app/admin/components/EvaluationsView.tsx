@@ -63,7 +63,7 @@ function DynamicEvaluationsView() {
      if (isGenerating) return // Guard contra doble click
      const hasEnoughData = Object.keys(respuestas).length > 2;
      if (!hasEnoughData) {
-         return alert("⚠️ Por favor responde algunas preguntas antes de generar con IA.");
+         return alert("Por favor responde algunas preguntas antes de generar con IA.");
      }
 
      console.log('🤖 Generando IA para formulario:', activeForm);
@@ -162,7 +162,7 @@ function DynamicEvaluationsView() {
           return newState
         })
         
-        alert("✨ ¡Análisis IA completado!");
+        alert("¡Análisis IA completado!");
 
      } catch (e: any) {
         console.error('💥 Error completo:', e);
@@ -332,7 +332,7 @@ function DynamicEvaluationsView() {
       }
     } catch (error: any) {
       console.error('❌ Error al guardar:', error);
-      alert("❌ Error: " + error.message);
+      alert("Error: " + error.message);
     } finally {
       setIsSaving(false);
     }

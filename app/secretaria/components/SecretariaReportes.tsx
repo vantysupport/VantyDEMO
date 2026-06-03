@@ -14,7 +14,7 @@ import { useToast } from '@/components/Toast'
 
 const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 const STATUS_COLORS: Record<string, string> = {
-  confirmed: '#3b82f6',
+  confirmed: '#0284c7',
   completed: '#10b981',
   cancelled: '#ef4444',
   pending:   '#f59e0b',
@@ -26,12 +26,12 @@ function KPI({ label, value, sub, icon: Icon, bar }: any) {
     <div className="rounded-xl p-5 relative overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
       <div className="absolute top-0 left-0 w-1 h-full rounded-l-xl" style={{ background: bar }} />
       <div className="flex items-start justify-between pl-3 mb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</p>
+        <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</p>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${bar}15` }}>
           <Icon size={14} style={{ color: bar }} />
         </div>
       </div>
-      <p className="text-4xl font-black leading-none pl-3 mb-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
+      <p className="text-4xl font-bold leading-none pl-3 mb-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
       <p className="text-xs pl-3" style={{ color: 'var(--text-muted)' }}>{sub}</p>
     </div>
   )
@@ -78,7 +78,7 @@ export default function SecretariaReportes() {
       const porEstado = [
         { name: 'Completadas', value: completed.length, color: '#10b981' },
         { name: 'Pendientes',  value: apts.filter(a => a.status === 'pending').length, color: '#f59e0b' },
-        { name: 'Confirmadas', value: apts.filter(a => a.status === 'confirmed').length, color: '#3b82f6' },
+        { name: 'Confirmadas', value: apts.filter(a => a.status === 'confirmed').length, color: '#0284c7' },
         { name: 'Canceladas',  value: cancelled.length, color: '#ef4444' },
       ].filter(e => e.value > 0)
 
@@ -126,7 +126,7 @@ export default function SecretariaReportes() {
         <div className="h-0.5" style={{ background: 'linear-gradient(90deg, #3a68a0, #10b981, #f59e0b)' }} />
         <div className="px-5 py-4 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>Reportes de Asistencia</h2>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Reportes de Asistencia</h2>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Estadísticas de sesiones y programación</p>
           </div>
           <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function SecretariaReportes() {
               {(['semana','mes','trimestre'] as const).map(p => (
                 <button key={p} onClick={() => setPeriodo(p)}
                   className="px-3 py-1.5 text-xs font-bold transition-all"
-                  style={{ background: periodo === p ? '#3b82f6' : 'var(--muted-bg)', color: periodo === p ? '#fff' : 'var(--text-muted)' }}>
+                  style={{ background: periodo === p ? '#0284c7' : 'var(--muted-bg)', color: periodo === p ? '#fff' : 'var(--text-muted)' }}>
                   {p === 'semana' ? 'Semana' : p === 'mes' ? 'Mes' : 'Trimestre'}
                 </button>
               ))}
@@ -167,7 +167,7 @@ export default function SecretariaReportes() {
           {/* Citas por día */}
           <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
-              <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Citas por día</h3>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Citas por día</h3>
               <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>{stats.total} total</span>
             </div>
             <div className="p-5">
@@ -187,7 +187,7 @@ export default function SecretariaReportes() {
           {/* Por estado */}
           <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
-              <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Distribución por estado</h3>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Distribución por estado</h3>
             </div>
             <div className="p-5 flex items-center gap-4">
               {stats.porEstado.length > 0 ? (
@@ -205,7 +205,7 @@ export default function SecretariaReportes() {
                       <div key={e.name} className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: e.color }} />
                         <span className="text-xs flex-1" style={{ color: 'var(--text-secondary)' }}>{e.name}</span>
-                        <span className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>{e.value}</span>
+                        <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{e.value}</span>
                       </div>
                     ))}
                   </div>
@@ -221,7 +221,7 @@ export default function SecretariaReportes() {
           {/* Por terapeuta */}
           <div className="rounded-xl overflow-hidden lg:col-span-2" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
-              <h3 className="font-black text-sm" style={{ color: 'var(--text-primary)' }}>Sesiones por terapeuta</h3>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Sesiones por terapeuta</h3>
             </div>
             <div className="p-5 space-y-3">
               {stats.porTerapeuta.length === 0 ? (
@@ -231,12 +231,12 @@ export default function SecretariaReportes() {
                 const pct = Math.round((t.count / max) * 100)
                 return (
                   <div key={t.name} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white flex-shrink-0"
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
                       style={{ background: '#3a68a0' }}>{t.name.charAt(0)}</div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{t.name}</span>
-                        <span className="text-xs font-black ml-2" style={{ color: 'var(--text-muted)' }}>{t.count}</span>
+                        <span className="text-xs font-bold ml-2" style={{ color: 'var(--text-muted)' }}>{t.count}</span>
                       </div>
                       <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted-bg)' }}>
                         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#3a68a0' }} />

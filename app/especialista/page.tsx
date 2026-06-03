@@ -29,14 +29,14 @@ function SidebarLink({ icon: Icon, label, active, onClick, small, badge }: any) 
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 group text-left
         ${active
-          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-200/50 dark:shadow-blue-900/50'
+          ? 'bg-gradient-to-r from-sky-600 to-sky-700 text-white shadow-lg shadow-sky-200/50 dark:shadow-sky-900/50'
           : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
         } ${small ? 'text-xs' : 'text-sm'}`}
     >
-      <Icon size={small ? 15 : 17} className={`flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-slate-400 group-hover:text-blue-500'}`} />
+      <Icon size={small ? 15 : 17} className={`flex-shrink-0 transition-colors ${active ? 'text-white' : 'text-slate-400 group-hover:text-sky-500'}`} />
       <span className={`font-semibold truncate flex-1 ${small ? 'text-xs' : ''}`}>{label}</span>
       {badge > 0 && (
-        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0
           ${active ? 'bg-white/20 text-white' : 'bg-red-500 text-white'}`}>
           {badge}
         </span>
@@ -220,10 +220,10 @@ export default function EspecialistaDashboard() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-sky-50/20 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-sky-50/20 flex items-center justify-center">
       <div className="flex flex-col items-center gap-5">
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-2xl shadow-blue-300/50">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-600 to-sky-700 flex items-center justify-center shadow-2xl shadow-sky-300/50">
             <Stethoscope size={30} className="text-white" />
           </div>
           <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-white flex items-center justify-center">
@@ -231,10 +231,10 @@ export default function EspecialistaDashboard() {
           </div>
         </div>
         <div className="text-center">
-          <p className="font-black text-slate-800 text-sm">Neuropsicología y Terapias SANTI</p>
+          <p className="font-bold text-slate-800 text-sm">Neuropsicología y Terapias SANTI</p>
           <p className="text-xs text-slate-400 mt-0.5">{t('especialista.cargandoPanel')}</p>
         </div>
-        <Loader2 size={18} className="animate-spin text-blue-500" />
+        <Loader2 size={18} className="animate-spin text-sky-500" />
       </div>
     </div>
   )
@@ -263,7 +263,7 @@ export default function EspecialistaDashboard() {
             <Image src="/images/logo.png" alt="Logo" fill className="object-contain" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`font-black text-[13px] leading-tight truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+            <p className={`font-bold text-[13px] leading-tight truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
               Neuropsicología y Terapias SANTI
             </p>
             <p className={`text-[10px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -297,7 +297,7 @@ export default function EspecialistaDashboard() {
               ${isDark ? 'hover:bg-[#21262d]' : 'hover:bg-slate-50'}`}
             onClick={() => setActiveView('perfil')}
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 overflow-hidden">
+            <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-700 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
               ) : userInitial}
@@ -329,7 +329,7 @@ export default function EspecialistaDashboard() {
               <Menu size={18} />
             </button>
             <div>
-              <h1 className={`text-sm md:text-base font-black ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              <h1 className={`text-sm md:text-base font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 {PAGE_TITLES[activeView] || 'Panel'}
               </h1>
               <p className={`text-[10px] hidden sm:block ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -355,7 +355,7 @@ export default function EspecialistaDashboard() {
                 <div className={`absolute right-0 top-11 w-72 rounded-2xl shadow-2xl border p-4 z-50
                   ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <p className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    <p className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                       Notificaciones
                     </p>
                     <button onClick={() => setShowNotifications(false)}>
@@ -366,15 +366,15 @@ export default function EspecialistaDashboard() {
                     {/* Mensajes no leídos */}
                     {chatUnread > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-black uppercase tracking-widest px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           Chat Equipo
                         </p>
                         <button
                           onClick={() => { setActiveView('evaluaciones'); setShowNotifications(false) }}
                           className={`w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors
-                            ${isDark ? 'bg-violet-900/20 hover:bg-violet-900/30' : 'bg-violet-50 hover:bg-violet-100'}`}>
-                          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 flex-shrink-0" />
-                          <p className={`text-xs font-medium ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
+                            ${isDark ? 'bg-sky-900/20 hover:bg-sky-900/30' : 'bg-sky-50 hover:bg-sky-100'}`}>
+                          <div className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 flex-shrink-0" />
+                          <p className={`text-xs font-medium ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>
                             {chatUnread} mensaje{chatUnread !== 1 ? 's' : ''} sin leer
                           </p>
                         </button>
@@ -382,13 +382,13 @@ export default function EspecialistaDashboard() {
                     )}
                     {citasHoy.length > 0 ? (
                       <>
-                        <p className={`text-[10px] font-black uppercase tracking-widest px-1 mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] font-bold px-1 mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                           Citas de hoy
                         </p>
                         {citasHoy.map(c => (
                           <div key={c.id} className={`flex items-start gap-3 p-3 rounded-xl
-                            ${isDark ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                            ${isDark ? 'bg-sky-900/20' : 'bg-sky-50'}`}>
+                            <div className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 flex-shrink-0" />
                             <p className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                               {c.children?.name} · {c.appointment_time?.slice(0,5)}
                             </p>
@@ -437,7 +437,7 @@ export default function EspecialistaDashboard() {
             ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-100'}`}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className={`font-black ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('especialista.cambiarPass')}</h3>
+                <h3 className={`font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{t('especialista.cambiarPass')}</h3>
                 <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Mínimo 6 caracteres</p>
               </div>
               <button onClick={() => setShowChangePassword(false)}
@@ -448,19 +448,19 @@ export default function EspecialistaDashboard() {
             </div>
             <div className="space-y-3">
               <input type="password" placeholder={t('ui.new_password')} value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
+                className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all
                   ${isDark
                     ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600'
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                   }`} />
               <input type="password" placeholder={t('ui.confirm_password')} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
+                className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all
                   ${isDark
                     ? 'bg-[#0d1117] border-[#30363d] text-slate-200 placeholder:text-slate-600'
                     : 'bg-slate-50 border-slate-200 text-slate-800'
                   }`} />
               <button onClick={handleChangePassword} disabled={changingPassword}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200/40">
+                className="w-full py-3 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-200/40">
                 {changingPassword ? <Loader2 size={15} className="animate-spin" /> : null}
                 {changingPassword ? 'Actualizando...' : 'Actualizar contraseña'}
               </button>
@@ -476,14 +476,14 @@ export default function EspecialistaDashboard() {
             height: ariaMinimized ? '54px' : ariaExpanded ? '860px' : '560px',
           }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <svg width="18" height="18" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="6" y="9" width="16" height="13" rx="3" fill="white" fillOpacity="0.9"/>
-                  <rect x="9" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-                  <rect x="16" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-                  <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#7c3aed"/>
+                  <rect x="9" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+                  <rect x="16" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+                  <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#0284c7"/>
                   <rect x="13" y="6" width="2" height="4" rx="1" fill="white" fillOpacity="0.9"/>
                   <circle cx="14" cy="5.5" r="1.5" fill="white"/>
                   <rect x="2" y="12" width="2.5" height="5" rx="1.25" fill="white" fillOpacity="0.7"/>
@@ -491,12 +491,12 @@ export default function EspecialistaDashboard() {
                 </svg>
               </div>
               <div>
-                <p className="text-white font-black text-sm leading-tight flex items-center gap-2">
-                  ARIA <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-black">IA</span>
+                <p className="text-white font-bold text-sm leading-tight flex items-center gap-2">
+                  ARIA <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-bold">IA</span>
                 </p>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"/>
-                  <p className="text-violet-200 text-[10px] font-medium">{activeChild ? `Caso: ${activeChild.name}` : 'Asistente Clínico · Activa'}</p>
+                  <p className="text-sky-200 text-[10px] font-medium">{activeChild ? `Caso: ${activeChild.name}` : 'Asistente Clínico · Activa'}</p>
                 </div>
               </div>
             </div>
@@ -526,19 +526,19 @@ export default function EspecialistaDashboard() {
       {/* Botón flotante ARIA */}
       {!ariaOpen && (
         <button onClick={() => setAriaOpen(true)}
-          className="fixed bottom-6 right-4 md:right-6 z-[91] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-gradient-to-br from-violet-600 to-indigo-600"
+          className="fixed bottom-6 right-4 md:right-6 z-[91] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-gradient-to-br from-sky-600 to-cyan-600"
           title="ARIA — Asistente IA">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="6" y="9" width="16" height="13" rx="3" fill="white" fillOpacity="0.9"/>
-            <rect x="9" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-            <rect x="16" y="13" width="3" height="3" rx="1" fill="#7c3aed"/>
-            <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#7c3aed"/>
+            <rect x="9" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+            <rect x="16" y="13" width="3" height="3" rx="1" fill="#0284c7"/>
+            <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#0284c7"/>
             <rect x="13" y="6" width="2" height="4" rx="1" fill="white" fillOpacity="0.9"/>
             <circle cx="14" cy="5.5" r="1.5" fill="white"/>
             <rect x="2" y="12" width="2.5" height="5" rx="1.25" fill="white" fillOpacity="0.7"/>
             <rect x="23.5" y="12" width="2.5" height="5" rx="1.25" fill="white" fillOpacity="0.7"/>
           </svg>
-          <span className="pointer-events-none absolute inset-0 rounded-full bg-violet-400 animate-ping opacity-20"/>
+          <span className="pointer-events-none absolute inset-0 rounded-full bg-sky-400 animate-ping opacity-20"/>
         </button>
       )}
     </div>
