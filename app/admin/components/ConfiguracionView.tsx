@@ -509,21 +509,6 @@ function SeccionAlmacenamiento() {
                   Para mostrar el tamaño de la base de datos, crea la función <code className="font-mono text-[10px] px-1 py-0.5 rounded bg-slate-200/60 dark:bg-[#21262d]">get_db_size()</code> en Supabase (SQL Editor).
                 </p>
               )}
-
-              {/* Desglose por bucket */}
-              {Array.isArray(data.storage?.breakdown) && data.storage.breakdown.length > 0 && (
-                <div className={`pt-1`}>
-                  <p className={`text-[10px] font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Por carpeta</p>
-                  <div className="space-y-1">
-                    {data.storage.breakdown.filter((b: any) => b.bytes > 0).map((b: any) => (
-                      <div key={b.bucket} className="flex items-center justify-between text-xs">
-                        <span className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{b.bucket}</span>
-                        <span className={`font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>{formatBytes(b.bytes)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </>
           ) : null}
         </div>
