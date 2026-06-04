@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   User, Lock, Bell, Palette, Shield, Eye, EyeOff,
   Save, Loader2, CheckCircle, Camera, Mail, Phone,
-  Globe, LogOut, AlertTriangle,
+  Globe, LogOut, AlertTriangle, HardDrive, Database, RefreshCw,
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeContext'
 import { supabase } from '@/lib/supabase'
@@ -385,6 +385,153 @@ function SeccionNotificaciones() {
   )
 }
 
+// ── Sección: Almacenamiento ───────────────────────────────────────────────────
+function formatBytes(bytes: number): string {
+  if (!bytes || bytes < 0) return '0 MB'
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+function StorageBar({ icon: Icon, label, used, cap, accent, unavailable }: {
+  icon: any; label: string; used: number | null; cap: number; accent: string; unavailable?: boolean
+}) {
+  const { isDark } = useTheme()
+  const pct = used != null && cap > 0 ? Math.min(100, (used / cap) * 100) : 0
+  // Color del relleno según ocupación
+  const barColor = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : accent
+  const free = used != null ? Math.max(0, cap - used) : null
+
+  return (
+    <div className={`rounded-2xl border p-4 ${isDark ? 'bg-[#0d1117] border-[#21262d]' : 'bg-slate-50/60 border-slate-100'}`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accent}1a`, color: accent }}>
+          <Icon size={17} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{label}</p>
+          {unavailable ? (
+            <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>No disponible</p>
+          ) : (
+            <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+               style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <span className="font-bold" style={{ color: barColor }}>{formatBytes(used || 0)}</span> de {formatBytes(cap)} usados
+            </p>
+          )}
+        </div>
+        {!unavailable && (
+          <span className="text-sm font-extrabold shrink-0" style={{ color: barColor, fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-display)' }}>
+            {pct.toFixed(0)}%
+          </span>
+        )}
+      </div>
+
+      <div className={`h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-[#21262d]' : 'bg-slate-200'}`}>
+        <div className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{ width: unavailable ? '0%' : `${pct}%`, background: `linear-gradient(90deg, ${barColor}, ${barColor}cc)` }} />
+      </div>
+
+      {!unavailable && free != null && (
+        <p className={`text-[11px] mt-2 font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+           style={{ fontVariantNumeric: 'tabular-nums' }}>
+          {formatBytes(free)} disponibles
+        </p>
+      )}
+    </div>
+  )
+}
+
+function SeccionAlmacenamiento() {
+  const { isDark } = useTheme()
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = async () => {
+    setLoading(true); setError(null)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No autenticado')
+      const res = await fetch('/api/admin/storage-usage', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Error al cargar')
+      setData(json)
+    } catch (e: any) {
+      setError(e.message || 'Error al cargar el uso')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  return (
+    <div className="space-y-4">
+      <SectionTitle label="Almacenamiento" />
+
+      <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200/80 shadow-sm'}`}>
+        <div className={`px-6 py-5 border-b flex items-center gap-4 ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-500 to-cyan-600">
+            <HardDrive size={18} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className={`text-sm font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>Espacio del Sistema</h3>
+            <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Uso de archivos y base de datos en Supabase</p>
+          </div>
+          <button onClick={load} disabled={loading}
+            className={`p-2 rounded-xl transition-colors disabled:opacity-50 ${isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
+            title="Actualizar">
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-3">
+          {loading && !data ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 size={22} className="animate-spin text-sky-600" />
+            </div>
+          ) : error ? (
+            <div className={`flex items-center gap-2 text-sm p-4 rounded-xl ${isDark ? 'bg-red-900/20 text-red-300' : 'bg-red-50 text-red-600'}`}>
+              <AlertTriangle size={15} /> {error}
+            </div>
+          ) : data ? (
+            <>
+              <StorageBar icon={HardDrive} label="Archivos (Storage)" accent="#0284c7"
+                used={data.storage?.used ?? 0} cap={data.storage?.cap ?? 0} />
+              <StorageBar icon={Database} label="Base de datos" accent="#06b6d4"
+                used={data.database?.used ?? null} cap={data.database?.cap ?? 0}
+                unavailable={data.database?.used == null} />
+
+              {data.database?.used == null && (
+                <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Para mostrar el tamaño de la base de datos, crea la función <code className="font-mono text-[10px] px-1 py-0.5 rounded bg-slate-200/60 dark:bg-[#21262d]">get_db_size()</code> en Supabase (SQL Editor).
+                </p>
+              )}
+
+              {/* Desglose por bucket */}
+              {Array.isArray(data.storage?.breakdown) && data.storage.breakdown.length > 0 && (
+                <div className={`pt-1`}>
+                  <p className={`text-[10px] font-bold mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Por carpeta</p>
+                  <div className="space-y-1">
+                    {data.storage.breakdown.filter((b: any) => b.bytes > 0).map((b: any) => (
+                      <div key={b.bucket} className="flex items-center justify-between text-xs">
+                        <span className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{b.bucket}</span>
+                        <span className={`font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>{formatBytes(b.bytes)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Sección: Apariencia ───────────────────────────────────────────────────────
 function SeccionApariencia() {
   const { isDark, toggleTheme } = useTheme()
@@ -499,6 +646,7 @@ export default function ConfiguracionView({ onAvatarUpdate }: { onAvatarUpdate?:
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8 pb-10">
       <SeccionPerfil onAvatarUpdate={onAvatarUpdate} />
+      <SeccionAlmacenamiento />
       <SeccionSeguridad />
       <SeccionNotificaciones />
       <SeccionApariencia />
