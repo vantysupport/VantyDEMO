@@ -51,8 +51,13 @@ export default function SessionGuard() {
     if (!isAuthPage) start()
 
     // Liberar al cerrar sesión (cualquier botón de logout dispara SIGNED_OUT).
+    // IMPORTANTE: NO llamar a Supabase dentro del callback de onAuthStateChange
+    // (corre dentro del lock de auth y provoca deadlock que congela todas las
+    // consultas). Se difiere con setTimeout(0) para ejecutarse fuera del lock.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') releaseSession().catch(() => {})
+      if (event === 'SIGNED_OUT') {
+        setTimeout(() => { releaseSession().catch(() => {}) }, 0)
+      }
     })
 
     // Best-effort al cerrar/ocultar la pestaña (la red puede cancelarlo; el
