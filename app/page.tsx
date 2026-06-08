@@ -7,10 +7,11 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { claimSession } from '@/lib/session-lock'
 import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, ShieldCheck } from 'lucide-react'
 
 interface PageProps {
-  searchParams: Promise<{ mode?: string }>
+  searchParams: Promise<{ mode?: string; session?: string }>
 }
 
 export default function LoginPage(props: PageProps) {
@@ -27,6 +28,13 @@ export default function LoginPage(props: PageProps) {
   useEffect(() => {
     document.documentElement.classList.remove('dark')
   }, [])
+
+  // ── Aviso si fue expulsado por sesión única ──
+  useEffect(() => {
+    if (searchParams.session === 'taken') {
+      setErrorMessage('Un usuario está usando este perfil ahora. Solo se permite una sesión activa por cuenta.')
+    }
+  }, [searchParams.session])
 
   async function handleGoogleLogin() {
     setIsLoading(true)
@@ -87,6 +95,16 @@ export default function LoginPage(props: PageProps) {
       } else {
         const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
+
+        // ── Sesión única: si ya hay otra sesión activa, bloquear ingreso ──
+        const claim = await claimSession()
+        if (claim === 'in_use') {
+          await supabase.auth.signOut()
+          setErrorMessage('Un usuario está usando este perfil ahora. Solo se permite una sesión activa por cuenta.')
+          setIsLoading(false)
+          return
+        }
+
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single()
         const adminRoles = ['admin', 'jefe', 'especialista']
         router.push(adminRoles.includes(profile?.role) ? '/admin' : '/padre')
