@@ -99,9 +99,11 @@ export default function LoginPage(props: PageProps) {
         // ── Sesión única: si ya hay otra sesión activa, bloquear ingreso ──
         const claim = await claimSession()
         if (claim === 'in_use') {
-          await supabase.auth.signOut()
+          // Mostrar el aviso al instante; cerrar la sesión en segundo plano
+          // (sin await) para que el formulario nunca se quede colgado.
           setErrorMessage('Un usuario está usando este perfil ahora. Solo se permite una sesión activa por cuenta.')
           setIsLoading(false)
+          supabase.auth.signOut().catch(() => {})
           return
         }
 

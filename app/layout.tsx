@@ -77,6 +77,27 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${jakarta.variable} ${poppins.variable}`} suppressHydrationWarning>
       <head>
+        {/*
+          🚫 ANTI-FOUC (Flash of Unstyled Content)
+          En caché frío (incógnito / primera visita) el navegador alcanza a pintar
+          el HTML antes de aplicar el CSS, mostrando el texto amontonado un instante.
+          Arrancamos el <body> invisible y lo revelamos con un fade apenas el DOM
+          está listo (cuando el CSS ya aplicó). Dos redes de seguridad evitan que
+          quede en blanco: un timeout failsafe y un <noscript>.
+        */}
+        <style dangerouslySetInnerHTML={{ __html: `body{opacity:0;transition:opacity .25s ease}` }} />
+        <noscript><style dangerouslySetInnerHTML={{ __html: `body{opacity:1!important}` }} /></noscript>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function(){
+              function show(){ try{ if(document.body) document.body.style.opacity='1'; }catch(e){} }
+              if (document.readyState !== 'loading') show();
+              else document.addEventListener('DOMContentLoaded', show);
+              window.addEventListener('load', show);
+              setTimeout(show, 1500); // failsafe: nunca dejar la página invisible
+            })();
+          `
+        }} />
         <meta name="google-site-verification" content="xQbKWmWgeRRPlZbv5h7rEDXAOw0TPHC3140_cyWT9OI" />
         <meta name="google-site-verification" content="Vm989cC49i4_RMsZFi23exrJONLlBnEvu00C4Zs1Lm4" />
         <link rel="manifest" href="/manifest.json" />

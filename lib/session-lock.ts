@@ -23,21 +23,25 @@ export function getDeviceSessionId(): string {
 export type ClaimResult = 'claimed' | 'in_use' | 'error'
 
 // Intenta tomar la sesión. 'in_use' = otra persona la tiene activa.
-// 'error' (RPC no instalada / red) => el llamador debe FALLAR ABIERTO (no bloquear).
+// 'error' (RPC no instalada / red / timeout) => el llamador debe FALLAR ABIERTO.
+// Tiene un timeout propio para que NUNCA cuelgue el login si la RPC se traba.
 export async function claimSession(): Promise<ClaimResult> {
-  try {
-    const sid = getDeviceSessionId()
-    const { data, error } = await supabase.rpc('claim_session', {
-      p_session_id: sid,
-      p_stale_seconds: STALE_SECONDS,
+  const sid = getDeviceSessionId()
+
+  const rpc: Promise<ClaimResult> = Promise.resolve(
+    supabase.rpc('claim_session', { p_session_id: sid, p_stale_seconds: STALE_SECONDS })
+  )
+    .then(({ data, error }: any) => {
+      if (error) return 'error' as ClaimResult
+      if (data === 'claimed') return 'claimed' as ClaimResult
+      if (data === 'in_use') return 'in_use' as ClaimResult
+      return 'error' as ClaimResult
     })
-    if (error) return 'error'
-    if (data === 'claimed') return 'claimed'
-    if (data === 'in_use') return 'in_use'
-    return 'error'
-  } catch {
-    return 'error'
-  }
+    .catch(() => 'error' as ClaimResult)
+
+  const timeout = new Promise<ClaimResult>(resolve => setTimeout(() => resolve('error'), 8000))
+
+  return Promise.race([rpc, timeout])
 }
 
 // Mantiene viva la sesión. Devuelve true si sigo siendo dueño.
