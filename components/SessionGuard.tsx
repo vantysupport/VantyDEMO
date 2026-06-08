@@ -10,9 +10,9 @@
 import { useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { claimSession, heartbeatSession, releaseSession } from '@/lib/session-lock'
+import { claimSession, heartbeatSession, releaseSession, getDeviceSessionId } from '@/lib/session-lock'
 
-const HEARTBEAT_MS = 30000
+const HEARTBEAT_MS = 10000
 
 export default function SessionGuard() {
   const router = useRouter()
@@ -60,9 +60,19 @@ export default function SessionGuard() {
       }
     })
 
-    // Best-effort al cerrar/ocultar la pestaña (la red puede cancelarlo; el
-    // umbral de inactividad del servidor es la red de seguridad real).
-    const onHide = () => { releaseSession() }
+    // Al cerrar/ocultar la pestaña: liberar de inmediato con sendBeacon
+    // (fiable en unload, no lo cancela el navegador). Se complementa con la
+    // RPC best-effort y, como última red, el umbral de inactividad del servidor.
+    const onHide = () => {
+      try {
+        const sid = getDeviceSessionId()
+        if (sid && navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify({ sessionId: sid })], { type: 'application/json' })
+          navigator.sendBeacon('/api/session/release', blob)
+        }
+      } catch { /* noop */ }
+      releaseSession().catch(() => {})
+    }
     window.addEventListener('pagehide', onHide)
 
     return () => {

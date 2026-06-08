@@ -5,7 +5,9 @@
 import { supabase } from '@/lib/supabase'
 
 const KEY = 'santi-device-session-id'
-export const STALE_SECONDS = 90
+// Ventana de respaldo si una pestaña se cierra sin avisar. Se mantiene baja
+// porque el heartbeat refresca cada 10s y el cierre de pestaña libera por beacon.
+export const STALE_SECONDS = 30
 
 // Identificador estable por navegador/dispositivo (no por persona).
 export function getDeviceSessionId(): string {

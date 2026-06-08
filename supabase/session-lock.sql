@@ -14,7 +14,7 @@ alter table public.profiles
 --    Devuelve 'claimed' si la tomó, 'in_use' si ya hay otra sesión VIVA.
 --    Una sesión se considera muerta si su último heartbeat es más viejo
 --    que p_stale_seconds (evita bloqueos permanentes si cierran el navegador).
-create or replace function public.claim_session(p_session_id text, p_stale_seconds int default 90)
+create or replace function public.claim_session(p_session_id text, p_stale_seconds int default 30)
 returns text
 language plpgsql
 security definer
