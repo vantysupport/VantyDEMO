@@ -948,11 +948,11 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
             return (
               <div key={g.key} className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
                 <button onClick={() => setExpanded(s => { const n = new Set(s); n.has(g.key) ? n.delete(g.key) : n.add(g.key); return n })}
-                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:opacity-80 transition-opacity">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: '#0284c7' }}>{g.child.charAt(0).toUpperCase()}</div>
-                    <div>
-                      <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{g.child}</p>
+                  className="w-full flex items-center justify-between gap-2 px-4 sm:px-5 py-4 text-left hover:opacity-80 transition-opacity">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0" style={{ background: '#0284c7' }}>{g.child.charAt(0).toUpperCase()}</div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{g.child}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         {g.isPackage && (
                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(59,130,246,0.12)', color: '#0284c7' }}>Paquete</span>
@@ -961,8 +961,8 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-xl font-bold" style={{ color: '#10b981' }}>S/ {g.total.toFixed(2)}</p>
+                  <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                    <p className="text-base sm:text-xl font-bold whitespace-nowrap" style={{ color: '#10b981' }}>S/ {g.total.toFixed(2)}</p>
                     {/* Recibo del paquete completo */}
                     <button
                       onClick={e => {

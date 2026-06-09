@@ -606,7 +606,7 @@ export default function UserManagementView() {
               style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
 
               {/* Fila principal */}
-              <div className="px-4 py-3 flex items-center gap-3">
+              <div className="px-4 py-3 flex flex-wrap items-center gap-3">
                 {/* Avatar */}
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0
                   ${isDirector ? 'bg-gradient-to-br from-sky-500 to-sky-700'
@@ -640,7 +640,7 @@ export default function UserManagementView() {
                 </div>
 
                 {/* Acciones rápidas */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-1.5 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start mt-1 sm:mt-0">
                   {savingRole === user.id ? (
                     <Loader2 size={16} className="animate-spin text-sky-500" />
                   ) : (

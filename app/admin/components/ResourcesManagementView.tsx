@@ -363,7 +363,7 @@ export default function ResourcesManagementView() {
               {/* Audience */}
               <div>
                 <label className="text-xs font-bold text-slate-400 block mb-3">{t('recursos.paraQuien')}</label>
-                <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                   <button onClick={() => setNewResource(p => ({ ...p, is_global: true, parent_id: '' }))}
                     className={`p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${newResource.is_global ? 'bg-sky-600 text-white border-sky-600 shadow-lg shadow-sky-200' : 'text-slate-600 border-slate-200 hover:border-sky-300'}`} style={newResource.is_global ? {} : { background: 'var(--muted-bg)' }}>
                     <Globe size={18}/><span className="font-bold text-sm">{t('ui.all_families')}</span>

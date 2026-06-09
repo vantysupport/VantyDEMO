@@ -522,7 +522,7 @@ export default function AdminDashboard() {
 
         {/* Content */}
         <div className={`flex-1 overflow-y-auto transition-colors flex flex-col admin-content
-          ${currentView === 'ninos' || currentView === 'agenda' || currentView === 'chat-especialistas' ? 'p-0 overflow-hidden' : 'p-3 md:p-4 pb-20 md:pb-4'}
+          ${currentView === 'ninos' || currentView === 'agenda' || currentView === 'chat-especialistas' ? 'p-0 overflow-hidden' : 'p-3 md:p-4 pb-28 md:pb-8'}
           ${isDark ? 'bg-[#0d1117]' : 'bg-slate-50'}`}>
           {/* Views that scroll normally */}
           {currentView !== 'usuarios' && (

@@ -215,7 +215,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { key:'activo', label:'Visible en tienda', desc:'Los padres pueden verlo', icon:'👁️', ac:'emerald' },
               { key:'destacado', label:'Destacado', desc:'Aparece primero con ⭐', icon:'⭐', ac:'amber' },
@@ -227,7 +227,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product|null; on
                     ? ac==='emerald' ? 'border-emerald-400 bg-emerald-50' : 'border-amber-400 bg-amber-50'
                     : isDark ? 'border-[#30363d]' : 'border-slate-200 bg-white'}`}>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${on ? ac==='emerald' ? 'bg-emerald-100' : 'bg-amber-100' : isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>{icon}</div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className={`text-sm font-bold ${on ? ac==='emerald' ? 'text-emerald-700' : 'text-amber-700' : isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
                     <p className={`text-xs ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>{desc}</p>
                   </div>

@@ -219,7 +219,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
   const cellBorder = isDark ? 'border-[#21262d]'           : 'border-slate-100'
 
   return (
-    <div className="pb-20 md:pb-6">
+    <div className="pb-28 md:pb-8">
 
       {/* ── Header — igual al admin ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
@@ -287,7 +287,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
           ) : (
             <div className="grid grid-cols-7">
               {Array.from({ length: primerDia }, (_, i) => (
-                <div key={`e-${i}`} className={`min-h-[80px] border-b border-r ${cellBorder}
+                <div key={`e-${i}`} className={`min-h-[56px] sm:min-h-[80px] border-b border-r ${cellBorder}
                   ${isDark ? 'bg-[#0d1117]/50' : 'bg-slate-50/30'}`} />
               ))}
 
@@ -302,7 +302,7 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
                   <button
                     key={dia}
                     onClick={() => setDiaSeleccionado(esSel ? '' : fechaStr)}
-                    className={`min-h-[80px] border-b border-r ${cellBorder} p-1.5 text-left transition-all
+                    className={`min-h-[56px] sm:min-h-[80px] border-b border-r ${cellBorder} p-1.5 text-left transition-all
                       flex flex-col gap-1 group
                       ${esSel
                         ? isDark ? 'bg-sky-900/30' : 'bg-sky-50'
