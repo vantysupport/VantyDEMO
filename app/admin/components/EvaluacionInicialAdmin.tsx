@@ -370,7 +370,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
       {evaluacion.recomendacion && (
         <div className="rounded-2xl p-5 border" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-sm font-bold flex items-center gap-2 flex-wrap" style={{ color: 'var(--text-primary)' }}>
               {evaluacion.recomendacion === 'psicologica' ? <Heart size={16} className="text-pink-500" /> : <Brain size={16} className="text-sky-500" />}
               Recomendación IA <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">USO INTERNO</span>
             </h3>
@@ -505,10 +505,10 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
 
       {/* Botón para generar recomendación si no existe pero ya hay anamnesis */}
       {evaluacion.anamnesis_especifica && !evaluacion.terapias_recomendadas?.length && (
-        <div className="rounded-2xl p-4 border-2 border-dashed flex items-center justify-between gap-3"
+        <div className="rounded-2xl p-4 border-2 border-dashed flex flex-wrap items-center justify-between gap-3"
           style={{ borderColor: 'var(--card-border)' }}>
-          <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <Sparkles size={16} className="text-sky-500" />
+          <div className="flex items-center gap-2 text-sm min-w-0" style={{ color: 'var(--text-secondary)' }}>
+            <Sparkles size={16} className="text-sky-500 shrink-0" />
             <span>La IA aún no ha recomendado terapias del catálogo para este caso.</span>
           </div>
           <button onClick={reRecomendarTerapias} disabled={reRecomendando}
