@@ -1149,13 +1149,13 @@ function FormFillView({ form, children, onBack, toast, initialChildId, initialCh
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
           <button onClick={() => setCurrentStep(s => s - 1)} disabled={currentStep === 0}
-            className="flex items-center gap-2 px-6 py-3  border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:border-sky-300 disabled:opacity-40 transition-all" style={{ background: "var(--card)" }}>
+            className="flex items-center gap-2 px-4 sm:px-6 py-3 border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:border-sky-300 disabled:opacity-40 transition-all" style={{ background: "var(--card)" }}>
             <ChevronLeft size={18} /> Anterior
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Show AI button from page 6+ for ABA, or on last step for others */}
             {(currentStep === totalSteps - 1 || (form.formKey === 'aba' && currentStep >= 5)) && (
               <>

@@ -927,7 +927,7 @@ function FichasTab({ childId, childName, currentRole }: {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Sub-tabs */}
-      <div className={`flex-shrink-0 px-5 pt-4 pb-3 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
+      <div className={`flex-shrink-0 px-3 sm:px-5 pt-4 pb-3 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
         <div className={`flex rounded-2xl p-1.5 gap-1.5 border ${cc.bar}`}>
           {canManage && (
             <button onClick={() => setSubTab('plantillas')}
@@ -943,7 +943,7 @@ function FichasTab({ childId, childName, currentRole }: {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-5">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-5">
         {subTab === 'plantillas' && canManage && <GestorPlantillas isDark={isDark} />}
         {subTab === 'rellenar' && <RellenarFichaConWord childId={childId} childName={childName} isDark={isDark} />}
       </div>
