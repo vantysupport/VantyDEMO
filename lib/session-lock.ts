@@ -6,17 +6,19 @@
 import { supabase } from '@/lib/supabase'
 
 const KEY = 'santi-device-session-id'
+let cachedId = '' // copia en memoria, por si el localStorage se altera al salir
 
 // Identificador estable por navegador/dispositivo (no por persona).
 export function getDeviceSessionId(): string {
-  if (typeof window === 'undefined') return ''
-  let id = localStorage.getItem(KEY)
+  if (typeof window === 'undefined') return cachedId
+  let id = localStorage.getItem(KEY) || cachedId
   if (!id) {
     id = (typeof crypto !== 'undefined' && crypto.randomUUID)
       ? crypto.randomUUID()
       : `dev-${Date.now()}-${Math.random().toString(36).slice(2)}`
-    localStorage.setItem(KEY, id)
   }
+  try { localStorage.setItem(KEY, id) } catch { /* noop */ }
+  cachedId = id
   return id
 }
 
@@ -68,13 +70,26 @@ export async function heartbeatSession(): Promise<boolean> {
   }
 }
 
-// Libera la sesión por sendBeacon (fiable en unload, NO toca supabase-js).
+// Libera la sesión de inmediato. Doble vía para máxima fiabilidad:
+//  1) sendBeacon (sobrevive al unload)  2) fetch keepalive (más confiable en logout
+//  in-app sin recarga). Ninguna toca supabase-js.
 export function releaseViaBeacon(): void {
+  const sid = getDeviceSessionId()
+  if (!sid) return
+  const payload = JSON.stringify({ sessionId: sid })
+
   try {
-    const sid = getDeviceSessionId()
-    if (sid && typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      const blob = new Blob([JSON.stringify({ sessionId: sid })], { type: 'application/json' })
-      navigator.sendBeacon('/api/session/release', blob)
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon('/api/session/release', new Blob([payload], { type: 'application/json' }))
     }
+  } catch { /* noop */ }
+
+  try {
+    fetch('/api/session/release', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {})
   } catch { /* noop */ }
 }

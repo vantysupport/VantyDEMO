@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const STALE_MS = 60_000 // 60s sin heartbeat => sesión considerada muerta
+const STALE_MS = 90_000 // 90s sin heartbeat => sesión considerada muerta (failsafe ante crash)
 
 export async function POST(req: NextRequest) {
   try {
