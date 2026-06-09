@@ -26,8 +26,8 @@ export default function SessionGuard() {
     const kick = async () => {
       if (kicked.current || cancelled) return
       kicked.current = true
-      releaseViaBeacon()
-      try { await supabase.auth.signOut() } catch { /* noop */ }
+      // scope:'local' => cierra SOLO esta sesión, no todas las del usuario.
+      try { await supabase.auth.signOut({ scope: 'local' }) } catch { /* noop */ }
       router.replace('/login?session=taken')
     }
 
