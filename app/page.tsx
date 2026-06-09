@@ -7,7 +7,7 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { claimSession } from '@/lib/session-lock'
+// import { claimSession } from '@/lib/session-lock' // sesión única desactivada temporalmente
 import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, ShieldCheck } from 'lucide-react'
 
 interface PageProps {
@@ -96,16 +96,9 @@ export default function LoginPage(props: PageProps) {
         const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
 
-        // ── Sesión única: si ya hay otra sesión activa, bloquear ingreso ──
-        const claim = await claimSession()
-        if (claim === 'in_use') {
-          // Mostrar el aviso al instante; cerrar la sesión en segundo plano
-          // (sin await) para que el formulario nunca se quede colgado.
-          setErrorMessage('Un usuario está usando este perfil ahora. Solo se permite una sesión activa por cuenta.')
-          setIsLoading(false)
-          supabase.auth.signOut().catch(() => {})
-          return
-        }
+        // ── Sesión única DESACTIVADA temporalmente (causaba login lento/colgado) ──
+        // const claim = await claimSession()
+        // if (claim === 'in_use') { ... }
 
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single()
         const adminRoles = ['admin', 'jefe', 'especialista']
