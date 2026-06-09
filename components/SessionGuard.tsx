@@ -1,18 +1,17 @@
 'use client'
 // components/SessionGuard.tsx
-// Vigila la "sesión única" en todas las pantallas autenticadas:
-//  • Al montar (cualquier vía de login: contraseña, OAuth, refresh) RECLAMA la sesión.
-//    Si otra persona la tiene activa → cierra sesión y manda a /login?session=taken.
-//  • Heartbeat periódico para mantenerla viva.
-//  • Si pierde la titularidad (otra sesión la tomó tras quedar inactiva) → expulsa.
-//  • Libera la sesión al cerrar sesión o cerrar la pestaña.
+// Sesión única — vigilante MÍNIMO y a prueba de fallos.
+//  • Solo hace fetch a /api/session/* + sendBeacon. NO usa supabase.rpc.
+//  • Nunca llama a Supabase dentro de onAuthStateChange (evita el deadlock
+//    del lock de auth que antes congelaba la app).
+//  • Ante cualquier error, FALLA ABIERTO: jamás bloquea ni cuelga la navegación.
 
 import { useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { claimSession, heartbeatSession, releaseSession, getDeviceSessionId } from '@/lib/session-lock'
+import { claimSession, heartbeatSession, releaseViaBeacon } from '@/lib/session-lock'
 
-const HEARTBEAT_MS = 10000
+const HEARTBEAT_MS = 20000
 
 export default function SessionGuard() {
   const router = useRouter()
@@ -20,7 +19,6 @@ export default function SessionGuard() {
   const kicked = useRef(false)
 
   useEffect(() => {
-    // En las páginas de login no aplicamos el candado.
     const isAuthPage = pathname === '/' || pathname === '/login'
     let interval: ReturnType<typeof setInterval> | undefined
     let cancelled = false
@@ -28,8 +26,8 @@ export default function SessionGuard() {
     const kick = async () => {
       if (kicked.current || cancelled) return
       kicked.current = true
-      await releaseSession().catch(() => {})
-      await supabase.auth.signOut().catch(() => {})
+      releaseViaBeacon()
+      try { await supabase.auth.signOut() } catch { /* noop */ }
       router.replace('/login?session=taken')
     }
 
@@ -37,11 +35,10 @@ export default function SessionGuard() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session || cancelled) return
 
-      // Reclamo inicial — cubre login por OAuth, refresh y navegación directa.
+      // Reclamo inicial: cubre OAuth, refresco y navegación directa.
       const claim = await claimSession()
       if (claim === 'in_use') { await kick(); return }
 
-      // Heartbeat continuo.
       interval = setInterval(async () => {
         const stillOwner = await heartbeatSession()
         if (!stillOwner) await kick()
@@ -50,29 +47,14 @@ export default function SessionGuard() {
 
     if (!isAuthPage) start()
 
-    // Liberar al cerrar sesión (cualquier botón de logout dispara SIGNED_OUT).
-    // IMPORTANTE: NO llamar a Supabase dentro del callback de onAuthStateChange
-    // (corre dentro del lock de auth y provoca deadlock que congela todas las
-    // consultas). Se difiere con setTimeout(0) para ejecutarse fuera del lock.
+    // Liberar al cerrar sesión: SOLO sendBeacon (no toca supabase) → seguro
+    // ejecutarlo dentro del callback de onAuthStateChange.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        setTimeout(() => { releaseSession().catch(() => {}) }, 0)
-      }
+      if (event === 'SIGNED_OUT') releaseViaBeacon()
     })
 
-    // Al cerrar/ocultar la pestaña: liberar de inmediato con sendBeacon
-    // (fiable en unload, no lo cancela el navegador). Se complementa con la
-    // RPC best-effort y, como última red, el umbral de inactividad del servidor.
-    const onHide = () => {
-      try {
-        const sid = getDeviceSessionId()
-        if (sid && navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify({ sessionId: sid })], { type: 'application/json' })
-          navigator.sendBeacon('/api/session/release', blob)
-        }
-      } catch { /* noop */ }
-      releaseSession().catch(() => {})
-    }
+    // Liberar al cerrar/ocultar la pestaña.
+    const onHide = () => { releaseViaBeacon() }
     window.addEventListener('pagehide', onHide)
 
     return () => {

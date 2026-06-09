@@ -1,13 +1,11 @@
 // lib/session-lock.ts
-// Cliente de "sesión única": una cuenta solo puede estar activa en un
-// dispositivo a la vez. Se apoya en las funciones RPC de supabase/session-lock.sql.
+// Sesión única — lado cliente. SOLO usa fetch a /api/session/* y sendBeacon.
+// NO llama a supabase.rpc ni hace trabajo dentro de onAuthStateChange, para no
+// tocar el lock de autenticación de supabase-js (lo que antes causaba deadlock).
 
 import { supabase } from '@/lib/supabase'
 
 const KEY = 'santi-device-session-id'
-// Ventana de respaldo si una pestaña se cierra sin avisar. Se mantiene baja
-// porque el heartbeat refresca cada 10s y el cierre de pestaña libera por beacon.
-export const STALE_SECONDS = 30
 
 // Identificador estable por navegador/dispositivo (no por persona).
 export function getDeviceSessionId(): string {
@@ -22,47 +20,61 @@ export function getDeviceSessionId(): string {
   return id
 }
 
-export type ClaimResult = 'claimed' | 'in_use' | 'error'
-
-// Intenta tomar la sesión. 'in_use' = otra persona la tiene activa.
-// 'error' (RPC no instalada / red / timeout) => el llamador debe FALLAR ABIERTO.
-// Tiene un timeout propio para que NUNCA cuelgue el login si la RPC se traba.
-export async function claimSession(): Promise<ClaimResult> {
-  const sid = getDeviceSessionId()
-
-  const rpc: Promise<ClaimResult> = Promise.resolve(
-    supabase.rpc('claim_session', { p_session_id: sid, p_stale_seconds: STALE_SECONDS })
-  )
-    .then(({ data, error }: any) => {
-      if (error) return 'error' as ClaimResult
-      if (data === 'claimed') return 'claimed' as ClaimResult
-      if (data === 'in_use') return 'in_use' as ClaimResult
-      return 'error' as ClaimResult
-    })
-    .catch(() => 'error' as ClaimResult)
-
-  const timeout = new Promise<ClaimResult>(resolve => setTimeout(() => resolve('error'), 8000))
-
-  return Promise.race([rpc, timeout])
+async function getToken(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getSession()
+    return data.session?.access_token ?? null
+  } catch {
+    return null
+  }
 }
 
-// Mantiene viva la sesión. Devuelve true si sigo siendo dueño.
-// Ante un fallo de red devolvemos true para no expulsar por un hipo de conexión.
+export type ClaimResult = 'claimed' | 'in_use' | 'error'
+
+// Reclama la sesión. 'in_use' = otra persona la tiene activa.
+// 'error' (red / sin token) => el llamador FALLA ABIERTO (no bloquea).
+export async function claimSession(): Promise<ClaimResult> {
+  try {
+    const token = await getToken()
+    if (!token) return 'error'
+    const res = await fetch('/api/session/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ sessionId: getDeviceSessionId() }),
+    })
+    if (!res.ok) return 'error'
+    const json = await res.json()
+    return json.claimed ? 'claimed' : 'in_use'
+  } catch {
+    return 'error'
+  }
+}
+
+// Heartbeat. Devuelve true si sigo siendo dueño (ante error => true, no expulsar).
 export async function heartbeatSession(): Promise<boolean> {
   try {
-    const sid = getDeviceSessionId()
-    const { data, error } = await supabase.rpc('heartbeat_session', { p_session_id: sid })
-    if (error) return true
-    return data === true
+    const token = await getToken()
+    if (!token) return true
+    const res = await fetch('/api/session/heartbeat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ sessionId: getDeviceSessionId() }),
+    })
+    if (!res.ok) return true
+    const json = await res.json()
+    return json.owner !== false
   } catch {
     return true
   }
 }
 
-// Libera la sesión (al cerrar sesión o cerrar la pestaña).
-export async function releaseSession(): Promise<void> {
+// Libera la sesión por sendBeacon (fiable en unload, NO toca supabase-js).
+export function releaseViaBeacon(): void {
   try {
     const sid = getDeviceSessionId()
-    await supabase.rpc('release_session', { p_session_id: sid })
-  } catch { /* best-effort */ }
+    if (sid && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      const blob = new Blob([JSON.stringify({ sessionId: sid })], { type: 'application/json' })
+      navigator.sendBeacon('/api/session/release', blob)
+    }
+  } catch { /* noop */ }
 }
