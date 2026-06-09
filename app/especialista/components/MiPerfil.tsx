@@ -7,7 +7,7 @@ import {
   CheckCircle, AlertTriangle, Palette, CalendarDays, Unlink, Sun, Moon
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { releaseViaBeacon } from '@/lib/session-lock'
+import { releaseSessionNow } from '@/lib/session-lock'
 import { useToast } from '@/components/Toast'
 import { useTheme } from '@/components/ThemeContext'
 
@@ -526,7 +526,7 @@ function SeccionCuenta({ onLogout }: { onLogout?: () => void }) {
   }, [])
 
   const handleLogout = async () => {
-    releaseViaBeacon() // libera la sesión única de inmediato
+    await releaseSessionNow() // libera la sesión única ANTES de salir
     await supabase.auth.signOut()
     onLogout?.()
     window.location.href = '/login'

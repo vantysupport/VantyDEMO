@@ -12,7 +12,7 @@ import {
   Zap, Bell, Settings
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
-import { releaseViaBeacon } from '@/lib/session-lock'
+import { releaseSessionNow } from '@/lib/session-lock'
 import EspecialistaHome from './components/EspecialistaHome'
 import PatientsView from '@/app/admin/components/PatientsView'
 import ChatEspecialistas from '@/app/admin/components/ChatEspecialistas'
@@ -183,7 +183,7 @@ export default function EspecialistaDashboard() {
     fetchCitasHoy()
   }, [])
 
-  const handleLogout = async () => { releaseViaBeacon(); await supabase.auth.signOut(); router.push('/login') }
+  const handleLogout = async () => { await releaseSessionNow(); await supabase.auth.signOut(); router.push('/login') }
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) { toast.warning('Mínimo 6 caracteres'); return }

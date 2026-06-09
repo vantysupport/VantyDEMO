@@ -4,7 +4,7 @@ import PWAInstallButton from '@/components/PWAInstallButton'
 import { useI18n } from '@/lib/i18n-context'
 
 import { supabase } from '@/lib/supabase'
-import { releaseViaBeacon } from '@/lib/session-lock'
+import { releaseSessionNow } from '@/lib/session-lock'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -247,7 +247,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      releaseViaBeacon() // libera la sesión única de inmediato
+      await releaseSessionNow() // libera la sesión única ANTES de salir
       await supabase.auth.signOut()
       router.push('/login')
     } catch { toast.error('Error al cerrar sesión') }

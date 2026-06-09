@@ -5,7 +5,7 @@ import { useI18n } from '@/lib/i18n-context'
 import { toBCP47 } from '@/lib/i18n'
 
 import { supabase } from '@/lib/supabase'
-import { releaseViaBeacon } from '@/lib/session-lock'
+import { releaseSessionNow } from '@/lib/session-lock'
 import { useSessionTracker } from '@/lib/hooks/useSessionTracker'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -730,7 +730,7 @@ export default function ParentDashboard() {
                         <div className="animate-fade-in">
                           <ProfileView
                               profile={profile}
-                              onLogout={()=>{releaseViaBeacon(); localStorage.removeItem('padre_email'); supabase.auth.signOut(); router.push('/login')}}
+                              onLogout={async ()=>{await releaseSessionNow(); localStorage.removeItem('padre_email'); await supabase.auth.signOut(); router.push('/login')}}
                               onChangePass={()=>setShowChangePass(true)}
                               onEditProfile={()=>setShowEditProfile(true)}
                               onPrivacy={()=>setShowPrivacy(true)}

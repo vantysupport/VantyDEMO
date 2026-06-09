@@ -96,7 +96,24 @@ export async function heartbeatSession(): Promise<boolean> {
   }
 }
 
-// Libera de inmediato (doble vía, sin tocar supabase-js).
+// Libera ESPERANDO la confirmación del servidor (úsalo en el botón de logout,
+// antes del signOut/redirect, para garantizar que quede libre al instante).
+export async function releaseSessionNow(): Promise<void> {
+  const sid = getDeviceSessionId()
+  if (!sid) return
+  try {
+    await fetchT('/api/session/release', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: sid }),
+    }, 2500)
+  } catch {
+    // si el await falla, intentamos por beacon como respaldo
+    releaseViaBeacon()
+  }
+}
+
+// Libera de inmediato (doble vía, sin tocar supabase-js). Para pagehide/SIGNED_OUT.
 export function releaseViaBeacon(): void {
   const sid = getDeviceSessionId()
   if (!sid) return
