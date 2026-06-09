@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import { ToastProvider } from '@/components/Toast'
 import { ThemeProvider } from '@/components/ThemeContext'
-// import SessionGuard from '@/components/SessionGuard' // DESACTIVADO: causaba cuelgues en login
+import SessionGuard from '@/components/SessionGuard'
 import "./globals.css";
 
 // Sistema de dos tipografías:
@@ -159,7 +159,7 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider>
           <ToastProvider>
-            {/* <SessionGuard /> DESACTIVADO: causaba cuelgues en login */}
+            <SessionGuard />
             {children}
           </ToastProvider>
         </ThemeProvider>

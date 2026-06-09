@@ -32,12 +32,12 @@ export default function SessionGuard() {
     }
 
     const start = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session || cancelled) return
-
-      // Reclamo inicial: cubre OAuth, refresco y navegación directa.
+      // claimSession ya verifica la sesión internamente (con timeout) y guarda
+      // el userId para el heartbeat. Cubre login normal, OAuth, refresco y nav.
       const claim = await claimSession()
+      if (cancelled) return
       if (claim === 'in_use') { await kick(); return }
+      if (claim !== 'claimed') return // 'error' (sin sesión o blip) => no enforcar
 
       interval = setInterval(async () => {
         const stillOwner = await heartbeatSession()

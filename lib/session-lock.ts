@@ -1,14 +1,16 @@
 // lib/session-lock.ts
-// Sesión única — lado cliente. SOLO usa fetch a /api/session/* y sendBeacon.
-// NO llama a supabase.rpc ni hace trabajo dentro de onAuthStateChange, para no
-// tocar el lock de autenticación de supabase-js (lo que antes causaba deadlock).
+// Sesión única — lado cliente, a prueba de cuelgues.
+//  • TODAS las llamadas tienen timeout: si algo tarda, FALLA ABIERTO (no bloquea).
+//  • El heartbeat NO usa supabase-js (fetch puro con userId+sessionId guardados),
+//    para no tocar el lock de auth que antes causaba deadlock.
+//  • El claim (seguro) sí usa el token, pero solo en login/montaje y acotado.
 
 import { supabase } from '@/lib/supabase'
 
 const KEY = 'santi-device-session-id'
-let cachedId = '' // copia en memoria, por si el localStorage se altera al salir
+const UKEY = 'santi-device-user-id'
+let cachedId = ''
 
-// Identificador estable por navegador/dispositivo (no por persona).
 export function getDeviceSessionId(): string {
   if (typeof window === 'undefined') return cachedId
   let id = localStorage.getItem(KEY) || cachedId
@@ -17,15 +19,38 @@ export function getDeviceSessionId(): string {
       ? crypto.randomUUID()
       : `dev-${Date.now()}-${Math.random().toString(36).slice(2)}`
   }
-  try { localStorage.setItem(KEY, id) } catch { /* noop */ }
+  try { localStorage.setItem(KEY, id) } catch {}
   cachedId = id
   return id
 }
 
-async function getToken(): Promise<string | null> {
+function getStoredUserId(): string {
+  try { return localStorage.getItem(UKEY) || '' } catch { return '' }
+}
+function setStoredUserId(uid: string): void {
+  try { localStorage.setItem(UKEY, uid) } catch {}
+}
+
+// fetch con timeout: si se pasa del tiempo, aborta y lanza (el llamador captura).
+async function fetchT(url: string, opts: RequestInit, ms: number): Promise<Response> {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), ms)
   try {
-    const { data } = await supabase.auth.getSession()
-    return data.session?.access_token ?? null
+    return await fetch(url, { ...opts, signal: ctrl.signal })
+  } finally {
+    clearTimeout(t)
+  }
+}
+
+// Obtiene token + userId con timeout (getSession puede, en teoría, tardar).
+async function getSessionInfo(): Promise<{ token: string; userId: string } | null> {
+  try {
+    const p = supabase.auth.getSession()
+    const timeout = new Promise<null>(res => setTimeout(() => res(null), 3000))
+    const result: any = await Promise.race([p, timeout])
+    const session = result?.data?.session
+    if (!session) return null
+    return { token: session.access_token, userId: session.user.id }
   } catch {
     return null
   }
@@ -33,17 +58,17 @@ async function getToken(): Promise<string | null> {
 
 export type ClaimResult = 'claimed' | 'in_use' | 'error'
 
-// Reclama la sesión. 'in_use' = otra persona la tiene activa.
-// 'error' (red / sin token) => el llamador FALLA ABIERTO (no bloquea).
+// Reclama la sesión (seguro, por token). 'error' => FALLA ABIERTO.
 export async function claimSession(): Promise<ClaimResult> {
   try {
-    const token = await getToken()
-    if (!token) return 'error'
-    const res = await fetch('/api/session/claim', {
+    const info = await getSessionInfo()
+    if (!info) return 'error'
+    setStoredUserId(info.userId)
+    const res = await fetchT('/api/session/claim', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${info.token}` },
       body: JSON.stringify({ sessionId: getDeviceSessionId() }),
-    })
+    }, 3500)
     if (!res.ok) return 'error'
     const json = await res.json()
     return json.claimed ? 'claimed' : 'in_use'
@@ -52,16 +77,17 @@ export async function claimSession(): Promise<ClaimResult> {
   }
 }
 
-// Heartbeat. Devuelve true si sigo siendo dueño (ante error => true, no expulsar).
+// Heartbeat SIN supabase-js: fetch puro con userId+sessionId. true = sigo dueño.
 export async function heartbeatSession(): Promise<boolean> {
   try {
-    const token = await getToken()
-    if (!token) return true
-    const res = await fetch('/api/session/heartbeat', {
+    const userId = getStoredUserId()
+    const sessionId = getDeviceSessionId()
+    if (!userId || !sessionId) return true
+    const res = await fetchT('/api/session/heartbeat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ sessionId: getDeviceSessionId() }),
-    })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, sessionId }),
+    }, 3500)
     if (!res.ok) return true
     const json = await res.json()
     return json.owner !== false
@@ -70,20 +96,16 @@ export async function heartbeatSession(): Promise<boolean> {
   }
 }
 
-// Libera la sesión de inmediato. Doble vía para máxima fiabilidad:
-//  1) sendBeacon (sobrevive al unload)  2) fetch keepalive (más confiable en logout
-//  in-app sin recarga). Ninguna toca supabase-js.
+// Libera de inmediato (doble vía, sin tocar supabase-js).
 export function releaseViaBeacon(): void {
   const sid = getDeviceSessionId()
   if (!sid) return
   const payload = JSON.stringify({ sessionId: sid })
-
   try {
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       navigator.sendBeacon('/api/session/release', new Blob([payload], { type: 'application/json' }))
     }
-  } catch { /* noop */ }
-
+  } catch {}
   try {
     fetch('/api/session/release', {
       method: 'POST',
@@ -91,5 +113,5 @@ export function releaseViaBeacon(): void {
       body: payload,
       keepalive: true,
     }).catch(() => {})
-  } catch { /* noop */ }
+  } catch {}
 }

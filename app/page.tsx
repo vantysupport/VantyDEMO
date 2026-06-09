@@ -7,7 +7,7 @@ import { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-// import { claimSession } from '@/lib/session-lock' // DESACTIVADO: sesión única causaba cuelgues
+import { claimSession } from '@/lib/session-lock'
 import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, MessageCircle, ArrowRight, ShieldCheck } from 'lucide-react'
 
 interface PageProps {
@@ -96,7 +96,14 @@ export default function LoginPage(props: PageProps) {
         const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
 
-        // ── Sesión única DESACTIVADA (causaba cuelgues en login) ──
+        // ── Sesión única (con timeout interno; si falla, deja entrar igual) ──
+        const claim = await claimSession()
+        if (claim === 'in_use') {
+          setErrorMessage('Un usuario está usando este perfil ahora. Solo se permite una sesión activa por cuenta.')
+          setIsLoading(false)
+          supabase.auth.signOut().catch(() => {})
+          return
+        }
 
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single()
         const adminRoles = ['admin', 'jefe', 'especialista']
