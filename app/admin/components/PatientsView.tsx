@@ -925,7 +925,7 @@ function FichasTab({ childId, childName, currentRole }: {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col">
       {/* Sub-tabs */}
       <div className={`flex-shrink-0 px-3 sm:px-5 pt-4 pb-3 border-b ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
         <div className={`flex rounded-2xl p-1.5 gap-1.5 border ${cc.bar}`}>
@@ -942,8 +942,8 @@ function FichasTab({ childId, childName, currentRole }: {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-5 pb-28 sm:pb-6">
+      {/* Content — fluye en el scroll principal del detalle (sin scroll anidado) */}
+      <div className="p-3 sm:p-5">
         {subTab === 'plantillas' && canManage && <GestorPlantillas isDark={isDark} />}
         {subTab === 'rellenar' && <RellenarFichaConWord childId={childId} childName={childName} isDark={isDark} />}
       </div>
@@ -1301,7 +1301,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
           </div>
 
           {/* Contenido tab */}
-          <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
+          <div className="flex-1 overflow-y-auto pb-28 md:pb-10">
             {tab==='info' &&
               <PatientInfoTab
                 nino={selected}
@@ -1317,10 +1317,10 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                   await cargar()
                 }}
               />}
-            {tab==='programas' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
-            {tab==='evaluaciones' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
-            {tab==='eval-inicial' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
-            {tab==='historial' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><AIReportView initialChildId={selected.id} /></div>}
+            {tab==='programas' && <div className="p-3 sm:p-5"><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
+            {tab==='evaluaciones' && <div className="p-3 sm:p-5"><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
+            {tab==='eval-inicial' && <div className="p-3 sm:p-5"><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
+            {tab==='historial' && <div className="p-3 sm:p-5"><AIReportView initialChildId={selected.id} /></div>}
             {tab==='fichas' && (
               <FichasTab
                 childId={selected.id}
@@ -1328,7 +1328,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                 currentRole={currentRole}
               />
             )}
-            {tab==='documentos' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><DocumentosView childId={selected.id} childName={selected.name} currentRole="admin" /></div>}
+            {tab==='documentos' && <div className="p-3 sm:p-5"><DocumentosView childId={selected.id} childName={selected.name} currentRole="admin" /></div>}
           </div>
         </>
       ) : (
