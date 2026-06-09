@@ -1517,7 +1517,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                   <div className="space-y-2">
                     {[...detalle.objetivos_cp].sort((a: any, b: any) => (a.numero_set ?? 0) - (b.numero_set ?? 0)).map((obj: any) => (
                       <div key={obj.id} className="space-y-0">
-                      <div className={`flex items-center gap-3 p-3 rounded-xl border text-sm cursor-pointer select-none ${
+                      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-xl border text-sm cursor-pointer select-none ${
                         obj.estado === 'dominado' ? 'bg-emerald-50 border-emerald-200' :
                         obj.estado === 'en_progreso' ? 'bg-sky-50 border-sky-200' :
                         'bg-white border-slate-100'
@@ -1552,8 +1552,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                             className="flex-1 text-sm font-medium bg-white border border-sky-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700"
                           />
                         ) : (
-                          <span className="flex-1 font-medium text-slate-700">{obj.descripcion}</span>
+                          <span className="flex-1 basis-40 font-medium text-slate-700">{obj.descripcion}</span>
                         )}
+                        <div className="flex items-center gap-2 ml-auto shrink-0">
                         <button
                           onClick={() => setDetalle((prev: any) => prev ? {
                             ...prev,
@@ -1589,6 +1590,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                           <option value="en_progreso">🔄 {t('programas.enProgreso')}</option>
                           <option value="dominado">✅ {t('programas.dominado')}</option>
                         </select>
+                        </div>
                       </div>
                       {setExpandidoId === obj.id && (
                         <div className="ml-2 mt-1 mb-1 rounded-xl p-3 border border-sky-100 bg-sky-50 space-y-2 text-xs text-slate-600" onClick={e => e.stopPropagation()}>
