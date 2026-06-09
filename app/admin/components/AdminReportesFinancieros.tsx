@@ -421,18 +421,18 @@ export default function AdminReportesFinancieros() {
                     <thead>
                       <tr style={{ background: 'var(--muted-bg)', borderBottom: '1px solid var(--card-border)' }}>
                         {['Mes','Sesiones','Cobrado','Pendiente','Total',''].map(h => (
-                          <th key={h} className="text-left px-5 py-2.5 text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                          <th key={h} className="text-left px-3 sm:px-5 py-2.5 text-[10px] font-bold whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {data.porMes.map((m, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid var(--card-border)', opacity: m.ingresos + m.pendiente === 0 ? 0.4 : 1 }}>
-                          <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>{MESES_L[i]}</td>
-                          <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{m.sesiones}</td>
-                          <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>S/ {m.ingresos.toFixed(2)}</td>
-                          <td className="px-5 py-3 font-medium" style={{ color: '#f59e0b' }}>S/ {m.pendiente.toFixed(2)}</td>
-                          <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>S/ {(m.ingresos + m.pendiente).toFixed(2)}</td>
+                          <td className="px-3 sm:px-5 py-3 font-bold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{MESES_L[i]}</td>
+                          <td className="px-3 sm:px-5 py-3" style={{ color: 'var(--text-muted)' }}>{m.sesiones}</td>
+                          <td className="px-3 sm:px-5 py-3 font-bold whitespace-nowrap" style={{ color: '#10b981' }}>S/ {m.ingresos.toFixed(2)}</td>
+                          <td className="px-3 sm:px-5 py-3 font-medium whitespace-nowrap" style={{ color: '#f59e0b' }}>S/ {m.pendiente.toFixed(2)}</td>
+                          <td className="px-3 sm:px-5 py-3 font-bold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>S/ {(m.ingresos + m.pendiente).toFixed(2)}</td>
                           <td className="px-3 py-3">
                             {(m.ingresos + m.pendiente) > 0 && (
                               <button
@@ -458,11 +458,11 @@ export default function AdminReportesFinancieros() {
                     </tbody>
                     <tfoot>
                       <tr style={{ background: 'var(--muted-bg)', borderTop: '2px solid var(--card-border)' }}>
-                        <td className="px-5 py-3 font-bold text-xs" style={{ color: 'var(--text-muted)' }}>Total {anio}</td>
-                        <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>{data.sesionesAnio}</td>
-                        <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>S/ {data.totalAnio.toFixed(2)}</td>
-                        <td className="px-5 py-3 font-bold" style={{ color: '#f59e0b' }}>S/ {data.totalPendiente.toFixed(2)}</td>
-                        <td className="px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>S/ {(data.totalAnio + data.totalPendiente).toFixed(2)}</td>
+                        <td className="px-3 sm:px-5 py-3 font-bold text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>Total {anio}</td>
+                        <td className="px-3 sm:px-5 py-3 font-bold" style={{ color: 'var(--text-primary)' }}>{data.sesionesAnio}</td>
+                        <td className="px-3 sm:px-5 py-3 font-bold whitespace-nowrap" style={{ color: '#10b981' }}>S/ {data.totalAnio.toFixed(2)}</td>
+                        <td className="px-3 sm:px-5 py-3 font-bold whitespace-nowrap" style={{ color: '#f59e0b' }}>S/ {data.totalPendiente.toFixed(2)}</td>
+                        <td className="px-3 sm:px-5 py-3 font-bold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>S/ {(data.totalAnio + data.totalPendiente).toFixed(2)}</td>
                         <td />
                       </tr>
                     </tfoot>
