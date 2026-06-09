@@ -712,19 +712,18 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                 <FIcon size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {renamingDoc === doc.id ? (
-                    <input
-                      autoFocus
-                      value={renameValue}
-                      onChange={e => setRenameValue(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') renombrarDoc(doc, renameValue); if (e.key === 'Escape') setRenamingDoc(null) }}
-                      onBlur={() => renombrarDoc(doc, renameValue)}
-                      className={`text-sm font-bold px-2 py-1 rounded-lg border outline-none ${inputCls}`}
-                      style={{ minWidth: 220 }} />
-                  ) : (
-                    <p className={`text-sm font-bold truncate ${txt1}`}>{doc.file_name}</p>
-                  )}
+                {renamingDoc === doc.id ? (
+                  <input
+                    autoFocus
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') renombrarDoc(doc, renameValue); if (e.key === 'Escape') setRenamingDoc(null) }}
+                    onBlur={() => renombrarDoc(doc, renameValue)}
+                    className={`text-sm font-bold px-2 py-1 rounded-lg border outline-none w-full max-w-full ${inputCls}`} />
+                ) : (
+                  <p className={`text-sm font-bold truncate ${txt1}`} title={doc.file_name} style={{ whiteSpace: 'nowrap' }}>{doc.file_name}</p>
+                )}
+                <div className="flex items-center gap-2 flex-wrap mt-1">
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full capitalize"
                     style={{ background: 'rgba(2,132,199,0.1)', color: '#0369a1' }}>
                     {doc.category}
@@ -741,7 +740,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                   {doc.uploader_name} · {formatDate(doc.created_at)} · {formatSize(doc.file_size)}
                 </p>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-0.5 flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
                   className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
                   title="Ver / descargar"><ExternalLink size={14} /></a>

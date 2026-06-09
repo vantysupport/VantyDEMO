@@ -595,6 +595,14 @@ nav.fixed.bottom-0 {
   input, select, textarea { max-width: 100%; }
 }
 
+/* ── DISPOSITIVOS TÁCTILES (sin hover real) ──
+   Los botones/acciones que se revelan con hover son INUSABLES en táctil, y
+   además roban ancho quedando invisibles (eso aplastaba textos hasta partirlos
+   letra por letra). Los hacemos visibles en cualquier dispositivo táctil. */
+@media (hover: none) and (pointer: coarse) {
+  [class*="group-hover:opacity-100"] { opacity: 1 !important; }
+}
+
 /* ── PANTALLAS MUY CHICAS (≤380px) ── */
 @media (max-width: 380px) {
   .grid-cols-3, .grid-cols-4 {

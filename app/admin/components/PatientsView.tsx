@@ -1317,10 +1317,10 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                   await cargar()
                 }}
               />}
-            {tab==='programas' && <div style={{ padding: '20px 24px' }}><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
-            {tab==='evaluaciones' && <div style={{ padding: '20px 24px' }}><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
-            {tab==='eval-inicial' && <div style={{ padding: '20px 24px' }}><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
-            {tab==='historial' && <div style={{ padding: '20px 24px' }}><AIReportView initialChildId={selected.id} /></div>}
+            {tab==='programas' && <div className="p-3 sm:p-5"><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
+            {tab==='evaluaciones' && <div className="p-3 sm:p-5"><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
+            {tab==='eval-inicial' && <div className="p-3 sm:p-5"><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
+            {tab==='historial' && <div className="p-3 sm:p-5"><AIReportView initialChildId={selected.id} /></div>}
             {tab==='fichas' && (
               <FichasTab
                 childId={selected.id}
@@ -1328,7 +1328,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                 currentRole={currentRole}
               />
             )}
-            {tab==='documentos' && <div style={{ padding: '20px 24px' }}><DocumentosView childId={selected.id} childName={selected.name} currentRole="admin" /></div>}
+            {tab==='documentos' && <div className="p-3 sm:p-5"><DocumentosView childId={selected.id} childName={selected.name} currentRole="admin" /></div>}
           </div>
         </>
       ) : (

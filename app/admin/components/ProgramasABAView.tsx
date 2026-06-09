@@ -1012,8 +1012,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   return (
     <div className="rounded-2xl overflow-hidden transition-all" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       {/* Header */}
-      <div className="p-5 cursor-pointer" onClick={loadDetalle}>
-        <div className="flex items-start gap-3">
+      <div className="p-4 sm:p-5 cursor-pointer" onClick={loadDetalle}>
+        <div className="flex items-start gap-3 flex-wrap">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
             style={{ background: `${area.accent}18`, color: area.accent }}>
             {(() => { const AI = area.Icon; return <AI size={19} /> })()}
@@ -1152,7 +1152,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end sm:justify-start mt-1 sm:mt-0">
             <button onClick={e => { e.stopPropagation(); onRegistrarSesion() }}
               disabled={loadingModal}
               className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 disabled:opacity-60" style={{ background: 'var(--text-primary)', color: 'var(--card)' }}>
