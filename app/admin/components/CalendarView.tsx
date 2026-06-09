@@ -536,7 +536,7 @@ function MonthlyCalendarView() {
         />
       )}
 
-      <div className="min-h-full overflow-y-auto px-5 pt-5 pb-8 animate-fade-in-up" style={{ background: "var(--background)" }}>
+      <div className="min-h-full overflow-y-auto px-3 sm:px-5 pt-5 pb-28 md:pb-10 animate-fade-in-up" style={{ background: "var(--background)" }}>
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
@@ -611,14 +611,14 @@ function MonthlyCalendarView() {
               {['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d => <div key={d} className="py-3 text-center text-xs font-bold text-slate-400">{d}</div>)}
             </div>
             <div className="grid grid-cols-7">
-              {Array.from({length:firstDay}).map((_,i) => <div key={`e${i}`} className="min-h-[80px] border-b border-r border-slate-50 bg-slate-50/30"/>)}
+              {Array.from({length:firstDay}).map((_,i) => <div key={`e${i}`} className="min-h-[56px] sm:min-h-[80px] border-b border-r border-slate-50 bg-slate-50/30"/>)}
               {Array.from({length:daysInMonth},(_,i)=>i+1).map(day => {
                 if (!currentMonth) return null
                 const dayApts = getAptsForDay(day)
                 const ds = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
                 const isToday=ds===todayStr; const isPast=ds<todayStr
                 return (
-                  <div key={day} onClick={()=>{setNewApt(p=>({...p,date:ds}));setShow(true)}} className={`min-h-[80px] border-b border-r p-2 cursor-pointer transition-all group ${isToday?'ring-2 ring-inset ring-sky-500':''}`} style={{ borderColor: 'var(--card-border)', background: isToday ? 'rgba(37,99,235,0.08)' : isPast ? 'var(--muted-bg)' : 'var(--card)' }}>
+                  <div key={day} onClick={()=>{setNewApt(p=>({...p,date:ds}));setShow(true)}} className={`min-h-[56px] sm:min-h-[80px] border-b border-r p-1 sm:p-2 cursor-pointer transition-all group ${isToday?'ring-2 ring-inset ring-sky-500':''}`} style={{ borderColor: 'var(--card-border)', background: isToday ? 'rgba(37,99,235,0.08)' : isPast ? 'var(--muted-bg)' : 'var(--card)' }}>
                     <div className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full mb-1 ${isToday?'bg-sky-600 text-white':isPast?'text-slate-300':'text-slate-700 group-hover:bg-sky-100 group-hover:text-sky-700'}`}>{day}</div>
                     <div className="space-y-0.5">
                       {dayApts.slice(0,2).map(apt => (
