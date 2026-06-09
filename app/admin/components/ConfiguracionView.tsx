@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeContext'
 import { supabase } from '@/lib/supabase'
+import { releaseViaBeacon } from '@/lib/session-lock'
 import { useToast } from '@/components/Toast'
 import WhatsAppConfigView from './WhatsAppConfigView'
 import { GestorPlantillas } from './PlantillasClinicas'
@@ -588,6 +589,7 @@ function SeccionCuenta() {
   }, [])
 
   const handleLogout = async () => {
+    releaseViaBeacon() // libera la sesión única de inmediato
     await supabase.auth.signOut()
     window.location.href = '/login'
   }

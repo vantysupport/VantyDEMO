@@ -7,6 +7,7 @@ import {
   CheckCircle, AlertTriangle, Palette, Sun, Moon
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { releaseViaBeacon } from '@/lib/session-lock'
 import { useToast } from '@/components/Toast'
 import { useTheme } from '@/components/ThemeContext'
 
@@ -265,7 +266,7 @@ function SeccionApariencia() {
 // ── Sección Cuenta ────────────────────────────────────────────────────────────
 function SeccionCuenta({ profile }: { profile: any }) {
   const { isDark } = useTheme()
-  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = '/login' }
+  const handleLogout = async () => { releaseViaBeacon(); await supabase.auth.signOut(); window.location.href = '/login' }
 
   return (
     <div className="space-y-4">
