@@ -943,7 +943,7 @@ function FichasTab({ childId, childName, currentRole }: {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-5">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-5 pb-28 sm:pb-6">
         {subTab === 'plantillas' && canManage && <GestorPlantillas isDark={isDark} />}
         {subTab === 'rellenar' && <RellenarFichaConWord childId={childId} childName={childName} isDark={isDark} />}
       </div>
@@ -1317,10 +1317,10 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                   await cargar()
                 }}
               />}
-            {tab==='programas' && <div className="p-3 sm:p-5"><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
-            {tab==='evaluaciones' && <div className="p-3 sm:p-5"><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
-            {tab==='eval-inicial' && <div className="p-3 sm:p-5"><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
-            {tab==='historial' && <div className="p-3 sm:p-5"><AIReportView initialChildId={selected.id} /></div>}
+            {tab==='programas' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><ProgramasABAView childId={selected.id} childName={selected.name}/></div>}
+            {tab==='evaluaciones' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><EvaluacionesUnificadas initialChildId={selected.id} initialChildName={selected.name}/></div>}
+            {tab==='eval-inicial' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><EvaluacionInicialAdmin childId={selected.id} childName={selected.name} /></div>}
+            {tab==='historial' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><AIReportView initialChildId={selected.id} /></div>}
             {tab==='fichas' && (
               <FichasTab
                 childId={selected.id}
@@ -1328,7 +1328,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
                 currentRole={currentRole}
               />
             )}
-            {tab==='documentos' && <div className="p-3 sm:p-5"><DocumentosView childId={selected.id} childName={selected.name} currentRole="admin" /></div>}
+            {tab==='documentos' && <div className="p-3 sm:p-5 pb-28 sm:pb-6"><DocumentosView childId={selected.id} childName={selected.name} currentRole="admin" /></div>}
           </div>
         </>
       ) : (
