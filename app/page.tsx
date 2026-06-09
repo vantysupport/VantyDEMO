@@ -101,7 +101,9 @@ export default function LoginPage(props: PageProps) {
         if (claim === 'in_use') {
           setErrorMessage('Un usuario está usando este perfil ahora. Solo se permite una sesión activa por cuenta.')
           setIsLoading(false)
-          supabase.auth.signOut().catch(() => {})
+          // scope:'local' => cierra SOLO esta sesión (la que se bloquea), NO la
+          // sesión activa del otro dispositivo (global la mataría a TODAS).
+          supabase.auth.signOut({ scope: 'local' }).catch(() => {})
           return
         }
 
