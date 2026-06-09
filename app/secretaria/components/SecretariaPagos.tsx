@@ -847,22 +847,32 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
             </div>
           ) : (
             <div className="rounded-2xl" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', overflow: 'visible' }}>
-              <div className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 text-[10px] font-bold rounded-t-2xl"
+              <div className="hidden md:grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 text-[10px] font-bold rounded-t-2xl"
                 style={{ borderBottom: '1px solid var(--card-border)', color: 'var(--text-muted)', background: 'var(--muted-bg)' }}>
                 <span>Paciente</span><span>Concepto</span><span>Monto</span><span>Método</span><span>Estado</span><span></span><span></span>
               </div>
               {filtered.map(p => {
                 const st = STATUS_CFG[p.status] || { label: p.status, color: '#6b7280', bg: '#f3f4f6' }
                 return (
-                  <div key={p.id} className="grid grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3.5 items-center transition-colors hover:bg-[var(--muted-bg)]"
+                  <div key={p.id} className="flex flex-col gap-2 px-4 py-3 md:grid md:grid-cols-[1fr_1.5fr_auto_auto_auto_auto_auto] md:gap-4 md:px-5 md:py-3.5 md:items-center transition-colors hover:bg-[var(--muted-bg)]"
                     style={{ borderBottom: '1px solid var(--card-border)' }}>
-                    <div>
-                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.children?.name || p.paciente_externo || '—'}</p>
-                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(p.created_at).toLocaleDateString('es-PE')}</p>
+                    {/* Paciente (+ monto a la derecha en móvil) */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.children?.name || p.paciente_externo || '—'}</p>
+                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(p.created_at).toLocaleDateString('es-PE')}</p>
+                      </div>
+                      <p className="md:hidden text-sm font-bold whitespace-nowrap" style={{ color: '#10b981' }}>S/ {Number(p.amount).toFixed(2)}</p>
                     </div>
-                    <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{p.concept}</p>
-                    <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#10b981' }}>S/ {Number(p.amount).toFixed(2)}</p>
-                    <p className="text-xs capitalize whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>{p.payment_method}</p>
+                    <p className="text-xs md:truncate" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="md:hidden font-semibold" style={{ color: 'var(--text-muted)' }}>Concepto: </span>{p.concept}
+                    </p>
+                    <p className="hidden md:block text-sm font-bold whitespace-nowrap" style={{ color: '#10b981' }}>S/ {Number(p.amount).toFixed(2)}</p>
+                    <p className="text-xs capitalize" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="md:hidden font-semibold" style={{ color: 'var(--text-muted)' }}>Método: </span>{p.payment_method}
+                    </p>
+                    {/* Estado + acciones — juntos en móvil, celdas en desktop */}
+                    <div className="flex items-center gap-2 md:contents">
                     {/* Status — clickable to change */}
                     <div className="relative group">
                       <button className="text-[10px] font-bold px-2.5 py-1 rounded-lg whitespace-nowrap hover:opacity-80 transition-opacity"
@@ -908,6 +918,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
                       style={{ background: 'rgba(239,68,68,0.10)', color: '#ef4444', opacity: 0.7 }}>
                       {deletingId === p.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                     </button>
+                    </div>
                   </div>
                 )
               })}
