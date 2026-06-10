@@ -23,42 +23,36 @@ function fmt(secs: number) {
 }
 
 // ── Árbol SVG que crece con g (0 → 1) ─────────────────────────────────────────
+// Todo el árbol es UNA pieza que crece desde el suelo (origen en la base), así
+// la copa siempre queda unida al tronco — nunca flota desconectada.
 function Tree({ g, done }: { g: number; done: boolean }) {
-  const crownScale = g < 0.18 ? 0 : 0.25 + 0.75 * ((g - 0.18) / 0.82)
-  const sproutOp = g < 0.3 ? 1 : Math.max(0, 1 - (g - 0.3) / 0.15)
+  const s = 0.1 + 0.9 * g  // escala uniforme: brote diminuto → árbol completo
   return (
     <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden>
       {/* suelo */}
-      <ellipse cx="100" cy="176" rx="64" ry="9" fill="#86efac" opacity=".45" />
-      <ellipse cx="100" cy="176" rx="40" ry="6" fill="#4ade80" opacity=".35" />
+      <ellipse cx="100" cy="178" rx="58" ry="8" fill="#86efac" opacity=".5" />
+      <ellipse cx="100" cy="178" rx="34" ry="5" fill="#22c55e" opacity=".28" />
 
-      {/* brote inicial (visible al comenzar, se desvanece al crecer) */}
-      <g style={{ opacity: sproutOp, transition: 'opacity .8s ease' }}>
-        <path d="M100 174 C96 166, 88 164, 84 158 C92 158, 98 162, 100 168 Z" fill="#4ade80" />
-        <path d="M100 174 C104 164, 112 162, 117 155 C108 155, 101 160, 100 167 Z" fill="#22c55e" />
-        <rect x="98.6" y="166" width="2.8" height="10" rx="1.4" fill="#16a34a" />
-      </g>
-
-      {/* tronco — crece desde el suelo */}
-      <g style={{ transform: `scaleY(${0.12 + 0.88 * g})`, transformOrigin: '100px 175px', transition: 'transform 1s linear' }}>
-        <path d="M96 175 C97 140, 95 120, 99 96 L101 96 C105 120, 103 140, 104 175 Z" fill="#92613a" />
-        <path d="M99 130 C92 122, 86 118, 82 110" stroke="#92613a" strokeWidth="4" strokeLinecap="round" fill="none" />
-        <path d="M101 118 C108 110, 114 106, 119 100" stroke="#92613a" strokeWidth="4" strokeLinecap="round" fill="none" />
-      </g>
-
-      {/* copa — aparece y escala */}
-      <g style={{ transform: `scale(${crownScale})`, transformOrigin: '100px 92px', opacity: crownScale === 0 ? 0 : 1, transition: 'transform 1s linear, opacity .6s ease' }}>
-        <circle cx="74" cy="100" r="24" fill="#22c55e" />
-        <circle cx="126" cy="100" r="24" fill="#22c55e" />
-        <circle cx="100" cy="72" r="30" fill="#34d399" />
-        <circle cx="84" cy="84" r="22" fill="#4ade80" />
-        <circle cx="116" cy="84" r="22" fill="#4ade80" />
+      <g style={{ transform: `scale(${s})`, transformOrigin: '100px 178px', transition: 'transform 1s linear' }}>
+        {/* tronco */}
+        <path d="M95 178 C96 151, 94 131, 98 105 L102 105 C106 131, 104 151, 105 178 Z" fill="#9c6a40" />
+        <path d="M100 178 C100 150, 100 122, 100 106" stroke="#82562f" strokeWidth="1.4" opacity=".45" fill="none" />
+        {/* ramas */}
+        <path d="M99 135 C91 127, 85 124, 81 117" stroke="#9c6a40" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+        <path d="M101 125 C109 118, 115 114, 120 107" stroke="#9c6a40" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+        {/* copa */}
+        <circle cx="74" cy="99" r="27" fill="#22c55e" />
+        <circle cx="126" cy="99" r="27" fill="#22c55e" />
+        <circle cx="100" cy="65" r="33" fill="#34d399" />
+        <circle cx="82" cy="83" r="26" fill="#4ade80" />
+        <circle cx="118" cy="83" r="26" fill="#4ade80" />
+        <circle cx="100" cy="91" r="28" fill="#34d399" />
         {/* brillos */}
-        <circle cx="92" cy="64" r="7" fill="#bbf7d0" opacity=".8" />
-        <circle cx="112" cy="74" r="4.5" fill="#bbf7d0" opacity=".6" />
+        <ellipse cx="88" cy="61" rx="9" ry="7" fill="#bbf7d0" opacity=".7" />
+        <circle cx="112" cy="73" r="5" fill="#bbf7d0" opacity=".5" />
         {/* flores al completar */}
         <g style={{ opacity: done ? 1 : 0, transition: 'opacity .8s ease .2s' }}>
-          {[[78, 92], [100, 58], [122, 92], [90, 76], [112, 100]].map(([x, y], i) => (
+          {[[76, 89], [100, 57], [124, 89], [88, 73], [114, 97], [100, 83]].map(([x, y], i) => (
             <g key={i}>
               <circle cx={x} cy={y} r="4.5" fill="#fda4af" />
               <circle cx={x} cy={y} r="1.8" fill="#fff1f2" />

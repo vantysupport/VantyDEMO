@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import {
   Brain, CheckCircle, Circle, Clock, ChevronDown,
   Sparkles, Heart, Target, Loader2, RefreshCw, TrendingUp, Trophy,
-  Zap, Star, MessageCircle, Users, Pin, ClipboardList
+  Zap, Star, MessageCircle, Users, Pin, ClipboardList, Trees
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeContext'
 import ForestTimer from './ForestTimer'
@@ -53,6 +53,7 @@ export default function EngagementView({ childId }: { childId: string }) {
   const [generando, setGenerando] = useState(false)
   const [expanded, setExpanded] = useState<number|null>(null)
   const [completadas, setCompletadas] = useState<Set<number>>(new Set())
+  const [seccion, setSeccion] = useState<'plan'|'bosque'>('plan')
   const [saving, setSaving] = useState<number|null>(null)
   const saveTimeout = useRef<ReturnType<typeof setTimeout>|null>(null)
 
@@ -240,6 +241,29 @@ export default function EngagementView({ childId }: { childId: string }) {
         }
       `}</style>
 
+      {/* ── Selector de sección ── */}
+      <div className="eng-card" style={{ display:'flex',gap:6,background:'var(--c-surface)',border:'1.5px solid var(--c-border)',borderRadius:16,padding:5 }}>
+        {([
+          { id:'plan',   label:'Plan semanal', Icon:ClipboardList },
+          { id:'bosque', label:'Modo Bosque',  Icon:Trees },
+        ] as const).map(({ id, label, Icon }) => (
+          <button key={id} onClick={() => setSeccion(id)}
+            style={{ flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'10px 8px',
+              borderRadius:12,border:'none',cursor:'pointer',fontFamily:'inherit',fontSize:13,fontWeight:800,
+              transition:'all .2s',
+              background: seccion===id ? (id==='bosque' ? 'linear-gradient(135deg,#16a34a,#15803d)' : 'linear-gradient(135deg,#0369a1,#0284c7)') : 'transparent',
+              color: seccion===id ? '#fff' : 'var(--c-text-muted)',
+              boxShadow: seccion===id ? (id==='bosque' ? '0 6px 16px rgba(22,163,74,.3)' : '0 6px 16px rgba(2,132,199,.3)') : 'none' }}>
+            <Icon size={15}/>{label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── SECCIÓN: MODO BOSQUE ── */}
+      {seccion === 'bosque' && <ForestTimer childId={childId} />}
+
+      {/* ── SECCIÓN: PLAN SEMANAL ── */}
+      {seccion === 'plan' && <>
       {/* HERO */}
       <div className="eng-card" style={{ background:'linear-gradient(135deg,#0369a1,#0284c7,#06b6d4)',borderRadius:24,padding:'22px 22px 18px',color:'#ffffff',boxShadow:'0 16px 50px rgba(2,132,199,.3)',position:'relative',overflow:'hidden' }}>
         <div style={{ position:'absolute',top:-20,right:-20,width:130,height:130,background:'rgba(255,255,255,.07)',borderRadius:'50%' }}/>
@@ -277,9 +301,6 @@ export default function EngagementView({ childId }: { childId: string }) {
           )}
         </div>
       </div>
-
-      {/* ── MODO BOSQUE — cronómetro de práctica ── */}
-      <ForestTimer childId={childId} />
 
       {!plan ? (
         <div className="eng-card" style={{ background:'var(--c-card)',borderRadius:24,border:'1.5px solid var(--c-border-light)',padding:'48px 24px',textAlign:'center',boxShadow:'0 4px 20px rgba(0,0,0,.04)' }}>
@@ -448,6 +469,7 @@ export default function EngagementView({ childId }: { childId: string }) {
           )}
         </>
       )}
+      </>}
     </div>
   )
 }
