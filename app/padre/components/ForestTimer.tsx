@@ -3,6 +3,11 @@
 // Cronómetro de práctica estilo "Forest": un arbolito crece mientras dura la
 // sesión de práctica en casa. Si se completa el tiempo, el árbol se planta y
 // se suma al bosque de la familia (persistido en localStorage por niño).
+//
+// Árbol: SVG por capas con degradados (volumen/profundidad), tronco iluminado
+// desde el sol (arriba-derecha), manzanas con brillo radial, sombra difuminada
+// en el suelo, balanceo "vivo" mientras corre, pop elástico + hojas cayendo al
+// completar. Animaciones en CSS puro (sin dependencias).
 
 import { useState, useEffect, useRef } from 'react'
 import { Play, Pause, RotateCcw, X, Trees, Sparkles, Minus, Plus } from 'lucide-react'
@@ -22,44 +27,126 @@ function fmt(secs: number) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-// ── Árbol SVG que crece con g (0 → 1) ─────────────────────────────────────────
-// Todo el árbol es UNA pieza que crece desde el suelo (origen en la base), así
-// la copa siempre queda unida al tronco — nunca flota desconectada.
-function Tree({ g, done }: { g: number; done: boolean }) {
+// ── Anillo de progreso (strokeDasharray/offset, progress 0 → 1) ───────────────
+function ProgressRing({ progress }: { progress: number }) {
+  const R = 118
+  const C = 2 * Math.PI * R
+  return (
+    <svg className="ft-ring" viewBox="0 0 260 260" aria-hidden>
+      <circle cx="130" cy="130" r={R} fill="none" stroke="var(--c-border)" strokeWidth="7" opacity=".5" />
+      <circle cx="130" cy="130" r={R} fill="none" stroke="url(#ftRingGrad)" strokeWidth="7" strokeLinecap="round"
+        strokeDasharray={C} strokeDashoffset={C * (1 - Math.min(1, Math.max(0, progress)))}
+        style={{ transition: 'stroke-dashoffset 1s linear' }} />
+      <defs>
+        <linearGradient id="ftRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0ea5e9" />
+          <stop offset="100%" stopColor="#22c55e" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+// ── Árbol SVG por capas que crece con g (0 → 1) ───────────────────────────────
+// Una sola pieza anclada al suelo (la copa nunca se separa del tronco).
+function Tree({ g, done, alive }: { g: number; done: boolean; alive: boolean }) {
   const s = 0.1 + 0.9 * g  // escala uniforme: brote diminuto → árbol completo
+  const APPLES: [number, number][] = [[78, 96], [101, 57], [123, 93], [88, 72], [113, 104], [99, 85]]
   return (
     <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden>
-      {/* suelo */}
-      <ellipse cx="100" cy="178" rx="58" ry="8" fill="#86efac" opacity=".5" />
-      <ellipse cx="100" cy="178" rx="34" ry="5" fill="#22c55e" opacity=".28" />
+      <defs>
+        {/* Tronco iluminado desde la derecha (el sol está arriba a la derecha) */}
+        <linearGradient id="ftTrunk" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#7c4f2a" />
+          <stop offset=".55" stopColor="#9c6a40" />
+          <stop offset="1" stopColor="#bd8c5a" />
+        </linearGradient>
+        {/* Follaje en 3 tonos con luz desplazada hacia arriba-derecha */}
+        <radialGradient id="ftLeafBack" cx=".45" cy=".4" r=".8">
+          <stop offset="0" stopColor="#16a34a" />
+          <stop offset="1" stopColor="#15803d" />
+        </radialGradient>
+        <radialGradient id="ftLeafMid" cx=".58" cy=".34" r=".82">
+          <stop offset="0" stopColor="#34d399" />
+          <stop offset="1" stopColor="#22c55e" />
+        </radialGradient>
+        <radialGradient id="ftLeafFront" cx=".64" cy=".3" r=".85">
+          <stop offset="0" stopColor="#86efac" />
+          <stop offset=".55" stopColor="#4ade80" />
+          <stop offset="1" stopColor="#22c55e" />
+        </radialGradient>
+        {/* Manzana con brillo radial */}
+        <radialGradient id="ftApple" cx=".62" cy=".3" r=".85">
+          <stop offset="0" stopColor="#fecaca" />
+          <stop offset=".38" stopColor="#f87171" />
+          <stop offset="1" stopColor="#dc2626" />
+        </radialGradient>
+        {/* Césped con degradado suave que se difumina */}
+        <radialGradient id="ftGround" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stopColor="#4ade80" stopOpacity=".6" />
+          <stop offset=".65" stopColor="#86efac" stopOpacity=".4" />
+          <stop offset="1" stopColor="#86efac" stopOpacity="0" />
+        </radialGradient>
+      </defs>
 
+      {/* base de césped + sombra difuminada del árbol (crece con él) */}
+      <ellipse cx="100" cy="178" rx="62" ry="10" fill="url(#ftGround)" />
+      <ellipse cx="100" cy="179" rx={18 + 30 * g} ry={3.5 + 1.5 * g} fill="#14532d"
+        opacity={0.14 + 0.1 * g} style={{ filter: 'blur(2.5px)', transition: 'all 1s linear' }} />
+
+      {/* árbol completo — crece desde la base */}
       <g style={{ transform: `scale(${s})`, transformOrigin: '100px 178px', transition: 'transform 1s linear' }}>
-        {/* tronco */}
-        <path d="M95 178 C96 151, 94 131, 98 105 L102 105 C106 131, 104 151, 105 178 Z" fill="#9c6a40" />
-        <path d="M100 178 C100 150, 100 122, 100 106" stroke="#82562f" strokeWidth="1.4" opacity=".45" fill="none" />
-        {/* ramas */}
-        <path d="M99 135 C91 127, 85 124, 81 117" stroke="#9c6a40" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-        <path d="M101 125 C109 118, 115 114, 120 107" stroke="#9c6a40" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-        {/* copa */}
-        <circle cx="74" cy="99" r="27" fill="#22c55e" />
-        <circle cx="126" cy="99" r="27" fill="#22c55e" />
-        <circle cx="100" cy="65" r="33" fill="#34d399" />
-        <circle cx="82" cy="83" r="26" fill="#4ade80" />
-        <circle cx="118" cy="83" r="26" fill="#4ade80" />
-        <circle cx="100" cy="91" r="28" fill="#34d399" />
-        {/* brillos */}
-        <ellipse cx="88" cy="61" rx="9" ry="7" fill="#bbf7d0" opacity=".7" />
-        <circle cx="112" cy="73" r="5" fill="#bbf7d0" opacity=".5" />
-        {/* flores al completar */}
-        <g style={{ opacity: done ? 1 : 0, transition: 'opacity .8s ease .2s' }}>
-          {[[76, 89], [100, 57], [124, 89], [88, 73], [114, 97], [100, 83]].map(([x, y], i) => (
-            <g key={i}>
-              <circle cx={x} cy={y} r="4.5" fill="#fda4af" />
-              <circle cx={x} cy={y} r="1.8" fill="#fff1f2" />
+        <g className={alive || done ? 'ft-sway' : ''}>
+          {/* tronco con luz lateral */}
+          <path d="M95 178 C96 151, 94 131, 98 105 L102 105 C106 131, 104 151, 105 178 Z" fill="url(#ftTrunk)" />
+          {/* sombra del tronco (lado opuesto al sol) */}
+          <path d="M95 178 C96 151, 94 131, 98 105 L99.3 105 C97.6 131, 98.4 151, 97.8 178 Z" fill="#5e3c1d" opacity=".45" />
+          {/* ramas */}
+          <path d="M99 135 C91 127, 85 124, 81 117" stroke="#8a5a32" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+          <path d="M101 125 C109 118, 115 114, 120 107" stroke="#a87a48" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+
+          {/* follaje en capas (profundidad semi-isométrica) + respiración */}
+          <g className={alive || done ? 'ft-breathe' : ''}>
+            {/* capa trasera (sombra) */}
+            <circle cx="70" cy="102" r="26" fill="url(#ftLeafBack)" />
+            <circle cx="130" cy="102" r="26" fill="url(#ftLeafBack)" />
+            <circle cx="100" cy="61" r="30" fill="url(#ftLeafBack)" />
+            {/* capa media */}
+            <circle cx="80" cy="87" r="27" fill="url(#ftLeafMid)" />
+            <circle cx="120" cy="87" r="27" fill="url(#ftLeafMid)" />
+            <circle cx="100" cy="69" r="30" fill="url(#ftLeafMid)" />
+            {/* capa frontal (luz, hacia el sol) */}
+            <circle cx="104" cy="85" r="26" fill="url(#ftLeafFront)" />
+            <circle cx="87" cy="77" r="20" fill="url(#ftLeafFront)" opacity=".92" />
+            {/* brillo del sol sobre la copa */}
+            <ellipse cx="117" cy="62" rx="12" ry="8" fill="#d9f99d" opacity=".5" />
+            <circle cx="108" cy="52" r="4" fill="#ecfccb" opacity=".6" />
+
+            {/* manzanas orgánicas (aparecen al completar) */}
+            <g style={{ opacity: done ? 1 : 0, transition: 'opacity .8s ease .25s' }}>
+              {APPLES.map(([x, y], i) => (
+                <g key={i}>
+                  <circle cx={x} cy={y} r="4.6" fill="url(#ftApple)" />
+                  <path d={`M${x} ${y - 4.2} q 1 -2.2 2.6 -3`} stroke="#7c4f2a" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+                  <circle cx={x - 1.4} cy={y - 1.6} r="1.1" fill="#fff1f2" opacity=".85" />
+                </g>
+              ))}
+            </g>
+          </g>
+        </g>
+      </g>
+
+      {/* hojas cayendo al completar */}
+      {done && (
+        <g>
+          {[[74, 78, 0], [104, 64, 1.3], [126, 84, 2.4]].map(([x, y, d], i) => (
+            <g key={i} transform={`translate(${x} ${y})`}>
+              <path className="ft-leaf" style={{ animationDelay: `${d}s` }}
+                d="M0 0 C3 -4.5, 8.5 -4.5, 10.5 0 C8.5 4.5, 3 4.5, 0 0 Z" fill={i === 1 ? '#86efac' : '#4ade80'} />
             </g>
           ))}
         </g>
-      </g>
+      )}
     </svg>
   )
 }
@@ -119,8 +206,6 @@ export default function ForestTimer({ childId }: { childId: string }) {
   const reset = () => { setPhase('idle'); setRemaining(totalSecs); setTotal(totalSecs) }
 
   const g = phase === 'idle' ? 0 : phase === 'done' ? 1 : Math.min(1, Math.max(0, 1 - remaining / total))
-  const R = 118
-  const C = 2 * Math.PI * R
 
   return (
     <div className="eng-card ft-root">
@@ -139,7 +224,11 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .dark .ft-cloud{ background:rgba(255,255,255,.16); box-shadow:18px -8px 0 -2px rgba(255,255,255,.16), 34px 0 0 -4px rgba(255,255,255,.14); }
         .ft-stage{ position:relative; width:min(64vw,250px); height:min(64vw,250px); margin:6px auto 2px; }
         .ft-ring{ position:absolute; inset:0; transform:rotate(-90deg); }
-        .ft-tree{ position:absolute; inset:13%; }
+        .ft-tree{ position:absolute; inset:13%; filter:drop-shadow(0 7px 9px rgba(20,83,45,.22)); }
+        .ft-pop{ animation:ftTreePop .7s cubic-bezier(.34,1.56,.64,1) both; }
+        .ft-sway{ animation:ftSwayK 5.5s ease-in-out infinite; transform-origin:100px 178px; }
+        .ft-breathe{ animation:ftBreatheK 4.5s ease-in-out infinite; transform-origin:100px 84px; }
+        .ft-leaf{ animation:ftFall 4s ease-in infinite; opacity:0; }
         .ft-time{ font-family:var(--font-display,inherit); font-weight:800; font-size:clamp(30px,8vw,40px);
           letter-spacing:1px; color:var(--c-text-primary); font-variant-numeric:tabular-nums; line-height:1; margin-top:10px; }
         .ft-sub{ font-size:12px; color:var(--c-text-muted); margin-top:4px; font-weight:600; }
@@ -180,6 +269,15 @@ export default function ForestTimer({ childId }: { childId: string }) {
         @keyframes ftSun{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-5px) } }
         @keyframes ftCloud{ from{ transform:translateX(0) } to{ transform:translateX(calc(100vw + 140px)) } }
         @keyframes ftPop{ from{ transform:scale(.6); opacity:0 } to{ transform:scale(1); opacity:1 } }
+        @keyframes ftTreePop{ 0%{ transform:scale(.88) } 55%{ transform:scale(1.07) } 80%{ transform:scale(.985) } 100%{ transform:scale(1) } }
+        @keyframes ftSwayK{ 0%,100%{ transform:rotate(-1deg) } 50%{ transform:rotate(1.2deg) } }
+        @keyframes ftBreatheK{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.015) } }
+        @keyframes ftFall{
+          0%{ transform:translate(0,0) rotate(0deg); opacity:0 }
+          8%{ opacity:.95 }
+          45%{ transform:translate(-11px,44px) rotate(130deg); opacity:.9 }
+          100%{ transform:translate(7px,92px) rotate(280deg); opacity:0 }
+        }
         @media(min-width:640px){ .ft-inner{ padding:24px } }
       `}</style>
 
@@ -200,19 +298,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
         {/* Escena: anillo + árbol */}
         <div className="ft-stage">
-          <svg className="ft-ring" viewBox="0 0 260 260">
-            <circle cx="130" cy="130" r={R} fill="none" stroke="var(--c-border)" strokeWidth="7" opacity=".5" />
-            <circle cx="130" cy="130" r={R} fill="none" stroke="url(#ftGrad)" strokeWidth="7" strokeLinecap="round"
-              strokeDasharray={C} strokeDashoffset={C * (1 - g)}
-              style={{ transition: 'stroke-dashoffset 1s linear' }} />
-            <defs>
-              <linearGradient id="ftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0ea5e9" />
-                <stop offset="100%" stopColor="#22c55e" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div className="ft-tree"><Tree g={g} done={phase === 'done'} /></div>
+          <ProgressRing progress={g} />
+          <div className={`ft-tree ${phase === 'done' ? 'ft-pop' : ''}`}>
+            <Tree g={g} done={phase === 'done'} alive={phase === 'running'} />
+          </div>
         </div>
 
         {/* Tiempo */}
@@ -245,6 +334,7 @@ export default function ForestTimer({ childId }: { childId: string }) {
                 <input
                   className="ft-numin" type="text" inputMode="numeric" value={durStr}
                   onChange={e => setDurStr(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+                  onFocus={e => e.target.select()}
                   onBlur={() => { if (durMin > 180) setDurStr('180') }}
                   aria-label="Minutos" />
                 <span className="ft-colon">:</span>
