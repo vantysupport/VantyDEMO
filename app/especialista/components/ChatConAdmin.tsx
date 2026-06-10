@@ -390,11 +390,24 @@ export default function ChatConAdmin({
     } catch (err) { toast.error(`Error al enviar audio: ${err instanceof Error ? err.message : 'Error'}`) }
     finally { setSubiendo(false) }
   }
+  // Precargar notas de voz apenas llegan los mensajes → reproducción instantánea
+  useEffect(() => {
+    mensajes.forEach(m => {
+      if (m.message_type === 'audio' && m.file_url && !audioRefs.current[m.id]) {
+        const a = new Audio()
+        a.preload = 'auto'
+        a.src = m.file_url
+        a.onended = () => setReproduciendo(null)
+        audioRefs.current[m.id] = a
+      }
+    })
+  }, [mensajes])
+
   const toggleAudio = (id: string, url: string) => {
     if (reproduciendo === id) { audioRefs.current[id]?.pause(); setReproduciendo(null) }
     else {
       Object.values(audioRefs.current).forEach(a => a.pause())
-      if (!audioRefs.current[id]) { const audio = new Audio(url); audio.onended = () => setReproduciendo(null); audioRefs.current[id] = audio }
+      if (!audioRefs.current[id]) { const audio = new Audio(url); audio.preload = 'auto'; audio.onended = () => setReproduciendo(null); audioRefs.current[id] = audio }
       audioRefs.current[id].play(); setReproduciendo(id)
     }
   }
