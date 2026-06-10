@@ -48,32 +48,42 @@ function fmt(secs: number) {
 // silueta desplazada hacia abajo, por detrás (nunca un corte recto encima).
 // ══════════════════════════════════════════════════════════════════════════════
 
-function CanopyCluster({ blobs, light, dark }: {
-  blobs: [number, number, number][]; light: string; dark: string
+// Copa "nube" — path simétrico de tres lóbulos con sombra inferior desplazada.
+// (x,y) = centro de la base; W = semiancho; H = alto total.
+function CanopyCloud({ x, y, w, h, light, dark }: {
+  x: number; y: number; w: number; h: number; light: string; dark: string
 }) {
+  const W = w, H = h
+  const d = `M ${x - W} ${y}
+    C ${x - W} ${y - H * .45}, ${x - W * .55} ${y - H * .62}, ${x - W * .38} ${y - H * .6}
+    C ${x - W * .34} ${y - H * .98}, ${x + W * .34} ${y - H * .98}, ${x + W * .38} ${y - H * .6}
+    C ${x + W * .55} ${y - H * .62}, ${x + W} ${y - H * .45}, ${x + W} ${y}
+    Q ${x} ${y + H * .14} ${x - W} ${y} Z`
   return (
     <>
-      <g fill={dark}>
-        {blobs.map(([x, y, r], i) => <circle key={`d${i}`} cx={x} cy={y + 3.2} r={r} />)}
-      </g>
-      <g fill={light}>
-        {blobs.map(([x, y, r], i) => <circle key={`l${i}`} cx={x} cy={y} r={r} />)}
-      </g>
+      <path d={d} fill={dark} transform="translate(0 3)" />
+      <path d={d} fill={light} />
     </>
   )
 }
 
 function Trunk({ y, h, w = 4, color = '#8a5a3b' }: { y: number; h: number; w?: number; color?: string }) {
-  return <rect x={60 - w / 2} y={y} width={w} height={h} rx={w / 2} fill={color} />
+  return (
+    <g>
+      <rect x={60 - w / 2} y={y} width={w} height={h} rx={w / 2} fill={color} />
+      {/* veta de luz central — volumen sutil */}
+      <rect x={60 - w / 4} y={y + 2} width={w / 2} height={Math.max(2, h - 4)} rx={1} fill="rgba(255,255,255,0.15)" />
+    </g>
+  )
 }
 
 // Etapa 0 — brote
 function StageSprout() {
   return (
     <g>
-      <rect x="58.8" y="66" width="2.4" height="14" rx="1.2" fill="#4d9b46" />
-      <path d="M60 69 C54.5 67 50.5 63.5 49 58 C55.5 59.5 59.2 63 60 67.5 Z" fill="#6fbf4f" />
-      <path d="M60 72 C65.5 70 69.5 66.5 71 61 C64.5 62.5 60.8 66 60 70.5 Z" fill="#4d9b46" />
+      <path d="M60 66 L60 80" stroke="#4d9b46" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M60 69 C54 67, 50 63, 49 58 C55 59.5, 59 63, 60 67.5 Z" fill="#6fbf4f" />
+      <path d="M60 72 C66 70, 70 66, 71 61 C65 62.5, 61 66, 60 70.5 Z" fill="#4d9b46" />
     </g>
   )
 }
@@ -82,9 +92,8 @@ function StageSprout() {
 function StageSapling() {
   return (
     <g>
-      <Trunk y={56} h={24} w={3} color="#7e5233" />
-      <CanopyCluster light="#6fbf4f" dark="#4d9b46"
-        blobs={[[60, 52, 8.5], [53, 57, 6.5], [67, 57, 6.5]]} />
+      <Trunk y={58} h={22} w={3} color="#7e5233" />
+      <CanopyCloud x={60} y={56} w={11} h={17} light="#6fbf4f" dark="#4d9b46" />
     </g>
   )
 }
@@ -93,75 +102,80 @@ function PlantStage({ sp, stage, done }: { sp: Species; stage: number; done: boo
   if (stage === 0) return <StageSprout />
   if (stage === 1) return <StageSapling />
 
-  // ── PINO — facetado en dos tonos ──
+  // ── PINO — capas con lados curvos (acículas), dos tonos ──
   if (sp === 'pino') {
-    const Tier = ({ cy, half, h }: { cy: number; half: number; h: number }) => (
+    const Tier = ({ y, w, h }: { y: number; w: number; h: number }) => (
       <>
-        <path d={`M60 ${cy - h} L${60 - half} ${cy} L60 ${cy} Z`} fill="#6fae53" />
-        <path d={`M60 ${cy - h} L60 ${cy} L${60 + half} ${cy} Z`} fill="#3f7f46" />
+        <path d={`M60 ${y - h} Q${60 - w} ${y - h * .5} ${60 - w * .8} ${y} L60 ${y} Z`} fill="#67aa4f" />
+        <path d={`M60 ${y - h} Q${60 + w} ${y - h * .5} ${60 + w * .8} ${y} L60 ${y} Z`} fill="#3f7f46" />
       </>
     )
     if (stage === 2) return (
       <g>
-        <Trunk y={68} h={12} w={3.6} />
-        <Tier cy={70} half={15} h={16} />
-        <Tier cy={58} half={11.5} h={13} />
+        <Trunk y={68} h={12} w={3.6} color="#5a3b2c" />
+        <Tier y={70} w={16} h={17} />
+        <Tier y={58} w={12} h={14} />
       </g>
     )
     return (
       <g>
-        <Trunk y={70} h={10} w={4} />
-        <Tier cy={72} half={19} h={18} />
-        <Tier cy={60} half={15} h={15} />
-        <Tier cy={49} half={11} h={13} />
+        <Trunk y={70} h={10} w={4} color="#5a3b2c" />
+        <Tier y={72} w={20} h={19} />
+        <Tier y={60} w={16} h={16} />
+        <Tier y={49} w={12} h={14} />
       </g>
     )
   }
 
-  // ── Especies de copa redonda ──
+  // ── Especies de copa nube ──
   const cfg = sp === 'cerezo'
-    ? { light: '#f3a7c3', dark: '#de7ea6', trunk: '#7e5233' }
+    ? { light: '#f3a7c3', dark: '#de7ea6', trunk: '#7a5230' }
     : sp === 'roble'
-      ? { light: '#8aba5f', dark: '#5d8f43', trunk: '#7e5233' }
-      : { light: '#6fbf4f', dark: '#4d9b46', trunk: '#8a5a3b' } // manzano
+      ? { light: '#8aba5f', dark: '#5d8f43', trunk: '#6b472c' }
+      : { light: '#7bcb63', dark: '#54a046', trunk: '#7a5230' } // manzano
 
   if (stage === 2) return (
     <g>
-      <Trunk y={58} h={22} w={3.6} color={cfg.trunk} />
-      <CanopyCluster light={cfg.light} dark={cfg.dark}
-        blobs={[[60, 46, 11], [50, 53, 8.5], [70, 53, 8.5], [60, 55, 9.5]]} />
-      {sp === 'cerezo' && <Blossoms pts={[[54, 48], [66, 48], [60, 42]]} />}
+      <Trunk y={56} h={24} w={3.8} color={cfg.trunk} />
+      <CanopyCloud x={60} y={54} w={17} h={24} light={cfg.light} dark={cfg.dark} />
+      {sp === 'cerezo' && <Blossoms pts={[[54, 46], [66, 46], [60, 39]]} />}
     </g>
   )
 
-  const wide = sp === 'roble' ? 1.12 : 1
-  return (
+  if (sp === 'cerezo') return (
     <g>
-      <Trunk y={56} h={24} w={4.4} color={cfg.trunk} />
-      <CanopyCluster light={cfg.light} dark={cfg.dark}
-        blobs={[
-          [60, 36, 13 * wide],
-          [60 - 13 * wide, 45, 11 * wide],
-          [60 + 13 * wide, 45, 11 * wide],
-          [60 - 7 * wide, 53, 9.5 * wide],
-          [60 + 7 * wide, 53, 9.5 * wide],
-          [60, 47, 12 * wide],
-        ]} />
-      {sp === 'manzano' && done && (
+      <Trunk y={54} h={26} w={3.8} color={cfg.trunk} />
+      <CanopyCloud x={60} y={52} w={22} h={30} light={cfg.light} dark={cfg.dark} />
+      <Blossoms pts={[[48, 44], [72, 44], [60, 30], [55, 50], [65, 50]]} />
+    </g>
+  )
+
+  if (sp === 'roble') return (
+    <g>
+      <Trunk y={52} h={28} w={4.8} color={cfg.trunk} />
+      <CanopyCloud x={60} y={50} w={26} h={32} light={cfg.light} dark={cfg.dark} />
+      {done && (
         <g>
-          {([[51, 42], [69, 43], [60, 34], [55, 53], [66, 52]] as [number, number][]).map(([x, y], i) => (
-            <g key={i}>
-              <circle cx={x} cy={y} r="2.7" fill="#e8554d" />
-              <circle cx={x - .9} cy={y - .9} r=".9" fill="#fca5a5" />
-            </g>
+          {([[53, 46], [67, 45], [60, 50]] as [number, number][]).map(([x, y], i) => (
+            <ellipse key={i} cx={x} cy={y} rx="2" ry="2.6" fill="#d28c3a" />
           ))}
         </g>
       )}
-      {sp === 'cerezo' && <Blossoms pts={[[50, 42], [70, 42], [60, 33], [54, 52], [66, 52]]} />}
-      {sp === 'roble' && done && (
+    </g>
+  )
+
+  // manzano
+  return (
+    <g>
+      <Trunk y={54} h={26} w={4.2} color={cfg.trunk} />
+      <CanopyCloud x={60} y={52} w={23} h={30} light={cfg.light} dark={cfg.dark} />
+      {done && (
         <g>
-          {([[52, 52], [68, 51], [60, 56]] as [number, number][]).map(([x, y], i) => (
-            <ellipse key={i} cx={x} cy={y} rx="1.9" ry="2.5" fill="#c98a4b" />
+          {([[51, 44], [69, 44], [60, 32], [56, 49], [65, 49]] as [number, number][]).map(([x, y], i) => (
+            <g key={i}>
+              <circle cx={x} cy={y} r="2.8" fill="#ea4c4c" />
+              <circle cx={x - 1} cy={y - 1} r=".9" fill="#fca5a5" />
+            </g>
           ))}
         </g>
       )}
@@ -174,8 +188,8 @@ function Blossoms({ pts }: { pts: [number, number][] }) {
     <g>
       {pts.map(([x, y], i) => (
         <g key={i}>
-          <circle cx={x} cy={y} r="2.5" fill="#fdf2f8" />
-          <circle cx={x} cy={y} r="1" fill="#f9a8d4" />
+          <circle cx={x} cy={y} r="2.8" fill="#fff5f9" />
+          <circle cx={x} cy={y} r="1.2" fill="#f58bb2" />
         </g>
       ))}
     </g>
@@ -201,14 +215,29 @@ function Plate({ sp, stage, done, alive, withered = false, progress, growScale =
   withered?: boolean; progress?: number; growScale?: number
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
-  const clipId = `ftClip${uid}`
   const showRing = progress !== undefined
   const p = Math.min(1, Math.max(0, progress ?? 0))
   const R = 64, CX = 70, CY = 70
   const C = 2 * Math.PI * R
   const knobA = 2 * Math.PI * p - Math.PI / 2
+  // Solo el plato principal (con anillo) hace crossfade de las 4 etapas;
+  // los platos mini (selector / Mi bosque) renderizan una sola etapa.
+  const stagesToRender = showRing ? [0, 1, 2, 3] : [stage]
   return (
     <svg viewBox="0 0 140 140" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }} aria-hidden>
+      <defs>
+        <clipPath id={`clip${uid}`}><circle cx="60" cy="60" r="54" /></clipPath>
+        <radialGradient id={`plate${uid}`} cx="50%" cy="40%" r="62%">
+          <stop offset="0%" stopColor="#FCF6DD" />
+          <stop offset="100%" stopColor="#F1E3BC" />
+        </radialGradient>
+        <filter id={`knob${uid}`} x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity=".25" />
+        </filter>
+        <filter id={`pshadow${uid}`} x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="2.5" stdDeviation="2" floodColor="#3a2a1a" floodOpacity=".2" />
+        </filter>
+      </defs>
       {showRing && (
         <>
           <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="5" />
@@ -218,25 +247,30 @@ function Plate({ sp, stage, done, alive, withered = false, progress, growScale =
             style={{ transition: 'stroke-dashoffset 1s linear' }} />
           {p > 0 && p < 1 && (
             <circle cx={CX + R * Math.cos(knobA)} cy={CY + R * Math.sin(knobA)} r="6" fill="#FBF3D4"
+              filter={`url(#knob${uid})`}
               style={{ transition: 'cx 1s linear, cy 1s linear' }} />
           )}
         </>
       )}
       {/* plato + tierra + planta (coordenadas locales desplazadas al centro) */}
       <g transform="translate(10 10)">
-        <defs>
-          <clipPath id={clipId}><circle cx="60" cy="60" r="54" /></clipPath>
-        </defs>
-        <circle cx="60" cy="60" r="54" fill="#FBF3D4" />
-        <g clipPath={`url(#${clipId})`}>
+        <circle cx="60" cy="60" r="54" fill={`url(#plate${uid})`} />
+        <g clipPath={`url(#clip${uid})`}>
           <path d="M0 90 Q60 74 120 90 L120 130 L0 130 Z" fill="#8a5a3b" />
           <path d="M0 90 Q60 74 120 90" stroke="#6f4528" strokeWidth="3" fill="none" opacity=".5" />
+          {/* textura de la tierra */}
+          <path d="M8 98 Q60 86 112 98" stroke="#6f4528" strokeWidth="2" fill="none" opacity=".35" />
+          <path d="M16 105 Q60 95 104 105" stroke="#6f4528" strokeWidth="1.5" fill="none" opacity=".25" />
         </g>
-        {/* crecimiento continuo (escala suave) + pop al cambiar de etapa */}
+        {/* crecimiento continuo (escala global) — la planta NUNCA se desmonta:
+            las etapas se funden con crossfade de opacidad */}
         <g style={{ transform: `scale(${growScale})`, transformBox: 'fill-box' as any, transformOrigin: '50% 100%', transition: 'transform 1s linear' }}>
-          <g key={withered ? 'w' : `${sp}-${stage}-${done ? 1 : 0}`}
-            className={`ft-stagein ${alive ? 'ft-sway' : ''}`}>
-            {withered ? <Withered /> : <PlantStage sp={sp} stage={stage} done={done} />}
+          <g className={alive ? 'ft-sway' : undefined} filter={`url(#pshadow${uid})`}>
+            {withered ? <Withered /> : stagesToRender.map(s => (
+              <g key={s} style={{ opacity: s === stage ? 1 : 0, transition: 'opacity .45s ease' }}>
+                <PlantStage sp={sp} stage={s} done={done && s === stage} />
+              </g>
+            ))}
           </g>
         </g>
       </g>
@@ -313,13 +347,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
   const g = phase === 'idle' ? 0 : phase === 'done' ? 1 : Math.min(1, Math.max(0, 1 - remaining / total))
 
-  // Etapas con crecimiento continuo dentro de cada una
-  const BOUNDS = [0, .22, .5, .82, 1]
-  const stage = phase === 'idle' ? 3 : phase === 'done' ? 3 : g < BOUNDS[1] ? 0 : g < BOUNDS[2] ? 1 : g < BOUNDS[3] ? 2 : 3
-  const local = phase === 'idle' || phase === 'done' ? 1
-    : Math.min(1, Math.max(0, (g - BOUNDS[stage]) / (BOUNDS[stage + 1] - BOUNDS[stage])))
-  const growScale = phase === 'idle' || phase === 'done' ? 1
-    : stage < 3 ? 0.62 + 0.38 * local : 0.8 + 0.2 * local
+  // Etapas (crossfade) + escala GLOBAL monotónica: la planta solo crece,
+  // nunca encoge al cruzar un umbral.
+  const stage = phase === 'idle' ? 3 : phase === 'done' ? 3 : g < .22 ? 0 : g < .5 ? 1 : g < .82 ? 2 : 3
+  const growScale = phase === 'idle' || phase === 'done' ? 1 : 0.55 + 0.45 * g
 
   const phrase = phase === 'idle' ? '¡Planten un árbol mientras practican!'
     : phase === 'paused' ? 'El arbolito espera…'
@@ -373,12 +404,7 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
         .ft-stage{ width:min(60vw,236px); height:min(60vw,236px); margin:14px auto 0; }
         .ft-pop{ animation:ftPop .7s cubic-bezier(.34,1.56,.64,1) both; }
-        .ft-stagein{ animation:ftStageIn .55s cubic-bezier(.34,1.56,.64,1) both;
-          transform-box:fill-box; transform-origin:50% 100%; }
         .ft-sway{ animation:ftSway 5s ease-in-out infinite; transform-box:fill-box; transform-origin:50% 100%; }
-        /* cuando está vivo: pop de etapa + balanceo encadenados (no compiten) */
-        .ft-stagein.ft-sway{ animation:ftStageIn .55s cubic-bezier(.34,1.56,.64,1) both,
-          ftSway 5s ease-in-out .55s infinite; }
 
         .ft-time{ font-family:var(--font-display,inherit); font-weight:700; font-size:clamp(34px,9vw,46px);
           letter-spacing:2px; color:#fff; font-variant-numeric:tabular-nums; line-height:1; margin-top:14px; }
@@ -444,7 +470,6 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-chart h4{ margin:0 0 10px; font-size:11px; font-weight:800; color:rgba(255,255,255,.7); letter-spacing:.4px; }
 
         @keyframes ftPop{ 0%{ transform:scale(.86) } 55%{ transform:scale(1.06) } 80%{ transform:scale(.985) } 100%{ transform:scale(1) } }
-        @keyframes ftStageIn{ 0%{ transform:scale(.55); opacity:0 } 60%{ transform:scale(1.07); opacity:1 } 100%{ transform:scale(1) } }
         @keyframes ftSway{ 0%,100%{ transform:rotate(-1.3deg) } 50%{ transform:rotate(1.3deg) } }
       `}</style>
 
