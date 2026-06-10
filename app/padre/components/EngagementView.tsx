@@ -9,6 +9,7 @@ import {
   Zap, Star, MessageCircle, Users, Pin, ClipboardList
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeContext'
+import ForestTimer from './ForestTimer'
 
 interface Actividad {
   titulo: string; descripcion: string; duracion_minutos: number
@@ -276,6 +277,9 @@ export default function EngagementView({ childId }: { childId: string }) {
           )}
         </div>
       </div>
+
+      {/* ── MODO BOSQUE — cronómetro de práctica ── */}
+      <ForestTimer childId={childId} />
 
       {!plan ? (
         <div className="eng-card" style={{ background:'var(--c-card)',borderRadius:24,border:'1.5px solid var(--c-border-light)',padding:'48px 24px',textAlign:'center',boxShadow:'0 4px 20px rgba(0,0,0,.04)' }}>
