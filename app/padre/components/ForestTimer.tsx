@@ -1,189 +1,242 @@
 'use client'
 // app/padre/components/ForestTimer.tsx
-// Cronómetro de práctica estilo "Forest": un arbolito crece mientras dura la
-// sesión de práctica en casa. Si se completa el tiempo, el árbol se planta y
-// se suma al bosque de la familia (persistido en localStorage por niño).
-//
-// Árbol: SVG por capas con degradados (volumen/profundidad), tronco iluminado
-// desde el sol (arriba-derecha), manzanas con brillo radial, sombra difuminada
-// en el suelo, balanceo "vivo" mientras corre, pop elástico + hojas cayendo al
-// completar. Animaciones en CSS puro (sin dependencias).
+// "Modo Bosque" — temporizador de práctica inspirado en Forest (forestapp.cc):
+// fondo plano verde, plato de tierra con la planta creciendo por ETAPAS,
+// especies de árbol seleccionables, "Mi bosque" con todo lo plantado y
+// estadísticas de práctica. Todo SVG flat + CSS puro, datos en localStorage.
 
-import { useState, useEffect, useRef } from 'react'
-import { Play, Pause, RotateCcw, X, Trees, Sparkles, Minus, Plus } from 'lucide-react'
+import { useState, useEffect, useRef, useId } from 'react'
+import {
+  Play, Pause, X, RotateCcw, Minus, Plus,
+  Trees, Sprout, BarChart3, Flame, Clock, Sparkles,
+} from 'lucide-react'
 
 type Phase = 'idle' | 'running' | 'paused' | 'done'
+type Species = 'pino' | 'manzano' | 'cerezo' | 'roble'
+type LogItem = { t: number; dur: number; sp: Species; ok: boolean }
 
-const DURACIONES = [5, 10, 15, 20, 30] // minutos
+const DURACIONES = [5, 10, 15, 20, 30]
 
-function lsCount(childId: string) { return `forest_count_${childId}` }
-function lsToday(childId: string) {
-  const d = new Date()
-  return `forest_today_${childId}_${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+const SPECIES: { id: Species; label: string }[] = [
+  { id: 'pino',    label: 'Pino' },
+  { id: 'manzano', label: 'Manzano' },
+  { id: 'cerezo',  label: 'Cerezo' },
+  { id: 'roble',   label: 'Roble' },
+]
+
+// ── Persistencia ──────────────────────────────────────────────────────────────
+function lsLog(childId: string) { return `forest_log_${childId}` }
+function lsSpecies(childId: string) { return `forest_species_${childId}` }
+function loadLog(childId: string): LogItem[] {
+  try { return JSON.parse(localStorage.getItem(lsLog(childId)) || '[]') } catch { return [] }
 }
+function saveLog(childId: string, log: LogItem[]) {
+  try { localStorage.setItem(lsLog(childId), JSON.stringify(log.slice(-500))) } catch { /* noop */ }
+}
+function dayKey(t: number) { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` }
 
 function fmt(secs: number) {
   const m = Math.floor(secs / 60), s = secs % 60
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-// ── Anillo de progreso (strokeDasharray/offset, progress 0 → 1) ───────────────
-function ProgressRing({ progress }: { progress: number }) {
-  const R = 118
-  const C = 2 * Math.PI * R
+// ══════════════════════════════════════════════════════════════════════════════
+// PLANTA SVG — estilo Forest: flat, dos tonos, crece por etapas (0..3)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Triángulo de pino en dos tonos (facetado)
+function PineTier({ cy, half, h }: { cy: number; half: number; h: number }) {
   return (
-    <svg className="ft-ring" viewBox="0 0 260 260" aria-hidden>
-      <circle cx="130" cy="130" r={R} fill="none" stroke="var(--c-border, #e2e8f0)" strokeWidth="7" opacity=".5" />
-      <circle cx="130" cy="130" r={R} fill="none" stroke="url(#ftRingGrad)" strokeWidth="7" strokeLinecap="round"
-        strokeDasharray={C} strokeDashoffset={C * (1 - Math.min(1, Math.max(0, progress)))}
-        style={{ transition: 'stroke-dashoffset 1s linear' }} />
+    <>
+      <path d={`M60 ${cy - h} L${60 - half} ${cy} L60 ${cy} Z`} fill="#7ac555" />
+      <path d={`M60 ${cy - h} L60 ${cy} L${60 + half} ${cy} Z`} fill="#48a55c" />
+    </>
+  )
+}
+
+// Copa redonda en dos tonos
+function Canopy({ cx, cy, r, light, dark }: { cx: number; cy: number; r: number; light: string; dark: string }) {
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={r} fill={light} />
+      <path d={`M${cx - r} ${cy} A${r} ${r} 0 0 0 ${cx + r} ${cy} Z`} fill={dark} opacity=".55" />
+    </>
+  )
+}
+
+function Trunk({ y, h, w = 3.4 }: { y: number; h: number; w?: number }) {
+  return <rect x={60 - w / 2} y={y} width={w} height={h} rx={w / 2} fill="#8a5a3b" />
+}
+
+// Brote y arbolito jóvenes (compartidos por todas las especies)
+function StageSprout() {
+  return (
+    <g>
+      <rect x="58.8" y="60" width="2.4" height="15" rx="1.2" fill="#48a55c" />
+      <path d="M60 63 C54 61 50 57 48.5 51 C55 52.5 59 56.5 60 61.5 Z" fill="#7ac555" />
+      <path d="M60 66 C66 64 70 60 71.5 54 C65 55.5 61 59.5 60 64.5 Z" fill="#48a55c" />
+    </g>
+  )
+}
+function StageSapling() {
+  return (
+    <g>
+      <rect x="58.7" y="48" width="2.6" height="27" rx="1.3" fill="#7e5233" />
+      <path d="M60 54 C53 52 48.5 48 47 41.5 C54 43 58.6 47.4 60 52.5 Z" fill="#7ac555" />
+      <path d="M60 58 C67 56 71.5 52 73 45.5 C66 47 61.4 51.4 60 56.5 Z" fill="#48a55c" />
+      <path d="M60 50 C56 45 55 40.5 56 35 C60 38.5 61.5 43.5 60.8 48.5 Z" fill="#5cb567" />
+    </g>
+  )
+}
+
+function PlantStage({ sp, stage, done }: { sp: Species; stage: number; done: boolean }) {
+  if (stage === 0) return <StageSprout />
+  if (stage === 1) return <StageSapling />
+
+  if (sp === 'pino') {
+    if (stage === 2) return (
+      <g>
+        <Trunk y={62} h={13} />
+        <PineTier cy={64} half={15} h={17} />
+        <PineTier cy={52} half={11.5} h={13} />
+      </g>
+    )
+    return (
+      <g>
+        <Trunk y={64} h={11} />
+        <PineTier cy={66} half={19} h={19} />
+        <PineTier cy={54} half={15} h={15} />
+        <PineTier cy={43.5} half={11} h={12.5} />
+      </g>
+    )
+  }
+
+  const palette = sp === 'cerezo'
+    ? { light: '#f6a8c8', dark: '#ec84b2', fruit: '#fff1f5' }
+    : sp === 'roble'
+      ? { light: '#86c45d', dark: '#55a052', fruit: '#fbbf24' }
+      : { light: '#7ac555', dark: '#48a55c', fruit: '#ef4444' } // manzano
+
+  if (stage === 2) return (
+    <g>
+      <Trunk y={56} h={19} />
+      <Canopy cx={60} cy={47} r={14} light={palette.light} dark={palette.dark} />
+      <Canopy cx={49} cy={53} r={9.5} light={palette.light} dark={palette.dark} />
+      <Canopy cx={71} cy={53} r={9.5} light={palette.light} dark={palette.dark} />
+    </g>
+  )
+
+  const W = sp === 'roble' ? 1.18 : 1
+  return (
+    <g>
+      <Trunk y={58} h={17} w={4} />
+      <Canopy cx={60 - 14 * W} cy={52} r={11.5 * W} light={palette.light} dark={palette.dark} />
+      <Canopy cx={60 + 14 * W} cy={52} r={11.5 * W} light={palette.light} dark={palette.dark} />
+      <Canopy cx={60} cy={40} r={14.5 * W} light={palette.light} dark={palette.dark} />
+      <Canopy cx={60} cy={51} r={13 * W} light={palette.light} dark={palette.dark} />
+      {done && ([[49, 47], [71, 47], [60, 36], [54, 55], [66, 55]] as [number, number][]).map(([x, y], i) => (
+        <g key={i}>
+          <circle cx={x} cy={y} r={2.6} fill={palette.fruit} />
+          {sp === 'cerezo' && <circle cx={x} cy={y} r={1} fill="#f9a8d4" />}
+        </g>
+      ))}
+    </g>
+  )
+}
+
+// Árbol marchito (sesión abandonada) — para "Mi bosque"
+function Withered() {
+  return (
+    <g stroke="#9b8a78" strokeWidth="2.6" strokeLinecap="round" fill="none">
+      <path d="M60 75 L60 46" />
+      <path d="M60 62 L49 51" />
+      <path d="M60 56 L70 47" />
+      <path d="M60 68 L52 63" />
+    </g>
+  )
+}
+
+// Plato Forest: círculo crema + montículo de tierra + planta
+function Plate({ sp, stage, done, alive, withered = false, idle = false }: {
+  sp: Species; stage: number; done: boolean; alive: boolean; withered?: boolean; idle?: boolean
+}) {
+  const clipId = `ftPlate${useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  return (
+    <svg viewBox="0 0 120 120" style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden>
       <defs>
-        <linearGradient id="ftRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0ea5e9" />
-          <stop offset="100%" stopColor="#22c55e" />
-        </linearGradient>
+        <clipPath id={clipId}><circle cx="60" cy="61" r="54" /></clipPath>
       </defs>
+      <circle cx="60" cy="61" r="54" fill="#FBF3D4" />
+      <g clipPath={`url(#${clipId})`}>
+        <path d="M2 84 Q60 63 118 84 L118 126 L2 126 Z" fill="#8a5a3b" />
+        <path d="M2 84 Q60 63 118 84" stroke="#74452b" strokeWidth="3.4" fill="none" opacity=".55" />
+      </g>
+      <g key={withered ? 'w' : `${sp}-${stage}-${done ? 1 : 0}`}
+        className={`ft-stagein ${alive ? 'ft-sway' : ''}`}>
+        {withered ? <Withered /> : idle && stage === 0
+          ? <ellipse cx="60" cy="72" rx="4" ry="3" fill="#74452b" /> /* semilla */
+          : <PlantStage sp={sp} stage={stage} done={done} />}
+      </g>
     </svg>
   )
 }
 
-// ── Árbol SVG por capas que crece con g (0 → 1) ───────────────────────────────
-// Una sola pieza anclada al suelo (la copa nunca se separa del tronco).
-function Tree({ g, done, alive }: { g: number; done: boolean; alive: boolean }) {
-  const s = 0.1 + 0.9 * g  // escala uniforme: brote diminuto → árbol completo
-  const APPLES: [number, number][] = [[78, 96], [101, 57], [123, 93], [88, 72], [113, 104], [99, 85]]
+function ProgressRing({ progress }: { progress: number }) {
+  const R = 118
+  const C = 2 * Math.PI * R
+  const p = Math.min(1, Math.max(0, progress))
   return (
-    <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden>
-      <defs>
-        {/* Tronco iluminado desde la derecha (el sol está arriba a la derecha) */}
-        <linearGradient id="ftTrunk" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#7c4f2a" />
-          <stop offset=".55" stopColor="#9c6a40" />
-          <stop offset="1" stopColor="#bd8c5a" />
-        </linearGradient>
-        {/* Follaje en 3 tonos con luz desplazada hacia arriba-derecha */}
-        <radialGradient id="ftLeafBack" cx=".45" cy=".4" r=".8">
-          <stop offset="0" stopColor="#16a34a" />
-          <stop offset="1" stopColor="#15803d" />
-        </radialGradient>
-        <radialGradient id="ftLeafMid" cx=".58" cy=".34" r=".82">
-          <stop offset="0" stopColor="#34d399" />
-          <stop offset="1" stopColor="#22c55e" />
-        </radialGradient>
-        <radialGradient id="ftLeafFront" cx=".64" cy=".3" r=".85">
-          <stop offset="0" stopColor="#86efac" />
-          <stop offset=".55" stopColor="#4ade80" />
-          <stop offset="1" stopColor="#22c55e" />
-        </radialGradient>
-        {/* Manzana con brillo radial */}
-        <radialGradient id="ftApple" cx=".62" cy=".3" r=".85">
-          <stop offset="0" stopColor="#fecaca" />
-          <stop offset=".38" stopColor="#f87171" />
-          <stop offset="1" stopColor="#dc2626" />
-        </radialGradient>
-        {/* Césped con degradado suave que se difumina */}
-        <radialGradient id="ftGround" cx=".5" cy=".5" r=".5">
-          <stop offset="0" stopColor="#4ade80" stopOpacity=".6" />
-          <stop offset=".65" stopColor="#86efac" stopOpacity=".4" />
-          <stop offset="1" stopColor="#86efac" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      {/* base de césped + sombra difuminada del árbol (crece con él) */}
-      <ellipse cx="100" cy="178" rx="62" ry="10" fill="url(#ftGround)" />
-      <ellipse cx="100" cy="179" rx={18 + 30 * g} ry={3.5 + 1.5 * g} fill="#14532d"
-        opacity={0.14 + 0.1 * g} style={{ filter: 'blur(2.5px)', transition: 'all 1s linear' }} />
-
-      {/* árbol completo — crece desde la base */}
-      <g style={{ transform: `scale(${s})`, transformOrigin: '100px 178px', transition: 'transform 1s linear' }}>
-        <g className={alive || done ? 'ft-sway' : ''}>
-          {/* tronco con luz lateral */}
-          <path d="M95 178 C96 151, 94 131, 98 105 L102 105 C106 131, 104 151, 105 178 Z" fill="url(#ftTrunk)" />
-          {/* sombra del tronco (lado opuesto al sol) */}
-          <path d="M95 178 C96 151, 94 131, 98 105 L99.3 105 C97.6 131, 98.4 151, 97.8 178 Z" fill="#5e3c1d" opacity=".45" />
-          {/* ramas */}
-          <path d="M99 135 C91 127, 85 124, 81 117" stroke="#8a5a32" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-          <path d="M101 125 C109 118, 115 114, 120 107" stroke="#a87a48" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-
-          {/* follaje en capas (profundidad semi-isométrica) + respiración */}
-          <g className={alive || done ? 'ft-breathe' : ''}>
-            {/* capa trasera (sombra) */}
-            <circle cx="70" cy="102" r="26" fill="url(#ftLeafBack)" />
-            <circle cx="130" cy="102" r="26" fill="url(#ftLeafBack)" />
-            <circle cx="100" cy="61" r="30" fill="url(#ftLeafBack)" />
-            {/* capa media */}
-            <circle cx="80" cy="87" r="27" fill="url(#ftLeafMid)" />
-            <circle cx="120" cy="87" r="27" fill="url(#ftLeafMid)" />
-            <circle cx="100" cy="69" r="30" fill="url(#ftLeafMid)" />
-            {/* capa frontal (luz, hacia el sol) */}
-            <circle cx="104" cy="85" r="26" fill="url(#ftLeafFront)" />
-            <circle cx="87" cy="77" r="20" fill="url(#ftLeafFront)" opacity=".92" />
-            {/* brillo del sol sobre la copa */}
-            <ellipse cx="117" cy="62" rx="12" ry="8" fill="#d9f99d" opacity=".5" />
-            <circle cx="108" cy="52" r="4" fill="#ecfccb" opacity=".6" />
-
-            {/* manzanas orgánicas (aparecen al completar) */}
-            <g style={{ opacity: done ? 1 : 0, transition: 'opacity .8s ease .25s' }}>
-              {APPLES.map(([x, y], i) => (
-                <g key={i}>
-                  <circle cx={x} cy={y} r="4.6" fill="url(#ftApple)" />
-                  <path d={`M${x} ${y - 4.2} q 1 -2.2 2.6 -3`} stroke="#7c4f2a" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-                  <circle cx={x - 1.4} cy={y - 1.6} r="1.1" fill="#fff1f2" opacity=".85" />
-                </g>
-              ))}
-            </g>
-          </g>
-        </g>
-      </g>
-
-      {/* hojas cayendo al completar */}
-      {done && (
-        <g>
-          {[[74, 78, 0], [104, 64, 1.3], [126, 84, 2.4]].map(([x, y, d], i) => (
-            <g key={i} transform={`translate(${x} ${y})`}>
-              <path className="ft-leaf" style={{ animationDelay: `${d}s` }}
-                d="M0 0 C3 -4.5, 8.5 -4.5, 10.5 0 C8.5 4.5, 3 4.5, 0 0 Z" fill={i === 1 ? '#86efac' : '#4ade80'} />
-            </g>
-          ))}
-        </g>
+    <svg className="ft-ring" viewBox="0 0 260 260" aria-hidden>
+      <circle cx="130" cy="130" r={R} fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="6" />
+      <circle cx="130" cy="130" r={R} fill="none" stroke="#FBF3D4" strokeWidth="6" strokeLinecap="round"
+        strokeDasharray={C} strokeDashoffset={C * (1 - p)}
+        style={{ transition: 'stroke-dashoffset 1s linear' }} />
+      {p > 0 && p < 1 && (
+        <circle cx={130 + R * Math.cos(2 * Math.PI * p - Math.PI / 2)}
+          cy={130 + R * Math.sin(2 * Math.PI * p - Math.PI / 2)}
+          r="7" fill="#FBF3D4" style={{ transition: 'all 1s linear' }} />
       )}
     </svg>
   )
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ══════════════════════════════════════════════════════════════════════════════
 export default function ForestTimer({ childId }: { childId: string }) {
+  const [view, setView] = useState<'plantar' | 'bosque' | 'stats'>('plantar')
   const [phase, setPhase] = useState<Phase>('idle')
-  // Duración editable: se guarda como texto para permitir borrar/escribir libre
+  const [species, setSpecies] = useState<Species>('pino')
+
   const [durStr, setDurStr] = useState('10')
   const durMin = Math.min(180, Math.max(0, parseInt(durStr || '0', 10) || 0))
-  // Segundos editables (0–59)
   const [secStr, setSecStr] = useState('00')
   const durSec = Math.min(59, Math.max(0, parseInt(secStr || '0', 10) || 0))
   const totalSecs = durMin * 60 + durSec
-  const [remaining, setRemaining] = useState(10 * 60)
-  const [total, setTotal] = useState(10 * 60)
-  const [bosque, setBosque] = useState(0)
-  const [hoy, setHoy] = useState(0)
+
+  const [remaining, setRemaining] = useState(600)
+  const [total, setTotal] = useState(600)
+  const [log, setLog] = useState<LogItem[]>([])
+  const [bosqueFiltro, setBosqueFiltro] = useState<'hoy' | 'semana' | 'todo'>('todo')
   const endsAtRef = useRef(0)
 
-  // Día/noche según la hora real del dispositivo (noche: 18:00 → 06:00).
-  // Se re-evalúa cada minuto para que el atardecer ocurra solo.
-  const [isNight, setIsNight] = useState(false)
   useEffect(() => {
-    const check = () => { const h = new Date().getHours(); setIsNight(h >= 18 || h < 6) }
-    check()
-    const iv = setInterval(check, 60_000)
-    return () => clearInterval(iv)
-  }, [])
-
-  useEffect(() => {
+    setLog(loadLog(childId))
     try {
-      setBosque(parseInt(localStorage.getItem(lsCount(childId)) || '0', 10) || 0)
-      setHoy(parseInt(localStorage.getItem(lsToday(childId)) || '0', 10) || 0)
+      const sp = localStorage.getItem(lsSpecies(childId)) as Species | null
+      if (sp && SPECIES.some(s => s.id === sp)) setSpecies(sp)
     } catch { /* noop */ }
   }, [childId])
 
-  // Tick basado en timestamps — preciso aunque la pestaña se suspenda
+  const addLog = (item: LogItem) => {
+    setLog(prev => { const next = [...prev, item]; saveLog(childId, next); return next })
+  }
+  const pickSpecies = (sp: Species) => {
+    setSpecies(sp)
+    try { localStorage.setItem(lsSpecies(childId), sp) } catch { /* noop */ }
+  }
+
+  // Tick con timestamps (exacto aunque el teléfono se bloquee)
   useEffect(() => {
     if (phase !== 'running') return
     const iv = setInterval(() => {
@@ -191,375 +244,336 @@ export default function ForestTimer({ childId }: { childId: string }) {
       setRemaining(left)
       if (left <= 0) {
         setPhase('done')
-        try {
-          const nb = (parseInt(localStorage.getItem(lsCount(childId)) || '0', 10) || 0) + 1
-          const nh = (parseInt(localStorage.getItem(lsToday(childId)) || '0', 10) || 0) + 1
-          localStorage.setItem(lsCount(childId), String(nb))
-          localStorage.setItem(lsToday(childId), String(nh))
-          setBosque(nb); setHoy(nh)
-        } catch { /* noop */ }
+        addLog({ t: Date.now(), dur: total, sp: species, ok: true })
         try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]) } catch { /* noop */ }
       }
     }, 500)
     return () => clearInterval(iv)
-  }, [phase, childId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, childId, species, total])
 
   const start = () => {
     if (totalSecs < 1) return
-    const t = totalSecs
-    setTotal(t); setRemaining(t)
-    endsAtRef.current = Date.now() + t * 1000
+    setTotal(totalSecs); setRemaining(totalSecs)
+    endsAtRef.current = Date.now() + totalSecs * 1000
     setPhase('running')
   }
-  const pause = () => { setPhase('paused') }
+  const pause = () => setPhase('paused')
   const resume = () => { endsAtRef.current = Date.now() + remaining * 1000; setPhase('running') }
+  const giveUp = () => {
+    const elapsed = total - remaining
+    if (elapsed >= 30) addLog({ t: Date.now(), dur: elapsed, sp: species, ok: false })
+    setPhase('idle'); setRemaining(totalSecs); setTotal(totalSecs)
+  }
   const reset = () => { setPhase('idle'); setRemaining(totalSecs); setTotal(totalSecs) }
 
   const g = phase === 'idle' ? 0 : phase === 'done' ? 1 : Math.min(1, Math.max(0, 1 - remaining / total))
+  const stage = phase === 'done' ? 3 : g < 0.22 ? 0 : g < 0.5 ? 1 : g < 0.82 ? 2 : 3
+
+  const phrase = phase === 'idle' ? '¡Planten un árbol mientras practican!'
+    : phase === 'paused' ? 'El arbolito espera…'
+    : phase === 'done' ? '¡Lo lograron! 🌟'
+    : g < 0.3 ? '¡Acaban de plantar la semilla!'
+    : g < 0.65 ? 'El arbolito confía en ustedes'
+    : '¡Ya casi! No se rindan'
+
+  // ── Datos para Mi Bosque / Estadísticas ──
+  const now = Date.now()
+  const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0)
+  const filtered = [...log].reverse().filter(it =>
+    bosqueFiltro === 'todo' ? true :
+    bosqueFiltro === 'hoy' ? it.t >= startOfDay.getTime() :
+    it.t >= now - 7 * 86400_000)
+
+  const oks = log.filter(l => l.ok)
+  const totalMin = Math.round(oks.reduce((a, l) => a + l.dur, 0) / 60)
+  const exito = log.length ? Math.round((oks.length / log.length) * 100) : 0
+  const streak = (() => {
+    const days = new Set(oks.map(l => dayKey(l.t)))
+    let n = 0; const d = new Date()
+    while (days.has(dayKey(d.getTime()))) { n++; d.setDate(d.getDate() - 1) }
+    return n
+  })()
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i)); d.setHours(0, 0, 0, 0)
+    const end = d.getTime() + 86400_000
+    const mins = Math.round(oks.filter(l => l.t >= d.getTime() && l.t < end).reduce((a, l) => a + l.dur, 0) / 60)
+    return { label: 'DLMXJVS'[d.getDay()], mins, today: i === 6 }
+  })
+  const maxBar = Math.max(10, ...last7.map(b => b.mins))
 
   return (
-    <div className={`eng-card ft-root ${isNight ? 'ft-n' : ''}`}>
+    <div className="eng-card ft-root">
       <style>{`
         .ft-root{ border-radius:24px; overflow:hidden; position:relative;
-          --ft-ink:var(--c-text-primary); --ft-ink2:var(--c-text-muted);
-          background:linear-gradient(180deg,#bae6fd 0%,#e0f2fe 46%,#dcfce7 100%);
-          border:1.5px solid var(--c-border-light); box-shadow:0 10px 36px rgba(2,132,199,.14);
-          transition:background 1.2s ease; }
-        .ft-root.ft-n{ --ft-ink:#f1f5f9; --ft-ink2:#94a3b8;
-          background:linear-gradient(180deg,#0b1f38 0%,#10283f 55%,#11301f 100%); border-color:#1e293b; }
-        .ft-inner{ position:relative; z-index:1; padding:20px 18px 36px; display:flex; flex-direction:column; align-items:center; }
-        .ft-sun-wrap{ position:absolute; top:2px; right:6px; width:88px; height:88px; z-index:0;
-          animation:ftSun 7s ease-in-out infinite; }
-        .ft-n .ft-sun-wrap{ display:none; }
-        /* visibilidad día / noche según la HORA REAL (clase .ft-n en el root) */
-        .ft-night{ position:absolute; inset:0; pointer-events:none; z-index:0; display:none; }
-        .ft-n .ft-night{ display:block; }
-        /* luna */
-        .ft-moon-wrap{ position:absolute; top:10px; right:14px; width:64px; height:64px;
-          filter:drop-shadow(0 0 18px rgba(226,232,240,.45)); animation:ftSun 7s ease-in-out infinite; }
-        /* estrellas */
-        .ft-stars{ position:absolute; top:0; left:0; width:100%; height:150px; }
-        .ft-star{ animation:ftTwinkle 2.8s ease-in-out infinite; }
-        /* luciérnagas */
-        .ft-fly{ position:absolute; width:5px; height:5px; border-radius:50%; background:#fef08a;
-          box-shadow:0 0 9px 3px rgba(253,224,71,.6); animation:ftFly ease-in-out infinite; opacity:0; }
-        .ft-fly.f1{ left:14%; bottom:48px; animation-duration:7s; }
-        .ft-fly.f2{ left:32%; bottom:66px; animation-duration:9s; animation-delay:1.4s; }
-        .ft-fly.f3{ left:58%; bottom:52px; animation-duration:8s; animation-delay:.6s; }
-        .ft-fly.f4{ left:76%; bottom:72px; animation-duration:10s; animation-delay:2s; }
-        .ft-fly.f5{ left:88%; bottom:44px; animation-duration:7.5s; animation-delay:3s; }
-        .ft-cloud{ position:absolute; top:22px; left:-130px; width:108px; height:auto;
-          color:rgba(255,255,255,.92); animation:ftCloud 46s linear infinite; }
-        .ft-cloud.c2{ top:62px; width:64px; color:rgba(255,255,255,.7); animation-duration:64s; animation-delay:-28s; }
-        .ft-n .ft-cloud{ color:rgba(255,255,255,.12); }
-        .ft-landscape{ position:absolute; left:0; right:0; bottom:0; width:100%; height:96px; pointer-events:none; z-index:0; transition:filter 1.2s ease; }
-        .ft-n .ft-landscape{ filter:brightness(.5) saturate(.75); }
-        .ft-grass{ transform-box:fill-box; transform-origin:50% 100%; animation:ftSway2 3.8s ease-in-out infinite; }
-        .ft-flower{ transform-box:fill-box; transform-origin:50% 100%; animation:ftSway2 4.6s ease-in-out infinite; }
-        .ft-stage{ position:relative; width:min(64vw,250px); height:min(64vw,250px); margin:6px auto 2px; }
-        .ft-ring{ position:absolute; inset:0; transform:rotate(-90deg); pointer-events:none; }
-        .ft-tree{ position:absolute; inset:13%; filter:drop-shadow(0 7px 9px rgba(20,83,45,.22)); }
-        .ft-pop{ animation:ftTreePop .7s cubic-bezier(.34,1.56,.64,1) both; }
-        .ft-sway{ animation:ftSwayK 5.5s ease-in-out infinite; transform-origin:100px 178px; }
-        .ft-breathe{ animation:ftBreatheK 4.5s ease-in-out infinite; transform-origin:100px 84px; }
-        .ft-leaf{ animation:ftFall 3.5s ease-out 1 both; }
-        .ft-time{ font-family:var(--font-display,inherit); font-weight:800; font-size:clamp(30px,8vw,40px);
-          letter-spacing:1px; color:var(--ft-ink); font-variant-numeric:tabular-nums; line-height:1; margin-top:10px; }
-        .ft-sub{ font-size:12px; color:var(--ft-ink2); margin-top:4px; font-weight:600; }
+          width:100%; max-width:620px; margin-left:auto; margin-right:auto;
+          background:linear-gradient(180deg,#57a98c 0%,#4c9a7e 100%);
+          box-shadow:0 14px 40px rgba(45,106,79,.28); }
+        .ft-inner{ position:relative; padding:18px 18px 26px; display:flex; flex-direction:column; align-items:center; }
+        @media(min-width:640px){ .ft-inner{ padding:22px 24px 30px } }
+
+        /* tabs internas */
+        .ft-tabs{ display:flex; gap:4px; background:rgba(0,0,0,.14); border-radius:14px; padding:4px; width:100%; max-width:380px; }
+        .ft-tab{ flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:8px 6px;
+          border:none; border-radius:11px; background:transparent; color:rgba(255,255,255,.7);
+          font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .ft-tab.on{ background:#FBF3D4; color:#2f6b53; box-shadow:0 2px 8px rgba(0,0,0,.18); }
+
+        .ft-phrase{ font-size:13px; font-weight:600; color:rgba(255,255,255,.92); margin:16px 0 2px; text-align:center; }
+
+        .ft-stage{ position:relative; width:min(58vw,228px); height:min(58vw,228px); margin:10px auto 4px; }
+        .ft-ring{ position:absolute; inset:-14px; transform:rotate(0deg); pointer-events:none; }
+        .ft-plate{ position:absolute; inset:0; filter:drop-shadow(0 8px 14px rgba(0,0,0,.18)); }
+        .ft-pop{ animation:ftPop .7s cubic-bezier(.34,1.56,.64,1) both; }
+        .ft-stagein{ animation:ftStageIn .55s cubic-bezier(.34,1.56,.64,1) both; transform-origin:60px 74px; }
+        .ft-sway{ animation:ftSway 5s ease-in-out infinite; transform-origin:60px 74px; }
+
+        .ft-time{ font-family:var(--font-display,inherit); font-weight:700; font-size:clamp(34px,9vw,46px);
+          letter-spacing:2px; color:#fff; font-variant-numeric:tabular-nums; line-height:1; margin-top:12px; }
+        .ft-sub{ font-size:11.5px; color:rgba(255,255,255,.65); margin-top:5px; font-weight:600; }
+
+        /* especies */
+        .ft-species{ display:flex; gap:10px; margin-top:14px; }
+        .ft-sp{ width:54px; border:none; background:transparent; cursor:pointer; font-family:inherit;
+          display:flex; flex-direction:column; align-items:center; gap:4px; padding:0; }
+        .ft-sp-plate{ width:46px; height:46px; border-radius:50%; padding:2px; transition:all .2s;
+          border:2.5px solid transparent; }
+        .ft-sp.on .ft-sp-plate{ border-color:#FBF3D4; transform:scale(1.08); }
+        .ft-sp span{ font-size:10px; font-weight:700; color:rgba(255,255,255,.75); }
+        .ft-sp.on span{ color:#FBF3D4; }
+
+        /* duraciones */
         .ft-chips{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:14px; }
-        .ft-chip{ padding:8px 15px; border-radius:14px; font-size:13px; font-weight:700; cursor:pointer;
-          border:1.5px solid var(--c-border); background:var(--c-card); color:var(--c-text-secondary);
+        .ft-chip{ padding:7px 14px; border-radius:13px; font-size:12.5px; font-weight:700; cursor:pointer;
+          border:1.5px solid rgba(255,255,255,.35); background:rgba(255,255,255,.1); color:#fff;
           font-family:inherit; transition:all .15s; }
-        .ft-chip:active{ transform:scale(.94); }
-        .ft-chip.on{ background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border-color:transparent;
-          box-shadow:0 6px 16px rgba(22,163,74,.35); }
-        .ft-stepper{ display:flex; align-items:center; gap:10px; margin-top:12px;
-          background:var(--c-card); border:1.5px solid var(--c-border); border-radius:16px; padding:6px 8px; }
-        .ft-step{ width:38px; height:38px; border-radius:12px; border:none; cursor:pointer;
-          display:flex; align-items:center; justify-content:center; font-family:inherit;
-          background:rgba(22,163,74,.12); color:#16a34a; transition:transform .15s; }
+        .ft-chip.on{ background:#FBF3D4; color:#2f6b53; border-color:transparent; }
+        .ft-stepper{ display:flex; align-items:center; gap:8px; margin-top:12px;
+          background:rgba(0,0,0,.14); border-radius:14px; padding:5px 7px; }
+        .ft-step{ width:36px; height:36px; border-radius:11px; border:none; cursor:pointer;
+          display:flex; align-items:center; justify-content:center;
+          background:rgba(255,255,255,.16); color:#fff; transition:transform .15s; }
         .ft-step:active{ transform:scale(.9); }
-        .ft-mmss{ display:flex; align-items:center; gap:2px; }
-        .ft-numin{ width:46px; text-align:center; border:none; outline:none; background:transparent;
-          font-family:var(--font-display,inherit); font-weight:800; font-size:24px; color:var(--c-text-primary);
+        .ft-numin{ width:44px; text-align:center; border:none; outline:none; background:transparent;
+          font-family:var(--font-display,inherit); font-weight:700; font-size:22px; color:#fff;
           font-variant-numeric:tabular-nums; border-radius:8px; padding:2px 0; }
-        .ft-numin:focus{ background:rgba(22,163,74,.1); }
-        .ft-colon{ font-family:var(--font-display,inherit); font-weight:800; font-size:24px; color:var(--c-text-muted); }
-        .ft-hint{ font-size:10px; font-weight:700; color:var(--ft-ink2); margin:6px 0 0; letter-spacing:.5px; opacity:.8; }
-        .ft-actions{ display:flex; gap:10px; margin-top:16px; width:100%; max-width:340px; }
+        .ft-numin:focus{ background:rgba(255,255,255,.14); }
+        .ft-colon{ font-weight:700; font-size:22px; color:rgba(255,255,255,.6); }
+        .ft-hint{ font-size:9.5px; font-weight:700; color:rgba(255,255,255,.45); margin:6px 0 0; letter-spacing:.6px; text-transform:uppercase; }
+
+        /* botones */
+        .ft-actions{ display:flex; gap:10px; margin-top:16px; width:100%; max-width:320px; }
         .ft-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:13px 16px;
-          border-radius:16px; font-size:14px; font-weight:800; cursor:pointer; border:none; font-family:inherit;
-          transition:transform .15s, box-shadow .15s; }
+          border-radius:15px; font-size:14px; font-weight:800; cursor:pointer; border:none; font-family:inherit;
+          transition:transform .15s, opacity .15s; }
         .ft-btn:active{ transform:scale(.97); }
-        .ft-btn.go{ background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; box-shadow:0 8px 22px rgba(22,163,74,.35); }
-        .ft-btn.soft{ background:var(--c-card); color:var(--c-text-secondary); border:1.5px solid var(--c-border); }
-        .ft-btn.warn{ background:rgba(239,68,68,.1); color:#dc2626; border:1.5px solid rgba(239,68,68,.25); }
-        .ft-forest{ display:flex; align-items:center; gap:6px; margin-top:14px; font-size:12px; font-weight:700;
-          color:var(--c-text-secondary); background:var(--c-card); border:1.5px solid var(--c-border);
-          padding:7px 14px; border-radius:20px; }
-        .ft-done{ display:flex; align-items:center; gap:8px; margin-top:12px; padding:10px 18px; border-radius:16px;
-          background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; font-weight:800; font-size:14px;
-          box-shadow:0 8px 22px rgba(22,163,74,.35); animation:ftPop .5s cubic-bezier(.34,1.56,.64,1) both; }
-        @keyframes ftSun{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-4px) } }
-        @keyframes ftSway2{ 0%,100%{ transform:rotate(-3deg) } 50%{ transform:rotate(3deg) } }
-        @keyframes ftCloud{ from{ transform:translateX(0) } to{ transform:translateX(calc(100vw + 200px)) } }
-        @keyframes ftTwinkle{ 0%,100%{ opacity:.2 } 50%{ opacity:1 } }
-        @keyframes ftFly{
-          0%,100%{ transform:translate(0,0); opacity:0 }
-          15%{ opacity:.95 }
-          50%{ transform:translate(-14px,-18px); opacity:.65 }
-          70%{ opacity:1 }
-          85%{ opacity:.2 }
-        }
-        @keyframes ftPop{ from{ transform:scale(.6); opacity:0 } to{ transform:scale(1); opacity:1 } }
-        @keyframes ftTreePop{ 0%{ transform:scale(.88) } 55%{ transform:scale(1.07) } 80%{ transform:scale(.985) } 100%{ transform:scale(1) } }
-        @keyframes ftSwayK{ 0%,100%{ transform:rotate(-1deg) } 50%{ transform:rotate(1.2deg) } }
-        @keyframes ftBreatheK{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.015) } }
-        @keyframes ftFall{
-          0%{ transform:translate(0,0) rotate(0deg); opacity:0 }
-          10%{ opacity:.9 }
-          50%{ transform:translate(-12px,46px) rotate(140deg); opacity:.8 }
-          100%{ transform:translate(8px,98px) rotate(290deg); opacity:0 }
-        }
-        @media(min-width:640px){ .ft-inner{ padding:24px 24px 40px } }
+        .ft-btn.go{ background:#FBF3D4; color:#2f6b53; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+        .ft-btn.ghost{ background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.45); }
+
+        .ft-done{ display:flex; align-items:center; gap:8px; margin-top:12px; padding:9px 16px; border-radius:14px;
+          background:#FBF3D4; color:#2f6b53; font-weight:800; font-size:13.5px;
+          animation:ftPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+
+        /* Mi bosque */
+        .ft-filters{ display:flex; gap:6px; margin:14px 0 4px; }
+        .ft-filter{ padding:6px 13px; border-radius:11px; font-size:11.5px; font-weight:700; cursor:pointer;
+          border:none; background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); font-family:inherit; }
+        .ft-filter.on{ background:#FBF3D4; color:#2f6b53; }
+        .ft-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:10px;
+          width:100%; margin-top:12px; }
+        .ft-cell{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+        .ft-cell-plate{ width:100%; aspect-ratio:1; }
+        .ft-cell span{ font-size:9px; font-weight:600; color:rgba(255,255,255,.55); }
+        .ft-empty{ text-align:center; padding:28px 16px; color:rgba(255,255,255,.75); font-size:13px; font-weight:600; }
+
+        /* Estadísticas */
+        .ft-kpis{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; width:100%; margin-top:14px; }
+        @media(min-width:480px){ .ft-kpis{ grid-template-columns:repeat(4,1fr) } }
+        .ft-kpi{ background:rgba(0,0,0,.14); border-radius:16px; padding:12px 10px; text-align:center; }
+        .ft-kpi p{ margin:0 }
+        .ft-kpi .v{ font-family:var(--font-display,inherit); font-weight:800; font-size:20px; color:#FBF3D4; }
+        .ft-kpi .l{ font-size:10px; font-weight:700; color:rgba(255,255,255,.6); margin-top:3px; }
+        .ft-chart{ width:100%; background:rgba(0,0,0,.14); border-radius:16px; padding:14px 14px 8px; margin-top:12px; }
+        .ft-chart h4{ margin:0 0 10px; font-size:11px; font-weight:800; color:rgba(255,255,255,.7); letter-spacing:.4px; }
+
+        @keyframes ftPop{ 0%{ transform:scale(.86) } 55%{ transform:scale(1.06) } 80%{ transform:scale(.985) } 100%{ transform:scale(1) } }
+        @keyframes ftStageIn{ 0%{ transform:scale(.5); opacity:0 } 60%{ transform:scale(1.08); opacity:1 } 100%{ transform:scale(1) } }
+        @keyframes ftSway{ 0%,100%{ transform:rotate(-1.4deg) } 50%{ transform:rotate(1.4deg) } }
       `}</style>
 
-      {/* ── Cielo: sol con halo suave + nubes de silueta limpia ── */}
-      <div className="ft-sun-wrap" aria-hidden>
-        <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', display: 'block' }}>
-          <defs>
-            <radialGradient id="ftSunGlow" cx=".5" cy=".5" r=".5">
-              <stop offset="0" stopColor="#fde047" stopOpacity=".5" />
-              <stop offset=".6" stopColor="#fde047" stopOpacity=".16" />
-              <stop offset="1" stopColor="#fde047" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="ftSunCore" cx=".38" cy=".35" r=".9">
-              <stop offset="0" stopColor="#fffbeb" />
-              <stop offset=".55" stopColor="#fde047" />
-              <stop offset="1" stopColor="#f59e0b" />
-            </radialGradient>
-          </defs>
-          <circle cx="50" cy="50" r="48" fill="url(#ftSunGlow)" />
-          <circle cx="50" cy="50" r="16" fill="url(#ftSunCore)" />
-        </svg>
-      </div>
-      <svg className="ft-cloud" viewBox="0 0 112 44" aria-hidden>
-        <g fill="currentColor">
-          <ellipse cx="30" cy="28" rx="18" ry="12" />
-          <ellipse cx="56" cy="20" rx="20" ry="14" />
-          <ellipse cx="82" cy="28" rx="16" ry="11" />
-          <rect x="14" y="24" width="84" height="14" rx="7" />
-        </g>
-      </svg>
-      <svg className="ft-cloud c2" viewBox="0 0 112 44" aria-hidden>
-        <g fill="currentColor">
-          <ellipse cx="30" cy="28" rx="18" ry="12" />
-          <ellipse cx="56" cy="20" rx="20" ry="14" />
-          <ellipse cx="82" cy="28" rx="16" ry="11" />
-          <rect x="14" y="24" width="84" height="14" rx="7" />
-        </g>
-      </svg>
-
-      {/* ── NOCHE: luna, estrellas y luciérnagas ── */}
-      <div className="ft-night" aria-hidden>
-        <div className="ft-moon-wrap">
-          <svg viewBox="0 0 80 80" style={{ width: '100%', height: '100%', display: 'block' }}>
-            <defs>
-              <radialGradient id="ftMoonCore" cx=".4" cy=".38" r=".85">
-                <stop offset="0" stopColor="#f8fafc" />
-                <stop offset=".6" stopColor="#e2e8f0" />
-                <stop offset="1" stopColor="#cbd5e1" />
-              </radialGradient>
-            </defs>
-            <circle cx="40" cy="40" r="17" fill="url(#ftMoonCore)" />
-            <circle cx="34" cy="36" r="3.4" fill="#94a3b8" opacity=".5" />
-            <circle cx="46" cy="44" r="2.4" fill="#94a3b8" opacity=".4" />
-            <circle cx="42" cy="31" r="1.6" fill="#94a3b8" opacity=".45" />
-          </svg>
-        </div>
-        <svg className="ft-stars" viewBox="0 0 400 150" preserveAspectRatio="xMidYMin slice">
-          {([[24, 28, 1.6, 0], [70, 14, 1.2, .8], [120, 42, 1.8, 1.6], [165, 18, 1.1, .4], [205, 34, 1.5, 2.2],
-             [248, 12, 1.2, 1.1], [288, 40, 1.7, .2], [322, 22, 1.2, 1.9], [360, 36, 1.5, .7], [50, 58, 1.1, 2.6],
-             [180, 64, 1.3, 1.4], [340, 60, 1.1, 3]] as [number, number, number, number][]).map(([x, y, r, d], i) => (
-            <circle key={i} className="ft-star" cx={x} cy={y} r={r} fill="#e0f2fe"
-              style={{ animationDelay: `${d}s` }} />
-          ))}
-        </svg>
-        <div className="ft-fly f1" /><div className="ft-fly f2" /><div className="ft-fly f3" />
-        <div className="ft-fly f4" /><div className="ft-fly f5" />
-      </div>
-
-      {/* ── Paisaje: 3 colinas con arboledas lejanas y detalles mínimos ── */}
-      <svg className="ft-landscape" viewBox="0 0 400 110" preserveAspectRatio="xMidYMax slice" aria-hidden>
-        <defs>
-          <linearGradient id="ftHillBack" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#d1fae5" />
-            <stop offset="1" stopColor="#a7f3d0" />
-          </linearGradient>
-          <linearGradient id="ftHillMid" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#6ee7b7" />
-            <stop offset="1" stopColor="#34d399" />
-          </linearGradient>
-          <linearGradient id="ftHillFront" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#4ade80" />
-            <stop offset="1" stopColor="#16a34a" />
-          </linearGradient>
-        </defs>
-
-        {/* colina lejana */}
-        <path d="M0 56 Q100 30 200 48 T400 38 L400 110 L0 110 Z" fill="url(#ftHillBack)" />
-        {/* arboledas lejanas — siluetas suaves sobre la colina */}
-        <g fill="#10b981" opacity=".45">
-          <ellipse cx="52" cy="50" rx="11" ry="8" />
-          <ellipse cx="66" cy="53" rx="8" ry="6" />
-          <ellipse cx="42" cy="54" rx="7" ry="5" />
-        </g>
-        <g fill="#10b981" opacity=".4">
-          <ellipse cx="306" cy="42" rx="12" ry="8" />
-          <ellipse cx="322" cy="45" rx="8" ry="6" />
-          <ellipse cx="292" cy="46" rx="7" ry="5" />
-        </g>
-
-        {/* colina media */}
-        <path d="M0 76 Q120 52 240 70 T400 60 L400 110 L0 110 Z" fill="url(#ftHillMid)" opacity=".95" />
-
-        {/* colina frontal */}
-        <path d="M0 92 Q130 72 260 86 T400 80 L400 110 L0 110 Z" fill="url(#ftHillFront)" />
-
-        {/* pasto fino — discreto, sobre la colina frontal */}
-        {([[40, 99, 0], [142, 95, .7], [232, 98, .3], [330, 96, 1]] as [number, number, number][]).map(([x, y, d], i) => (
-          <g key={`g${i}`} transform={`translate(${x} ${y})`}>
-            <g className="ft-grass" style={{ animationDelay: `${d}s` }}>
-              <path d="M0 0 C-.8 -4 -2 -6.5 -3.5 -9" stroke="rgba(20,83,45,.5)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
-              <path d="M0 0 C0 -5 0 -8 .4 -11" stroke="rgba(20,83,45,.6)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
-              <path d="M0 0 C1.2 -4 2.4 -6.5 4 -9" stroke="rgba(20,83,45,.45)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
-            </g>
-          </g>
-        ))}
-
-        {/* tres flores mínimas */}
-        {([[92, 100, '#fda4af', 0], [200, 102, '#fcd34d', .9], [302, 99, '#f0abfc', .4]] as [number, number, string, number][]).map(([x, y, c, d], i) => (
-          <g key={`f${i}`} transform={`translate(${x} ${y})`}>
-            <g className="ft-flower" style={{ animationDelay: `${d}s` }}>
-              <line x1="0" y1="0" x2="0" y2="-7" stroke="rgba(20,83,45,.55)" strokeWidth="1.4" strokeLinecap="round" />
-              {[0, 72, 144, 216, 288].map(ang => (
-                <circle key={ang}
-                  cx={Math.cos((ang * Math.PI) / 180) * 2.4}
-                  cy={-7 + Math.sin((ang * Math.PI) / 180) * 2.4}
-                  r="1.7" fill={c} />
-              ))}
-              <circle cx="0" cy="-7" r="1.2" fill="#fff7ed" />
-            </g>
-          </g>
-        ))}
-      </svg>
-
       <div className="ft-inner">
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}>
-          <div style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(22,163,74,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Trees size={16} color="#16a34a" />
-          </div>
-          <div>
-            <p style={{ margin: 0, fontWeight: 800, fontSize: 14, color: 'var(--ft-ink)' }}>Modo Bosque</p>
-            <p style={{ margin: 0, fontSize: 11, color: 'var(--ft-ink2)' }}>Planta un árbol mientras practican juntos</p>
-          </div>
+        {/* Tabs internas */}
+        <div className="ft-tabs">
+          <button className={`ft-tab ${view === 'plantar' ? 'on' : ''}`} onClick={() => setView('plantar')}>
+            <Sprout size={13} /> Plantar
+          </button>
+          <button className={`ft-tab ${view === 'bosque' ? 'on' : ''}`} onClick={() => setView('bosque')}>
+            <Trees size={13} /> Mi bosque
+          </button>
+          <button className={`ft-tab ${view === 'stats' ? 'on' : ''}`} onClick={() => setView('stats')}>
+            <BarChart3 size={13} /> Estadísticas
+          </button>
         </div>
 
-        {/* Escena: anillo + árbol */}
-        <div className="ft-stage">
-          <ProgressRing progress={g} />
-          <div className={`ft-tree ${phase === 'done' ? 'ft-pop' : ''}`}>
-            <Tree g={g} done={phase === 'done'} alive={phase === 'running'} />
-          </div>
-        </div>
-
-        {/* Tiempo */}
-        <div className="ft-time">{phase === 'idle' ? fmt(totalSecs) : fmt(remaining)}</div>
-        <p className="ft-sub">
-          {phase === 'idle' && 'Elige cuánto tiempo practicarán'}
-          {phase === 'running' && 'El arbolito está creciendo… ¡sigan así!'}
-          {phase === 'paused' && 'En pausa — el arbolito espera'}
-          {phase === 'done' && '¡Tiempo completado!'}
-        </p>
-
-        {/* Duraciones */}
-        {phase === 'idle' && (
+        {/* ══ PLANTAR ══ */}
+        {view === 'plantar' && (
           <>
-            <div className="ft-chips">
-              {DURACIONES.map(m => (
-                <button key={m} className={`ft-chip ${durMin === m && durSec === 0 ? 'on' : ''}`}
-                  onClick={() => { setDurStr(String(m)); setSecStr('00'); setRemaining(m * 60); setTotal(m * 60) }}>
-                  {m} min
-                </button>
-              ))}
-            </div>
-            {/* Editor MM : SS — minutos y segundos editables */}
-            <div className="ft-stepper">
-              <button className="ft-step" aria-label="Restar 10 segundos"
-                onClick={() => { const tot = Math.max(5, totalSecs - 10); setDurStr(String(Math.floor(tot / 60))); setSecStr(String(tot % 60).padStart(2, '0')) }}>
-                <Minus size={16} />
-              </button>
-              <div className="ft-mmss">
-                <input
-                  className="ft-numin" type="text" inputMode="numeric" value={durStr}
-                  onChange={e => setDurStr(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
-                  onFocus={e => e.target.select()}
-                  onBlur={() => { if (durMin > 180) setDurStr('180') }}
-                  aria-label="Minutos" />
-                <span className="ft-colon">:</span>
-                <input
-                  className="ft-numin" type="text" inputMode="numeric" value={secStr}
-                  onChange={e => setSecStr(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
-                  onFocus={e => e.target.select()}
-                  onBlur={() => setSecStr(String(durSec).padStart(2, '0'))}
-                  aria-label="Segundos" />
+            <p className="ft-phrase">{phrase}</p>
+
+            <div className="ft-stage">
+              <ProgressRing progress={g} />
+              <div className={`ft-plate ${phase === 'done' ? 'ft-pop' : ''}`}>
+                <Plate sp={species} stage={stage} done={phase === 'done'}
+                  alive={phase === 'running'} idle={phase === 'idle'} />
               </div>
-              <button className="ft-step" aria-label="Sumar 10 segundos"
-                onClick={() => { const tot = Math.min(180 * 60, totalSecs + 10); setDurStr(String(Math.floor(tot / 60))); setSecStr(String(tot % 60).padStart(2, '0')) }}>
-                <Plus size={16} />
-              </button>
             </div>
-            <p className="ft-hint">minutos : segundos</p>
+
+            <div className="ft-time">{phase === 'idle' ? fmt(totalSecs) : fmt(remaining)}</div>
+            {phase === 'running' && <p className="ft-sub">Si se rinden, el arbolito se marchitará</p>}
+            {phase === 'idle' && <p className="ft-sub">Elige árbol y tiempo de práctica</p>}
+
+            {/* Especies */}
+            {phase === 'idle' && (
+              <div className="ft-species">
+                {SPECIES.map(s => (
+                  <button key={s.id} className={`ft-sp ${species === s.id ? 'on' : ''}`} onClick={() => pickSpecies(s.id)}>
+                    <div className="ft-sp-plate">
+                      <Plate sp={s.id} stage={3} done={false} alive={false} />
+                    </div>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Duración */}
+            {phase === 'idle' && (
+              <>
+                <div className="ft-chips">
+                  {DURACIONES.map(m => (
+                    <button key={m} className={`ft-chip ${durMin === m && durSec === 0 ? 'on' : ''}`}
+                      onClick={() => { setDurStr(String(m)); setSecStr('00'); setRemaining(m * 60); setTotal(m * 60) }}>
+                      {m} min
+                    </button>
+                  ))}
+                </div>
+                <div className="ft-stepper">
+                  <button className="ft-step" aria-label="Restar 10 segundos"
+                    onClick={() => { const t = Math.max(5, totalSecs - 10); setDurStr(String(Math.floor(t / 60))); setSecStr(String(t % 60).padStart(2, '0')) }}>
+                    <Minus size={15} />
+                  </button>
+                  <input className="ft-numin" type="text" inputMode="numeric" value={durStr}
+                    onChange={e => setDurStr(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+                    onFocus={e => e.target.select()} aria-label="Minutos" />
+                  <span className="ft-colon">:</span>
+                  <input className="ft-numin" type="text" inputMode="numeric" value={secStr}
+                    onChange={e => setSecStr(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
+                    onFocus={e => e.target.select()}
+                    onBlur={() => setSecStr(String(durSec).padStart(2, '0'))} aria-label="Segundos" />
+                  <button className="ft-step" aria-label="Sumar 10 segundos"
+                    onClick={() => { const t = Math.min(10800, totalSecs + 10); setDurStr(String(Math.floor(t / 60))); setSecStr(String(t % 60).padStart(2, '0')) }}>
+                    <Plus size={15} />
+                  </button>
+                </div>
+                <p className="ft-hint">minutos : segundos</p>
+              </>
+            )}
+
+            {phase === 'done' && (
+              <div className="ft-done"><Sparkles size={15} /> ¡{SPECIES.find(s => s.id === species)?.label} plantado en su bosque!</div>
+            )}
+
+            <div className="ft-actions">
+              {phase === 'idle' && (
+                <button className="ft-btn go" onClick={start} disabled={totalSecs < 1}
+                  style={totalSecs < 1 ? { opacity: .5, cursor: 'not-allowed' } : undefined}>
+                  <Play size={16} /> Plantar
+                </button>
+              )}
+              {phase === 'running' && (
+                <>
+                  <button className="ft-btn ghost" onClick={pause}><Pause size={15} /> Pausa</button>
+                  <button className="ft-btn ghost" onClick={giveUp}><X size={15} /> Rendirse</button>
+                </>
+              )}
+              {phase === 'paused' && (
+                <>
+                  <button className="ft-btn go" onClick={resume}><Play size={15} /> Continuar</button>
+                  <button className="ft-btn ghost" onClick={giveUp}><X size={15} /> Rendirse</button>
+                </>
+              )}
+              {phase === 'done' && (
+                <button className="ft-btn go" onClick={reset}><RotateCcw size={15} /> Plantar otro</button>
+              )}
+            </div>
           </>
         )}
 
-        {/* Celebración */}
-        {phase === 'done' && (
-          <div className="ft-done"><Sparkles size={16} /> ¡Árbol plantado en su bosque!</div>
+        {/* ══ MI BOSQUE ══ */}
+        {view === 'bosque' && (
+          <>
+            <div className="ft-filters">
+              {(['hoy', 'semana', 'todo'] as const).map(f => (
+                <button key={f} className={`ft-filter ${bosqueFiltro === f ? 'on' : ''}`} onClick={() => setBosqueFiltro(f)}>
+                  {f === 'hoy' ? 'Hoy' : f === 'semana' ? '7 días' : 'Todo'}
+                </button>
+              ))}
+            </div>
+            {filtered.length === 0 ? (
+              <div className="ft-empty">
+                Aún no hay árboles aquí.<br />¡Planten el primero practicando juntos! 🌱
+              </div>
+            ) : (
+              <div className="ft-grid">
+                {filtered.map((it, i) => (
+                  <div key={`${it.t}-${i}`} className="ft-cell" title={`${Math.round(it.dur / 60)} min · ${new Date(it.t).toLocaleDateString('es-PE')}`}>
+                    <div className="ft-cell-plate">
+                      <Plate sp={it.sp} stage={3} done={it.ok} alive={false} withered={!it.ok} />
+                    </div>
+                    <span>{Math.max(1, Math.round(it.dur / 60))}m</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="ft-sub" style={{ marginTop: 14 }}>
+              {oks.length} plantado{oks.length !== 1 ? 's' : ''} · {log.length - oks.length} marchito{log.length - oks.length !== 1 ? 's' : ''}
+            </p>
+          </>
         )}
 
-        {/* Controles */}
-        <div className="ft-actions">
-          {phase === 'idle' && (
-            <button className="ft-btn go" onClick={start} disabled={totalSecs < 1}
-              style={totalSecs < 1 ? { opacity: .5, cursor: 'not-allowed' } : undefined}>
-              <Play size={16} /> Plantar árbol
-            </button>
-          )}
-          {phase === 'running' && (
-            <>
-              <button className="ft-btn soft" onClick={pause}><Pause size={15} /> Pausa</button>
-              <button className="ft-btn warn" onClick={reset}><X size={15} /> Rendirse</button>
-            </>
-          )}
-          {phase === 'paused' && (
-            <>
-              <button className="ft-btn go" onClick={resume}><Play size={15} /> Continuar</button>
-              <button className="ft-btn warn" onClick={reset}><X size={15} /> Rendirse</button>
-            </>
-          )}
-          {phase === 'done' && (
-            <button className="ft-btn go" onClick={reset}><RotateCcw size={15} /> Plantar otro</button>
-          )}
-        </div>
+        {/* ══ ESTADÍSTICAS ══ */}
+        {view === 'stats' && (
+          <>
+            <div className="ft-kpis">
+              <div className="ft-kpi"><p className="v">{totalMin}</p><p className="l"><Clock size={9} style={{ display: 'inline', verticalAlign: '-1px' }} /> MIN DE PRÁCTICA</p></div>
+              <div className="ft-kpi"><p className="v">{oks.length}</p><p className="l"><Trees size={9} style={{ display: 'inline', verticalAlign: '-1px' }} /> ÁRBOLES</p></div>
+              <div className="ft-kpi"><p className="v">{streak}</p><p className="l"><Flame size={9} style={{ display: 'inline', verticalAlign: '-1px' }} /> RACHA DÍAS</p></div>
+              <div className="ft-kpi"><p className="v">{exito}%</p><p className="l">ÉXITO</p></div>
+            </div>
 
-        {/* Bosque acumulado */}
-        <div className="ft-forest">
-          <Trees size={14} color="#16a34a" />
-          {bosque} árbol{bosque !== 1 ? 'es' : ''} en su bosque
-          {hoy > 0 && <span style={{ color: '#16a34a' }}>· {hoy} hoy</span>}
-        </div>
+            <div className="ft-chart">
+              <h4>MINUTOS · ÚLTIMOS 7 DÍAS</h4>
+              <svg viewBox="0 0 280 96" style={{ width: '100%', display: 'block' }}>
+                {last7.map((b, i) => {
+                  const h = Math.max(3, (b.mins / maxBar) * 64)
+                  const x = 10 + i * 38
+                  return (
+                    <g key={i}>
+                      <rect x={x} y={74 - h} width="24" height={h} rx="5"
+                        fill={b.today ? '#FBF3D4' : 'rgba(255,255,255,.38)'} />
+                      {b.mins > 0 && (
+                        <text x={x + 12} y={68 - h} textAnchor="middle" fontSize="9" fontWeight="700"
+                          fill="rgba(255,255,255,.85)">{b.mins}</text>
+                      )}
+                      <text x={x + 12} y={89} textAnchor="middle" fontSize="9" fontWeight="700"
+                        fill={b.today ? '#FBF3D4' : 'rgba(255,255,255,.5)'}>{b.label}</text>
+                    </g>
+                  )
+                })}
+              </svg>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
