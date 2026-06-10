@@ -5,7 +5,7 @@
 // se suma al bosque de la familia (persistido en localStorage por niño).
 
 import { useState, useEffect, useRef } from 'react'
-import { Play, Pause, RotateCcw, X, Trees, Sparkles } from 'lucide-react'
+import { Play, Pause, RotateCcw, X, Trees, Sparkles, Minus, Plus } from 'lucide-react'
 
 type Phase = 'idle' | 'running' | 'paused' | 'done'
 
@@ -72,7 +72,9 @@ function Tree({ g, done }: { g: number; done: boolean }) {
 
 export default function ForestTimer({ childId }: { childId: string }) {
   const [phase, setPhase] = useState<Phase>('idle')
-  const [durMin, setDurMin] = useState(10)
+  // Duración editable: se guarda como texto para permitir borrar/escribir libre
+  const [durStr, setDurStr] = useState('10')
+  const durMin = Math.min(180, Math.max(0, parseInt(durStr || '0', 10) || 0))
   const [remaining, setRemaining] = useState(10 * 60)
   const [total, setTotal] = useState(10 * 60)
   const [bosque, setBosque] = useState(0)
@@ -108,6 +110,7 @@ export default function ForestTimer({ childId }: { childId: string }) {
   }, [phase, childId])
 
   const start = () => {
+    if (durMin < 1) return
     const t = durMin * 60
     setTotal(t); setRemaining(t)
     endsAtRef.current = Date.now() + t * 1000
@@ -149,6 +152,17 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-chip:active{ transform:scale(.94); }
         .ft-chip.on{ background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border-color:transparent;
           box-shadow:0 6px 16px rgba(22,163,74,.35); }
+        .ft-stepper{ display:flex; align-items:center; gap:10px; margin-top:12px;
+          background:var(--c-card); border:1.5px solid var(--c-border); border-radius:16px; padding:6px 8px; }
+        .ft-step{ width:38px; height:38px; border-radius:12px; border:none; cursor:pointer;
+          display:flex; align-items:center; justify-content:center; font-family:inherit;
+          background:rgba(22,163,74,.12); color:#16a34a; transition:transform .15s; }
+        .ft-step:active{ transform:scale(.9); }
+        .ft-mininput{ width:64px; text-align:center; border:none; outline:none; background:transparent;
+          font-family:var(--font-display,inherit); font-weight:800; font-size:22px; color:var(--c-text-primary);
+          font-variant-numeric:tabular-nums; -moz-appearance:textfield; appearance:textfield; }
+        .ft-mininput::-webkit-outer-spin-button,.ft-mininput::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+        .ft-minlabel{ font-size:13px; font-weight:700; color:var(--c-text-muted); margin-right:2px; }
         .ft-actions{ display:flex; gap:10px; margin-top:16px; width:100%; max-width:340px; }
         .ft-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:13px 16px;
           border-radius:16px; font-size:14px; font-weight:800; cursor:pointer; border:none; font-family:inherit;
@@ -212,14 +226,36 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
         {/* Duraciones */}
         {phase === 'idle' && (
-          <div className="ft-chips">
-            {DURACIONES.map(m => (
-              <button key={m} className={`ft-chip ${durMin === m ? 'on' : ''}`}
-                onClick={() => { setDurMin(m); setRemaining(m * 60); setTotal(m * 60) }}>
-                {m} min
+          <>
+            <div className="ft-chips">
+              {DURACIONES.map(m => (
+                <button key={m} className={`ft-chip ${durMin === m ? 'on' : ''}`}
+                  onClick={() => { setDurStr(String(m)); setRemaining(m * 60); setTotal(m * 60) }}>
+                  {m} min
+                </button>
+              ))}
+            </div>
+            {/* Duración personalizada — editable */}
+            <div className="ft-stepper">
+              <button className="ft-step" aria-label="Menos minutos"
+                onClick={() => { const v = Math.max(1, durMin - 1); setDurStr(String(v)) }}>
+                <Minus size={16} />
               </button>
-            ))}
-          </div>
+              <input
+                className="ft-mininput"
+                type="number" inputMode="numeric" min={1} max={180}
+                value={durStr}
+                onChange={e => setDurStr(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+                onBlur={() => { if (durMin < 1) setDurStr('1') }}
+                aria-label="Minutos de práctica"
+              />
+              <span className="ft-minlabel">min</span>
+              <button className="ft-step" aria-label="Más minutos"
+                onClick={() => { const v = Math.min(180, durMin + 1); setDurStr(String(v)) }}>
+                <Plus size={16} />
+              </button>
+            </div>
+          </>
         )}
 
         {/* Celebración */}
@@ -230,7 +266,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
         {/* Controles */}
         <div className="ft-actions">
           {phase === 'idle' && (
-            <button className="ft-btn go" onClick={start}><Play size={16} /> Plantar árbol</button>
+            <button className="ft-btn go" onClick={start} disabled={durMin < 1}
+              style={durMin < 1 ? { opacity: .5, cursor: 'not-allowed' } : undefined}>
+              <Play size={16} /> Plantar árbol
+            </button>
           )}
           {phase === 'running' && (
             <>
