@@ -706,12 +706,12 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
             const FIcon = fic.Icon
             return (
             <div key={doc.id}
-              className={`${card} border rounded-2xl p-4 flex items-center gap-3 group transition-all hover:shadow-md hover:-translate-y-0.5`}>
+              className={`${card} border rounded-2xl p-4 flex flex-wrap items-center gap-3 group transition-all hover:shadow-md hover:-translate-y-0.5`}>
               <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
                 style={{ background: `${fic.color}16`, color: fic.color }}>
                 <FIcon size={20} />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 basis-40">
                 {renamingDoc === doc.id ? (
                   <input
                     autoFocus
@@ -740,7 +740,7 @@ export default function DocumentosView({ childId, childName, currentRole, isDark
                   {doc.uploader_name} · {formatDate(doc.created_at)} · {formatSize(doc.file_size)}
                 </p>
               </div>
-              <div className="flex items-center gap-0.5 flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-0.5 flex-shrink-0 w-full sm:w-auto justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
                   className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
                   title="Ver / descargar"><ExternalLink size={14} /></a>
