@@ -9,6 +9,8 @@ interface Msg {
   id: string; content: string; sender_id: string; sender_role: string
   sender_name: string; read_by: string[]; created_at: string
   sender_avatar?: string
+  message_type?: 'text' | 'audio' | 'image' | 'document'
+  file_url?: string; file_name?: string; file_size?: number
 }
 interface Props { childId: string; childName: string; profile: any }
 
@@ -168,12 +170,17 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
       if (error) throw error
       const { data } = supabase.storage.from('store-images').getPublicUrl(path)
       const url = data.publicUrl
-      const text = type === 'audio'
-        ? `🎤 [Audio] ${url}`
-        : `📎 [${fileName || 'archivo'}] ${url}`
+      // Formato estructurado (message_type + file_url) para que todos los
+      // paneles rendericen reproductor/imagen en vez de la URL cruda.
+      const isImage = type === 'file' && /\.(png|jpe?g|gif|webp|avif)$/i.test(fileName || '')
+      const msgType = type === 'audio' ? 'audio' : isImage ? 'image' : 'document'
+      const content = type === 'audio' ? '🎤 Mensaje de voz' : isImage ? '📷 Imagen' : `📎 ${fileName || 'Documento'}`
       const res = await fetch('/api/chat-familias', { method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ child_id: childId, content: text, sender_id: userId, sender_role: 'padre', sender_name: userName }) })
+        body: JSON.stringify({
+          child_id: childId, content, sender_id: userId, sender_role: 'padre', sender_name: userName,
+          message_type: msgType, file_url: url, file_name: fileName || name, file_size: (file as any).size ?? null,
+        }) })
       const json = await res.json().catch(() => null)
       if (json?.data) {
         const newMsg = json.data as Msg
@@ -295,11 +302,25 @@ export default function ChatFamilias({ childId, childName, profile }: Props) {
                       border: isMe ? 'none' : '1px solid var(--c-border)',
                       boxShadow: isMe ? '0 2px 12px rgba(2,132,199,.25)' : '0 1px 4px rgba(0,0,0,.06)',
                     }}>
-                      {msg.content.startsWith('🎤 [Audio] ') ? (
+                      {msg.message_type === 'audio' && msg.file_url ? (
+                        <audio controls src={msg.file_url} style={{ maxWidth:'210px', height:36 }}/>
+                      ) : msg.message_type === 'image' && msg.file_url ? (
+                        <img src={msg.file_url} alt={msg.file_name || 'imagen'}
+                          style={{ width:'100%', maxWidth:220, borderRadius:10, display:'block', cursor:'pointer' }}
+                          onClick={() => window.open(msg.file_url, '_blank')} />
+                      ) : msg.message_type === 'document' && msg.file_url ? (
+                        <a href={msg.file_url} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? '#bfdbfe' : '#0284c7', fontSize:12, display:'flex', alignItems:'center', gap:6 }}><FileIcon size={13}/>{msg.file_name || 'Documento'}</a>
+                      ) : msg.content.startsWith('🎤 [Audio] ') ? (
                         <audio controls src={msg.content.replace('🎤 [Audio] ','')} style={{ maxWidth:'200px', height:32 }}/>
                       ) : msg.content.startsWith('📎 [') ? (() => {
                         const m = msg.content.match(/^📎 \[(.+?)\] (.+)$/)
-                        return m ? <a href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? '#bfdbfe' : '#0284c7', fontSize:12, display:'flex', alignItems:'center', gap:6 }}><FileIcon size={13}/>{m[1]}</a> : <p style={{ margin:0 }}>{msg.content}</p>
+                        if (!m) return <p style={{ margin:0 }}>{msg.content}</p>
+                        if (/\.(png|jpe?g|gif|webp|avif)(\?|$)/i.test(m[2])) return (
+                          <img src={m[2]} alt={m[1]}
+                            style={{ width:'100%', maxWidth:220, borderRadius:10, display:'block', cursor:'pointer' }}
+                            onClick={() => window.open(m[2], '_blank')} />
+                        )
+                        return <a href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? '#bfdbfe' : '#0284c7', fontSize:12, display:'flex', alignItems:'center', gap:6 }}><FileIcon size={13}/>{m[1]}</a>
                       })() : (
                         <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.content}</p>
                       )}

@@ -154,6 +154,33 @@ function MsgContent({ msg, isMe }: { msg: Msg; isMe: boolean }) {
       <Download size={14} color={isMe ? 'rgba(255,255,255,.75)' : 'var(--text-muted,#94a3b8)'}/>
     </a>
   )
+  // Compat: mensajes del portal Familias guardados como texto plano
+  const audioLegacy = msg.content?.match(/^🎤 \[Audio\] (https?:\/\/\S+)\s*$/)
+  if (audioLegacy) return <AudioPlayer url={audioLegacy[1]} isMe={isMe} />
+  const fileLegacy = msg.content?.match(/^📎 \[(.+?)\] (https?:\/\/\S+)\s*$/)
+  if (fileLegacy) {
+    const name = fileLegacy[1], url = fileLegacy[2]
+    if (/\.(png|jpe?g|gif|webp|avif)(\?|$)/i.test(url)) return (
+      <img src={url} alt={name}
+        style={{ width: '100%', maxWidth: 220, borderRadius: 10, display: 'block', cursor: 'pointer' }}
+        onClick={() => window.open(url, '_blank')} />
+    )
+    return (
+      <a href={url} target="_blank" rel="noreferrer"
+        style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none',
+          background: isMe ? 'rgba(255,255,255,0.15)' : 'var(--muted-bg,#f8fafc)',
+          border: isMe ? 'none' : '1px solid var(--card-border,#e2e8f0)',
+          borderRadius: 12, padding: '10px 14px', minWidth: 190 }}>
+        <span style={{ fontSize: 28 }}>{getFileIcon(name)}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: isMe ? '#fff' : 'var(--text-primary)',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 150 }}>{name}</p>
+          <p style={{ margin: '2px 0 0', fontSize: 10, color: isMe ? 'rgba(255,255,255,.65)' : 'var(--text-muted)' }}>Toca para abrir</p>
+        </div>
+        <Download size={14} color={isMe ? 'rgba(255,255,255,.75)' : 'var(--text-muted,#94a3b8)'}/>
+      </a>
+    )
+  }
   return <p style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.6 }}>{msg.content}</p>
 }
 
@@ -212,6 +239,9 @@ export default function ChatFamilias({ profile, userId: _userId, userName: _user
           if (m.message_type === 'image')    preview = '📷 Imagen'
           if (m.message_type === 'audio')    preview = '🎤 Audio'
           if (m.message_type === 'document') preview = '📎 Documento'
+          // Compat: mensajes antiguos del portal Familias guardados como texto
+          if (/^🎤 \[Audio\] https?:\/\//.test(preview)) preview = '🎤 Audio'
+          else if (/^📎 \[.+?\] https?:\/\//.test(preview)) preview = '📎 Documento'
           map[m.child_id] = { child_id: m.child_id, child_name: (m.children as any)?.name || 'Familia',
             lastMsg: preview, lastTime: m.created_at, lastSender: m.sender_name, unread: 0 }
         }
