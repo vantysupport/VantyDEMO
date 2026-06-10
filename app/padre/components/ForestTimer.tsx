@@ -228,31 +228,18 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-root.ft-n{ --ft-ink:#f1f5f9; --ft-ink2:#94a3b8;
           background:linear-gradient(180deg,#0b1f38 0%,#10283f 55%,#11301f 100%); border-color:#1e293b; }
         .ft-inner{ position:relative; z-index:1; padding:20px 18px 36px; display:flex; flex-direction:column; align-items:center; }
-        .ft-sun-wrap{ position:absolute; top:10px; right:14px; width:64px; height:64px; z-index:0;
-          filter:drop-shadow(0 0 16px rgba(250,204,21,.55)); animation:ftSun 6s ease-in-out infinite; }
-        .ft-rays{ transform-origin:40px 40px; animation:ftRays 26s linear infinite; }
+        .ft-sun-wrap{ position:absolute; top:2px; right:6px; width:88px; height:88px; z-index:0;
+          animation:ftSun 7s ease-in-out infinite; }
         .ft-n .ft-sun-wrap{ display:none; }
         /* visibilidad día / noche según la HORA REAL (clase .ft-n en el root) */
-        .ft-day,.ft-night{ position:absolute; inset:0; pointer-events:none; z-index:0; }
-        .ft-night{ display:none; }
+        .ft-night{ position:absolute; inset:0; pointer-events:none; z-index:0; display:none; }
         .ft-n .ft-night{ display:block; }
-        .ft-n .ft-day{ display:none; }
         /* luna */
         .ft-moon-wrap{ position:absolute; top:10px; right:14px; width:64px; height:64px;
           filter:drop-shadow(0 0 18px rgba(226,232,240,.45)); animation:ftSun 7s ease-in-out infinite; }
         /* estrellas */
         .ft-stars{ position:absolute; top:0; left:0; width:100%; height:150px; }
         .ft-star{ animation:ftTwinkle 2.8s ease-in-out infinite; }
-        /* pajaritos */
-        .ft-bird{ position:absolute; width:26px; height:11px; left:-40px; animation:ftBird linear infinite; opacity:.8; }
-        .ft-bird.b1{ top:54px; animation-duration:26s; animation-delay:-6s; }
-        .ft-bird.b2{ top:86px; width:18px; animation-duration:34s; animation-delay:-20s; opacity:.6; }
-        /* mariposa */
-        .ft-butterfly{ position:absolute; bottom:76px; left:12%; width:22px; height:17px;
-          animation:ftFlutter 11s ease-in-out infinite alternate; }
-        .ft-wing{ transform-box:fill-box; animation:ftFlap .45s ease-in-out infinite alternate; }
-        .ft-wing.wl{ transform-origin:right center; }
-        .ft-wing.wr{ transform-origin:left center; animation-delay:.05s; }
         /* luciérnagas */
         .ft-fly{ position:absolute; width:5px; height:5px; border-radius:50%; background:#fef08a;
           box-shadow:0 0 9px 3px rgba(253,224,71,.6); animation:ftFly ease-in-out infinite; opacity:0; }
@@ -261,12 +248,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-fly.f3{ left:58%; bottom:52px; animation-duration:8s; animation-delay:.6s; }
         .ft-fly.f4{ left:76%; bottom:72px; animation-duration:10s; animation-delay:2s; }
         .ft-fly.f5{ left:88%; bottom:44px; animation-duration:7.5s; animation-delay:3s; }
-        .ft-cloud{ position:absolute; top:26px; left:-70px; width:64px; height:20px; border-radius:20px; --cs:1;
-          background:rgba(255,255,255,.9); box-shadow:18px -8px 0 -2px rgba(255,255,255,.9), 34px 0 0 -4px rgba(255,255,255,.85);
-          animation:ftCloud 38s linear infinite; }
-        .ft-cloud.c2{ top:58px; --cs:.7; animation-duration:55s; animation-delay:-22s; opacity:.8; }
-        .ft-cloud.c3{ top:12px; --cs:.5; animation-duration:47s; animation-delay:-36s; opacity:.65; }
-        .ft-n .ft-cloud{ background:rgba(255,255,255,.14); box-shadow:18px -8px 0 -2px rgba(255,255,255,.14), 34px 0 0 -4px rgba(255,255,255,.12); }
+        .ft-cloud{ position:absolute; top:22px; left:-130px; width:108px; height:auto;
+          color:rgba(255,255,255,.92); animation:ftCloud 46s linear infinite; }
+        .ft-cloud.c2{ top:62px; width:64px; color:rgba(255,255,255,.7); animation-duration:64s; animation-delay:-28s; }
+        .ft-n .ft-cloud{ color:rgba(255,255,255,.12); }
         .ft-landscape{ position:absolute; left:0; right:0; bottom:0; width:100%; height:96px; pointer-events:none; z-index:0; transition:filter 1.2s ease; }
         .ft-n .ft-landscape{ filter:brightness(.5) saturate(.75); }
         .ft-grass{ transform-box:fill-box; transform-origin:50% 100%; animation:ftSway2 3.8s ease-in-out infinite; }
@@ -315,26 +300,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-done{ display:flex; align-items:center; gap:8px; margin-top:12px; padding:10px 18px; border-radius:16px;
           background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; font-weight:800; font-size:14px;
           box-shadow:0 8px 22px rgba(22,163,74,.35); animation:ftPop .5s cubic-bezier(.34,1.56,.64,1) both; }
-        @keyframes ftSun{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-5px) } }
-        @keyframes ftRays{ from{ transform:rotate(0deg) } to{ transform:rotate(360deg) } }
-        @keyframes ftSway2{ 0%,100%{ transform:rotate(-4deg) } 50%{ transform:rotate(4deg) } }
-        @keyframes ftCloud{ from{ transform:translateX(0) scale(var(--cs,1)) } to{ transform:translateX(calc(100vw + 160px)) scale(var(--cs,1)) } }
+        @keyframes ftSun{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-4px) } }
+        @keyframes ftSway2{ 0%,100%{ transform:rotate(-3deg) } 50%{ transform:rotate(3deg) } }
+        @keyframes ftCloud{ from{ transform:translateX(0) } to{ transform:translateX(calc(100vw + 200px)) } }
         @keyframes ftTwinkle{ 0%,100%{ opacity:.2 } 50%{ opacity:1 } }
-        @keyframes ftBird{
-          0%{ transform:translate(0,0) }
-          25%{ transform:translate(calc(25vw + 45px),-9px) }
-          50%{ transform:translate(calc(50vw + 90px),4px) }
-          75%{ transform:translate(calc(75vw + 135px),-7px) }
-          100%{ transform:translate(calc(100vw + 180px),0) }
-        }
-        @keyframes ftFlap{ from{ transform:scaleX(1) } to{ transform:scaleX(.4) } }
-        @keyframes ftFlutter{
-          0%{ transform:translate(0,0) rotate(8deg) }
-          25%{ transform:translate(38px,-22px) rotate(-10deg) }
-          50%{ transform:translate(74px,-4px) rotate(10deg) }
-          75%{ transform:translate(46px,-30px) rotate(-8deg) }
-          100%{ transform:translate(96px,-12px) rotate(8deg) }
-        }
         @keyframes ftFly{
           0%,100%{ transform:translate(0,0); opacity:0 }
           15%{ opacity:.95 }
@@ -355,57 +324,41 @@ export default function ForestTimer({ childId }: { childId: string }) {
         @media(min-width:640px){ .ft-inner{ padding:24px 24px 40px } }
       `}</style>
 
-      {/* ── Cielo: sol con rayos + nubes con paralaje ── */}
+      {/* ── Cielo: sol con halo suave + nubes de silueta limpia ── */}
       <div className="ft-sun-wrap" aria-hidden>
-        <svg viewBox="0 0 80 80" style={{ width: '100%', height: '100%', display: 'block' }}>
-          <g className="ft-rays" stroke="#fde047" strokeWidth="3.5" strokeLinecap="round" opacity=".85">
-            {Array.from({ length: 8 }).map((_, i) => {
-              const a = (i * Math.PI) / 4
-              return <line key={i}
-                x1={40 + Math.cos(a) * 22} y1={40 + Math.sin(a) * 22}
-                x2={40 + Math.cos(a) * 30} y2={40 + Math.sin(a) * 30} />
-            })}
-          </g>
+        <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', display: 'block' }}>
           <defs>
-            <radialGradient id="ftSunCore" cx=".38" cy=".38" r=".8">
-              <stop offset="0" stopColor="#fefce8" />
+            <radialGradient id="ftSunGlow" cx=".5" cy=".5" r=".5">
+              <stop offset="0" stopColor="#fde047" stopOpacity=".5" />
+              <stop offset=".6" stopColor="#fde047" stopOpacity=".16" />
+              <stop offset="1" stopColor="#fde047" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="ftSunCore" cx=".38" cy=".35" r=".9">
+              <stop offset="0" stopColor="#fffbeb" />
               <stop offset=".55" stopColor="#fde047" />
-              <stop offset="1" stopColor="#facc15" />
+              <stop offset="1" stopColor="#f59e0b" />
             </radialGradient>
           </defs>
-          <circle cx="40" cy="40" r="17" fill="url(#ftSunCore)" />
-          {/* carita feliz */}
-          <circle cx="34.5" cy="37" r="1.6" fill="#b45309" opacity=".8" />
-          <circle cx="45.5" cy="37" r="1.6" fill="#b45309" opacity=".8" />
-          <path d="M34 43 Q40 47.5 46 43" stroke="#b45309" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity=".8" />
+          <circle cx="50" cy="50" r="48" fill="url(#ftSunGlow)" />
+          <circle cx="50" cy="50" r="16" fill="url(#ftSunCore)" />
         </svg>
       </div>
-      <div className="ft-cloud" />
-      <div className="ft-cloud c2" />
-      <div className="ft-cloud c3" />
-
-      {/* ── DÍA: pajaritos cruzando + mariposa ── */}
-      <div className="ft-day" aria-hidden>
-        <svg className="ft-bird b1" viewBox="0 0 28 12">
-          <path d="M1 9 Q7 1 14 8 Q21 1 27 9" stroke="#475569" strokeWidth="2" fill="none" strokeLinecap="round" />
-        </svg>
-        <svg className="ft-bird b2" viewBox="0 0 28 12">
-          <path d="M1 9 Q7 1 14 8 Q21 1 27 9" stroke="#64748b" strokeWidth="2" fill="none" strokeLinecap="round" />
-        </svg>
-        <div className="ft-butterfly">
-          <svg viewBox="0 0 24 18" style={{ width: '100%', height: '100%', display: 'block' }}>
-            <g className="ft-wing wl">
-              <ellipse cx="8" cy="7" rx="6" ry="5" fill="#f0abfc" />
-              <ellipse cx="8.5" cy="13" rx="4.5" ry="3.5" fill="#e879f9" />
-            </g>
-            <g className="ft-wing wr">
-              <ellipse cx="16" cy="7" rx="6" ry="5" fill="#f0abfc" />
-              <ellipse cx="15.5" cy="13" rx="4.5" ry="3.5" fill="#e879f9" />
-            </g>
-            <rect x="11.2" y="4" width="1.6" height="11" rx=".8" fill="#581c87" />
-          </svg>
-        </div>
-      </div>
+      <svg className="ft-cloud" viewBox="0 0 112 44" aria-hidden>
+        <g fill="currentColor">
+          <ellipse cx="30" cy="28" rx="18" ry="12" />
+          <ellipse cx="56" cy="20" rx="20" ry="14" />
+          <ellipse cx="82" cy="28" rx="16" ry="11" />
+          <rect x="14" y="24" width="84" height="14" rx="7" />
+        </g>
+      </svg>
+      <svg className="ft-cloud c2" viewBox="0 0 112 44" aria-hidden>
+        <g fill="currentColor">
+          <ellipse cx="30" cy="28" rx="18" ry="12" />
+          <ellipse cx="56" cy="20" rx="20" ry="14" />
+          <ellipse cx="82" cy="28" rx="16" ry="11" />
+          <rect x="14" y="24" width="84" height="14" rx="7" />
+        </g>
+      </svg>
 
       {/* ── NOCHE: luna, estrellas y luciérnagas ── */}
       <div className="ft-night" aria-hidden>
@@ -436,52 +389,66 @@ export default function ForestTimer({ childId }: { childId: string }) {
         <div className="ft-fly f4" /><div className="ft-fly f5" />
       </div>
 
-      {/* ── Paisaje: colinas, pasto, arbusto, piedritas y flores ── */}
+      {/* ── Paisaje: 3 colinas con arboledas lejanas y detalles mínimos ── */}
       <svg className="ft-landscape" viewBox="0 0 400 110" preserveAspectRatio="xMidYMax slice" aria-hidden>
         <defs>
           <linearGradient id="ftHillBack" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#bbf7d0" />
-            <stop offset="1" stopColor="#86efac" />
+            <stop offset="0" stopColor="#d1fae5" />
+            <stop offset="1" stopColor="#a7f3d0" />
+          </linearGradient>
+          <linearGradient id="ftHillMid" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#6ee7b7" />
+            <stop offset="1" stopColor="#34d399" />
           </linearGradient>
           <linearGradient id="ftHillFront" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#4ade80" />
-            <stop offset="1" stopColor="#22c55e" />
+            <stop offset="1" stopColor="#16a34a" />
           </linearGradient>
         </defs>
-        {/* colinas */}
-        <path d="M0 62 Q90 34 190 54 T400 44 L400 110 L0 110 Z" fill="url(#ftHillBack)" />
-        <path d="M0 84 Q110 56 230 78 T400 70 L400 110 L0 110 Z" fill="url(#ftHillFront)" />
-        {/* arbusto */}
-        <g transform="translate(348 74)">
-          <circle cx="0" cy="0" r="9" fill="#16a34a" />
-          <circle cx="10" cy="2" r="7" fill="#15803d" />
-          <circle cx="-9" cy="3" r="6.5" fill="#22c55e" />
+
+        {/* colina lejana */}
+        <path d="M0 56 Q100 30 200 48 T400 38 L400 110 L0 110 Z" fill="url(#ftHillBack)" />
+        {/* arboledas lejanas — siluetas suaves sobre la colina */}
+        <g fill="#10b981" opacity=".45">
+          <ellipse cx="52" cy="50" rx="11" ry="8" />
+          <ellipse cx="66" cy="53" rx="8" ry="6" />
+          <ellipse cx="42" cy="54" rx="7" ry="5" />
         </g>
-        {/* piedritas */}
-        <ellipse cx="58" cy="94" rx="6" ry="3.5" fill="#cbd5e1" />
-        <ellipse cx="67" cy="96" rx="3.5" ry="2.2" fill="#94a3b8" />
-        {/* matitas de pasto que se mecen */}
-        {([[26, 90, 0], [110, 82, .6], [180, 88, .2], [256, 84, .9], [318, 90, .4]] as [number, number, number][]).map(([x, y, d], i) => (
+        <g fill="#10b981" opacity=".4">
+          <ellipse cx="306" cy="42" rx="12" ry="8" />
+          <ellipse cx="322" cy="45" rx="8" ry="6" />
+          <ellipse cx="292" cy="46" rx="7" ry="5" />
+        </g>
+
+        {/* colina media */}
+        <path d="M0 76 Q120 52 240 70 T400 60 L400 110 L0 110 Z" fill="url(#ftHillMid)" opacity=".95" />
+
+        {/* colina frontal */}
+        <path d="M0 92 Q130 72 260 86 T400 80 L400 110 L0 110 Z" fill="url(#ftHillFront)" />
+
+        {/* pasto fino — discreto, sobre la colina frontal */}
+        {([[40, 99, 0], [142, 95, .7], [232, 98, .3], [330, 96, 1]] as [number, number, number][]).map(([x, y, d], i) => (
           <g key={`g${i}`} transform={`translate(${x} ${y})`}>
             <g className="ft-grass" style={{ animationDelay: `${d}s` }}>
-              <path d="M0 0 C-1 -5 -2.5 -8 -4.5 -11" stroke="#15803d" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-              <path d="M0 0 C0 -6 0 -10 .5 -14" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-              <path d="M0 0 C1.5 -5 3 -8 5 -11" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+              <path d="M0 0 C-.8 -4 -2 -6.5 -3.5 -9" stroke="rgba(20,83,45,.5)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+              <path d="M0 0 C0 -5 0 -8 .4 -11" stroke="rgba(20,83,45,.6)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+              <path d="M0 0 C1.2 -4 2.4 -6.5 4 -9" stroke="rgba(20,83,45,.45)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
             </g>
           </g>
         ))}
-        {/* florcitas */}
-        {([[84, 88, '#f9a8d4', 0], [214, 92, '#fde047', .8], [296, 80, '#fda4af', .4], [150, 80, '#e9d5ff', 1.1]] as [number, number, string, number][]).map(([x, y, c, d], i) => (
+
+        {/* tres flores mínimas */}
+        {([[92, 100, '#fda4af', 0], [200, 102, '#fcd34d', .9], [302, 99, '#f0abfc', .4]] as [number, number, string, number][]).map(([x, y, c, d], i) => (
           <g key={`f${i}`} transform={`translate(${x} ${y})`}>
             <g className="ft-flower" style={{ animationDelay: `${d}s` }}>
-              <line x1="0" y1="0" x2="0" y2="-9" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" />
+              <line x1="0" y1="0" x2="0" y2="-7" stroke="rgba(20,83,45,.55)" strokeWidth="1.4" strokeLinecap="round" />
               {[0, 72, 144, 216, 288].map(ang => (
                 <circle key={ang}
-                  cx={Math.cos((ang * Math.PI) / 180) * 3}
-                  cy={-9 + Math.sin((ang * Math.PI) / 180) * 3}
-                  r="2.1" fill={c} />
+                  cx={Math.cos((ang * Math.PI) / 180) * 2.4}
+                  cy={-7 + Math.sin((ang * Math.PI) / 180) * 2.4}
+                  r="1.7" fill={c} />
               ))}
-              <circle cx="0" cy="-9" r="1.6" fill="#fbbf24" />
+              <circle cx="0" cy="-7" r="1.2" fill="#fff7ed" />
             </g>
           </g>
         ))}
