@@ -33,7 +33,7 @@ function ProgressRing({ progress }: { progress: number }) {
   const C = 2 * Math.PI * R
   return (
     <svg className="ft-ring" viewBox="0 0 260 260" aria-hidden>
-      <circle cx="130" cy="130" r={R} fill="none" stroke="var(--c-border)" strokeWidth="7" opacity=".5" />
+      <circle cx="130" cy="130" r={R} fill="none" stroke="var(--c-border, #e2e8f0)" strokeWidth="7" opacity=".5" />
       <circle cx="130" cy="130" r={R} fill="none" stroke="url(#ftRingGrad)" strokeWidth="7" strokeLinecap="round"
         strokeDasharray={C} strokeDashoffset={C * (1 - Math.min(1, Math.max(0, progress)))}
         style={{ transition: 'stroke-dashoffset 1s linear' }} />
@@ -223,12 +223,12 @@ export default function ForestTimer({ childId }: { childId: string }) {
           animation:ftCloud 36s linear infinite; opacity:.9; }
         .dark .ft-cloud{ background:rgba(255,255,255,.16); box-shadow:18px -8px 0 -2px rgba(255,255,255,.16), 34px 0 0 -4px rgba(255,255,255,.14); }
         .ft-stage{ position:relative; width:min(64vw,250px); height:min(64vw,250px); margin:6px auto 2px; }
-        .ft-ring{ position:absolute; inset:0; transform:rotate(-90deg); }
+        .ft-ring{ position:absolute; inset:0; transform:rotate(-90deg); pointer-events:none; }
         .ft-tree{ position:absolute; inset:13%; filter:drop-shadow(0 7px 9px rgba(20,83,45,.22)); }
         .ft-pop{ animation:ftTreePop .7s cubic-bezier(.34,1.56,.64,1) both; }
         .ft-sway{ animation:ftSwayK 5.5s ease-in-out infinite; transform-origin:100px 178px; }
         .ft-breathe{ animation:ftBreatheK 4.5s ease-in-out infinite; transform-origin:100px 84px; }
-        .ft-leaf{ animation:ftFall 4s ease-in infinite; opacity:0; }
+        .ft-leaf{ animation:ftFall 3.5s ease-out 1 both; }
         .ft-time{ font-family:var(--font-display,inherit); font-weight:800; font-size:clamp(30px,8vw,40px);
           letter-spacing:1px; color:var(--c-text-primary); font-variant-numeric:tabular-nums; line-height:1; margin-top:10px; }
         .ft-sub{ font-size:12px; color:var(--c-text-muted); margin-top:4px; font-weight:600; }
@@ -274,9 +274,9 @@ export default function ForestTimer({ childId }: { childId: string }) {
         @keyframes ftBreatheK{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.015) } }
         @keyframes ftFall{
           0%{ transform:translate(0,0) rotate(0deg); opacity:0 }
-          8%{ opacity:.95 }
-          45%{ transform:translate(-11px,44px) rotate(130deg); opacity:.9 }
-          100%{ transform:translate(7px,92px) rotate(280deg); opacity:0 }
+          10%{ opacity:.9 }
+          50%{ transform:translate(-12px,46px) rotate(140deg); opacity:.8 }
+          100%{ transform:translate(8px,98px) rotate(290deg); opacity:0 }
         }
         @media(min-width:640px){ .ft-inner{ padding:24px } }
       `}</style>
