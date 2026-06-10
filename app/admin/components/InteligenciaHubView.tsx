@@ -182,14 +182,14 @@ function ProgramaCard({ prog, t }: { prog: any; t: any }) {
   return (
     <div className="rounded-2xl border overflow-hidden" style={{ background: 'var(--card)', borderColor: 'var(--card-border)' }}>
       <button onClick={() => setOpen(o => !o)}
-        className="w-full px-4 py-3 border-b flex items-center justify-between text-left transition-opacity hover:opacity-80"
+        className="w-full px-4 py-3 border-b flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-left transition-opacity hover:opacity-80"
         style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-40">
           <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{prog.nombre || prog.titulo || 'Sin nombre'}</p>
           <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{prog.objetivo || prog.objetivo_lp || prog.descripcion || prog.area || ''}</p>
         </div>
-        <div className="flex items-center gap-2 ml-3 shrink-0">
-          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge}`}>{prog.estado_general}</span>
+        <div className="flex items-center gap-2 ml-auto shrink-0 max-w-full">
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border truncate ${badge}`}>{prog.estado_general}</span>
           <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
         </div>
       </button>
