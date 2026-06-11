@@ -10,35 +10,58 @@ import {
   Volume2, Mic, Check, ChevronLeft, ChevronRight, RotateCcw, Sparkles,
 } from 'lucide-react'
 
-type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; silabas: string; tip: string }
+type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; code: string; silabas: string; tip: string }
 
 // Inventario fonético del español (vocales + consonantes frecuentes en terapia
 // de articulación). `silabas` es lo que se pronuncia al "escuchar el fonema".
+// `code` = codepoint Unicode → archivo de OpenMoji ({code}.svg). `emoji` queda
+// como respaldo si la imagen no carga. Se eligen ejemplos con ícono nítido.
 const FONEMAS: Fonema[] = [
-  { id: 'a',  letra: 'A a', ejemplo: 'Araña',    emoji: '🕷️', silabas: 'aaa',                 tip: 'Boca bien abierta' },
-  { id: 'e',  letra: 'E e', ejemplo: 'Elefante', emoji: '🐘', silabas: 'eee',                 tip: 'Sonríe un poquito' },
-  { id: 'i',  letra: 'I i', ejemplo: 'Iglú',     emoji: '🧊', silabas: 'iii',                 tip: 'Labios estirados' },
-  { id: 'o',  letra: 'O o', ejemplo: 'Oso',      emoji: '🐻', silabas: 'ooo',                 tip: 'Boca redonda' },
-  { id: 'u',  letra: 'U u', ejemplo: 'Uvas',     emoji: '🍇', silabas: 'uuu',                 tip: 'Labios hacia adelante' },
-  { id: 'm',  letra: 'M m', ejemplo: 'Mamá',     emoji: '👩', silabas: 'ma, me, mi, mo, mu',  tip: 'Labios juntos, mmm' },
-  { id: 'p',  letra: 'P p', ejemplo: 'Pelota',   emoji: '⚽', silabas: 'pa, pe, pi, po, pu',  tip: 'Explota el aire con los labios' },
-  { id: 'b',  letra: 'B b', ejemplo: 'Barco',    emoji: '⛵', silabas: 'ba, be, bi, bo, bu',  tip: 'Labios juntos con voz' },
-  { id: 't',  letra: 'T t', ejemplo: 'Taza',     emoji: '☕', silabas: 'ta, te, ti, to, tu',  tip: 'Lengua detrás de los dientes' },
-  { id: 'd',  letra: 'D d', ejemplo: 'Dado',     emoji: '🎲', silabas: 'da, de, di, do, du',  tip: 'Lengua en los dientes, con voz' },
-  { id: 'n',  letra: 'N n', ejemplo: 'Nube',     emoji: '☁️', silabas: 'na, ne, ni, no, nu',  tip: 'El aire sale por la nariz' },
-  { id: 'ñ',  letra: 'Ñ ñ', ejemplo: 'Niño',     emoji: '🧒', silabas: 'ña, ñe, ñi, ño, ñu',  tip: 'Lengua arriba, nasal' },
-  { id: 'k',  letra: 'C/K',  ejemplo: 'Casa',     emoji: '🏠', silabas: 'ca, que, qui, co, cu', tip: 'Sonido atrás de la boca' },
-  { id: 'g',  letra: 'G g', ejemplo: 'Gato',     emoji: '🐱', silabas: 'ga, gue, gui, go, gu', tip: 'Atrás de la boca, con voz' },
-  { id: 'f',  letra: 'F f', ejemplo: 'Foca',     emoji: '🦭', silabas: 'fa, fe, fi, fo, fu',  tip: 'Dientes sobre el labio, fff' },
-  { id: 's',  letra: 'S s', ejemplo: 'Sol',      emoji: '☀️', silabas: 'sa, se, si, so, su',  tip: 'Como una serpiente, sss' },
-  { id: 'j',  letra: 'J j', ejemplo: 'Jirafa',   emoji: '🦒', silabas: 'ja, je, ji, jo, ju',  tip: 'Aire fuerte de la garganta' },
-  { id: 'l',  letra: 'L l', ejemplo: 'Luna',     emoji: '🌙', silabas: 'la, le, li, lo, lu',  tip: 'Lengua arriba, a los lados' },
-  { id: 'r',  letra: 'R r', ejemplo: 'Pera',     emoji: '🍐', silabas: 'ra, re, ri, ro, ru',  tip: 'Un golpecito de lengua' },
-  { id: 'rr', letra: 'RR',  ejemplo: 'Perro',    emoji: '🐶', silabas: 'rra, rre, rri, rro, rru', tip: 'Lengua vibra, rrr' },
-  { id: 'ch', letra: 'CH',  ejemplo: 'Chancho',  emoji: '🐷', silabas: 'cha, che, chi, cho, chu', tip: 'Como un estornudo suave' },
-  { id: 'll', letra: 'LL',  ejemplo: 'Llave',    emoji: '🔑', silabas: 'lla, lle, lli, llo, llu', tip: 'Lengua ancha arriba' },
-  { id: 'y',  letra: 'Y y', ejemplo: 'Yoyo',     emoji: '🪀', silabas: 'ya, ye, yi, yo, yu',  tip: 'Parecido a la LL' },
+  { id: 'a',  letra: 'A a', ejemplo: 'Abeja',     emoji: '🐝', code: '1F41D', silabas: 'aaa',                 tip: 'Boca bien abierta' },
+  { id: 'e',  letra: 'E e', ejemplo: 'Elefante',  emoji: '🐘', code: '1F418', silabas: 'eee',                 tip: 'Sonríe un poquito' },
+  { id: 'i',  letra: 'I i', ejemplo: 'Iguana',    emoji: '🦎', code: '1F98E', silabas: 'iii',                 tip: 'Labios estirados' },
+  { id: 'o',  letra: 'O o', ejemplo: 'Oso',       emoji: '🐻', code: '1F43B', silabas: 'ooo',                 tip: 'Boca redonda' },
+  { id: 'u',  letra: 'U u', ejemplo: 'Uvas',      emoji: '🍇', code: '1F347', silabas: 'uuu',                 tip: 'Labios hacia adelante' },
+  { id: 'm',  letra: 'M m', ejemplo: 'Mono',      emoji: '🐵', code: '1F435', silabas: 'ma, me, mi, mo, mu',  tip: 'Labios juntos, mmm' },
+  { id: 'p',  letra: 'P p', ejemplo: 'Pato',      emoji: '🦆', code: '1F986', silabas: 'pa, pe, pi, po, pu',  tip: 'Explota el aire con los labios' },
+  { id: 'b',  letra: 'B b', ejemplo: 'Ballena',   emoji: '🐳', code: '1F433', silabas: 'ba, be, bi, bo, bu',  tip: 'Labios juntos con voz' },
+  { id: 't',  letra: 'T t', ejemplo: 'Tortuga',   emoji: '🐢', code: '1F422', silabas: 'ta, te, ti, to, tu',  tip: 'Lengua detrás de los dientes' },
+  { id: 'd',  letra: 'D d', ejemplo: 'Dado',      emoji: '🎲', code: '1F3B2', silabas: 'da, de, di, do, du',  tip: 'Lengua en los dientes, con voz' },
+  { id: 'n',  letra: 'N n', ejemplo: 'Naranja',   emoji: '🍊', code: '1F34A', silabas: 'na, ne, ni, no, nu',  tip: 'El aire sale por la nariz' },
+  { id: 'ñ',  letra: 'Ñ ñ', ejemplo: 'Niño',      emoji: '🧒', code: '1F9D2', silabas: 'ña, ñe, ñi, ño, ñu',  tip: 'Lengua arriba, nasal' },
+  { id: 'k',  letra: 'C/K', ejemplo: 'Casa',      emoji: '🏠', code: '1F3E0', silabas: 'ca, que, qui, co, cu', tip: 'Sonido atrás de la boca' },
+  { id: 'g',  letra: 'G g', ejemplo: 'Gato',      emoji: '🐱', code: '1F431', silabas: 'ga, gue, gui, go, gu', tip: 'Atrás de la boca, con voz' },
+  { id: 'f',  letra: 'F f', ejemplo: 'Foca',      emoji: '🦭', code: '1F9AD', silabas: 'fa, fe, fi, fo, fu',  tip: 'Dientes sobre el labio, fff' },
+  { id: 's',  letra: 'S s', ejemplo: 'Serpiente', emoji: '🐍', code: '1F40D', silabas: 'sa, se, si, so, su',  tip: 'Como una serpiente, sss' },
+  { id: 'j',  letra: 'J j', ejemplo: 'Jirafa',    emoji: '🦒', code: '1F992', silabas: 'ja, je, ji, jo, ju',  tip: 'Aire fuerte de la garganta' },
+  { id: 'l',  letra: 'L l', ejemplo: 'Luna',      emoji: '🌙', code: '1F319', silabas: 'la, le, li, lo, lu',  tip: 'Lengua arriba, a los lados' },
+  { id: 'r',  letra: 'R r', ejemplo: 'Pera',      emoji: '🍐', code: '1F350', silabas: 'ra, re, ri, ro, ru',  tip: 'Un golpecito de lengua' },
+  { id: 'rr', letra: 'RR',  ejemplo: 'Perro',     emoji: '🐶', code: '1F436', silabas: 'rra, rre, rri, rro, rru', tip: 'Lengua vibra, rrr' },
+  { id: 'ch', letra: 'CH',  ejemplo: 'Chancho',   emoji: '🐷', code: '1F437', silabas: 'cha, che, chi, cho, chu', tip: 'Como un estornudo suave' },
+  { id: 'll', letra: 'LL',  ejemplo: 'Llave',     emoji: '🔑', code: '1F511', silabas: 'lla, lle, lli, llo, llu', tip: 'Lengua ancha arriba' },
+  { id: 'y',  letra: 'Y y', ejemplo: 'Yoyo',      emoji: '🪀', code: '1FA80', silabas: 'ya, ye, yi, yo, yu',  tip: 'Parecido a la LL' },
 ]
+
+// OpenMoji (CC BY-SA 4.0) — ilustraciones tipo sticker servidas por CDN.
+const OPENMOJI_BASE = 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.0.0/color/svg'
+
+function FonemaImg({ code, emoji, size }: { code: string; emoji: string; size: number }) {
+  const [err, setErr] = useState(false)
+  if (err) return <span style={{ fontSize: Math.round(size * 0.86), lineHeight: 1 }} aria-hidden>{emoji}</span>
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`${OPENMOJI_BASE}/${code}.svg`}
+      alt={emoji}
+      width={size}
+      height={size}
+      loading="lazy"
+      draggable={false}
+      onError={() => setErr(true)}
+      style={{ objectFit: 'contain', display: 'block' }}
+    />
+  )
+}
 
 function lsKey(childId: string) { return `fonemas_logrados_${childId}` }
 function loadLogrados(childId: string): string[] {
@@ -48,18 +71,23 @@ function saveLogrados(childId: string, ids: string[]) {
   try { localStorage.setItem(lsKey(childId), JSON.stringify(ids)) } catch { /* noop */ }
 }
 
+// Caché de audio por texto (persiste mientras la pestaña esté abierta) para no
+// regenerar el mismo fonema en ElevenLabs cada vez que se repite.
+const audioCache = new Map<string, string>()
+
 export default function FonemasPractica({ childId }: { childId: string }) {
   const [idx, setIdx] = useState(0)
   const [logrados, setLogrados] = useState<Set<string>>(new Set())
   const [hablando, setHablando] = useState(false)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const tokenRef = useRef(0)
   const ttsOk = typeof window !== 'undefined' && 'speechSynthesis' in window
 
   const f = FONEMAS[idx]
 
   useEffect(() => {
     // Cargamos tras el montaje (no en el render) para evitar mismatch de hidratación SSR.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLogrados(new Set(loadLogrados(childId)))
   }, [childId])
 
@@ -69,16 +97,37 @@ export default function FonemasPractica({ childId }: { childId: string }) {
     const load = () => { voicesRef.current = window.speechSynthesis.getVoices() }
     load()
     window.speechSynthesis.onvoiceschanged = load
-    return () => { try { window.speechSynthesis.cancel() } catch { /* noop */ } }
+    return () => {
+      try { window.speechSynthesis.cancel() } catch { /* noop */ }
+      try { audioRef.current?.pause() } catch { /* noop */ }
+    }
   }, [ttsOk])
 
-  const speak = (texto: string) => {
-    if (!ttsOk) return
+  const stopAudio = () => {
+    try { audioRef.current?.pause() } catch { /* noop */ }
+    try { if (ttsOk) window.speechSynthesis.cancel() } catch { /* noop */ }
+    setHablando(false)
+  }
+
+  const playUrl = (url: string) => {
+    const a = new Audio(url)
+    audioRef.current = a
+    a.onplay = () => setHablando(true)
+    a.onended = () => setHablando(false)
+    a.onerror = () => setHablando(false)
+    a.play().catch(() => setHablando(false))
+  }
+
+  // Respaldo: voz del navegador (si ElevenLabs falla o no hay conexión).
+  // Prefiere voces de mayor calidad (Google / natural) sobre la robótica por defecto.
+  const speakWebSpeech = (texto: string) => {
+    if (!ttsOk) { setHablando(false); return }
     try {
       window.speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance(texto)
-      u.lang = 'es-ES'; u.rate = 0.82; u.pitch = 1.08
-      const v = voicesRef.current.find(v => v.lang?.toLowerCase().startsWith('es'))
+      u.lang = 'es-ES'; u.rate = 0.9; u.pitch = 1.05
+      const es = voicesRef.current.filter(v => v.lang?.toLowerCase().startsWith('es'))
+      const v = es.find(v => /google|natural|premium|enhanced/i.test(v.name)) || es[0]
       if (v) u.voice = v
       u.onstart = () => setHablando(true)
       u.onend = () => setHablando(false)
@@ -87,10 +136,32 @@ export default function FonemasPractica({ childId }: { childId: string }) {
     } catch { setHablando(false) }
   }
 
+  // Voz natural (ElevenLabs) con caché por sesión; respaldo a voz del navegador.
+  const speak = async (texto: string) => {
+    stopAudio()
+    const myToken = ++tokenRef.current
+    setHablando(true)
+    const cached = audioCache.get(texto)
+    if (cached) { if (myToken === tokenRef.current) playUrl(cached); return }
+    try {
+      const res = await fetch('/api/elevenlabs-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: texto }),
+      })
+      if (!res.ok) throw new Error('tts')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      audioCache.set(texto, url)
+      if (myToken === tokenRef.current) playUrl(url)
+    } catch {
+      if (myToken === tokenRef.current) speakWebSpeech(texto)
+    }
+  }
+
   const go = (d: number) => {
     setIdx(i => (i + d + FONEMAS.length) % FONEMAS.length)
-    try { window.speechSynthesis.cancel() } catch { /* noop */ }
-    setHablando(false)
+    stopAudio()
   }
 
   const toggleLogrado = (id: string) => {
@@ -118,7 +189,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
 
         .fon-card{ background:var(--c-surface,#fff); border:1.5px solid var(--c-border,#e2e8f0); border-radius:24px;
           padding:22px 18px 24px; box-shadow:0 10px 30px rgba(15,23,42,.06); text-align:center; position:relative; }
-        .fon-emoji{ font-size:78px; line-height:1; margin:2px 0 8px; }
+        .fon-emoji{ height:96px; display:flex; align-items:center; justify-content:center; margin:2px 0 8px; }
         .fon-letra{ font-family:var(--font-display,inherit); font-size:54px; font-weight:900; color:#0369a1; line-height:1; letter-spacing:1px; }
         .fon-word{ font-size:16px; font-weight:800; color:var(--c-text,#0f172a); margin-top:6px; }
         .fon-sil{ font-size:13px; font-weight:700; color:#0284c7; margin-top:4px; letter-spacing:.5px; }
@@ -150,7 +221,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
           transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:2px; }
         .fon-chip:active{ transform:scale(.94); }
         .fon-chip.on{ border-color:#0284c7; background:#e0f2fe; color:#0369a1; box-shadow:0 4px 12px rgba(2,132,199,.18); }
-        .fon-chip .e{ font-size:16px; line-height:1; }
+        .fon-chip .e{ height:24px; display:flex; align-items:center; justify-content:center; }
         .fon-chip .ok{ position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#22c55e;
           color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.2); }
 
@@ -171,29 +242,20 @@ export default function FonemasPractica({ childId }: { childId: string }) {
 
       {/* Tarjeta del fonema actual */}
       <div className="fon-card">
-        <div className="fon-emoji" aria-hidden>{f.emoji}</div>
+        <div className="fon-emoji"><FonemaImg code={f.code} emoji={f.emoji} size={92} /></div>
         <div className="fon-letra">{f.letra}</div>
         <div className="fon-word">{f.ejemplo}</div>
         <div className="fon-sil">{f.silabas}</div>
         <div className="fon-tip"><Sparkles size={13} /> {f.tip}</div>
 
         <div className="fon-btns">
-          <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`}
-            onClick={() => speak(f.silabas)} disabled={!ttsOk}
-            style={!ttsOk ? { opacity: .5, cursor: 'not-allowed' } : undefined}>
+          <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`} onClick={() => speak(f.silabas)}>
             <Volume2 size={17} /> Escuchar fonema
           </button>
-          <button className="fon-btn soft" onClick={() => speak(f.ejemplo)} disabled={!ttsOk}
-            style={!ttsOk ? { opacity: .5, cursor: 'not-allowed' } : undefined}>
+          <button className="fon-btn soft" onClick={() => speak(f.ejemplo)}>
             <Volume2 size={16} /> Escuchar palabra
           </button>
         </div>
-
-        {!ttsOk && (
-          <p style={{ fontSize: 11, color: 'var(--c-text-muted,#64748b)', marginTop: 8 }}>
-            Tu navegador no soporta audio de voz. Lean las sílabas en voz alta.
-          </p>
-        )}
 
         <div>
           <button className={`fon-logro ${esLogrado ? 'on' : 'off'}`} onClick={() => toggleLogrado(f.id)}>
@@ -213,7 +275,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
         {FONEMAS.map((x, i) => (
           <button key={x.id} className={`fon-chip ${i === idx ? 'on' : ''}`} onClick={() => go(i - idx)} title={x.ejemplo}>
             {logrados.has(x.id) && <span className="ok"><Check size={11} /></span>}
-            <span className="e" aria-hidden>{x.emoji}</span>
+            <span className="e"><FonemaImg code={x.code} emoji={x.emoji} size={24} /></span>
             {x.letra.split(' ')[0]}
           </button>
         ))}
