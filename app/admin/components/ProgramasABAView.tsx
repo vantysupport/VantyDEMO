@@ -831,6 +831,9 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
   const [editingTitulo, setEditingTitulo] = useState(false)
   const [tempTitulo, setTempTitulo] = useState(programa.titulo)
   const [localTitulo, setLocalTitulo] = useState(programa.titulo)
+  const [editingObjetivo, setEditingObjetivo] = useState(false)
+  const [tempObjetivo, setTempObjetivo] = useState(programa.objetivo_lp || '')
+  const [localObjetivo, setLocalObjetivo] = useState(programa.objetivo_lp || '')
   const [editingArea, setEditingArea] = useState(false)
   const [localArea, setLocalArea] = useState(programa.area || 'comunicacion')
   const [editingFase, setEditingFase] = useState(false)
@@ -908,6 +911,21 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     const json = await res.json()
     if (json.error) { toast.error(json.error); setLocalTitulo(programa.titulo); setTempTitulo(programa.titulo); return }
     toast.success('Título actualizado')
+  }
+
+  const saveObjetivo = async (nuevo: string) => {
+    setEditingObjetivo(false)
+    const trimmed = nuevo.trim()
+    if (trimmed === localObjetivo) { setTempObjetivo(localObjetivo); return }
+    setLocalObjetivo(trimmed)
+    const res = await fetch('/api/programas-aba', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'actualizar_programa', programa_id: programa.id, updates: { objetivo_lp: trimmed } }),
+    })
+    const json = await res.json()
+    if (json.error) { toast.error(json.error); setLocalObjetivo(programa.objetivo_lp || ''); setTempObjetivo(programa.objetivo_lp || ''); return }
+    toast.success('Objetivo actualizado')
   }
 
   const area = AREA_CONFIG[programa.area] || AREA_CONFIG.comunicacion
@@ -1125,7 +1143,37 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-1 line-clamp-1">{programa.objetivo_lp}</p>
+            {editingObjetivo ? (
+              <textarea
+                autoFocus
+                value={tempObjetivo}
+                onChange={e => setTempObjetivo(e.target.value)}
+                onBlur={() => saveObjetivo(tempObjetivo)}
+                onKeyDown={e => {
+                  if (e.key === 'Escape') { setTempObjetivo(localObjetivo); setEditingObjetivo(false) }
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) (e.target as HTMLTextAreaElement).blur()
+                }}
+                onClick={e => e.stopPropagation()}
+                rows={3}
+                placeholder="Objetivo a largo plazo…"
+                className="w-full text-xs rounded-lg px-2 py-1 mt-1 outline-none border-2 border-sky-400 resize-y"
+                style={{ color: 'var(--text-primary)', background: 'var(--input-bg)', minHeight: '52px' }}
+              />
+            ) : (
+              <p className="text-xs text-slate-400 mt-1 flex items-start gap-1.5">
+                <span className="line-clamp-2">
+                  {localObjetivo || <span className="italic opacity-70">Sin objetivo a largo plazo. Haz clic en el lápiz para agregarlo.</span>}
+                </span>
+                <button
+                  title="Editar objetivo a largo plazo"
+                  onClick={e => { e.stopPropagation(); setTempObjetivo(localObjetivo); setEditingObjetivo(true) }}
+                  className="flex items-center justify-center w-5 h-5 rounded-md opacity-40 hover:opacity-100 hover:bg-sky-100 transition-all shrink-0"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <Edit3 size={11} />
+                </button>
+              </p>
+            )}
             <div className="flex items-center gap-4 mt-2 flex-wrap">
               {/* Total de sesiones (todos los sets) */}
               <span className="text-xs flex items-center gap-1" style={{color:"var(--text-muted)"}}>
