@@ -1,17 +1,24 @@
 'use client'
 // app/padre/components/ForestTimer.tsx
 // "Modo Bosque" — temporizador de práctica inspirado en Forest (forestapp.cc).
-// Plato de tierra + planta creciendo por etapas (con crecimiento continuo
-// dentro de cada etapa), especies seleccionables, Mi bosque y Estadísticas.
-// El anillo de progreso vive DENTRO del mismo SVG del plato → siempre
-// perfectamente concéntrico. Copas dibujadas como silueta unificada con
-// sombra de borde inferior (estilo flat Forest), sin cortes duros.
+// Los árboles y la granja son 3D reales (three.js / react-three-fiber), vive en
+// Tree3D.tsx y se carga solo en cliente (ssr:false). Aquí queda toda la lógica
+// del temporizador, especies, persistencia, Mi bosque y Estadísticas.
 
-import { useState, useEffect, useRef, useId } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import {
   Play, Pause, X, RotateCcw, Minus, Plus,
   Trees, Sprout, BarChart3, Flame, Clock, Sparkles,
 } from 'lucide-react'
+
+// Escena 3D (three.js) — cargada solo en el navegador, nunca en SSR.
+const SingleTree3D = dynamic(() => import('./Tree3D').then(m => m.SingleTree3D), {
+  ssr: false, loading: () => <div className="ft-canvas-load" />,
+})
+const Forest3D = dynamic(() => import('./Tree3D').then(m => m.Forest3D), {
+  ssr: false, loading: () => <div className="ft-canvas-load" />,
+})
 
 type Phase = 'idle' | 'running' | 'paused' | 'done'
 type Species = 'pino' | 'manzano' | 'cerezo' | 'roble'
@@ -40,242 +47,6 @@ function dayKey(t: number) { const d = new Date(t); return `${d.getFullYear()}-$
 function fmt(secs: number) {
   const m = Math.floor(secs / 60), s = secs % 60
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// ÁRBOLES — flat estilo Forest. Coordenadas locales: base de la planta en (60, 80)
-// Copa = grupo de círculos que se funden en UNA silueta; la sombra es la misma
-// silueta desplazada hacia abajo, por detrás (nunca un corte recto encima).
-// ══════════════════════════════════════════════════════════════════════════════
-
-// Copa "nube" — path simétrico de tres lóbulos con sombra inferior desplazada.
-// (x,y) = centro de la base; W = semiancho; H = alto total.
-function CanopyCloud({ x, y, w, h, light, dark }: {
-  x: number; y: number; w: number; h: number; light: string; dark: string
-}) {
-  const W = w, H = h
-  const d = `M ${x - W} ${y}
-    C ${x - W} ${y - H * .45}, ${x - W * .55} ${y - H * .62}, ${x - W * .38} ${y - H * .6}
-    C ${x - W * .34} ${y - H * .98}, ${x + W * .34} ${y - H * .98}, ${x + W * .38} ${y - H * .6}
-    C ${x + W * .55} ${y - H * .62}, ${x + W} ${y - H * .45}, ${x + W} ${y}
-    Q ${x} ${y + H * .14} ${x - W} ${y} Z`
-  return (
-    <>
-      <path d={d} fill={dark} transform="translate(0 3)" />
-      <path d={d} fill={light} />
-    </>
-  )
-}
-
-function Trunk({ y, h, w = 4, color = '#8a5a3b' }: { y: number; h: number; w?: number; color?: string }) {
-  return (
-    <g>
-      <rect x={60 - w / 2} y={y} width={w} height={h} rx={w / 2} fill={color} />
-      {/* veta de luz central — volumen sutil */}
-      <rect x={60 - w / 4} y={y + 2} width={w / 2} height={Math.max(2, h - 4)} rx={1} fill="rgba(255,255,255,0.15)" />
-    </g>
-  )
-}
-
-// Etapa 0 — brote
-function StageSprout() {
-  return (
-    <g>
-      <path d="M60 66 L60 80" stroke="#4d9b46" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M60 69 C54 67, 50 63, 49 58 C55 59.5, 59 63, 60 67.5 Z" fill="#6fbf4f" />
-      <path d="M60 72 C66 70, 70 66, 71 61 C65 62.5, 61 66, 60 70.5 Z" fill="#4d9b46" />
-    </g>
-  )
-}
-
-// Etapa 1 — arbolito joven
-function StageSapling() {
-  return (
-    <g>
-      <Trunk y={58} h={22} w={3} color="#7e5233" />
-      <CanopyCloud x={60} y={56} w={11} h={17} light="#6fbf4f" dark="#4d9b46" />
-    </g>
-  )
-}
-
-function PlantStage({ sp, stage, done }: { sp: Species; stage: number; done: boolean }) {
-  if (stage === 0) return <StageSprout />
-  if (stage === 1) return <StageSapling />
-
-  // ── PINO — capas con lados curvos (acículas), dos tonos ──
-  if (sp === 'pino') {
-    const Tier = ({ y, w, h }: { y: number; w: number; h: number }) => (
-      <>
-        <path d={`M60 ${y - h} Q${60 - w} ${y - h * .5} ${60 - w * .8} ${y} L60 ${y} Z`} fill="#67aa4f" />
-        <path d={`M60 ${y - h} Q${60 + w} ${y - h * .5} ${60 + w * .8} ${y} L60 ${y} Z`} fill="#3f7f46" />
-      </>
-    )
-    if (stage === 2) return (
-      <g>
-        <Trunk y={68} h={12} w={3.6} color="#5a3b2c" />
-        <Tier y={70} w={16} h={17} />
-        <Tier y={58} w={12} h={14} />
-      </g>
-    )
-    return (
-      <g>
-        <Trunk y={70} h={10} w={4} color="#5a3b2c" />
-        <Tier y={72} w={20} h={19} />
-        <Tier y={60} w={16} h={16} />
-        <Tier y={49} w={12} h={14} />
-      </g>
-    )
-  }
-
-  // ── Especies de copa nube ──
-  const cfg = sp === 'cerezo'
-    ? { light: '#f3a7c3', dark: '#de7ea6', trunk: '#7a5230' }
-    : sp === 'roble'
-      ? { light: '#8aba5f', dark: '#5d8f43', trunk: '#6b472c' }
-      : { light: '#7bcb63', dark: '#54a046', trunk: '#7a5230' } // manzano
-
-  if (stage === 2) return (
-    <g>
-      <Trunk y={56} h={24} w={3.8} color={cfg.trunk} />
-      <CanopyCloud x={60} y={54} w={17} h={24} light={cfg.light} dark={cfg.dark} />
-      {sp === 'cerezo' && <Blossoms pts={[[54, 46], [66, 46], [60, 39]]} />}
-    </g>
-  )
-
-  if (sp === 'cerezo') return (
-    <g>
-      <Trunk y={54} h={26} w={3.8} color={cfg.trunk} />
-      <CanopyCloud x={60} y={52} w={22} h={30} light={cfg.light} dark={cfg.dark} />
-      <Blossoms pts={[[48, 44], [72, 44], [60, 30], [55, 50], [65, 50]]} />
-    </g>
-  )
-
-  if (sp === 'roble') return (
-    <g>
-      <Trunk y={52} h={28} w={4.8} color={cfg.trunk} />
-      <CanopyCloud x={60} y={50} w={26} h={32} light={cfg.light} dark={cfg.dark} />
-      {done && (
-        <g>
-          {([[53, 46], [67, 45], [60, 50]] as [number, number][]).map(([x, y], i) => (
-            <ellipse key={i} cx={x} cy={y} rx="2" ry="2.6" fill="#d28c3a" />
-          ))}
-        </g>
-      )}
-    </g>
-  )
-
-  // manzano
-  return (
-    <g>
-      <Trunk y={54} h={26} w={4.2} color={cfg.trunk} />
-      <CanopyCloud x={60} y={52} w={23} h={30} light={cfg.light} dark={cfg.dark} />
-      {done && (
-        <g>
-          {([[51, 44], [69, 44], [60, 32], [56, 49], [65, 49]] as [number, number][]).map(([x, y], i) => (
-            <g key={i}>
-              <circle cx={x} cy={y} r="2.8" fill="#ea4c4c" />
-              <circle cx={x - 1} cy={y - 1} r=".9" fill="#fca5a5" />
-            </g>
-          ))}
-        </g>
-      )}
-    </g>
-  )
-}
-
-function Blossoms({ pts }: { pts: [number, number][] }) {
-  return (
-    <g>
-      {pts.map(([x, y], i) => (
-        <g key={i}>
-          <circle cx={x} cy={y} r="2.8" fill="#fff5f9" />
-          <circle cx={x} cy={y} r="1.2" fill="#f58bb2" />
-        </g>
-      ))}
-    </g>
-  )
-}
-
-// Árbol marchito (sesión abandonada)
-function Withered() {
-  return (
-    <g stroke="#9b8a78" strokeWidth="2.8" strokeLinecap="round" fill="none">
-      <path d="M60 80 L60 50" />
-      <path d="M60 66 L48 54" />
-      <path d="M60 59 L71 49" />
-      <path d="M60 73 L51 67" />
-      <path d="M48 54 L44 53" /><path d="M71 49 L75 47" />
-    </g>
-  )
-}
-
-// ── Plato Forest: anillo + círculo crema + tierra + planta — TODO en un SVG ──
-function Plate({ sp, stage, done, alive, withered = false, progress, growScale = 1 }: {
-  sp: Species; stage: number; done: boolean; alive: boolean
-  withered?: boolean; progress?: number; growScale?: number
-}) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
-  const showRing = progress !== undefined
-  const p = Math.min(1, Math.max(0, progress ?? 0))
-  const R = 64, CX = 70, CY = 70
-  const C = 2 * Math.PI * R
-  const knobA = 2 * Math.PI * p - Math.PI / 2
-  // Solo el plato principal (con anillo) hace crossfade de las 4 etapas;
-  // los platos mini (selector / Mi bosque) renderizan una sola etapa.
-  const stagesToRender = showRing ? [0, 1, 2, 3] : [stage]
-  return (
-    <svg viewBox="0 0 140 140" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }} aria-hidden>
-      <defs>
-        <clipPath id={`clip${uid}`}><circle cx="60" cy="60" r="54" /></clipPath>
-        <radialGradient id={`plate${uid}`} cx="50%" cy="40%" r="62%">
-          <stop offset="0%" stopColor="#FCF6DD" />
-          <stop offset="100%" stopColor="#F1E3BC" />
-        </radialGradient>
-        <filter id={`knob${uid}`} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity=".25" />
-        </filter>
-        <filter id={`pshadow${uid}`} x="-25%" y="-25%" width="150%" height="150%">
-          <feDropShadow dx="0" dy="2.5" stdDeviation="2" floodColor="#3a2a1a" floodOpacity=".2" />
-        </filter>
-      </defs>
-      {showRing && (
-        <>
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="5" />
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#FBF3D4" strokeWidth="5" strokeLinecap="round"
-            strokeDasharray={C} strokeDashoffset={C * (1 - p)}
-            transform={`rotate(-90 ${CX} ${CY})`}
-            style={{ transition: 'stroke-dashoffset 1s linear' }} />
-          {p > 0 && p < 1 && (
-            <circle cx={CX + R * Math.cos(knobA)} cy={CY + R * Math.sin(knobA)} r="6" fill="#FBF3D4"
-              filter={`url(#knob${uid})`}
-              style={{ transition: 'cx 1s linear, cy 1s linear' }} />
-          )}
-        </>
-      )}
-      {/* plato + tierra + planta (coordenadas locales desplazadas al centro) */}
-      <g transform="translate(10 10)">
-        <circle cx="60" cy="60" r="54" fill={`url(#plate${uid})`} />
-        <g clipPath={`url(#clip${uid})`}>
-          <path d="M0 90 Q60 74 120 90 L120 130 L0 130 Z" fill="#8a5a3b" />
-          <path d="M0 90 Q60 74 120 90" stroke="#6f4528" strokeWidth="3" fill="none" opacity=".5" />
-          {/* textura de la tierra */}
-          <path d="M8 98 Q60 86 112 98" stroke="#6f4528" strokeWidth="2" fill="none" opacity=".35" />
-          <path d="M16 105 Q60 95 104 105" stroke="#6f4528" strokeWidth="1.5" fill="none" opacity=".25" />
-        </g>
-        {/* crecimiento continuo (escala global) — la planta NUNCA se desmonta:
-            las etapas se funden con crossfade de opacidad */}
-        <g style={{ transform: `scale(${growScale})`, transformBox: 'fill-box' as any, transformOrigin: '50% 100%', transition: 'transform 1s linear' }}>
-          <g className={alive ? 'ft-sway' : undefined} filter={`url(#pshadow${uid})`}>
-            {withered ? <Withered /> : stagesToRender.map(s => (
-              <g key={s} style={{ opacity: s === stage ? 1 : 0, transition: 'opacity .45s ease' }}>
-                <PlantStage sp={sp} stage={s} done={done && s === stage} />
-              </g>
-            ))}
-          </g>
-        </g>
-      </g>
-    </svg>
-  )
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -347,10 +118,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
   const g = phase === 'idle' ? 0 : phase === 'done' ? 1 : Math.min(1, Math.max(0, 1 - remaining / total))
 
-  // Etapas (crossfade) + escala GLOBAL monotónica: la planta solo crece,
-  // nunca encoge al cruzar un umbral.
-  const stage = phase === 'idle' ? 3 : phase === 'done' ? 3 : g < .22 ? 0 : g < .5 ? 1 : g < .82 ? 2 : 3
+  // Escala de crecimiento (0.55..1): el árbol 3D solo crece mientras se practica,
+  // nunca encoge. En idle/done se muestra completo.
   const growScale = phase === 'idle' || phase === 'done' ? 1 : 0.55 + 0.45 * g
+  const heroAnimate = phase === 'running' || phase === 'done'
 
   const phrase = phase === 'idle' ? '¡Planten un árbol mientras practican!'
     : phase === 'paused' ? 'El arbolito espera…'
@@ -402,19 +173,19 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
         .ft-phrase{ font-size:13px; font-weight:600; color:rgba(255,255,255,.92); margin:16px 0 0; text-align:center; }
 
-        .ft-stage{ width:min(60vw,236px); height:min(60vw,236px); margin:14px auto 0; }
+        .ft-stage{ width:min(64vw,260px); height:min(64vw,260px); margin:10px auto 0; }
+        .ft-canvas-load{ width:100%; height:100%; }
         .ft-pop{ animation:ftPop .7s cubic-bezier(.34,1.56,.64,1) both; }
-        .ft-sway{ animation:ftSway 5s ease-in-out infinite; transform-box:fill-box; transform-origin:50% 100%; }
 
         .ft-time{ font-family:var(--font-display,inherit); font-weight:700; font-size:clamp(34px,9vw,46px);
-          letter-spacing:2px; color:#fff; font-variant-numeric:tabular-nums; line-height:1; margin-top:14px; }
+          letter-spacing:2px; color:#fff; font-variant-numeric:tabular-nums; line-height:1; margin-top:6px; }
         .ft-sub{ font-size:11.5px; color:rgba(255,255,255,.65); margin-top:5px; font-weight:600; }
 
         .ft-species{ display:flex; gap:12px; margin-top:14px; }
-        .ft-sp{ width:56px; border:none; background:transparent; cursor:pointer; font-family:inherit;
+        .ft-sp{ width:64px; border:none; background:transparent; cursor:pointer; font-family:inherit;
           display:flex; flex-direction:column; align-items:center; gap:4px; padding:0; }
-        .ft-sp-plate{ width:48px; height:48px; border-radius:50%; transition:all .2s;
-          border:2.5px solid transparent; }
+        .ft-sp-plate{ width:58px; height:58px; border-radius:50%; transition:all .2s; overflow:hidden;
+          background:rgba(255,255,255,.10); border:2.5px solid transparent; }
         .ft-sp.on .ft-sp-plate{ border-color:#FBF3D4; transform:scale(1.08); }
         .ft-sp span{ font-size:10px; font-weight:700; color:rgba(255,255,255,.75); }
         .ft-sp.on span{ color:#FBF3D4; }
@@ -424,17 +195,17 @@ export default function ForestTimer({ childId }: { childId: string }) {
           border:1.5px solid rgba(255,255,255,.35); background:rgba(255,255,255,.1); color:#fff;
           font-family:inherit; transition:all .15s; }
         .ft-chip.on{ background:#FBF3D4; color:#2f6b53; border-color:transparent; }
-        .ft-stepper{ display:flex; align-items:center; gap:8px; margin-top:12px;
-          background:rgba(0,0,0,.14); border-radius:14px; padding:5px 7px; }
-        .ft-step{ width:36px; height:36px; border-radius:11px; border:none; cursor:pointer;
+        .ft-stepper{ display:flex; align-items:center; gap:10px; margin-top:14px;
+          background:rgba(0,0,0,.16); border-radius:18px; padding:8px 12px; }
+        .ft-step{ width:42px; height:42px; border-radius:13px; border:none; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
           background:rgba(255,255,255,.16); color:#fff; transition:transform .15s; }
         .ft-step:active{ transform:scale(.9); }
-        .ft-numin{ width:44px; text-align:center; border:none; outline:none; background:transparent;
-          font-family:var(--font-display,inherit); font-weight:700; font-size:22px; color:#fff;
-          font-variant-numeric:tabular-nums; border-radius:8px; padding:2px 0; }
+        .ft-numin{ width:58px; text-align:center; border:none; outline:none; background:transparent;
+          font-family:var(--font-display,inherit); font-weight:700; font-size:clamp(28px,7vw,34px); color:#fff;
+          font-variant-numeric:tabular-nums; letter-spacing:1px; border-radius:8px; padding:2px 0; line-height:1; }
         .ft-numin:focus{ background:rgba(255,255,255,.14); }
-        .ft-colon{ font-weight:700; font-size:22px; color:rgba(255,255,255,.6); }
+        .ft-colon{ font-weight:700; font-size:clamp(28px,7vw,34px); color:rgba(255,255,255,.55); }
         .ft-hint{ font-size:9.5px; font-weight:700; color:rgba(255,255,255,.45); margin:6px 0 0; letter-spacing:.6px; text-transform:uppercase; }
 
         .ft-actions{ display:flex; gap:10px; margin-top:16px; width:100%; max-width:320px; }
@@ -453,11 +224,8 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-filter{ padding:6px 13px; border-radius:11px; font-size:11.5px; font-weight:700; cursor:pointer;
           border:none; background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); font-family:inherit; }
         .ft-filter.on{ background:#FBF3D4; color:#2f6b53; }
-        .ft-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:10px;
-          width:100%; margin-top:12px; }
-        .ft-cell{ display:flex; flex-direction:column; align-items:center; gap:3px; }
-        .ft-cell-plate{ width:100%; aspect-ratio:1; }
-        .ft-cell span{ font-size:9px; font-weight:600; color:rgba(255,255,255,.55); }
+        .ft-forest{ width:100%; height:min(74vw,400px); margin-top:10px; border-radius:18px; overflow:hidden;
+          background:linear-gradient(180deg,#bfe6c7 0%,#a6d9b0 100%); }
         .ft-empty{ text-align:center; padding:28px 16px; color:rgba(255,255,255,.75); font-size:13px; font-weight:600; }
 
         .ft-kpis{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; width:100%; margin-top:14px; }
@@ -470,7 +238,6 @@ export default function ForestTimer({ childId }: { childId: string }) {
         .ft-chart h4{ margin:0 0 10px; font-size:11px; font-weight:800; color:rgba(255,255,255,.7); letter-spacing:.4px; }
 
         @keyframes ftPop{ 0%{ transform:scale(.86) } 55%{ transform:scale(1.06) } 80%{ transform:scale(.985) } 100%{ transform:scale(1) } }
-        @keyframes ftSway{ 0%,100%{ transform:rotate(-1.3deg) } 50%{ transform:rotate(1.3deg) } }
       `}</style>
 
       <div className="ft-inner">
@@ -493,11 +260,10 @@ export default function ForestTimer({ childId }: { childId: string }) {
             <p className="ft-phrase">{phrase}</p>
 
             <div className={`ft-stage ${phase === 'done' ? 'ft-pop' : ''}`}>
-              <Plate sp={species} stage={stage} done={phase === 'done'}
-                alive={phase === 'running'} progress={g} growScale={growScale} />
+              <SingleTree3D species={species} grow={growScale} done={phase === 'done'} animate={heroAnimate} />
             </div>
 
-            <div className="ft-time">{phase === 'idle' ? fmt(totalSecs) : fmt(remaining)}</div>
+            {phase !== 'idle' && <div className="ft-time">{fmt(remaining)}</div>}
             {phase === 'running' && <p className="ft-sub">Si se rinden, el arbolito se marchitará</p>}
             {phase === 'idle' && <p className="ft-sub">Elige árbol y tiempo de práctica</p>}
 
@@ -507,7 +273,7 @@ export default function ForestTimer({ childId }: { childId: string }) {
                 {SPECIES.map(s => (
                   <button key={s.id} className={`ft-sp ${species === s.id ? 'on' : ''}`} onClick={() => pickSpecies(s.id)}>
                     <div className="ft-sp-plate">
-                      <Plate sp={s.id} stage={3} done={false} alive={false} />
+                      <SingleTree3D species={s.id} grow={1} animate={false} />
                     </div>
                     <span>{s.label}</span>
                   </button>
@@ -590,18 +356,11 @@ export default function ForestTimer({ childId }: { childId: string }) {
             </div>
             {filtered.length === 0 ? (
               <div className="ft-empty">
-                Aún no hay árboles aquí.<br />¡Planten el primero practicando juntos! 🌱
+                Aún no hay árboles aquí.<br />¡Planten el primero practicando juntos!
               </div>
             ) : (
-              <div className="ft-grid">
-                {filtered.map((it, i) => (
-                  <div key={`${it.t}-${i}`} className="ft-cell" title={`${Math.round(it.dur / 60)} min · ${new Date(it.t).toLocaleDateString('es-PE')}`}>
-                    <div className="ft-cell-plate">
-                      <Plate sp={it.sp} stage={3} done={it.ok} alive={false} withered={!it.ok} />
-                    </div>
-                    <span>{Math.max(1, Math.round(it.dur / 60))}m</span>
-                  </div>
-                ))}
+              <div className="ft-forest">
+                <Forest3D items={filtered.map(it => ({ species: it.sp, ok: it.ok }))} />
               </div>
             )}
             <p className="ft-sub" style={{ marginTop: 14 }}>

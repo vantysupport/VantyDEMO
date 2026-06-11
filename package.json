@@ -12,6 +12,9 @@
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.36.0",
     "@google/genai": "^1.41.0",
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
+    "three": "^0.172.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/ssr": "^0.8.0",
@@ -43,6 +46,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.172.0",
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
