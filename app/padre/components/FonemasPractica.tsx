@@ -10,18 +10,18 @@ import {
   Volume2, Mic, Check, ChevronLeft, ChevronRight, RotateCcw, Sparkles,
 } from 'lucide-react'
 
-type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; code: string; silabas: string; tip: string }
+export type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; code: string; silabas: string; tip: string; decir?: string }
 
 // Inventario fonético del español (vocales + consonantes frecuentes en terapia
 // de articulación). `silabas` es lo que se pronuncia al "escuchar el fonema".
 // `code` = codepoint Unicode → archivo de OpenMoji ({code}.svg). `emoji` queda
 // como respaldo si la imagen no carga. Se eligen ejemplos con ícono nítido.
-const FONEMAS: Fonema[] = [
-  { id: 'a',  letra: 'A a', ejemplo: 'Abeja',     emoji: '🐝', code: '1F41D', silabas: 'aaa',                 tip: 'Boca bien abierta' },
-  { id: 'e',  letra: 'E e', ejemplo: 'Elefante',  emoji: '🐘', code: '1F418', silabas: 'eee',                 tip: 'Sonríe un poquito' },
-  { id: 'i',  letra: 'I i', ejemplo: 'Iguana',    emoji: '🦎', code: '1F98E', silabas: 'iii',                 tip: 'Labios estirados' },
-  { id: 'o',  letra: 'O o', ejemplo: 'Oso',       emoji: '🐻', code: '1F43B', silabas: 'ooo',                 tip: 'Boca redonda' },
-  { id: 'u',  letra: 'U u', ejemplo: 'Uvas',      emoji: '🍇', code: '1F347', silabas: 'uuu',                 tip: 'Labios hacia adelante' },
+export const FONEMAS: Fonema[] = [
+  { id: 'a',  letra: 'A a', ejemplo: 'Abeja',     emoji: '🐝', code: '1F41D', silabas: 'aaa', decir: 'Abeja. a, a, a',     tip: 'Boca bien abierta' },
+  { id: 'e',  letra: 'E e', ejemplo: 'Elefante',  emoji: '🐘', code: '1F418', silabas: 'eee', decir: 'Elefante. e, e, e',  tip: 'Sonríe un poquito' },
+  { id: 'i',  letra: 'I i', ejemplo: 'Iguana',    emoji: '🦎', code: '1F98E', silabas: 'iii', decir: 'Iguana. i, i, i',    tip: 'Labios estirados' },
+  { id: 'o',  letra: 'O o', ejemplo: 'Oso',       emoji: '🐻', code: '1F43B', silabas: 'ooo', decir: 'Oso. o, o, o',       tip: 'Boca redonda' },
+  { id: 'u',  letra: 'U u', ejemplo: 'Uvas',      emoji: '🍇', code: '1F347', silabas: 'uuu', decir: 'Uvas. u, u, u',      tip: 'Labios hacia adelante' },
   { id: 'm',  letra: 'M m', ejemplo: 'Mono',      emoji: '🐵', code: '1F435', silabas: 'ma, me, mi, mo, mu',  tip: 'Labios juntos, mmm' },
   { id: 'p',  letra: 'P p', ejemplo: 'Pato',      emoji: '🦆', code: '1F986', silabas: 'pa, pe, pi, po, pu',  tip: 'Explota el aire con los labios' },
   { id: 'b',  letra: 'B b', ejemplo: 'Ballena',   emoji: '🐳', code: '1F433', silabas: 'ba, be, bi, bo, bu',  tip: 'Labios juntos con voz' },
@@ -43,9 +43,9 @@ const FONEMAS: Fonema[] = [
 ]
 
 // OpenMoji (CC BY-SA 4.0) — ilustraciones tipo sticker servidas por CDN.
-const OPENMOJI_BASE = 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.0.0/color/svg'
+export const OPENMOJI_BASE = 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.0.0/color/svg'
 
-function FonemaImg({ code, emoji, size }: { code: string; emoji: string; size: number }) {
+export function FonemaImg({ code, emoji, size }: { code: string; emoji: string; size: number }) {
   const [err, setErr] = useState(false)
   if (err) return <span style={{ fontSize: Math.round(size * 0.86), lineHeight: 1 }} aria-hidden>{emoji}</span>
   return (
@@ -79,6 +79,8 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   const [idx, setIdx] = useState(0)
   const [logrados, setLogrados] = useState<Set<string>>(new Set())
   const [hablando, setHablando] = useState(false)
+  const [customImgs, setCustomImgs] = useState<Record<string, { id: string; url: string }[]>>({})
+  const [galIdx, setGalIdx] = useState(0)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const tokenRef = useRef(0)
@@ -90,6 +92,16 @@ export default function FonemasPractica({ childId }: { childId: string }) {
     // Cargamos tras el montaje (no en el render) para evitar mismatch de hidratación SSR.
     setLogrados(new Set(loadLogrados(childId)))
   }, [childId])
+
+  // Cargar imágenes propias (repositorio del admin) — galería por fonema.
+  useEffect(() => {
+    let alive = true
+    fetch('/api/fonemas-imagenes')
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => { if (alive && j?.imagenes) setCustomImgs(j.imagenes) })
+      .catch(() => { /* sin imágenes propias → se usa OpenMoji */ })
+    return () => { alive = false }
+  }, [])
 
   // Cargar voces (algunos navegadores las entregan async)
   useEffect(() => {
@@ -161,6 +173,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
 
   const go = (d: number) => {
     setIdx(i => (i + d + FONEMAS.length) % FONEMAS.length)
+    setGalIdx(0)
     stopAudio()
   }
 
@@ -174,6 +187,10 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   }
 
   const esLogrado = logrados.has(f.id)
+  const customs = customImgs[f.id] || []
+  const hasCustom = customs.length > 0
+  const galPos = hasCustom ? ((galIdx % customs.length) + customs.length) % customs.length : 0
+  const curImg = hasCustom ? customs[galPos] : null
 
   return (
     <div className="fon-root">
@@ -189,7 +206,11 @@ export default function FonemasPractica({ childId }: { childId: string }) {
 
         .fon-card{ background:var(--c-surface,#fff); border:1.5px solid var(--c-border,#e2e8f0); border-radius:24px;
           padding:22px 18px 24px; box-shadow:0 10px 30px rgba(15,23,42,.06); text-align:center; position:relative; }
-        .fon-emoji{ height:96px; display:flex; align-items:center; justify-content:center; margin:2px 0 8px; }
+        .fon-emoji{ min-height:96px; display:flex; align-items:center; justify-content:center; margin:2px 0 8px; }
+        .fon-photo{ max-height:150px; max-width:80%; border-radius:16px; object-fit:contain; cursor:pointer; box-shadow:0 6px 18px rgba(15,23,42,.12); }
+        .fon-dots{ display:flex; gap:6px; justify-content:center; margin:-2px 0 6px; }
+        .fon-dot{ width:8px; height:8px; border-radius:50%; background:#cbd5e1; cursor:pointer; transition:all .15s; }
+        .fon-dot.on{ background:#0284c7; transform:scale(1.25); }
         .fon-letra{ font-family:var(--font-display,inherit); font-size:54px; font-weight:900; color:#0369a1; line-height:1; letter-spacing:1px; }
         .fon-word{ font-size:16px; font-weight:800; color:var(--c-text,#0f172a); margin-top:6px; }
         .fon-sil{ font-size:13px; font-weight:700; color:#0284c7; margin-top:4px; letter-spacing:.5px; }
@@ -242,14 +263,29 @@ export default function FonemasPractica({ childId }: { childId: string }) {
 
       {/* Tarjeta del fonema actual */}
       <div className="fon-card">
-        <div className="fon-emoji"><FonemaImg code={f.code} emoji={f.emoji} size={92} /></div>
+        <div className="fon-emoji">
+          {hasCustom ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="fon-photo" src={curImg!.url} alt={f.ejemplo} draggable={false}
+              onClick={() => { if (customs.length > 1) setGalIdx(i => i + 1) }} />
+          ) : (
+            <FonemaImg code={f.code} emoji={f.emoji} size={92} />
+          )}
+        </div>
+        {hasCustom && customs.length > 1 && (
+          <div className="fon-dots">
+            {customs.map((_, i) => (
+              <span key={i} className={`fon-dot ${i === galPos ? 'on' : ''}`} onClick={() => setGalIdx(i)} />
+            ))}
+          </div>
+        )}
         <div className="fon-letra">{f.letra}</div>
         <div className="fon-word">{f.ejemplo}</div>
         <div className="fon-sil">{f.silabas}</div>
         <div className="fon-tip"><Sparkles size={13} /> {f.tip}</div>
 
         <div className="fon-btns">
-          <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`} onClick={() => speak(f.silabas)}>
+          <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`} onClick={() => speak(f.decir ?? f.silabas)}>
             <Volume2 size={17} /> Escuchar fonema
           </button>
           <button className="fon-btn soft" onClick={() => speak(f.ejemplo)}>
@@ -272,13 +308,23 @@ export default function FonemasPractica({ childId }: { childId: string }) {
 
       {/* Selector rápido de todos los fonemas */}
       <div className="fon-grid">
-        {FONEMAS.map((x, i) => (
-          <button key={x.id} className={`fon-chip ${i === idx ? 'on' : ''}`} onClick={() => go(i - idx)} title={x.ejemplo}>
-            {logrados.has(x.id) && <span className="ok"><Check size={11} /></span>}
-            <span className="e"><FonemaImg code={x.code} emoji={x.emoji} size={24} /></span>
-            {x.letra.split(' ')[0]}
-          </button>
-        ))}
+        {FONEMAS.map((x, i) => {
+          const xc = customImgs[x.id] || []
+          return (
+            <button key={x.id} className={`fon-chip ${i === idx ? 'on' : ''}`} onClick={() => go(i - idx)} title={x.ejemplo}>
+              {logrados.has(x.id) && <span className="ok"><Check size={11} /></span>}
+              <span className="e">
+                {xc[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={xc[0].url} alt="" width={24} height={24} style={{ objectFit: 'cover', borderRadius: 6 }} />
+                ) : (
+                  <FonemaImg code={x.code} emoji={x.emoji} size={24} />
+                )}
+              </span>
+              {x.letra.split(' ')[0]}
+            </button>
+          )
+        })}
       </div>
 
       {logrados.size > 0 && (

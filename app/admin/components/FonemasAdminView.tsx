@@ -1,0 +1,148 @@
+'use client'
+// app/admin/components/FonemasAdminView.tsx
+// Apartado "Fonemas" para el centro: vista previa de la actividad + repositorio
+// de imágenes (galería por fonema). El admin pega URLs de imágenes; las familias
+// las ven en Practicar en Casa → Fonemas. Sin imágenes propias → sticker OpenMoji.
+
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useToast } from '@/components/Toast'
+import { Mic, Plus, Trash2, Loader2, Eye, EyeOff, Images } from 'lucide-react'
+import FonemasPractica, { FONEMAS, FonemaImg } from '@/app/padre/components/FonemasPractica'
+
+type ImgRow = { id: string; url: string }
+
+export default function FonemasAdminView() {
+  const toast = useToast()
+  const [imgs, setImgs] = useState<Record<string, ImgRow[]>>({})
+  const [inputs, setInputs] = useState<Record<string, string>>({})
+  const [busy, setBusy] = useState<string | null>(null)
+  const [preview, setPreview] = useState(false)
+
+  const load = async () => {
+    try {
+      const r = await fetch('/api/fonemas-imagenes')
+      const j = await r.json()
+      setImgs(j?.imagenes || {})
+    } catch { /* noop */ }
+  }
+  useEffect(() => { load() }, [])
+
+  const getToken = async () => (await supabase.auth.getSession()).data.session?.access_token || ''
+
+  const add = async (fid: string) => {
+    const url = (inputs[fid] || '').trim()
+    if (!url) return
+    if (!/^https?:\/\//i.test(url)) { toast.error('La URL debe empezar con http:// o https://'); return }
+    setBusy(fid + ':add')
+    try {
+      const token = await getToken()
+      const r = await fetch('/api/fonemas-imagenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'agregar', fonema_id: fid, url }),
+      })
+      const j = await r.json()
+      if (!r.ok) { toast.error(j.error || 'Error al agregar'); return }
+      setInputs(s => ({ ...s, [fid]: '' }))
+      await load()
+      toast.success('Imagen agregada')
+    } catch { toast.error('Error de red') } finally { setBusy(null) }
+  }
+
+  const del = async (id: string) => {
+    setBusy(id)
+    try {
+      const token = await getToken()
+      const r = await fetch('/api/fonemas-imagenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'eliminar', id }),
+      })
+      if (!r.ok) { const j = await r.json().catch(() => ({})); toast.error(j.error || 'Error al eliminar'); return }
+      await load()
+    } catch { toast.error('Error de red') } finally { setBusy(null) }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-4">
+        <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <Mic size={20} /> Fonemas
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Actividad de fonemas y repositorio de imágenes. Las imágenes que agregues aquí se muestran a las
+          familias como galería por fonema. Si un fonema no tiene imágenes propias, se usa el sticker por defecto.
+        </p>
+      </div>
+
+      <button
+        onClick={() => setPreview(p => !p)}
+        className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-sky-700 dark:text-sky-400">
+        {preview ? <EyeOff size={15} /> : <Eye size={15} />}
+        {preview ? 'Ocultar vista previa' : 'Ver la actividad (vista previa)'}
+      </button>
+
+      {preview && (
+        <div className="mb-6">
+          <FonemasPractica childId="admin-preview" />
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 mb-3 text-slate-600 dark:text-slate-300">
+        <Images size={16} />
+        <h2 className="text-sm font-extrabold">Repositorio de imágenes</h2>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        {FONEMAS.map(f => {
+          const list = imgs[f.id] || []
+          return (
+            <div key={f.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-800">
+              <div className="flex items-center gap-2 mb-2">
+                <FonemaImg code={f.code} emoji={f.emoji} size={30} />
+                <div className="min-w-0">
+                  <p className="font-bold text-sm text-slate-700 dark:text-slate-100 leading-tight">{f.letra}</p>
+                  <p className="text-xs text-slate-400 truncate">{f.ejemplo}</p>
+                </div>
+                <span className="ml-auto text-[11px] font-bold text-slate-400">{list.length} img</span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-2">
+                {list.map(im => (
+                  <div key={im.id} className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-600">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={im.url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => del(im.id)} disabled={busy === im.id}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center shadow"
+                      title="Eliminar">
+                      {busy === im.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                    </button>
+                  </div>
+                ))}
+                {list.length === 0 && (
+                  <span className="text-xs text-slate-400 italic py-2">Sin imágenes propias — se usa el sticker por defecto.</span>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  value={inputs[f.id] || ''}
+                  onChange={e => setInputs(s => ({ ...s, [f.id]: e.target.value }))}
+                  onKeyDown={e => { if (e.key === 'Enter') add(f.id) }}
+                  placeholder="Pega la URL de una imagen (https://…)"
+                  className="flex-1 min-w-0 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 outline-none focus:border-sky-400" />
+                <button
+                  onClick={() => add(f.id)} disabled={busy === f.id + ':add'}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold disabled:opacity-50 shrink-0">
+                  {busy === f.id + ':add' ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Agregar
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

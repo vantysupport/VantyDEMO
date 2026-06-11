@@ -13,7 +13,7 @@ import {
   LayoutDashboard, Users, LogOut, Bell, Brain, Calendar, BookOpen, MessageCircle,
   X, User, FileText, Loader2, Key, BarChart3, ShieldCheck, Upload,
   ChevronRight, Settings, Crown, Stethoscope, ShoppingBag, Activity,
-  Database, Sparkles, Zap, Maximize2, Minimize2, Minus, DollarSign
+  Database, Sparkles, Zap, Maximize2, Minimize2, Minus, DollarSign, Mic
 } from 'lucide-react'
 
 import AnalyticsDashboard from '@/components/AnalyticsDashboard'
@@ -42,6 +42,7 @@ import ARIAFloatingChat from './components/ARIAFloatingChat'
 import ChatEspecialistas from './components/ChatEspecialistas'
 import AdminPagos from './components/AdminPagos'
 import AdminReportesFinancieros from './components/AdminReportesFinancieros'
+import FonemasAdminView from './components/FonemasAdminView'
 
 // Roles: 'jefe'|'admin' ven todo. 'especialista'/'terapeuta' NO ven agenda ni tienda.
 
@@ -120,6 +121,7 @@ export default function AdminDashboard() {
     { id: 'agenda',       icon: Calendar,        label: t('nav.agenda'),          roles: ['jefe','admin'] },
     { id: 'ninos',        icon: Users,           label: t('nav.pacientes'),       roles: ['jefe','admin','especialista','terapeuta'] },
     { id: 'inteligencia', icon: Zap,             label: t('nav.hub'),             roles: ['jefe','admin','especialista'] },
+    { id: 'fonemas',      icon: Mic,             label: 'Fonemas',                roles: ['jefe','admin','especialista','terapeuta'] },
     { id: 'cerebro',      icon: Database,        label: t('nav.cerebro'),         roles: ['jefe','admin'] },
     { id: 'pagos',        icon: DollarSign,      label: 'Pagos',                  roles: ['jefe','admin'] },
     { id: 'reportes-financieros', icon: BarChart3, label: 'Reportes Financieros', roles: ['jefe'] },
@@ -554,6 +556,7 @@ export default function AdminDashboard() {
               )}
               {currentView === 'cerebro'      && <KnowledgeBaseView />}
               {currentView === 'inteligencia' && <InteligenciaHubView />}
+              {currentView === 'fonemas'      && <FonemasAdminView />}
               {currentView === 'pagos'        && <AdminPagos profile={userProfile} />}
               {currentView === 'reportes-financieros' && <AdminReportesFinancieros />}
 
