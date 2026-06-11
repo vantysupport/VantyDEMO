@@ -6,10 +6,11 @@ import { supabase } from '@/lib/supabase'
 import {
   Brain, CheckCircle, Circle, Clock, ChevronDown,
   Sparkles, Heart, Target, Loader2, RefreshCw, TrendingUp, Trophy,
-  Zap, Star, MessageCircle, Users, Pin, ClipboardList, Trees
+  Zap, Star, MessageCircle, Users, Pin, ClipboardList, Trees, Mic
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeContext'
 import ForestTimer from './ForestTimer'
+import FonemasPractica from './FonemasPractica'
 
 interface Actividad {
   titulo: string; descripcion: string; duracion_minutos: number
@@ -53,7 +54,7 @@ export default function EngagementView({ childId }: { childId: string }) {
   const [generando, setGenerando] = useState(false)
   const [expanded, setExpanded] = useState<number|null>(null)
   const [completadas, setCompletadas] = useState<Set<number>>(new Set())
-  const [seccion, setSeccion] = useState<'plan'|'bosque'>('plan')
+  const [seccion, setSeccion] = useState<'plan'|'bosque'|'fonemas'>('plan')
   const [saving, setSaving] = useState<number|null>(null)
   const saveTimeout = useRef<ReturnType<typeof setTimeout>|null>(null)
 
@@ -244,16 +245,17 @@ export default function EngagementView({ childId }: { childId: string }) {
       {/* ── Selector de sección ── */}
       <div className="eng-card" style={{ display:'flex',gap:6,background:'var(--c-surface)',border:'1.5px solid var(--c-border)',borderRadius:16,padding:5 }}>
         {([
-          { id:'plan',   label:'Plan semanal', Icon:ClipboardList },
-          { id:'bosque', label:'Modo Bosque',  Icon:Trees },
+          { id:'plan',    label:'Plan semanal', Icon:ClipboardList },
+          { id:'bosque',  label:'Modo Bosque',  Icon:Trees },
+          { id:'fonemas', label:'Fonemas',      Icon:Mic },
         ] as const).map(({ id, label, Icon }) => (
           <button key={id} onClick={() => setSeccion(id)}
             style={{ flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'10px 8px',
               borderRadius:12,border:'none',cursor:'pointer',fontFamily:'inherit',fontSize:13,fontWeight:800,
               transition:'all .2s',
-              background: seccion===id ? (id==='bosque' ? 'linear-gradient(135deg,#16a34a,#15803d)' : 'linear-gradient(135deg,#0369a1,#0284c7)') : 'transparent',
+              background: seccion===id ? (id==='bosque' ? 'linear-gradient(135deg,#16a34a,#15803d)' : id==='fonemas' ? 'linear-gradient(135deg,#0e7490,#06b6d4)' : 'linear-gradient(135deg,#0369a1,#0284c7)') : 'transparent',
               color: seccion===id ? '#fff' : 'var(--c-text-muted)',
-              boxShadow: seccion===id ? (id==='bosque' ? '0 6px 16px rgba(22,163,74,.3)' : '0 6px 16px rgba(2,132,199,.3)') : 'none' }}>
+              boxShadow: seccion===id ? (id==='bosque' ? '0 6px 16px rgba(22,163,74,.3)' : id==='fonemas' ? '0 6px 16px rgba(6,182,212,.3)' : '0 6px 16px rgba(2,132,199,.3)') : 'none' }}>
             <Icon size={15}/>{label}
           </button>
         ))}
@@ -261,6 +263,9 @@ export default function EngagementView({ childId }: { childId: string }) {
 
       {/* ── SECCIÓN: MODO BOSQUE ── */}
       {seccion === 'bosque' && <ForestTimer childId={childId} />}
+
+      {/* ── SECCIÓN: FONEMAS ── */}
+      {seccion === 'fonemas' && <FonemasPractica childId={childId} />}
 
       {/* ── SECCIÓN: PLAN SEMANAL ── */}
       {seccion === 'plan' && <>
