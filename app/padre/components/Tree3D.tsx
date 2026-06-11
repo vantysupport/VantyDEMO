@@ -61,15 +61,15 @@ function Apple({ p }: { p: [number, number, number] }) {
   return (
     <group position={p}>
       <mesh castShadow>
-        <sphereGeometry args={[0.13, 12, 12]} />
-        <meshStandardMaterial color="#e0392f" roughness={0.5} />
+        <sphereGeometry args={[0.17, 14, 14]} />
+        <meshStandardMaterial color="#e23a2f" roughness={0.4} />
       </mesh>
-      <mesh position={[0, 0.14, 0]}>
-        <cylinderGeometry args={[0.012, 0.012, 0.08, 5]} />
+      <mesh position={[0, 0.18, 0]}>
+        <cylinderGeometry args={[0.015, 0.015, 0.1, 5]} />
         <meshStandardMaterial color="#5a3b2c" roughness={1} />
       </mesh>
-      <mesh position={[0.06, 0.16, 0]} rotation={[0, 0, -0.7]}>
-        <sphereGeometry args={[0.05, 6, 6]} />
+      <mesh position={[0.08, 0.2, 0]} rotation={[0, 0, -0.7]}>
+        <sphereGeometry args={[0.07, 6, 6]} />
         <meshStandardMaterial color="#4f9a45" roughness={1} flatShading />
       </mesh>
     </group>
@@ -79,20 +79,20 @@ function Apple({ p }: { p: [number, number, number] }) {
 function Cherries({ p }: { p: [number, number, number] }) {
   return (
     <group position={p}>
-      <mesh position={[-0.08, -0.18, 0]} castShadow>
-        <sphereGeometry args={[0.075, 10, 10]} />
-        <meshStandardMaterial color="#c41e3a" roughness={0.45} />
+      <mesh position={[-0.11, -0.24, 0]} castShadow>
+        <sphereGeometry args={[0.105, 12, 12]} />
+        <meshStandardMaterial color="#c41e3a" roughness={0.38} />
       </mesh>
-      <mesh position={[0.08, -0.2, 0.02]} castShadow>
-        <sphereGeometry args={[0.075, 10, 10]} />
-        <meshStandardMaterial color="#c41e3a" roughness={0.45} />
+      <mesh position={[0.11, -0.26, 0.02]} castShadow>
+        <sphereGeometry args={[0.105, 12, 12]} />
+        <meshStandardMaterial color="#c41e3a" roughness={0.38} />
       </mesh>
-      <mesh position={[-0.04, -0.05, 0]} rotation={[0, 0, 0.5]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.22, 4]} />
+      <mesh position={[-0.05, -0.07, 0]} rotation={[0, 0, 0.5]}>
+        <cylinderGeometry args={[0.01, 0.01, 0.3, 4]} />
         <meshStandardMaterial color="#4f7a35" roughness={1} />
       </mesh>
-      <mesh position={[0.04, -0.06, 0.01]} rotation={[0, 0, -0.5]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.22, 4]} />
+      <mesh position={[0.05, -0.08, 0.01]} rotation={[0, 0, -0.5]}>
+        <cylinderGeometry args={[0.01, 0.01, 0.3, 4]} />
         <meshStandardMaterial color="#4f7a35" roughness={1} />
       </mesh>
     </group>
@@ -183,19 +183,23 @@ function TreeBody({ species, fruit }: { species: Species3D; fruit: boolean }) {
       <Foliage blobs={blobs} light={f.light} dark={f.dark} />
       {species === 'manzano' && (
         <>
-          <Apple p={[0.55, 1.45, 0.45]} />
-          <Apple p={[-0.6, 1.5, 0.1]} />
-          <Apple p={[0.2, 1.35, -0.6]} />
-          {fruit && <Apple p={[-0.3, 1.7, 0.55]} />}
-          {fruit && <Apple p={[0.45, 1.85, -0.25]} />}
+          <Apple p={[0.66, 1.5, 0.62]} />
+          <Apple p={[0.78, 1.78, -0.02]} />
+          <Apple p={[-0.6, 1.58, 0.58]} />
+          <Apple p={[0.12, 1.38, 0.82]} />
+          <Apple p={[-0.28, 1.74, -0.66]} />
+          {fruit && <Apple p={[0.4, 2.0, 0.3]} />}
+          {fruit && <Apple p={[-0.66, 1.82, -0.18]} />}
         </>
       )}
       {species === 'cerezo' && (
         <>
-          <Cherries p={[0.5, 1.45, 0.4]} />
-          <Cherries p={[-0.5, 1.5, 0.15]} />
-          <Cherries p={[0.15, 1.4, -0.5]} />
-          {fruit && <Cherries p={[-0.2, 1.6, 0.5]} />}
+          <Cherries p={[0.58, 1.5, 0.52]} />
+          <Cherries p={[-0.54, 1.55, 0.34]} />
+          <Cherries p={[0.24, 1.42, -0.55]} />
+          <Cherries p={[-0.2, 1.5, 0.62]} />
+          <Cherries p={[0.5, 1.6, -0.16]} />
+          {fruit && <Cherries p={[-0.5, 1.66, -0.3]} />}
         </>
       )}
     </group>
@@ -221,7 +225,85 @@ function Withered() {
   )
 }
 
-// Árbol con balanceo + escala de crecimiento (anclada a la base y=0)
+// ── Etapas de crecimiento: semilla → brote → arbolito → árbol ───────────────
+function Seed() {
+  return (
+    <group>
+      <mesh position={[0, 0.1, 0]} scale={[1, 0.7, 1]} castShadow>
+        <sphereGeometry args={[0.17, 10, 10]} />
+        <meshStandardMaterial color="#7a5230" roughness={1} />
+      </mesh>
+      <mesh position={[0, 0.28, 0]}>
+        <coneGeometry args={[0.06, 0.18, 6]} />
+        <meshStandardMaterial color="#6fbf4f" roughness={1} flatShading />
+      </mesh>
+    </group>
+  )
+}
+
+function Sprout() {
+  return (
+    <group>
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <cylinderGeometry args={[0.03, 0.05, 0.6, 6]} />
+        <meshStandardMaterial color="#4d9b46" roughness={1} />
+      </mesh>
+      <mesh position={[-0.16, 0.46, 0]} rotation={[0, 0, 0.7]} scale={[1, 0.55, 1]} castShadow>
+        <sphereGeometry args={[0.17, 8, 8]} />
+        <meshStandardMaterial color="#6fbf4f" roughness={1} flatShading />
+      </mesh>
+      <mesh position={[0.16, 0.56, 0]} rotation={[0, 0, -0.7]} scale={[1, 0.55, 1]} castShadow>
+        <sphereGeometry args={[0.17, 8, 8]} />
+        <meshStandardMaterial color="#5aa845" roughness={1} flatShading />
+      </mesh>
+    </group>
+  )
+}
+
+function Sapling({ species }: { species: Species3D }) {
+  const f = FOLIAGE[species]
+  if (species === 'pino') {
+    return (
+      <group>
+        <Trunk color={TRUNK.pino} h={0.42} r={0.08} />
+        <mesh position={[0, 0.82, 0]} castShadow>
+          <coneGeometry args={[0.5, 1.0, 10]} />
+          <meshStandardMaterial color={f.dark} roughness={1} flatShading />
+        </mesh>
+        <mesh position={[0, 1.3, 0]} castShadow>
+          <coneGeometry args={[0.34, 0.7, 10]} />
+          <meshStandardMaterial color={f.light} roughness={1} flatShading />
+        </mesh>
+      </group>
+    )
+  }
+  return (
+    <group>
+      <Trunk color={TRUNK[species]} h={0.6} r={0.09} />
+      <mesh position={[0, 1.0, 0]} castShadow>
+        <icosahedronGeometry args={[0.5, 1]} />
+        <meshStandardMaterial color={f.light} roughness={1} flatShading />
+      </mesh>
+      <mesh position={[-0.32, 0.82, 0.05]} castShadow>
+        <icosahedronGeometry args={[0.32, 1]} />
+        <meshStandardMaterial color={f.dark} roughness={1} flatShading />
+      </mesh>
+      <mesh position={[0.32, 0.84, -0.05]} castShadow>
+        <icosahedronGeometry args={[0.32, 1]} />
+        <meshStandardMaterial color={f.light} roughness={1} flatShading />
+      </mesh>
+    </group>
+  )
+}
+
+function StageGeometry({ species, grow, fruit }: { species: Species3D; grow: number; fruit: boolean }) {
+  if (grow < 0.10) return <Seed />
+  if (grow < 0.32) return <Sprout />
+  if (grow < 0.62) return <Sapling species={species} />
+  return <TreeBody species={species} fruit={fruit} />
+}
+
+// Árbol con balanceo + crecimiento por etapas (anclado a la base y=0)
 function Tree({
   species, grow = 1, fruit = false, withered = false, swayPhase = 0, animate = true,
 }: {
@@ -229,11 +311,14 @@ function Tree({
   swayPhase?: number; animate?: boolean
 }) {
   const g = useRef<THREE.Group>(null)
-  const scaleRef = useRef(grow)
+  const sRef = useRef(animate ? 0 : 1)
   useFrame((state, dt) => {
     if (!g.current) return
-    scaleRef.current += (grow - scaleRef.current) * Math.min(1, dt * 3)
-    const s = Math.max(0.12, scaleRef.current)
+    // dentro de la etapa "árbol" sigue creciendo suave 0.82 → 1
+    const target = grow < 0.62 ? 1 : 0.82 + 0.18 * Math.min(1, (grow - 0.62) / 0.38)
+    if (animate) sRef.current += (target - sRef.current) * Math.min(1, dt * 2.5)
+    else sRef.current = target
+    const s = Math.max(0.05, sRef.current)
     g.current.scale.set(s, s, s)
     if (animate && !withered) {
       g.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.1 + swayPhase) * 0.025
@@ -241,7 +326,7 @@ function Tree({
   })
   return (
     <group ref={g}>
-      {withered ? <Withered /> : <TreeBody species={species} fruit={fruit} />}
+      {withered ? <Withered /> : <StageGeometry species={species} grow={grow} fruit={fruit} />}
     </group>
   )
 }
@@ -285,10 +370,10 @@ export function SingleTree3D({
       dpr={[1, 2]}
       shadows
       frameloop={animate ? 'always' : 'demand'}
-      camera={{ position: [2.4, 2.4, 4.2], fov: 34 }}
+      camera={{ position: [3.0, 3.1, 7.0], fov: 30 }}
       gl={{ antialias: true, alpha: true }}
       style={{ width: '100%', height: '100%' }}
-      onCreated={({ camera }) => camera.lookAt(0, 1.25, 0)}
+      onCreated={({ camera }) => camera.lookAt(0, 1.45, 0)}
     >
       <Lights />
       <SoilPot />

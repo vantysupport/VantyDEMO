@@ -118,9 +118,9 @@ export default function ForestTimer({ childId }: { childId: string }) {
 
   const g = phase === 'idle' ? 0 : phase === 'done' ? 1 : Math.min(1, Math.max(0, 1 - remaining / total))
 
-  // Escala de crecimiento (0.55..1): el árbol 3D solo crece mientras se practica,
-  // nunca encoge. En idle/done se muestra completo.
-  const growScale = phase === 'idle' || phase === 'done' ? 1 : 0.55 + 0.45 * g
+  // Progreso de crecimiento (0..1): semilla → brote → arbolito → árbol mientras
+  // se practica. En idle/done se muestra el árbol completo.
+  const heroGrow = phase === 'idle' || phase === 'done' ? 1 : g
   const heroAnimate = phase === 'running' || phase === 'done'
 
   const phrase = phase === 'idle' ? '¡Planten un árbol mientras practican!'
@@ -260,7 +260,7 @@ export default function ForestTimer({ childId }: { childId: string }) {
             <p className="ft-phrase">{phrase}</p>
 
             <div className={`ft-stage ${phase === 'done' ? 'ft-pop' : ''}`}>
-              <SingleTree3D species={species} grow={growScale} done={phase === 'done'} animate={heroAnimate} />
+              <SingleTree3D species={species} grow={heroGrow} done={phase === 'done'} animate={heroAnimate} />
             </div>
 
             {phase !== 'idle' && <div className="ft-time">{fmt(remaining)}</div>}
