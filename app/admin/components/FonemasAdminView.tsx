@@ -10,12 +10,12 @@ import { useToast } from '@/components/Toast'
 import { Mic, Plus, Trash2, Loader2, Eye, EyeOff, Images } from 'lucide-react'
 import FonemasPractica, { FONEMAS, FonemaImg } from '@/app/padre/components/FonemasPractica'
 
-type ImgRow = { id: string; url: string }
+type ImgRow = { id: string; url: string; label?: string }
 
 export default function FonemasAdminView() {
   const toast = useToast()
   const [imgs, setImgs] = useState<Record<string, ImgRow[]>>({})
-  const [inputs, setInputs] = useState<Record<string, string>>({})
+  const [inputs, setInputs] = useState<Record<string, { label: string; url: string }>>({})
   const [busy, setBusy] = useState<string | null>(null)
   const [preview, setPreview] = useState(false)
 
@@ -31,7 +31,9 @@ export default function FonemasAdminView() {
   const getToken = async () => (await supabase.auth.getSession()).data.session?.access_token || ''
 
   const add = async (fid: string) => {
-    const url = (inputs[fid] || '').trim()
+    const entry = inputs[fid] || { label: '', url: '' }
+    const url = entry.url.trim()
+    const label = entry.label.trim()
     if (!url) return
     if (!/^https?:\/\//i.test(url)) { toast.error('La URL debe empezar con http:// o https://'); return }
     setBusy(fid + ':add')
@@ -40,11 +42,11 @@ export default function FonemasAdminView() {
       const r = await fetch('/api/fonemas-imagenes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'agregar', fonema_id: fid, url }),
+        body: JSON.stringify({ action: 'agregar', fonema_id: fid, url, label }),
       })
       const j = await r.json()
       if (!r.ok) { toast.error(j.error || 'Error al agregar'); return }
-      setInputs(s => ({ ...s, [fid]: '' }))
+      setInputs(s => ({ ...s, [fid]: { label: '', url: '' } }))
       await load()
       toast.success('Imagen agregada')
     } catch { toast.error('Error de red') } finally { setBusy(null) }
@@ -110,15 +112,20 @@ export default function FonemasAdminView() {
 
               <div className="flex flex-wrap gap-2 mb-2">
                 {list.map(im => (
-                  <div key={im.id} className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-600">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={im.url} alt="" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => del(im.id)} disabled={busy === im.id}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center shadow"
-                      title="Eliminar">
-                      {busy === im.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                    </button>
+                  <div key={im.id} className="flex flex-col items-center gap-1 w-12">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-600">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={im.url} alt={im.label || ''} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => del(im.id)} disabled={busy === im.id}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center shadow"
+                        title="Eliminar">
+                        {busy === im.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                      </button>
+                    </div>
+                    <span className="text-[10px] leading-tight text-center text-slate-500 dark:text-slate-400 w-full truncate" title={im.label || ''}>
+                      {im.label || '—'}
+                    </span>
                   </div>
                 ))}
                 {list.length === 0 && (
@@ -126,18 +133,25 @@ export default function FonemasAdminView() {
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <input
-                  value={inputs[f.id] || ''}
-                  onChange={e => setInputs(s => ({ ...s, [f.id]: e.target.value }))}
-                  onKeyDown={e => { if (e.key === 'Enter') add(f.id) }}
-                  placeholder="Pega la URL de una imagen (https://…)"
-                  className="flex-1 min-w-0 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 outline-none focus:border-sky-400" />
-                <button
-                  onClick={() => add(f.id)} disabled={busy === f.id + ':add'}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold disabled:opacity-50 shrink-0">
-                  {busy === f.id + ':add' ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Agregar
-                </button>
+                  value={inputs[f.id]?.label || ''}
+                  onChange={e => setInputs(s => ({ ...s, [f.id]: { label: e.target.value, url: s[f.id]?.url || '' } }))}
+                  placeholder="Etiqueta / palabra que dirá (ej. Avión)"
+                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 outline-none focus:border-sky-400" />
+                <div className="flex gap-2">
+                  <input
+                    value={inputs[f.id]?.url || ''}
+                    onChange={e => setInputs(s => ({ ...s, [f.id]: { url: e.target.value, label: s[f.id]?.label || '' } }))}
+                    onKeyDown={e => { if (e.key === 'Enter') add(f.id) }}
+                    placeholder="URL de la imagen (https://…)"
+                    className="flex-1 min-w-0 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 outline-none focus:border-sky-400" />
+                  <button
+                    onClick={() => add(f.id)} disabled={busy === f.id + ':add'}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold disabled:opacity-50 shrink-0">
+                    {busy === f.id + ':add' ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Agregar
+                  </button>
+                </div>
               </div>
             </div>
           )

@@ -23,13 +23,13 @@ async function requireStaff(req: NextRequest): Promise<boolean> {
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('fonema_imagenes')
-    .select('id, fonema_id, url, orden')
+    .select('id, fonema_id, url, label, orden')
     .order('orden', { ascending: true })
     .order('created_at', { ascending: true })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  const imagenes: Record<string, { id: string; url: string }[]> = {}
-  for (const row of (data || []) as { id: string; fonema_id: string; url: string }[]) {
-    (imagenes[row.fonema_id] ||= []).push({ id: row.id, url: row.url })
+  const imagenes: Record<string, { id: string; url: string; label: string }[]> = {}
+  for (const row of (data || []) as { id: string; fonema_id: string; url: string; label: string | null }[]) {
+    (imagenes[row.fonema_id] ||= []).push({ id: row.id, url: row.url, label: row.label || '' })
   }
   return NextResponse.json({ imagenes })
 }
@@ -38,20 +38,21 @@ export async function POST(req: NextRequest) {
   if (!(await requireStaff(req))) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
-  let body: { action?: string; fonema_id?: string; url?: string; id?: string }
+  let body: { action?: string; fonema_id?: string; url?: string; label?: string; id?: string }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'JSON inválido' }, { status: 400 }) }
   const action = body?.action
 
   if (action === 'agregar') {
     const fonema_id = String(body.fonema_id || '').trim()
     const url = String(body.url || '').trim()
+    const label = String(body.label || '').trim().slice(0, 60)
     if (!fonema_id || !/^https?:\/\//i.test(url)) {
       return NextResponse.json({ error: 'Datos inválidos (la URL debe empezar con http:// o https://)' }, { status: 400 })
     }
     const { data, error } = await supabaseAdmin
       .from('fonema_imagenes')
-      .insert({ fonema_id, url })
-      .select('id, fonema_id, url')
+      .insert({ fonema_id, url, label: label || null })
+      .select('id, fonema_id, url, label')
       .single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true, row: data })

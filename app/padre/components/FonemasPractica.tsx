@@ -10,18 +10,18 @@ import {
   Volume2, Mic, Check, ChevronLeft, ChevronRight, RotateCcw, Sparkles,
 } from 'lucide-react'
 
-export type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; code: string; silabas: string; tip: string; decir?: string }
+export type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; code: string; silabas: string; tip: string }
 
 // Inventario fonético del español (vocales + consonantes frecuentes en terapia
 // de articulación). `silabas` es lo que se pronuncia al "escuchar el fonema".
 // `code` = codepoint Unicode → archivo de OpenMoji ({code}.svg). `emoji` queda
 // como respaldo si la imagen no carga. Se eligen ejemplos con ícono nítido.
 export const FONEMAS: Fonema[] = [
-  { id: 'a',  letra: 'A a', ejemplo: 'Abeja',     emoji: '🐝', code: '1F41D', silabas: 'aaa', decir: 'Abeja. a, a, a',     tip: 'Boca bien abierta' },
-  { id: 'e',  letra: 'E e', ejemplo: 'Elefante',  emoji: '🐘', code: '1F418', silabas: 'eee', decir: 'Elefante. e, e, e',  tip: 'Sonríe un poquito' },
-  { id: 'i',  letra: 'I i', ejemplo: 'Iguana',    emoji: '🦎', code: '1F98E', silabas: 'iii', decir: 'Iguana. i, i, i',    tip: 'Labios estirados' },
-  { id: 'o',  letra: 'O o', ejemplo: 'Oso',       emoji: '🐻', code: '1F43B', silabas: 'ooo', decir: 'Oso. o, o, o',       tip: 'Boca redonda' },
-  { id: 'u',  letra: 'U u', ejemplo: 'Uvas',      emoji: '🍇', code: '1F347', silabas: 'uuu', decir: 'Uvas. u, u, u',      tip: 'Labios hacia adelante' },
+  { id: 'a',  letra: 'A a', ejemplo: 'Abeja',     emoji: '🐝', code: '1F41D', silabas: 'aaa', tip: 'Boca bien abierta' },
+  { id: 'e',  letra: 'E e', ejemplo: 'Elefante',  emoji: '🐘', code: '1F418', silabas: 'eee', tip: 'Sonríe un poquito' },
+  { id: 'i',  letra: 'I i', ejemplo: 'Iguana',    emoji: '🦎', code: '1F98E', silabas: 'iii', tip: 'Labios estirados' },
+  { id: 'o',  letra: 'O o', ejemplo: 'Oso',       emoji: '🐻', code: '1F43B', silabas: 'ooo', tip: 'Boca redonda' },
+  { id: 'u',  letra: 'U u', ejemplo: 'Uvas',      emoji: '🍇', code: '1F347', silabas: 'uuu', tip: 'Labios hacia adelante' },
   { id: 'm',  letra: 'M m', ejemplo: 'Mono',      emoji: '🐵', code: '1F435', silabas: 'ma, me, mi, mo, mu',  tip: 'Labios juntos, mmm' },
   { id: 'p',  letra: 'P p', ejemplo: 'Pato',      emoji: '🦆', code: '1F986', silabas: 'pa, pe, pi, po, pu',  tip: 'Explota el aire con los labios' },
   { id: 'b',  letra: 'B b', ejemplo: 'Ballena',   emoji: '🐳', code: '1F433', silabas: 'ba, be, bi, bo, bu',  tip: 'Labios juntos con voz' },
@@ -79,7 +79,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   const [idx, setIdx] = useState(0)
   const [logrados, setLogrados] = useState<Set<string>>(new Set())
   const [hablando, setHablando] = useState(false)
-  const [customImgs, setCustomImgs] = useState<Record<string, { id: string; url: string }[]>>({})
+  const [customImgs, setCustomImgs] = useState<Record<string, { id: string; url: string; label?: string }[]>>({})
   const [galIdx, setGalIdx] = useState(0)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -191,6 +191,13 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   const hasCustom = customs.length > 0
   const galPos = hasCustom ? ((galIdx % customs.length) + customs.length) % customs.length : 0
   const curImg = hasCustom ? customs[galPos] : null
+  // La palabra y el audio siguen la ETIQUETA de la imagen actual; si no tiene
+  // etiqueta (o no hay imagen propia), se usa el ejemplo por defecto del fonema.
+  const currentWord = (curImg?.label && curImg.label.trim()) ? curImg.label.trim() : f.ejemplo
+  const isVowel = ['a', 'e', 'i', 'o', 'u'].includes(f.id)
+  // En vocales anclamos el idioma con una palabra española antes del sonido,
+  // así "aaa/eee" no se pronuncia en inglés.
+  const fonemaText = isVowel ? `${currentWord}. ${f.silabas}` : f.silabas
 
   return (
     <div className="fon-root">
@@ -280,15 +287,15 @@ export default function FonemasPractica({ childId }: { childId: string }) {
           </div>
         )}
         <div className="fon-letra">{f.letra}</div>
-        <div className="fon-word">{f.ejemplo}</div>
+        <div className="fon-word">{currentWord}</div>
         <div className="fon-sil">{f.silabas}</div>
         <div className="fon-tip"><Sparkles size={13} /> {f.tip}</div>
 
         <div className="fon-btns">
-          <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`} onClick={() => speak(f.decir ?? f.silabas)}>
+          <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`} onClick={() => speak(fonemaText)}>
             <Volume2 size={17} /> Escuchar fonema
           </button>
-          <button className="fon-btn soft" onClick={() => speak(f.ejemplo)}>
+          <button className="fon-btn soft" onClick={() => speak(currentWord)}>
             <Volume2 size={16} /> Escuchar palabra
           </button>
         </div>

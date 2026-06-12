@@ -11,9 +11,13 @@ create table if not exists public.fonema_imagenes (
   id          uuid primary key default gen_random_uuid(),
   fonema_id   text not null,
   url         text not null,
+  label       text,
   orden       int  default 0,
   created_at  timestamptz default now()
 );
+
+-- Para instalaciones que ya crearon la tabla sin la columna de etiqueta:
+alter table public.fonema_imagenes add column if not exists label text;
 
 create index if not exists idx_fonema_imagenes_fonema
   on public.fonema_imagenes (fonema_id);
