@@ -24,3 +24,15 @@ create index if not exists idx_fonema_imagenes_fonema
 
 -- RLS activado SIN políticas públicas: solo el service_role (servidor) accede.
 alter table public.fonema_imagenes enable row level security;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- AYUDA POR FONEMA: imagen de la boca + video de cómo se pronuncia (1 por fonema)
+-- ─────────────────────────────────────────────────────────────────────────────
+create table if not exists public.fonema_ayuda (
+  fonema_id  text primary key,
+  boca_url   text,
+  video_url  text,
+  updated_at timestamptz default now()
+);
+
+alter table public.fonema_ayuda enable row level security;

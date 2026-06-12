@@ -7,15 +7,17 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/Toast'
-import { Mic, Plus, Trash2, Loader2, Eye, EyeOff, Images } from 'lucide-react'
+import { Mic, Plus, Trash2, Loader2, Eye, EyeOff, Images, Save, Smile, Video } from 'lucide-react'
 import FonemasPractica, { FONEMAS, FonemaImg } from '@/app/padre/components/FonemasPractica'
 
 type ImgRow = { id: string; url: string; label?: string }
+type Ayuda = { boca_url?: string | null; video_url?: string | null }
 
 export default function FonemasAdminView() {
   const toast = useToast()
   const [imgs, setImgs] = useState<Record<string, ImgRow[]>>({})
   const [inputs, setInputs] = useState<Record<string, { label: string; url: string }>>({})
+  const [ayudaInputs, setAyudaInputs] = useState<Record<string, { boca: string; video: string }>>({})
   const [busy, setBusy] = useState<string | null>(null)
   const [preview, setPreview] = useState(false)
 
@@ -24,6 +26,10 @@ export default function FonemasAdminView() {
       const r = await fetch('/api/fonemas-imagenes')
       const j = await r.json()
       setImgs(j?.imagenes || {})
+      const a: Record<string, Ayuda> = j?.ayuda || {}
+      const ai: Record<string, { boca: string; video: string }> = {}
+      for (const k of Object.keys(a)) ai[k] = { boca: a[k].boca_url || '', video: a[k].video_url || '' }
+      setAyudaInputs(ai)
     } catch { /* noop */ }
   }
   useEffect(() => { load() }, [])
@@ -63,6 +69,22 @@ export default function FonemasAdminView() {
       })
       if (!r.ok) { const j = await r.json().catch(() => ({})); toast.error(j.error || 'Error al eliminar'); return }
       await load()
+    } catch { toast.error('Error de red') } finally { setBusy(null) }
+  }
+
+  const saveAyuda = async (fid: string) => {
+    const entry = ayudaInputs[fid] || { boca: '', video: '' }
+    setBusy(fid + ':ayuda')
+    try {
+      const token = await getToken()
+      const r = await fetch('/api/fonemas-imagenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'set_ayuda', fonema_id: fid, boca_url: entry.boca.trim(), video_url: entry.video.trim() }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) { toast.error(j.error || 'Error al guardar'); return }
+      toast.success('Ayuda guardada')
     } catch { toast.error('Error de red') } finally { setBusy(null) }
   }
 
@@ -150,6 +172,32 @@ export default function FonemasAdminView() {
                     onClick={() => add(f.id)} disabled={busy === f.id + ':add'}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold disabled:opacity-50 shrink-0">
                     {busy === f.id + ':add' ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Agregar
+                  </button>
+                </div>
+              </div>
+
+              {/* Boca + video de cómo se pronuncia (1 por fonema) */}
+              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Cómo se pronuncia</p>
+                <div className="flex items-center gap-2">
+                  <Smile size={14} className="text-slate-400 shrink-0" />
+                  <input
+                    value={ayudaInputs[f.id]?.boca || ''}
+                    onChange={e => setAyudaInputs(s => ({ ...s, [f.id]: { boca: e.target.value, video: s[f.id]?.video || '' } }))}
+                    placeholder="URL imagen de la boca (https://…)"
+                    className="flex-1 min-w-0 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 outline-none focus:border-sky-400" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Video size={14} className="text-slate-400 shrink-0" />
+                  <input
+                    value={ayudaInputs[f.id]?.video || ''}
+                    onChange={e => setAyudaInputs(s => ({ ...s, [f.id]: { video: e.target.value, boca: s[f.id]?.boca || '' } }))}
+                    placeholder="URL del video (YouTube o MP4)"
+                    className="flex-1 min-w-0 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 outline-none focus:border-sky-400" />
+                  <button
+                    onClick={() => saveAyuda(f.id)} disabled={busy === f.id + ':ayuda'}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold disabled:opacity-50 shrink-0">
+                    {busy === f.id + ':ayuda' ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Guardar
                   </button>
                 </div>
               </div>

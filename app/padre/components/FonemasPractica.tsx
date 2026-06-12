@@ -8,7 +8,14 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Volume2, Mic, Check, ChevronLeft, ChevronRight, RotateCcw, Sparkles,
+  Video, Smile, X,
 } from 'lucide-react'
+
+// De una URL de YouTube saca la URL de embed; si no es YouTube, devuelve null.
+function ytEmbed(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/)
+  return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0` : null
+}
 
 export type Fonema = { id: string; letra: string; ejemplo: string; emoji: string; code: string; silabas: string; tip: string }
 
@@ -75,12 +82,63 @@ function saveLogrados(childId: string, ids: string[]) {
 // regenerar el mismo fonema en ElevenLabs cada vez que se repite.
 const audioCache = new Map<string, string>()
 
+// Silabea una palabra en español (aproximación buena para palabras comunes):
+// 1 consonante entre vocales → va con la vocal siguiente; 2+ se separan salvo
+// grupos inseparables (bl, br, pl, tr, ch, ll, rr…). Los diptongos no se parten.
+const INSEPARABLES = new Set([
+  'bl', 'br', 'cl', 'cr', 'dl', 'dr', 'fl', 'fr', 'gl', 'gr',
+  'kl', 'kr', 'pl', 'pr', 'tl', 'tr', 'ch', 'll', 'rr',
+])
+function silabear(palabra: string): string[] {
+  const chars = [...(palabra || '').toLowerCase().normalize('NFC')]
+  const n = chars.length
+  const V = 'aeiouáéíóúü'
+  const isV = (c: string | undefined) => !!c && V.includes(c)
+  const isStrong = (c: string) => 'aeoáéó'.includes(c)
+  const isAccWeak = (c: string) => 'íúü'.includes(c)
+  const cuts = new Set<number>([0])
+  let i = 0
+  while (i < n) {
+    if (!isV(chars[i])) { i++; continue }
+    let j = i + 1
+    while (isV(chars[j])) {
+      const a = chars[j - 1], b = chars[j]
+      const hiato = (isStrong(a) && isStrong(b)) || isAccWeak(a) || isAccWeak(b)
+      if (hiato) cuts.add(j)
+      j++
+    }
+    let k = j
+    while (k < n && !isV(chars[k])) k++
+    if (k >= n) break
+    const cons = chars.slice(j, k)
+    const c = cons.length
+    let cutAt = -1
+    if (c === 1) cutAt = j
+    else if (c === 2) cutAt = INSEPARABLES.has(cons.join('')) ? j : j + 1
+    else if (c === 3) cutAt = INSEPARABLES.has(cons.slice(1).join('')) ? j + 1 : j + 2
+    else if (c >= 4) cutAt = j + 2
+    if (cutAt >= 0) cuts.add(cutAt)
+    i = k
+  }
+  const orden = [...cuts].filter(x => x < n).sort((a, b) => a - b)
+  const sil: string[] = []
+  for (let s = 0; s < orden.length; s++) {
+    const ini = orden[s]
+    const fin = s + 1 < orden.length ? orden[s + 1] : n
+    const t = chars.slice(ini, fin).join('')
+    if (t) sil.push(t)
+  }
+  return sil.length ? sil : [palabra]
+}
+
 export default function FonemasPractica({ childId }: { childId: string }) {
   const [idx, setIdx] = useState(0)
   const [logrados, setLogrados] = useState<Set<string>>(new Set())
   const [hablando, setHablando] = useState(false)
   const [customImgs, setCustomImgs] = useState<Record<string, { id: string; url: string; label?: string }[]>>({})
   const [galIdx, setGalIdx] = useState(0)
+  const [ayuda, setAyuda] = useState<Record<string, { boca_url?: string | null; video_url?: string | null }>>({})
+  const [modal, setModal] = useState<{ type: 'img' | 'video'; url: string } | null>(null)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const tokenRef = useRef(0)
@@ -98,7 +156,11 @@ export default function FonemasPractica({ childId }: { childId: string }) {
     let alive = true
     fetch('/api/fonemas-imagenes')
       .then(r => (r.ok ? r.json() : null))
-      .then(j => { if (alive && j?.imagenes) setCustomImgs(j.imagenes) })
+      .then(j => {
+        if (!alive || !j) return
+        if (j.imagenes) setCustomImgs(j.imagenes)
+        if (j.ayuda) setAyuda(j.ayuda)
+      })
       .catch(() => { /* sin imágenes propias → se usa OpenMoji */ })
     return () => { alive = false }
   }, [])
@@ -174,6 +236,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   const go = (d: number) => {
     setIdx(i => (i + d + FONEMAS.length) % FONEMAS.length)
     setGalIdx(0)
+    setModal(null)
     stopAudio()
   }
 
@@ -198,6 +261,11 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   // En vocales anclamos el idioma con una palabra española antes del sonido,
   // así "aaa/eee" no se pronuncia en inglés.
   const fonemaText = isVowel ? `${currentWord}. ${f.silabas}` : f.silabas
+  // Cada sílaba es un botón. En vocales anclamos con la palabra; en consonantes
+  // repetimos la sílaba (mejor para practicar y para que el español suene bien).
+  const silArr = f.silabas.split(',').map(s => s.trim()).filter(Boolean)
+  const speakSilaba = (syl: string) => speak(isVowel ? `${currentWord}. ${syl}` : `${syl}, ${syl}, ${syl}`)
+  const cur = ayuda[f.id] || {}
 
   return (
     <div className="fon-root">
@@ -220,9 +288,26 @@ export default function FonemasPractica({ childId }: { childId: string }) {
         .fon-dot.on{ background:#0284c7; transform:scale(1.25); }
         .fon-letra{ font-family:var(--font-display,inherit); font-size:54px; font-weight:900; color:#0369a1; line-height:1; letter-spacing:1px; }
         .fon-word{ font-size:16px; font-weight:800; color:var(--c-text,#0f172a); margin-top:6px; }
-        .fon-sil{ font-size:13px; font-weight:700; color:#0284c7; margin-top:4px; letter-spacing:.5px; }
+        .fon-sil{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:7px; }
+        .fon-sil-chip{ font-family:inherit; font-size:14px; font-weight:800; color:#0284c7; background:#eff6ff;
+          border:1.5px solid #bae6fd; border-radius:10px; padding:5px 12px; cursor:pointer; transition:all .12s; }
+        .fon-sil-chip:hover{ background:#0284c7; color:#fff; border-color:#0284c7; }
+        .fon-sil-chip:active{ transform:scale(.92); }
         .fon-tip{ font-size:12px; color:var(--c-text-muted,#64748b); margin-top:8px; display:inline-flex; align-items:center; gap:6px;
           background:var(--c-stat-purple,#f0f9ff); padding:6px 12px; border-radius:999px; }
+
+        .fon-help{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+        .fon-help-btn{ display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:12px; cursor:pointer;
+          font-family:inherit; font-size:12.5px; font-weight:800; border:1.5px solid #bae6fd; background:#f0f9ff; color:#0369a1; transition:all .15s; }
+        .fon-help-btn:active{ transform:scale(.95); }
+        .fon-help-btn.video{ background:#ecfeff; border-color:#a5f3fc; color:#0e7490; }
+
+        .fon-modal{ position:fixed; inset:0; background:rgba(15,23,42,.62); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px; }
+        .fon-modal-box{ position:relative; background:#fff; border-radius:18px; overflow:hidden; max-width:560px; width:100%; box-shadow:0 24px 70px rgba(0,0,0,.45); }
+        .fon-modal-x{ position:absolute; top:8px; right:8px; z-index:2; width:34px; height:34px; border-radius:50%; border:none;
+          background:rgba(0,0,0,.55); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .fon-modal-img{ width:100%; max-height:72vh; object-fit:contain; display:block; background:#f1f5f9; }
+        .fon-modal-video{ width:100%; aspect-ratio:16/9; display:block; border:none; background:#000; }
 
         .fon-btns{ display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
         .fon-btn{ display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border-radius:14px; border:none;
@@ -230,6 +315,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
         .fon-btn:active{ transform:scale(.96); }
         .fon-btn.primary{ background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff; box-shadow:0 8px 20px rgba(2,132,199,.32); }
         .fon-btn.soft{ background:#e0f2fe; color:#0369a1; }
+        .fon-btn.silabas{ background:#cffafe; color:#0e7490; }
         .fon-btn.speaking{ animation:fonPulse 1s ease-in-out infinite; }
 
         .fon-logro{ display:inline-flex; align-items:center; gap:8px; margin-top:14px; padding:10px 18px; border-radius:14px;
@@ -288,8 +374,27 @@ export default function FonemasPractica({ childId }: { childId: string }) {
         )}
         <div className="fon-letra">{f.letra}</div>
         <div className="fon-word">{currentWord}</div>
-        <div className="fon-sil">{f.silabas}</div>
+        <div className="fon-sil">
+          {silArr.map((syl, k) => (
+            <button key={k} className="fon-sil-chip" onClick={() => speakSilaba(syl)} title={`Escuchar ${syl}`}>{syl}</button>
+          ))}
+        </div>
         <div className="fon-tip"><Sparkles size={13} /> {f.tip}</div>
+
+        {(cur.boca_url || cur.video_url) && (
+          <div className="fon-help">
+            {cur.boca_url && (
+              <button className="fon-help-btn" onClick={() => setModal({ type: 'img', url: cur.boca_url! })}>
+                <Smile size={15} /> Ver la boca
+              </button>
+            )}
+            {cur.video_url && (
+              <button className="fon-help-btn video" onClick={() => setModal({ type: 'video', url: cur.video_url! })}>
+                <Video size={15} /> Cómo se pronuncia
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="fon-btns">
           <button className={`fon-btn primary ${hablando ? 'speaking' : ''}`} onClick={() => speak(fonemaText)}>
@@ -297,6 +402,9 @@ export default function FonemasPractica({ childId }: { childId: string }) {
           </button>
           <button className="fon-btn soft" onClick={() => speak(currentWord)}>
             <Volume2 size={16} /> Escuchar palabra
+          </button>
+          <button className="fon-btn silabas" onClick={() => speak(silabear(currentWord).join(', '))}>
+            <Volume2 size={16} /> Por sílabas
           </button>
         </div>
 
@@ -341,6 +449,23 @@ export default function FonemasPractica({ childId }: { childId: string }) {
             border: 'none', color: 'var(--c-text-muted,#64748b)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
           <RotateCcw size={13} /> Reiniciar progreso
         </button>
+      )}
+
+      {modal && (
+        <div className="fon-modal" onClick={() => setModal(null)}>
+          <div className="fon-modal-box" onClick={e => e.stopPropagation()}>
+            <button className="fon-modal-x" onClick={() => setModal(null)} aria-label="Cerrar"><X size={18} /></button>
+            {modal.type === 'img' ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="fon-modal-img" src={modal.url} alt="Posición de la boca" />
+            ) : ytEmbed(modal.url) ? (
+              <iframe className="fon-modal-video" src={ytEmbed(modal.url)!} title="Cómo se pronuncia"
+                allow="autoplay; encrypted-media; fullscreen" allowFullScreen />
+            ) : (
+              <video className="fon-modal-video" src={modal.url} controls autoPlay playsInline />
+            )}
+          </div>
+        </div>
       )}
     </div>
   )
