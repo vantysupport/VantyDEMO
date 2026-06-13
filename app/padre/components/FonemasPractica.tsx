@@ -221,7 +221,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
       const res = await fetch('/api/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: texto }),
+        body: JSON.stringify({ text: texto, language: 'es' }),
       })
       if (!res.ok) throw new Error('tts')
       const blob = await res.blob()
@@ -264,7 +264,7 @@ export default function FonemasPractica({ childId }: { childId: string }) {
   // Cada sílaba es un botón. En vocales anclamos con la palabra; en consonantes
   // repetimos la sílaba (mejor para practicar y para que el español suene bien).
   const silArr = f.silabas.split(',').map(s => s.trim()).filter(Boolean)
-  const speakSilaba = (syl: string) => speak(isVowel ? `${currentWord}. ${syl}` : `${syl}, ${syl}, ${syl}`)
+  const speakSilaba = (syl: string) => speak(syl)
   const cur = ayuda[f.id] || {}
 
   return (

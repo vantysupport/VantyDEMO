@@ -7,7 +7,7 @@ const ELEVENLABS_MODEL    = process.env.ELEVENLABS_MODEL    || 'eleven_multiling
 
 export async function POST(req: NextRequest) {
   try {
-    const { text } = await req.json()
+    const { text, language } = await req.json()
 
     if (!text?.trim()) {
       return NextResponse.json({ error: 'Texto requerido' }, { status: 400 })
@@ -31,6 +31,23 @@ export async function POST(req: NextRequest) {
       // Limitar a 4000 caracteres para evitar latencia excesiva (ElevenLabs soporta hasta 5000)
       .slice(0, 4000)
 
+    // Si el cliente pide un idioma (p. ej. fonemas en español), usamos un modelo
+    // que permite FORZAR el idioma (language_code), para que no pronuncie en
+    // inglés ni deletree sílabas cortas como "rra".
+    const model = language ? 'eleven_flash_v2_5' : ELEVENLABS_MODEL
+    const payload: Record<string, unknown> = {
+      text: clean,
+      model_id: model,
+      voice_settings: {
+        stability: 0.45,          // Algo de variación para sonar natural
+        similarity_boost: 0.80,   // Fiel a la voz original
+        style: 0.30,              // Estilo expresivo moderado
+        use_speaker_boost: true,
+      },
+      output_format: 'mp3_44100_128',
+    }
+    if (language) payload.language_code = String(language)
+
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`,
       {
@@ -40,17 +57,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
           'Accept': 'audio/mpeg',
         },
-        body: JSON.stringify({
-          text: clean,
-          model_id: ELEVENLABS_MODEL,
-          voice_settings: {
-            stability: 0.45,          // Algo de variación para sonar natural
-            similarity_boost: 0.80,   // Fiel a la voz original
-            style: 0.30,              // Estilo expresivo moderado
-            use_speaker_boost: true,
-          },
-          output_format: 'mp3_44100_128',
-        }),
+        body: JSON.stringify(payload),
       }
     )
 
