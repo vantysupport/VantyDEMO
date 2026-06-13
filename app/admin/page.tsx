@@ -80,14 +80,15 @@ function SidebarLink({ icon: Icon, label, active, onClick, small, badge }: any) 
 }
 
 function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
-  const [tab, setTab] = useState<'recursos' | 'tienda' | 'terapias'>('recursos')
+  const [tab, setTab] = useState<'recursos' | 'tienda' | 'terapias' | 'fonemas'>('recursos')
   return (
     <div className="flex flex-col gap-4">
-      <div className={`flex gap-1 p-1 rounded-xl w-fit ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
+      <div className={`flex gap-1 p-1 rounded-xl w-fit flex-wrap ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
         {([
           { id: 'recursos', icon: BookOpen, label: 'Recursos' },
           { id: 'tienda',   icon: ShoppingBag, label: 'Tienda' },
           { id: 'terapias', icon: Sparkles,   label: 'Catálogo Terapias' },
+          { id: 'fonemas',  icon: Mic,         label: 'Fonemas' },
         ] as const).map(t => (
           <button
             key={t.id}
@@ -106,6 +107,7 @@ function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
       {tab === 'recursos' && <ResourcesManagementView />}
       {tab === 'tienda'   && <StoreManagementView />}
       {tab === 'terapias' && <CatalogoTerapiasView />}
+      {tab === 'fonemas'  && <FonemasAdminView />}
     </div>
   )
 }
@@ -121,7 +123,6 @@ export default function AdminDashboard() {
     { id: 'agenda',       icon: Calendar,        label: t('nav.agenda'),          roles: ['jefe','admin'] },
     { id: 'ninos',        icon: Users,           label: t('nav.pacientes'),       roles: ['jefe','admin','especialista','terapeuta'] },
     { id: 'inteligencia', icon: Zap,             label: t('nav.hub'),             roles: ['jefe','admin','especialista'] },
-    { id: 'fonemas',      icon: Mic,             label: 'Fonemas',                roles: ['jefe','admin','especialista','terapeuta'] },
     { id: 'cerebro',      icon: Database,        label: t('nav.cerebro'),         roles: ['jefe','admin'] },
     { id: 'pagos',        icon: DollarSign,      label: 'Pagos',                  roles: ['jefe','admin'] },
     { id: 'reportes-financieros', icon: BarChart3, label: 'Reportes Financieros', roles: ['jefe'] },
@@ -556,7 +557,6 @@ export default function AdminDashboard() {
               )}
               {currentView === 'cerebro'      && <KnowledgeBaseView />}
               {currentView === 'inteligencia' && <InteligenciaHubView />}
-              {currentView === 'fonemas'      && <FonemasAdminView />}
               {currentView === 'pagos'        && <AdminPagos profile={userProfile} />}
               {currentView === 'reportes-financieros' && <AdminReportesFinancieros />}
 
