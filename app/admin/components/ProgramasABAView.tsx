@@ -822,6 +822,14 @@ function DetailChart({ chartData, chartHeight, minSlots, programa, segments, mer
   )
 }
 
+// Orden numérico de sets: "Set 1" antes que "Set 2"; sin set al final.
+function setNumOrder(k: string | null | undefined): number {
+  const s = k ?? '__none__'
+  const m = String(s).match(/(\d+)/)
+  if (m) return parseInt(m[1], 10)
+  return s === '__none__' ? 9999 : 9998
+}
+
 function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, tipoGrafico = 'lineas', onChangeTipoGrafico, loadingModal }: any) {
   const { t } = useI18n()
   const [expanded, setExpanded] = useState(false)
@@ -990,6 +998,8 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
     const k = s.set ?? '__none__'
     if (!setOrder.includes(k)) setOrder.push(k)
   })
+  // Ordenar los sets por su número (Set 1 antes que Set 2), no por aparición.
+  setOrder.sort((a, b) => setNumOrder(a) - setNumOrder(b))
   const sesionesOrdenadas = [...sesiones].sort((a: any, b: any) => {
     const ai = setOrder.indexOf(a.set ?? '__none__')
     const bi = setOrder.indexOf(b.set ?? '__none__')
@@ -1818,7 +1828,11 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                 <div>
                   <p className="text-xs font-bold text-slate-400 mb-2">📋 {t('programas.ultimasSesiones')}</p>
                   <div className="space-y-1.5">
-                    {[...detalle.sesiones_datos_aba].sort((a: any, b: any) => (b.fecha || "").localeCompare(a.fecha || "")).slice(0, 6).map((s: any) => (
+                    {[...detalle.sesiones_datos_aba].sort((a: any, b: any) => {
+                      const an = setNumOrder(a.set), bn = setNumOrder(b.set)
+                      if (an !== bn) return an - bn
+                      return (a.fecha || "").localeCompare(b.fecha || "")
+                    }).map((s: any) => (
                       <SesionRow
                         key={s.id}
                         s={s}
