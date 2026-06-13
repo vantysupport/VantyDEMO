@@ -1321,24 +1321,26 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                       }
 
                       // Color palette — stable by unique fase||set key so Set 1 always = same color
-                      const segColors = ['#0284c7','#ef4444','#0284c7','#0ea5e9','#f59e0b','#10b981','#ec4899']
-                      const uniqueSegKeys: string[] = []
+                      const segColors = ['#0284c7','#ef4444','#0ea5e9','#f59e0b','#10b981','#ec4899']
+                      // Color estable por SET (Set 1 siempre el mismo color, etc.)
+                      const uniqueSets: string[] = []
                       segments.forEach(seg => {
-                        const k = `${seg.fase}||${seg.set}`
-                        if (!uniqueSegKeys.includes(k)) uniqueSegKeys.push(k)
+                        const k = seg.set ?? '__none__'
+                        if (!uniqueSets.includes(k)) uniqueSets.push(k)
                       })
                       const segColorMap = segments.map(seg =>
-                        segColors[uniqueSegKeys.indexOf(`${seg.fase}||${seg.set}`) % segColors.length]
+                        segColors[uniqueSets.indexOf(seg.set ?? '__none__') % segColors.length]
                       )
 
-                      // Merge segments that share the same fase||set key into a single logical group
-                      // so that returning to Set 1 after Set 2 draws on the SAME line, not a new one.
+                      // UNA sola línea por SET: agrupa TODOS los puntos del set aunque cambien de
+                      // fase, para que el progreso del set se vea continuo. El cambio de fase se
+                      // marca con un divisor vertical fino, sin romper la línea.
                       type MergedSeg = { key: string; label: string; fase: string; set: string | null; indices: Set<number>; color: string }
                       const mergedMap = new Map<string, MergedSeg>()
-                      segments.forEach((seg, si) => {
-                        const k = `${seg.fase}||${seg.set}`
+                      segments.forEach((seg) => {
+                        const k = seg.set ?? '__none__'
                         if (!mergedMap.has(k)) {
-                          mergedMap.set(k, { key: k, label: seg.label, fase: seg.fase, set: seg.set, indices: new Set(), color: segColorMap[si] })
+                          mergedMap.set(k, { key: k, label: seg.label, fase: seg.fase, set: seg.set, indices: new Set(), color: segColors[uniqueSets.indexOf(k) % segColors.length] })
                         }
                         const ms = mergedMap.get(k)!
                         for (let idx = seg.startIdx; idx <= seg.endIdx; idx++) ms.indices.add(idx)
@@ -1379,7 +1381,7 @@ function ProgramaCard({ programa, onRegistrarSesion, onReload, onDeleteSesion, t
                               return (
                               <span key={seg.key} className="flex items-center gap-1 text-[10px] font-bold" style={{ color }}>
                                 <span className="w-4 border-t-2 inline-block" style={{ borderColor: color }} />
-                                {seg.label}{seg.set && seg.fase ? ` (${faseLabel[seg.fase] || seg.fase})` : ''}
+                                {seg.label}
                               </span>
                               )
                             })}
