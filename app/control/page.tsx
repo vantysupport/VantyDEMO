@@ -91,7 +91,7 @@ export default function ControlPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'set_maintenance', on, msg: maintMsg }),
       })
-      if (!r.ok) setMaintenance(!on)
+      if (!r.ok) { const j = await r.json().catch(() => ({})); setMaintenance(!on); alert('No se pudo guardar: ' + (j.error || r.status)) }
     } catch { setMaintenance(!on) } finally { setBusy(null) }
   }
 
@@ -99,11 +99,13 @@ export default function ControlPage() {
     setBusy('maint')
     try {
       const token = await getToken()
-      await fetch('/api/control', {
+      const r = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'set_maintenance', on: maintenance, msg: maintMsg }),
       })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) alert('No se pudo guardar el mensaje: ' + (j.error || r.status))
     } finally { setBusy(null) }
   }
 
@@ -116,12 +118,15 @@ export default function ControlPage() {
         payload[f.key] = Number.isFinite(n) && n > 0 ? n : 0
       }
       const token = await getToken()
-      await fetch('/api/control', {
+      const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'set_limits', limits: payload }),
       })
-    } catch { /* noop */ } finally { setBusy(null) }
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) alert('No se pudieron guardar los límites: ' + (j.error || res.status))
+      else await loadStatus()
+    } catch { alert('Error de red al guardar límites.') } finally { setBusy(null) }
   }
 
   const saveAria = async (overrideEnabled?: boolean) => {
@@ -130,7 +135,7 @@ export default function ControlPage() {
     if (overrideEnabled !== undefined) setAria(a => ({ ...a, enabled }))
     try {
       const token = await getToken()
-      await fetch('/api/control', {
+      const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -142,7 +147,10 @@ export default function ControlPage() {
           },
         }),
       })
-    } catch { /* noop */ } finally { setBusy(null) }
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) alert('No se pudo guardar ARIA: ' + (j.error || res.status) + '\n(¿Corriste el SQL de control-programador con aria_limits?)')
+      else await loadStatus()
+    } catch { alert('Error de red al guardar ARIA.') } finally { setBusy(null) }
   }
 
   const clearErrors = async () => {

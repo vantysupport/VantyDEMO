@@ -307,7 +307,13 @@ export default function ParentDashboard() {
         }]).select()
 
         if (error) {
-            alert("Error al guardar: " + error.message)
+            // El trigger de base rechaza al padre que excede el límite → mensaje amable.
+            if (/máximo de cuentas|PADRE_LIMIT/i.test(error.message || '')) {
+                setPadreBloqueado(true)
+                alert('El centro alcanzó el número máximo de cuentas de familias. Comunícate con el centro para habilitar tu acceso.')
+            } else {
+                alert("Error al guardar: " + error.message)
+            }
             return
         }
 

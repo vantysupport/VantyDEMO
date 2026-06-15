@@ -21,9 +21,11 @@ async function isProgramador(req: NextRequest): Promise<boolean> {
 }
 
 export async function GET() {
+  // select('*') para no romper si falta alguna columna (p. ej. aria_limits
+  // antes de correr la migración). Leemos cada campo defensivamente.
   const { data } = await supabaseAdmin
     .from('app_settings')
-    .select('maintenance, maintenance_msg, limits, aria_limits')
+    .select('*')
     .eq('id', 1)
     .maybeSingle()
   return NextResponse.json({
