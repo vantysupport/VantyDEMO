@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   ShieldCheck, Power, Users, AlertTriangle, RefreshCw, Trash2, Save, LogOut, Loader2,
+  Activity, ChevronDown, Gauge, Terminal,
 } from 'lucide-react'
 
 type ErrLog = { id: string; message: string; detail: string; source: string; url: string; user_email: string; created_at: string }
@@ -87,6 +88,18 @@ export default function ControlPage() {
     } catch { setMaintenance(!on) } finally { setBusy(null) }
   }
 
+  const saveMsg = async () => {
+    setBusy('maint')
+    try {
+      const token = await getToken()
+      await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'set_maintenance', on: maintenance, msg: maintMsg }),
+      })
+    } finally { setBusy(null) }
+  }
+
   const saveLimits = async () => {
     setBusy('limits')
     try {
@@ -121,133 +134,207 @@ export default function ControlPage() {
   const logout = async () => { await supabase.auth.signOut(); router.replace('/login') }
 
   if (phase === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-sky-600" size={28} /></div>
+    return <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a]"><Loader2 className="animate-spin text-sky-400" size={28} /></div>
   }
   if (phase === 'denied') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 text-center">
-        <div>
-          <p className="text-slate-700 font-bold mb-2">Acceso restringido</p>
-          <p className="text-slate-500 text-sm mb-4">Esta sección es solo para el rol programador.</p>
-          <button onClick={() => router.replace('/login')} className="px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-bold">Volver al inicio</button>
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a] p-6 text-center">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 max-w-sm">
+          <ShieldCheck size={28} className="text-rose-400 mx-auto mb-3" />
+          <p className="text-slate-100 font-bold mb-1">Acceso restringido</p>
+          <p className="text-slate-400 text-sm mb-5">Esta sección es solo para el rol <span className="font-mono text-sky-400">programador</span>.</p>
+          <button onClick={() => router.replace('/login')} className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold transition-colors">Volver al inicio</button>
         </div>
       </div>
     )
   }
 
+  const limitsActive = LIMIT_FIELDS.filter(f => (parseInt(limits[f.key] || '0', 10) || 0) > 0).length
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <header className="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={20} className="text-sky-400" />
-          <div>
-            <h1 className="font-black text-base leading-tight">Panel del Programador</h1>
-            <p className="text-[11px] text-slate-400">Control del sistema · SANTI</p>
+    <div className="min-h-screen bg-[#0a0e1a] text-slate-200">
+      <style>{`
+        .ctl-grid{ background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.04) 1px, transparent 0); background-size:22px 22px; }
+        .ctl-card{ background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.08); border-radius:16px; }
+        .ctl-input{ background:rgba(2,6,23,.6); border:1px solid rgba(255,255,255,.1); color:#e2e8f0; }
+        .ctl-input::placeholder{ color:#475569; }
+        .ctl-input:focus{ border-color:#38bdf8; outline:none; box-shadow:0 0 0 3px rgba(56,189,248,.15); }
+      `}</style>
+
+      {/* Top bar */}
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a0e1a]/90 backdrop-blur">
+        <div className="max-w-5xl mx-auto px-5 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center">
+              <ShieldCheck size={18} className="text-sky-400" />
+            </div>
+            <div>
+              <h1 className="font-black text-[15px] leading-tight tracking-tight text-white">Panel del Programador</h1>
+              <p className="text-[11px] text-slate-500 font-mono">control.santi · sistema</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`hidden sm:flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-full border ${maintenance ? 'bg-amber-500/10 border-amber-400/30 text-amber-300' : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'}`}>
+              <span className="relative flex h-2 w-2">
+                {!maintenance && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />}
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${maintenance ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+              </span>
+              {maintenance ? 'EN MANTENIMIENTO' : 'OPERATIVO'}
+            </span>
+            <button onClick={logout} className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors">
+              <LogOut size={15} /> Salir
+            </button>
           </div>
         </div>
-        <button onClick={logout} className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white">
-          <LogOut size={15} /> Salir
-        </button>
       </header>
 
-      <main className="max-w-3xl mx-auto p-4 md:p-6 flex flex-col gap-5">
-        {/* Modo mantenimiento */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Power size={16} className={maintenance ? 'text-amber-600' : 'text-slate-400'} />
-            <h2 className="font-extrabold text-sm">Modo mantenimiento</h2>
-            <span className={`ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full ${maintenance ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
-              {maintenance ? 'ACTIVO' : 'Apagado'}
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mb-3">
-            Cuando está activo, todos (menos tú) ven el mensaje de soporte y no pueden usar la app. Tú sí sigues entrando.
-          </p>
-          <textarea
-            value={maintMsg}
-            onChange={e => setMaintMsg(e.target.value)}
-            rows={2}
-            placeholder="Mensaje para los usuarios (opcional). Ej: Estamos realizando mejoras…"
-            className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-sky-400 mb-3"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={() => saveMaintenance(!maintenance)} disabled={busy === 'maint'}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-50 ${maintenance ? 'bg-emerald-600' : 'bg-amber-600'}`}>
-              {busy === 'maint' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
-              {maintenance ? 'Desactivar mantenimiento' : 'Activar mantenimiento'}
-            </button>
-            <button
-              onClick={async () => { setBusy('maint'); try { const token = await getToken(); await fetch('/api/control', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action: 'set_maintenance', on: maintenance, msg: maintMsg }) }) } finally { setBusy(null) } }}
-              disabled={busy === 'maint'}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-slate-100 text-slate-600 disabled:opacity-50">
-              <Save size={14} /> Guardar mensaje
-            </button>
-          </div>
-        </section>
+      <main className="ctl-grid">
+        <div className="max-w-5xl mx-auto p-4 md:p-6 flex flex-col gap-5">
 
-        {/* Límites de perfiles */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Users size={16} className="text-sky-500" />
-            <h2 className="font-extrabold text-sm">Límites de perfiles</h2>
-          </div>
-          <p className="text-xs text-slate-500 mb-3">Cantidad máxima por tipo. Vacío o 0 = sin límite. (Por ahora solo advierte al crear.)</p>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {LIMIT_FIELDS.map(f => (
-              <label key={f.key} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-slate-600 font-semibold">{f.label}</span>
-                <input
-                  type="number" min={0} inputMode="numeric"
-                  value={limits[f.key] ?? ''}
-                  onChange={e => setLimits(s => ({ ...s, [f.key]: e.target.value.replace(/[^0-9]/g, '') }))}
-                  placeholder="∞"
-                  className="w-24 text-sm rounded-lg border border-slate-200 px-2 py-1.5 outline-none focus:border-sky-400 text-right"
-                />
-              </label>
-            ))}
-          </div>
-          <button onClick={saveLimits} disabled={busy === 'limits'}
-            className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-sky-600 text-white disabled:opacity-50">
-            {busy === 'limits' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Guardar límites
-          </button>
-        </section>
-
-        {/* Registro de errores */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={16} className="text-rose-500" />
-            <h2 className="font-extrabold text-sm">Errores del sistema</h2>
-            <span className="text-[11px] font-bold text-slate-400">{errors.length}</span>
-            <div className="ml-auto flex gap-2">
-              <button onClick={loadErrors} className="flex items-center gap-1 text-xs font-bold text-sky-600"><RefreshCw size={13} /> Actualizar</button>
-              <button onClick={clearErrors} disabled={busy === 'clear'} className="flex items-center gap-1 text-xs font-bold text-rose-600 disabled:opacity-50"><Trash2 size={13} /> Limpiar</button>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="ctl-card p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Estado</span>
+                <Activity size={15} className={maintenance ? 'text-amber-400' : 'text-emerald-400'} />
+              </div>
+              <p className={`mt-2 text-lg font-black ${maintenance ? 'text-amber-300' : 'text-emerald-300'}`}>{maintenance ? 'Mantenimiento' : 'Operativo'}</p>
+              <p className="text-[11px] text-slate-500">{maintenance ? 'Usuarios bloqueados' : 'Todo funcionando'}</p>
+            </div>
+            <div className="ctl-card p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Errores</span>
+                <AlertTriangle size={15} className={errors.length ? 'text-rose-400' : 'text-slate-500'} />
+              </div>
+              <p className={`mt-2 text-2xl font-black ${errors.length ? 'text-rose-300' : 'text-slate-200'}`}>{errors.length}</p>
+              <p className="text-[11px] text-slate-500">registrados</p>
+            </div>
+            <div className="ctl-card p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Mantenim.</span>
+                <Power size={15} className={maintenance ? 'text-amber-400' : 'text-slate-500'} />
+              </div>
+              <p className={`mt-2 text-lg font-black ${maintenance ? 'text-amber-300' : 'text-slate-300'}`}>{maintenance ? 'Activo' : 'Apagado'}</p>
+              <p className="text-[11px] text-slate-500">interruptor global</p>
+            </div>
+            <div className="ctl-card p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Límites</span>
+                <Gauge size={15} className="text-sky-400" />
+              </div>
+              <p className="mt-2 text-2xl font-black text-slate-200">{limitsActive}<span className="text-sm text-slate-500 font-bold">/{LIMIT_FIELDS.length}</span></p>
+              <p className="text-[11px] text-slate-500">perfiles con tope</p>
             </div>
           </div>
-          {errors.length === 0 ? (
-            <p className="text-xs text-slate-400 italic py-4 text-center">Sin errores registrados. 🎉</p>
-          ) : (
-            <div className="flex flex-col gap-1.5 max-h-[420px] overflow-auto">
-              {errors.map(e => (
-                <div key={e.id} className="rounded-lg border border-slate-100 bg-slate-50">
-                  <button onClick={() => setOpenErr(openErr === e.id ? null : e.id)} className="w-full text-left px-3 py-2 flex items-start gap-2">
-                    <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 shrink-0 mt-0.5">{e.source || 'app'}</span>
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-slate-700 truncate">{e.message || '(sin mensaje)'}</span>
-                      <span className="block text-[10px] text-slate-400">{new Date(e.created_at).toLocaleString('es-PE')}{e.user_email ? ` · ${e.user_email}` : ''}</span>
-                    </span>
-                  </button>
-                  {openErr === e.id && (
-                    <div className="px-3 pb-2">
-                      {e.url && <p className="text-[10px] text-slate-400 break-all mb-1">URL: {e.url}</p>}
-                      <pre className="text-[10px] text-slate-600 whitespace-pre-wrap break-words bg-white border border-slate-200 rounded p-2 max-h-60 overflow-auto">{e.detail || '(sin detalle)'}</pre>
-                    </div>
-                  )}
-                </div>
+
+          {/* Modo mantenimiento */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-center justify-center"><Power size={15} className="text-amber-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Modo mantenimiento</h2>
+              <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full border ${maintenance ? 'bg-amber-500/10 border-amber-400/30 text-amber-300' : 'bg-white/5 border-white/10 text-slate-400'}`}>
+                {maintenance ? 'ACTIVO' : 'APAGADO'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mb-3 ml-[42px]">
+              Cuando está activo, todos (menos tú) ven el mensaje de soporte y no pueden usar la app. Tú sí sigues entrando.
+            </p>
+            <textarea
+              value={maintMsg}
+              onChange={e => setMaintMsg(e.target.value)}
+              rows={2}
+              placeholder="Mensaje para los usuarios (opcional). Ej: Estamos realizando mejoras…"
+              className="ctl-input w-full text-sm rounded-xl px-3 py-2.5 mb-3 transition-shadow"
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => saveMaintenance(!maintenance)} disabled={busy === 'maint'}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${maintenance ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/40'}`}>
+                {busy === 'maint' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
+                {maintenance ? 'Desactivar mantenimiento' : 'Activar mantenimiento'}
+              </button>
+              <button onClick={saveMsg} disabled={busy === 'maint'}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
+                <Save size={14} /> Guardar mensaje
+              </button>
+            </div>
+          </section>
+
+          {/* Límites de perfiles */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 flex items-center justify-center"><Users size={15} className="text-sky-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Límites de perfiles</h2>
+            </div>
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Cantidad máxima por tipo. Vacío o 0 = sin límite. <span className="text-slate-500">(Por ahora solo advierte al crear.)</span></p>
+            <div className="grid sm:grid-cols-2 gap-2.5">
+              {LIMIT_FIELDS.map(f => (
+                <label key={f.key} className="flex items-center justify-between gap-3 text-sm rounded-xl bg-white/[0.02] border border-white/5 px-3 py-2.5">
+                  <span className="text-slate-300 font-semibold">{f.label}</span>
+                  <input
+                    type="number" min={0} inputMode="numeric"
+                    value={limits[f.key] ?? ''}
+                    onChange={e => setLimits(s => ({ ...s, [f.key]: e.target.value.replace(/[^0-9]/g, '') }))}
+                    placeholder="∞"
+                    className="ctl-input w-20 text-sm rounded-lg px-2 py-1.5 text-right font-mono transition-shadow"
+                  />
+                </label>
               ))}
             </div>
-          )}
-        </section>
+            <button onClick={saveLimits} disabled={busy === 'limits'}
+              className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white disabled:opacity-50 transition-colors shadow-lg shadow-sky-900/40">
+              {busy === 'limits' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Guardar límites
+            </button>
+          </section>
+
+          {/* Registro de errores */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-400/20 flex items-center justify-center"><Terminal size={15} className="text-rose-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Errores del sistema</h2>
+              <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">{errors.length}</span>
+              <div className="ml-auto flex gap-3">
+                <button onClick={loadErrors} className="flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"><RefreshCw size={13} /> Actualizar</button>
+                <button onClick={clearErrors} disabled={busy === 'clear'} className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 disabled:opacity-50 transition-colors"><Trash2 size={13} /> Limpiar</button>
+              </div>
+            </div>
+            {errors.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center mx-auto mb-3">
+                  <ShieldCheck size={22} className="text-emerald-400" />
+                </div>
+                <p className="text-sm text-slate-300 font-semibold">Sin errores registrados</p>
+                <p className="text-xs text-slate-500">El sistema está limpio.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5 max-h-[460px] overflow-auto pr-1">
+                {errors.map(e => (
+                  <div key={e.id} className="rounded-xl border border-white/5 bg-black/30 overflow-hidden">
+                    <button onClick={() => setOpenErr(openErr === e.id ? null : e.id)} className="w-full text-left px-3 py-2.5 flex items-start gap-2.5 hover:bg-white/[0.03] transition-colors">
+                      <span className="mt-1.5 w-2 h-2 rounded-full bg-rose-500 shrink-0 shadow-[0_0_8px_rgba(244,63,94,.6)]" />
+                      <span className="flex-1 min-w-0">
+                        <span className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-400/20 text-sky-300 shrink-0">{e.source || 'app'}</span>
+                          <span className="text-[13px] font-medium text-slate-200 truncate font-mono">{e.message || '(sin mensaje)'}</span>
+                        </span>
+                        <span className="block text-[10px] text-slate-500 mt-1 font-mono">{new Date(e.created_at).toLocaleString('es-PE')}{e.user_email ? ` · ${e.user_email}` : ''}</span>
+                      </span>
+                      <ChevronDown size={15} className={`text-slate-500 shrink-0 mt-1 transition-transform ${openErr === e.id ? 'rotate-180' : ''}`} />
+                    </button>
+                    {openErr === e.id && (
+                      <div className="px-3 pb-3">
+                        {e.url && <p className="text-[10px] text-slate-500 break-all mb-1.5 font-mono">URL: {e.url}</p>}
+                        <pre className="text-[11px] leading-relaxed text-emerald-300/90 whitespace-pre-wrap break-words bg-black/50 border border-white/10 rounded-lg p-3 max-h-72 overflow-auto font-mono">{e.detail || '(sin detalle)'}</pre>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <p className="text-center text-[11px] text-slate-600 font-mono pb-2">SANTI · panel restringido · rol programador</p>
+        </div>
       </main>
     </div>
   )
