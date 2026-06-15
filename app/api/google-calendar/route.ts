@@ -1,6 +1,7 @@
 // app/api/google-calendar/route.ts
 // Handles Google Calendar OAuth and event sync
 import { NextRequest, NextResponse } from 'next/server'
+import { logServerError } from '@/lib/log-server-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CALENDAR_CLIENT_ID     || ''
@@ -215,7 +216,8 @@ export async function POST(req: NextRequest) {
       if (!gcalRes.ok) {
         const errText = await gcalRes.text()
         console.error('[GCal] Event creation failed:', gcalRes.status, errText)
-        return NextResponse.json({ ok: false, error: `Google Calendar error ${gcalRes.status}: ${errText}` })
+        await logServerError(`Google Calendar ${gcalRes.status} (create)`, errText, 'api:google-calendar')
+        return NextResponse.json({ ok: false, error: 'No se pudo crear el evento en Google Calendar.' })
       }
 
       const gcalData = await gcalRes.json()
@@ -498,7 +500,8 @@ export async function POST(req: NextRequest) {
       if (!patchRes.ok && patchRes.status !== 404 && patchRes.status !== 410) {
         const err = await patchRes.text()
         console.error('[GCal] update-event failed:', patchRes.status, err)
-        return NextResponse.json({ ok: false, error: `Google Calendar error ${patchRes.status}: ${err}` })
+        await logServerError(`Google Calendar ${patchRes.status} (update)`, err, 'api:google-calendar')
+        return NextResponse.json({ ok: false, error: 'No se pudo actualizar el evento en Google Calendar.' })
       }
 
       return NextResponse.json({ ok: true, updated: eventId })

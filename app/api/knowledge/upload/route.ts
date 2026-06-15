@@ -8,6 +8,7 @@ export const maxDuration = 60;
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logServerError } from '@/lib/log-server-error'
 
 const BUCKET = process.env.KNOWLEDGE_BUCKET_NAME || 'knowledge-base'
 const MAX_SIZE = 500 * 1024 * 1024 // 500MB
@@ -90,7 +91,8 @@ async function handlePresign(req: NextRequest) {
       .createSignedUploadUrl(safeName)
 
     if (error || !data) {
-      return NextResponse.json({ error: `No se pudo crear URL de upload: ${error?.message}` }, { status: 500 })
+      await logServerError('knowledge/upload: createSignedUploadUrl', error?.message || 'sin data', 'api:knowledge/upload')
+      return NextResponse.json({ error: 'No se pudo preparar la subida del archivo.' }, { status: 500 })
     }
 
     // También pre-generar la signed URL de descarga para el ingest

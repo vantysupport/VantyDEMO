@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logServerError } from '@/lib/log-server-error'
 
 // Repositorio de imágenes de fonemas.
 //  • GET  → mapa { fonema_id: [{id,url}] } (lo leen las familias; va detrás del login).
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabaseAdmin
       .from('fonema_ayuda')
       .upsert({ fonema_id, boca_url: boca_url || null, video_url: video_url || null, updated_at: new Date().toISOString() }, { onConflict: 'fonema_id' })
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) { await logServerError('fonema_imagenes', error.message, 'api:fonemas-imagenes'); return NextResponse.json({ error: 'No se pudo completar la operación.' }, { status: 500 }) }
     return NextResponse.json({ ok: true })
   }
 
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
       .insert({ fonema_id, url, label: label || null })
       .select('id, fonema_id, url, label')
       .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) { await logServerError('fonema_imagenes', error.message, 'api:fonemas-imagenes'); return NextResponse.json({ error: 'No se pudo completar la operación.' }, { status: 500 }) }
     return NextResponse.json({ ok: true, row: data })
   }
 
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
     const id = String(body.id || '').trim()
     if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 })
     const { error } = await supabaseAdmin.from('fonema_imagenes').delete().eq('id', id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) { await logServerError('fonema_imagenes', error.message, 'api:fonemas-imagenes'); return NextResponse.json({ error: 'No se pudo completar la operación.' }, { status: 500 }) }
     return NextResponse.json({ ok: true })
   }
 

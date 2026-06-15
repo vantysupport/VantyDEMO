@@ -1,6 +1,7 @@
 // app/api/microsoft-calendar/route.ts
 // Handles Microsoft (Outlook) Calendar OAuth and event sync
 import { NextRequest, NextResponse } from 'next/server'
+import { logServerError } from '@/lib/log-server-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const MS_CLIENT_ID     = process.env.MICROSOFT_CALENDAR_CLIENT_ID     || ''
@@ -480,7 +481,8 @@ export async function POST(req: NextRequest) {
       if (!patchRes.ok && patchRes.status !== 404) {
         const err = await patchRes.text()
         console.error('[MSCal] update-event failed:', patchRes.status, err)
-        return NextResponse.json({ ok: false, error: `Microsoft Calendar error ${patchRes.status}: ${err}` })
+        await logServerError(`Microsoft Calendar ${patchRes.status} (update)`, err, 'api:microsoft-calendar')
+        return NextResponse.json({ ok: false, error: 'No se pudo actualizar el evento en Microsoft Calendar.' })
       }
 
       return NextResponse.json({ ok: true, updated: eventId })

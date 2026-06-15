@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logServerError } from '@/lib/log-server-error'
 
 const TOKEN_URL = 'https://icdaccessmanagement.who.int/connect/token'
 
@@ -126,7 +127,8 @@ export async function GET(req: NextRequest) {
     let token: string
     try { token = await getToken() }
     catch (e: any) {
-      return NextResponse.json({ error: `Token failed: ${e.message}`, fallback: true }, { status: 503 })
+      await logServerError('CIE-11 token failed', e?.message || String(e), 'api:cie11')
+      return NextResponse.json({ error: 'No se pudo conectar con el catálogo CIE-11.', fallback: true }, { status: 503 })
     }
 
     // La OMS devuelve IDs con http:// pero la API requiere https://
