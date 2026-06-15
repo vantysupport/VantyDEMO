@@ -109,7 +109,10 @@ export default function LoginPage(props: PageProps) {
 
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', authData.user.id).single()
         const adminRoles = ['admin', 'jefe', 'especialista']
-        router.push(adminRoles.includes(profile?.role) ? '/admin' : '/padre')
+        const dest = profile?.role === 'programador'
+          ? '/control'
+          : adminRoles.includes(profile?.role) ? '/admin' : '/padre'
+        router.push(dest)
       }
     } catch (err: any) {
       const msg = err.message || ''

@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import { ToastProvider } from '@/components/Toast'
 import { ThemeProvider } from '@/components/ThemeContext'
 import SessionGuard from '@/components/SessionGuard'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import MaintenanceGate from '@/components/MaintenanceGate'
 import "./globals.css";
 
 // Sistema de dos tipografías:
@@ -157,12 +159,16 @@ export default function RootLayout({
         }} />
       </head>
       <body className="antialiased">
-        <ThemeProvider>
-          <ToastProvider>
-            <SessionGuard />
-            {children}
-          </ToastProvider>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <ToastProvider>
+              <SessionGuard />
+              <MaintenanceGate>
+                {children}
+              </MaintenanceGate>
+            </ToastProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
 
         {/* El footer legal vive en la página de login (y landing). Se quitó del
             layout global porque aparecía molestando en todas las pantallas. */}
