@@ -1,6 +1,8 @@
 // lib/groq-client.ts
 // Cliente Groq — con fallback automático entre modelos cuando se agota el límite diario
 
+import { logServerError } from '@/lib/log-server-error'
+
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 // Cadena de fallback: si el modelo principal falla por rate limit,
@@ -96,13 +98,23 @@ export async function callGroq(
   } = options
 
   const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) throw new Error('GROQ_API_KEY no configurada')
+  if (!apiKey) {
+    await logServerError('GROQ_API_KEY no configurada', 'Falta la variable de entorno GROQ_API_KEY', 'groq')
+    throw new Error('GROQ_API_KEY no configurada')
+  }
 
   // Construir cadena de fallback: modelo preferido primero, luego los alternativos
   const modelsToTry = [model, ...FALLBACK_CHAIN.filter(m => m !== model)]
 
   for (const currentModel of modelsToTry) {
-    const result = await tryModel(apiKey, currentModel, messages, temperature, maxTokens)
+    let result: string | null
+    try {
+      result = await tryModel(apiKey, currentModel, messages, temperature, maxTokens)
+    } catch (err) {
+      // Error NO recuperable (no es rate limit) → lo registramos para el programador y propagamos.
+      await logServerError(`Groq error (${currentModel})`, (err as Error)?.stack || (err as Error)?.message || String(err), 'groq')
+      throw err
+    }
     if (result !== null) {
       if (currentModel !== model) {
         console.info(`[Groq] Usando fallback: ${currentModel} (preferido: ${model})`)
@@ -112,6 +124,7 @@ export async function callGroq(
     // null = rate limit, probar siguiente
   }
 
+  await logServerError('Groq: límite diario agotado en todos los modelos', `modelos probados: ${modelsToTry.join(', ')}`, 'groq')
   throw new Error(
     'Groq: límite de tokens diario agotado en todos los modelos disponibles. ' +
     'Se restablece a medianoche (hora UTC). Puedes ampliar el límite en https://console.groq.com/settings/billing'

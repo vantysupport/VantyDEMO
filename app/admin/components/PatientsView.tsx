@@ -12,6 +12,7 @@ import {
   FolderOpen, FileText, Heart, Trash2, Settings, Smile, Meh, Frown
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getControlStatus } from '@/lib/control'
 import { useToast } from '@/components/Toast'
 import { calcularEdadNumerica } from '../utils/helpers'
 import ProgramasABAView from './ProgramasABAView'
@@ -1099,6 +1100,17 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   // ── Crear nuevo ───────────────────────────────────────────────────────────
   const handleCreate = async () => {
     if (!newForm.name.trim()) { toast.error(t('pacientes.nombreRequerido')); return }
+    // Advertencia de límite de pacientes (solo advierte, NO bloquea) — definido por el programador.
+    try {
+      const st = await getControlStatus()
+      const limit = Number(st.limits?.paciente || 0)
+      if (limit > 0) {
+        const { count } = await supabase.from('children').select('id', { count: 'exact', head: true })
+        if ((count || 0) >= limit) {
+          toast.warning(`Límite de pacientes alcanzado (${count}/${limit}). Se creará de todos modos.`)
+        }
+      }
+    } catch { /* si falla el chequeo, no bloqueamos la creación */ }
     setSaving(true)
     try {
       const { data, error } = await supabase.from('children').insert({
