@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   ShieldCheck, Power, Users, AlertTriangle, RefreshCw, Trash2, Save, LogOut, Loader2,
-  Activity, ChevronDown, Gauge, Terminal,
+  Activity, ChevronDown, Gauge, Terminal, Bot, Clock, MessageSquare,
 } from 'lucide-react'
 
 type ErrLog = { id: string; message: string; detail: string; source: string; url: string; user_email: string; created_at: string }
@@ -29,6 +29,7 @@ export default function ControlPage() {
   const [maintenance, setMaintenance] = useState(false)
   const [maintMsg, setMaintMsg] = useState('')
   const [limits, setLimits] = useState<Record<string, string>>({})
+  const [aria, setAria] = useState<{ enabled: boolean; maxMessages: string; windowHours: string }>({ enabled: false, maxMessages: '', windowHours: '5' })
   const [errors, setErrors] = useState<ErrLog[]>([])
   const [openErr, setOpenErr] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
@@ -44,6 +45,12 @@ export default function ControlPage() {
       const lim: Record<string, string> = {}
       for (const f of LIMIT_FIELDS) lim[f.key] = j.limits?.[f.key] ? String(j.limits[f.key]) : ''
       setLimits(lim)
+      const al = j.aria_limits || {}
+      setAria({
+        enabled: !!al.enabled,
+        maxMessages: al.maxMessages ? String(al.maxMessages) : '',
+        windowHours: al.windowHours ? String(al.windowHours) : '5',
+      })
     } catch { /* noop */ }
   }, [])
 
@@ -113,6 +120,27 @@ export default function ControlPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'set_limits', limits: payload }),
+      })
+    } catch { /* noop */ } finally { setBusy(null) }
+  }
+
+  const saveAria = async (overrideEnabled?: boolean) => {
+    setBusy('aria')
+    const enabled = overrideEnabled !== undefined ? overrideEnabled : aria.enabled
+    if (overrideEnabled !== undefined) setAria(a => ({ ...a, enabled }))
+    try {
+      const token = await getToken()
+      await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          action: 'set_aria_limits',
+          aria_limits: {
+            enabled,
+            maxMessages: parseInt(aria.maxMessages || '0', 10) || 0,
+            windowHours: parseInt(aria.windowHours || '5', 10) || 5,
+          },
+        }),
       })
     } catch { /* noop */ } finally { setBusy(null) }
   }
@@ -285,6 +313,44 @@ export default function ControlPage() {
               className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white disabled:opacity-50 transition-colors shadow-lg shadow-sky-900/40">
               {busy === 'limits' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Guardar límites
             </button>
+          </section>
+
+          {/* ARIA · IA de padres */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-400/20 flex items-center justify-center"><Bot size={15} className="text-violet-300" /></div>
+              <h2 className="font-bold text-[15px] text-white">ARIA · IA de padres</h2>
+              <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full border ${aria.enabled ? 'bg-violet-500/10 border-violet-400/30 text-violet-200' : 'bg-white/5 border-white/10 text-slate-400'}`}>
+                {aria.enabled ? 'LÍMITE ACTIVO' : 'SIN LÍMITE'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Limita cuántas consultas puede hacer cada familia a ARIA dentro de una ventana de tiempo. Al pasarse, ven un aviso y deben esperar.</p>
+            <div className="flex flex-wrap items-end gap-4">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"><MessageSquare size={12} /> Máx. mensajes</span>
+                <input type="number" min={0} inputMode="numeric" value={aria.maxMessages}
+                  onChange={e => setAria(a => ({ ...a, maxMessages: e.target.value.replace(/[^0-9]/g, '') }))}
+                  placeholder="∞" className="ctl-input w-28 text-sm rounded-lg px-3 py-2 font-mono" />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"><Clock size={12} /> Cada (horas)</span>
+                <input type="number" min={1} inputMode="numeric" value={aria.windowHours}
+                  onChange={e => setAria(a => ({ ...a, windowHours: e.target.value.replace(/[^0-9]/g, '') }))}
+                  placeholder="5" className="ctl-input w-28 text-sm rounded-lg px-3 py-2 font-mono" />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <button onClick={() => saveAria(!aria.enabled)} disabled={busy === 'aria'}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${aria.enabled ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/40' : 'bg-violet-600 hover:bg-violet-500 shadow-violet-900/40'}`}>
+                {busy === 'aria' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
+                {aria.enabled ? 'Desactivar límite' : 'Activar límite'}
+              </button>
+              <button onClick={() => saveAria()} disabled={busy === 'aria'}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
+                <Save size={14} /> Guardar
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-3">Ejemplo: 20 mensajes cada 5 horas por familia. Vacío o 0 = sin tope.</p>
           </section>
 
           {/* Registro de errores */}

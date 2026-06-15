@@ -60,6 +60,7 @@ export default function ParentDashboard() {
   const [myChildren, setMyChildren] = useState<any[]>([])
   const [selectedChild, setSelectedChild] = useState<any>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [padreBloqueado, setPadreBloqueado] = useState(false)
 
   const NAV_ITEMS = [
     { id: 'home',        icon: Home,      label: t('nav.inicio') },
@@ -80,6 +81,22 @@ export default function ParentDashboard() {
       setActiveView('profile')
     }
   }, [])
+
+  // Límite de cuentas de padres — el que excede el tope no puede registrarse.
+  // El orden y el número los define el programador en /control → Límites.
+  useEffect(() => {
+    if (!profile?.id) return
+    let alive = true
+    ;(async () => {
+      try {
+        const token = (await supabase.auth.getSession()).data.session?.access_token
+        const r = await fetch('/api/padre/limite', { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
+        const j = await r.json()
+        if (alive) setPadreBloqueado(j?.allowed === false)
+      } catch { /* fail open: si falla, no bloquea */ }
+    })()
+    return () => { alive = false }
+  }, [profile?.id])
    
   const [selectedDate, setSelectedDate] = useState('')
   const [takenSlots, setTakenSlots] = useState<string[]>([])
@@ -254,7 +271,11 @@ export default function ParentDashboard() {
 
   const handleAddChild = async (e: any) => {
     e.preventDefault()
-    
+    if (padreBloqueado) {
+      alert('El centro alcanzó el número máximo de cuentas de familias. Comunícate con el centro para habilitar tu acceso.')
+      return
+    }
+
     const name = e.target.name.value
     const dob = e.target.dob.value
     const diagnosis = e.target.diagnosis?.value || 'En evaluación'
@@ -368,6 +389,32 @@ export default function ParentDashboard() {
       <p className="text-slate-500 font-bold text-sm animate-pulse">{t('familias.cargandoInfo')}</p>
     </div>
   )
+
+  // ── BLOQUEO por límite de cuentas de padres (el N+1 no se registra) ───────
+  if (!loading && myChildren.length === 0 && profile && padreBloqueado) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-cyan-50 to-sky-100 flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl shadow-sky-100 border border-sky-100">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-5">
+              <Lock size={28} className="text-amber-600" />
+            </div>
+            <h1 className="text-xl font-bold text-slate-800 mb-2">Registro no disponible por ahora</h1>
+            <p className="text-slate-500 text-sm leading-relaxed mb-6">
+              El centro alcanzó el número máximo de cuentas de familias disponibles.
+              Para habilitar tu acceso, comunícate con <strong className="text-sky-600">Neuropsicología y Terapias SANTI</strong>.
+            </p>
+            <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-sky-200 hover:opacity-90 transition-opacity">
+              <Phone size={16} /> Contactar al centro
+            </a>
+            <button onClick={async () => { await supabase.auth.signOut(); router.replace('/') }}
+              className="mt-3 text-xs font-bold text-slate-400 hover:text-slate-600">Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ── ONBOARDING para primer acceso (sin hijos registrados) ─────────────────
   if (!loading && myChildren.length === 0 && profile && !showAddChild) {

@@ -472,7 +472,10 @@ const nombre = listaNinos.find(n => n.id === childId)?.name || t('nav.pacientes'
                     }>
                     {m.role === 'ai' ? (
                       <p className="font-medium whitespace-pre-wrap" dangerouslySetInnerHTML={{
-                        __html: m.text.replace(/\*\*(.*?)\*\*/g, '<b class="font-bold">$1</b>').replace(/\n/g, '<br/>')
+                        // Escapamos primero (anti-XSS) y SOLO después aplicamos negritas/saltos seguros.
+                        __html: m.text
+                          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                          .replace(/\*\*(.*?)\*\*/g, '<b class="font-bold">$1</b>').replace(/\n/g, '<br/>')
                       }}/>
                     ) : m.text}
                   </div>

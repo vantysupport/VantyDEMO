@@ -30,5 +30,18 @@ create table if not exists public.error_logs (
 create index if not exists idx_error_logs_created on public.error_logs (created_at desc);
 alter table public.error_logs enable row level security;
 
+-- ── Rate limiting de ARIA (IA de padres) — configurable desde /control ──────────
+-- aria_limits = { enabled, maxMessages, windowHours }
+alter table public.app_settings add column if not exists aria_limits jsonb not null default '{}'::jsonb;
+
+-- Contador de uso por familia/padre (clave = parentUserId o childId)
+create table if not exists public.aria_usage (
+  rl_key       text primary key,
+  count        int not null default 0,
+  window_start timestamptz not null default now(),
+  updated_at   timestamptz default now()
+);
+alter table public.aria_usage enable row level security;
+
 -- El rol 'programador' se asigna manualmente desde aquí:
 --   update public.profiles set role = 'programador' where email = 'TU_CORREO';

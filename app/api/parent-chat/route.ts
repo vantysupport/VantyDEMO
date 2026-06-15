@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroq, callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
 import { buildParentChatContext } from '@/lib/ai-context-builder'
+import { checkAriaRateLimit } from '@/lib/aria-rate-limit'
 
 // Forzar ejecución dinámica — el contexto del paciente cambia constantemente
 // (sesiones registradas, alertas nuevas, fichas, etc.) y no debe cachearse.
@@ -44,6 +45,17 @@ export async function POST(req: NextRequest) {
 
     if (!mensaje || !childId) {
       return NextResponse.json({ error: 'Faltan campos requeridos: mensaje y childId' }, { status: 400 })
+    }
+
+    // Rate limiting de ARIA (configurable por el programador en /control).
+    // Clave por familia: parentUserId si viene, si no el childId.
+    const rl = await checkAriaRateLimit(String(parentUserId || childId))
+    if (!rl.allowed) {
+      // El frontend muestra data.text como respuesta de ARIA → ahí va el aviso.
+      return NextResponse.json(
+        { text: rl.message, error: rl.message, rateLimited: true, retryAfterMinutes: rl.retryAfterMinutes },
+        { status: 429 },
+      )
     }
 
     // Verificar acceso del padre solo si se provee parentUserId
