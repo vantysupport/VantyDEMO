@@ -11,6 +11,7 @@ import {
   Edit2, Briefcase, UserCheck, UserX, Filter, Link2, Unlink,
   ClipboardList} from 'lucide-react'
 import { useToast } from '@/components/Toast'
+import { getControlStatus } from '@/lib/control'
 
 const ROLES = [
   { value: 'jefe',        label: 'Director',      description: 'Acceso total al sistema',  icon: Crown,         dotColor: 'bg-sky-500', badgeClass: 'role-director'    },
@@ -452,6 +453,21 @@ export default function UserManagementView() {
 
   const handleCreateUser = async () => {
     if (!createForm.email || !createForm.password) { toast.error('Email y contraseña son requeridos'); return }
+    // Advertencia de límite de perfiles (solo advierte, NO bloquea) — definido por el programador.
+    try {
+      const st = await getControlStatus()
+      const limitKey = createForm.role === 'jefe' ? 'admin' : createForm.role
+      const limit = Number(st.limits?.[limitKey] || 0)
+      if (limit > 0) {
+        const current = users.filter(u => {
+          const r = u.profile?.role
+          return limitKey === 'admin' ? (r === 'admin' || r === 'jefe') : r === createForm.role
+        }).length
+        if (current >= limit) {
+          toast.warning(`Límite de ${limitKey} alcanzado (${current}/${limit}). Se creará de todos modos.`)
+        }
+      }
+    } catch { /* si falla el chequeo, no bloqueamos la creación */ }
     setCreatingUser(true)
     try {
       const res = await fetch('/api/admin/users', {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logServerError } from '@/lib/log-server-error'
 
 // Voice ID: configura ELEVENLABS_VOICE_ID en tus env vars de Vercel
 // Para obtenerlo: ElevenLabs → tu voz → copiar el ID desde la URL o la página de la voz
@@ -63,8 +64,10 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const err = await response.text()
-      console.error(`ElevenLabs error (voice: ${ELEVENLABS_VOICE_ID}):`, response.status, err)
-      return NextResponse.json({ error: `ElevenLabs ${response.status}: ${err}` }, { status: response.status })
+      // Registramos el error REAL (con la voz/estado) para el programador, pero
+      // al cliente solo le devolvemos un mensaje genérico (no filtrar detalle).
+      await logServerError(`ElevenLabs ${response.status}`, `voice: ${ELEVENLABS_VOICE_ID}\n${err}`, 'api:elevenlabs-tts')
+      return NextResponse.json({ error: 'No se pudo generar el audio. Intenta de nuevo.' }, { status: response.status })
     }
 
     // Pasar el stream de audio directamente al cliente
@@ -77,7 +80,7 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('Error en /api/elevenlabs-tts:', error)
+    await logServerError('Error en /api/elevenlabs-tts', error?.stack || error?.message || String(error), 'api:elevenlabs-tts')
     return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
