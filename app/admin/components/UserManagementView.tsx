@@ -9,7 +9,7 @@ import {
   Clock, Calendar, ChevronDown, ChevronUp, Send, Lock,
   Crown, Stethoscope, Heart, Plus, ToggleLeft, ToggleRight,
   Edit2, Briefcase, UserCheck, UserX, Filter, Link2, Unlink,
-  ClipboardList} from 'lucide-react'
+  ClipboardList, Trash2} from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { getControlStatus } from '@/lib/control'
 
@@ -217,6 +217,7 @@ export default function UserManagementView() {
   const [currentUserRole, setCurrentUserRole] = useState<string>('')
   const [activeTab, setActiveTab] = useState<'jefe' | 'especialista' | 'padre' | 'secretaria' | 'todos'>('todos')
   const [profileLimits, setProfileLimits] = useState<Record<string, number>>({})
+  const [deletingUser, setDeletingUser] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterSpecialty, setFilterSpecialty] = useState<string>('')
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
@@ -338,6 +339,31 @@ export default function UserManagementView() {
     } finally {
       setSavingRole(null)
     }
+  }
+
+  const handleDeleteUser = async (user: UserData) => {
+    if (user.id === currentUserId) { toast.error('No puedes eliminar tu propia cuenta.'); return }
+    const esPadre = user.profile?.role === 'padre'
+    const ok = confirm(
+      `¿Eliminar a ${user.profile?.full_name || user.email}?\n` +
+      `Esta acción NO se puede deshacer.` +
+      (esPadre ? `\nSus pacientes quedarán sin familia vinculada (no se borran).` : '')
+    )
+    if (!ok) return
+    setDeletingUser(user.id)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_user', userId: user.id }),
+      })
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      toast.success('Usuario eliminado')
+      setUsers(prev => prev.filter(u => u.id !== user.id))
+    } catch (err: any) {
+      toast.error('Error: ' + err.message)
+    } finally { setDeletingUser(null) }
   }
 
   const handleToggleActive = async (user: UserData) => {
@@ -791,6 +817,14 @@ export default function UserManagementView() {
                           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
                           style={{ background: 'var(--card)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)' }}>
                           <Ticket size={12} /> Editar tokens
+                        </button>
+                      )}
+
+                      {user.id !== currentUserId && (
+                        <button onClick={() => handleDeleteUser(user)} disabled={deletingUser === user.id}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                          style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)', color: '#dc2626' }}>
+                          {deletingUser === user.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Eliminar
                         </button>
                       )}
 

@@ -1010,6 +1010,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   const toast  = useToast()
 
   const [pacientes, setPacientes] = useState<any[]>([])
+  const [pacienteLimit, setPacienteLimit] = useState(0)
   const [filtrados, setFiltrados] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -1062,6 +1063,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
+  useEffect(() => { getControlStatus().then(st => setPacienteLimit(Number(st.limits?.paciente || 0))).catch(() => {}) }, [])
 
   // Auto-seleccionar paciente si viene desde una alerta del dashboard
   useEffect(() => {
@@ -1100,17 +1102,18 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   // ── Crear nuevo ───────────────────────────────────────────────────────────
   const handleCreate = async () => {
     if (!newForm.name.trim()) { toast.error(t('pacientes.nombreRequerido')); return }
-    // Advertencia de límite de pacientes (solo advierte, NO bloquea) — definido por el programador.
+    // Bloqueo de límite de pacientes (lo define el programador en /control).
     try {
       const st = await getControlStatus()
       const limit = Number(st.limits?.paciente || 0)
       if (limit > 0) {
         const { count } = await supabase.from('children').select('id', { count: 'exact', head: true })
         if ((count || 0) >= limit) {
-          toast.warning(`Límite de pacientes alcanzado (${count}/${limit}). Se creará de todos modos.`)
+          toast.error(`Límite de pacientes alcanzado (${count}/${limit}). Solo el programador puede ampliarlo.`)
+          return
         }
       }
-    } catch { /* si falla el chequeo, no bloqueamos la creación */ }
+    } catch { /* si falla el chequeo, deja que la base decida */ }
     setSaving(true)
     try {
       const { data, error } = await supabase.from('children').insert({
@@ -1158,6 +1161,11 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold" style={{ color:'var(--text-muted)' }}>
             {t('nav.pacientes')} · <span className="font-normal">{filtrados.length}</span>
+            {pacienteLimit > 0 && (
+              <span className={`ml-1.5 font-bold ${pacientes.length >= pacienteLimit ? 'text-rose-500' : 'text-slate-400'}`}>
+                ({pacientes.length}/{pacienteLimit})
+              </span>
+            )}
           </h2>
           <button onClick={()=>setShowNew(true)}
             className="w-7 h-7 rounded-lg bg-sky-600 hover:bg-sky-700 flex items-center justify-center transition-all shadow-sm">

@@ -169,6 +169,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Usuario creado exitosamente' })
     }
 
+    if (action === 'delete_user') {
+      if (!userId) return NextResponse.json({ error: 'userId requerido' }, { status: 400 })
+      // Desvincular pacientes de este padre (NO se borran los pacientes).
+      await supabaseAdmin.from('children').update({ parent_id: null }).eq('parent_id', userId)
+      // Borrar perfil y luego la cuenta de auth.
+      await supabaseAdmin.from('profiles').delete().eq('id', userId)
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
+      if (error) throw error
+      return NextResponse.json({ success: true, message: 'Usuario eliminado' })
+    }
+
     return NextResponse.json({ error: 'Acción no reconocida' }, { status: 400 })
   } catch (error: any) {
     return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })

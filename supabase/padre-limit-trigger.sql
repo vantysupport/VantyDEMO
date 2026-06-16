@@ -1,13 +1,10 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- BLINDAJE DURO: límite de cuentas de padres a nivel de BASE DE DATOS.
--- Un trigger BEFORE INSERT en children rechaza el registro del hijo cuando el
--- padre dueño excede el límite (app_settings.limits.padre), por orden de
--- creación. Esto NO se puede saltar desde el cliente (a diferencia de la UI).
---  • El personal del centro (jefe/admin/especialista/terapeuta/secretaria/
---    programador) NUNCA es bloqueado (override).
---  • Los padres que YA tienen hijos pueden seguir agregando (hermanos).
---  • Límite 0 o ausente = sin límite.
--- Ejecutar UNA VEZ en Supabase → SQL Editor.
+-- BLINDAJE DURO de límites a nivel de BASE DE DATOS (trigger en children).
+--  • Tope TOTAL de pacientes (limits.paciente): aplica a TODOS (incluido el
+--    personal). Nadie puede pasarse salvo que el programador lo amplíe.
+--  • Tope de cuentas de PADRES (limits.padre): el padre que excede no puede
+--    registrar a su hijo (el personal sí puede crear/asignar).
+-- Ejecutar UNA VEZ en Supabase → SQL Editor (idempotente, se puede re-correr).
 -- ─────────────────────────────────────────────────────────────────────────────
 
 create or replace function public.enforce_padre_limit()
@@ -17,42 +14,53 @@ security definer
 set search_path = public
 as $$
 declare
-  v_role    text;
-  v_created timestamptz;
-  v_limit   int;
-  v_before  int;
+  v_role      text;
+  v_created   timestamptz;
+  v_limit     int;
+  v_before    int;
+  v_pac_limit int;
+  v_pac_count int;
+  v_is_staff  boolean;
 begin
-  -- Override: si quien inserta es personal del centro, permitir siempre.
-  if exists (
+  -- 0) Tope TOTAL de pacientes — aplica a TODOS (incluido el personal).
+  select coalesce(nullif(limits->>'paciente','')::int, 0) into v_pac_limit
+  from public.app_settings where id = 1;
+  if v_pac_limit is not null and v_pac_limit > 0 then
+    select count(*) into v_pac_count from public.children;
+    if v_pac_count >= v_pac_limit then
+      raise exception 'El centro alcanzó el número máximo de pacientes.'
+        using errcode = 'P0001';
+    end if;
+  end if;
+
+  -- ¿Quien inserta es personal del centro? (para el límite de PADRES)
+  v_is_staff := exists (
     select 1 from public.profiles
     where id = auth.uid()
       and role in ('jefe','admin','especialista','terapeuta','secretaria','programador')
-  ) then
+  );
+  if v_is_staff then
     return new;
   end if;
 
-  -- Datos del padre dueño del hijo.
+  -- 1) Límite de cuentas de PADRES (solo cuando el dueño es un padre).
   select role, created_at into v_role, v_created
   from public.profiles where id = new.parent_id;
-
-  -- Solo se limita a padres.
   if v_role is distinct from 'padre' then
     return new;
   end if;
 
-  -- Límite configurado (0 o ausente = sin límite).
   select coalesce(nullif(limits->>'padre','')::int, 0) into v_limit
   from public.app_settings where id = 1;
   if v_limit is null or v_limit <= 0 then
     return new;
   end if;
 
-  -- Si este padre YA tiene hijos, no es nuevo → permitir (hermanos).
+  -- Padres que YA tienen hijos pueden agregar (hermanos).
   if exists (select 1 from public.children where parent_id = new.parent_id) then
     return new;
   end if;
 
-  -- Padres creados ANTES que este (prioridad por orden de creación).
   select count(*) into v_before
   from public.profiles
   where role = 'padre' and created_at < v_created;
