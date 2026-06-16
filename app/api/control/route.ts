@@ -10,14 +10,18 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 //           → SOLO rol 'programador' (verificado por token).
 // Usa service_role (bypassa RLS). Ver supabase/control-programador.sql.
 
-async function isProgramador(req: NextRequest): Promise<boolean> {
-  const token = req.headers.get('authorization')?.replace('Bearer ', '')
-  if (!token) return false
-  const { data: userData } = await supabaseAdmin.auth.getUser(token)
+async function authProgramador(req: NextRequest): Promise<{ ok: boolean; reason?: string }> {
+  const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
+  if (!token) return { ok: false, reason: 'sin token' }
+  const { data: userData, error: uErr } = await supabaseAdmin.auth.getUser(token)
   const uid = userData?.user?.id
-  if (!uid) return false
-  const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', uid).single()
-  return (profile as { role?: string } | null)?.role === 'programador'
+  if (uErr || !uid) return { ok: false, reason: 'sesión inválida o expirada' }
+  const { data: profile, error: pErr } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', uid).maybeSingle()
+  if (pErr) return { ok: false, reason: 'no se pudo leer el perfil' }
+  const role = (profile as { role?: string } | null)?.role
+  if (role !== 'programador') return { ok: false, reason: `tu rol es "${role || 'ninguno'}"` }
+  return { ok: true }
 }
 
 export async function GET() {
@@ -61,8 +65,9 @@ export async function POST(req: NextRequest) {
   }
 
   // El resto requiere rol programador.
-  if (!(await isProgramador(req))) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const auth = await authProgramador(req)
+  if (!auth.ok) {
+    return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
   }
 
   if (action === 'set_maintenance') {
@@ -102,6 +107,21 @@ export async function POST(req: NextRequest) {
     )
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })
+  }
+
+  if (action === 'get_counts') {
+    const tally = { admin: 0, especialista: 0, secretaria: 0, padre: 0, programador: 0 }
+    const { data: profs } = await supabaseAdmin.from('profiles').select('role')
+    for (const p of (profs || []) as { role?: string }[]) {
+      const r = p.role
+      if (r === 'jefe' || r === 'admin') tally.admin++
+      else if (r === 'especialista' || r === 'terapeuta') tally.especialista++
+      else if (r === 'secretaria') tally.secretaria++
+      else if (r === 'padre') tally.padre++
+      else if (r === 'programador') tally.programador++
+    }
+    const { count: paciente } = await supabaseAdmin.from('children').select('id', { count: 'exact', head: true })
+    return NextResponse.json({ counts: { ...tally, paciente: paciente || 0 } })
   }
 
   if (action === 'get_errors') {

@@ -216,6 +216,7 @@ export default function UserManagementView() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserRole, setCurrentUserRole] = useState<string>('')
   const [activeTab, setActiveTab] = useState<'jefe' | 'especialista' | 'padre' | 'secretaria' | 'todos'>('todos')
+  const [profileLimits, setProfileLimits] = useState<Record<string, number>>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [filterSpecialty, setFilterSpecialty] = useState<string>('')
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
@@ -281,6 +282,7 @@ export default function UserManagementView() {
   }, [])
 
   useEffect(() => { cargarUsuarios() }, [cargarUsuarios])
+  useEffect(() => { getControlStatus().then(st => setProfileLimits(st.limits || {})).catch(() => {}) }, [])
 
   // Protección: director no puede cambiar rol de otro director
   // Solo un "super director" (el primero registrado / admin) puede hacerlo
@@ -301,6 +303,25 @@ export default function UserManagementView() {
       else toast.warning('No podés cambiarte el rol a ti mismo.')
       return
     }
+    // Bloqueo de límite al CAMBIAR de rol (no solo al crear). No deja pasarse del tope.
+    try {
+      const st = await getControlStatus()
+      const limitKey = newRole === 'jefe' ? 'admin' : newRole
+      const limit = Number(st.limits?.[limitKey] || 0)
+      if (limit > 0) {
+        const current = users.filter(u => {
+          if (u.id === user.id) return false // el que cambiamos aún no cuenta en el nuevo rol
+          const r = u.profile?.role
+          if (limitKey === 'admin') return r === 'admin' || r === 'jefe'
+          if (limitKey === 'especialista') return r === 'especialista' || r === 'terapeuta'
+          return r === newRole
+        }).length
+        if (current >= limit) {
+          toast.error(`Límite de "${limitKey}" alcanzado (${current}/${limit}). Solo el programador puede ampliarlo.`)
+          return
+        }
+      }
+    } catch { /* si falla el chequeo, deja que el servidor decida */ }
     setSavingRole(user.id)
     try {
       const res = await fetch('/api/admin/users', {
@@ -453,7 +474,7 @@ export default function UserManagementView() {
 
   const handleCreateUser = async () => {
     if (!createForm.email || !createForm.password) { toast.error('Email y contraseña son requeridos'); return }
-    // Advertencia de límite de perfiles (solo advierte, NO bloquea) — definido por el programador.
+    // Bloqueo de límite de perfiles (lo define el programador en /control).
     try {
       const st = await getControlStatus()
       const limitKey = createForm.role === 'jefe' ? 'admin' : createForm.role
@@ -461,13 +482,16 @@ export default function UserManagementView() {
       if (limit > 0) {
         const current = users.filter(u => {
           const r = u.profile?.role
-          return limitKey === 'admin' ? (r === 'admin' || r === 'jefe') : r === createForm.role
+          if (limitKey === 'admin') return r === 'admin' || r === 'jefe'
+          if (limitKey === 'especialista') return r === 'especialista' || r === 'terapeuta'
+          return r === createForm.role
         }).length
         if (current >= limit) {
-          toast.warning(`Límite de ${limitKey} alcanzado (${current}/${limit}). Se creará de todos modos.`)
+          toast.error(`Límite de "${limitKey}" alcanzado (${current}/${limit}). Solo el programador puede ampliarlo.`)
+          return
         }
       }
-    } catch { /* si falla el chequeo, no bloqueamos la creación */ }
+    } catch { /* si falla el chequeo, deja que el servidor decida */ }
     setCreatingUser(true)
     try {
       const res = await fetch('/api/admin/users', {
@@ -545,14 +569,16 @@ export default function UserManagementView() {
       {/* Tabs por rol */}
       <div className="flex gap-1 border-b overflow-x-auto scrollbar-hide" style={{ borderColor: 'var(--card-border)' }}>
         {[
-          { id: 'todos',       label: t('common.todos'),        count: users.length,        icon: Users,       color: 'text-slate-500' },
-          { id: 'jefe',        label: 'Directores',   count: totalJefes,          icon: Crown,       color: 'text-sky-600' },
-          { id: 'especialista',label: 'Especialistas', count: totalEspecialistas,  icon: Stethoscope, color: 'text-sky-600' },
-          { id: 'padre',       label: 'Padres',       count: totalPadres,         icon: Heart,       color: 'text-pink-600' },
-          { id: 'secretaria',  label: 'Secretarias', count: totalSecretarias,    icon: ClipboardList, color: 'text-sky-600' },
+          { id: 'todos',       label: t('common.todos'),        count: users.length,        limitKey: '',             icon: Users,       color: 'text-slate-500' },
+          { id: 'jefe',        label: 'Directores',   count: totalJefes,          limitKey: 'admin',        icon: Crown,       color: 'text-sky-600' },
+          { id: 'especialista',label: 'Especialistas', count: totalEspecialistas,  limitKey: 'especialista', icon: Stethoscope, color: 'text-sky-600' },
+          { id: 'padre',       label: 'Padres',       count: totalPadres,         limitKey: 'padre',        icon: Heart,       color: 'text-pink-600' },
+          { id: 'secretaria',  label: 'Secretarias', count: totalSecretarias,    limitKey: 'secretaria',   icon: ClipboardList, color: 'text-sky-600' },
         ].map(tab => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
+          const lim = tab.limitKey ? (profileLimits[tab.limitKey] || 0) : 0
+          const over = lim > 0 && tab.count >= lim
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-1.5 px-3 py-2.5 text-xs md:text-sm font-bold rounded-t-xl border-b-2 transition-all whitespace-nowrap flex-shrink-0 ${
@@ -562,8 +588,9 @@ export default function UserManagementView() {
               <Icon size={13} />
               {tab.label}
               <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                style={{ background: isActive ? '#0284c7' : 'var(--muted-bg)', color: isActive ? '#fff' : 'var(--text-muted)' }}>
-                {tab.count}
+                title={lim > 0 ? `${tab.count} de ${lim} (límite)` : undefined}
+                style={{ background: over ? '#dc2626' : (isActive ? '#0284c7' : 'var(--muted-bg)'), color: (over || isActive) ? '#fff' : 'var(--text-muted)' }}>
+                {tab.count}{lim > 0 ? `/${lim}` : ''}
               </span>
             </button>
           )

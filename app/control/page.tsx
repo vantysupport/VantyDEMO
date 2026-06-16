@@ -30,11 +30,18 @@ export default function ControlPage() {
   const [maintMsg, setMaintMsg] = useState('')
   const [limits, setLimits] = useState<Record<string, string>>({})
   const [aria, setAria] = useState<{ enabled: boolean; maxMessages: string; windowHours: string }>({ enabled: false, maxMessages: '', windowHours: '5' })
+  const [counts, setCounts] = useState<Record<string, number>>({})
   const [errors, setErrors] = useState<ErrLog[]>([])
   const [openErr, setOpenErr] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
 
-  const getToken = async () => (await supabase.auth.getSession()).data.session?.access_token || ''
+  const getToken = async () => {
+    let token = (await supabase.auth.getSession()).data.session?.access_token || ''
+    if (!token) {
+      try { token = (await supabase.auth.refreshSession()).data.session?.access_token || '' } catch { /* noop */ }
+    }
+    return token
+  }
 
   const loadStatus = useCallback(async () => {
     try {
@@ -68,6 +75,20 @@ export default function ControlPage() {
     } catch { /* noop */ }
   }, [])
 
+  const loadCounts = useCallback(async () => {
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token || ''
+      const r = await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'get_counts' }),
+      })
+      if (!r.ok) return
+      const j = await r.json()
+      setCounts(j.counts || {})
+    } catch { /* noop */ }
+  }, [])
+
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession()
@@ -78,8 +99,9 @@ export default function ControlPage() {
       setPhase('ok')
       await loadStatus()
       await loadErrors()
+      await loadCounts()
     })()
-  }, [router, loadStatus, loadErrors])
+  }, [router, loadStatus, loadErrors, loadCounts])
 
   const saveMaintenance = async (on: boolean) => {
     setBusy('maint')
@@ -185,8 +207,6 @@ export default function ControlPage() {
     )
   }
 
-  const limitsActive = LIMIT_FIELDS.filter(f => (parseInt(limits[f.key] || '0', 10) || 0) > 0).length
-
   return (
     <div className="min-h-screen bg-[#0a0e1a] text-slate-200">
       <style>{`
@@ -199,7 +219,7 @@ export default function ControlPage() {
 
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a0e1a]/90 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-5 py-3.5 flex items-center justify-between">
+        <div className="max-w-[1500px] mx-auto px-5 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center">
               <ShieldCheck size={18} className="text-sky-400" />
@@ -225,7 +245,7 @@ export default function ControlPage() {
       </header>
 
       <main className="ctl-grid">
-        <div className="max-w-5xl mx-auto p-4 md:p-6 flex flex-col gap-5">
+        <div className="max-w-[1500px] mx-auto p-4 md:p-6 flex flex-col gap-5">
 
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -255,64 +275,130 @@ export default function ControlPage() {
             </div>
             <div className="ctl-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Límites</span>
-                <Gauge size={15} className="text-sky-400" />
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">ARIA</span>
+                <Bot size={15} className={aria.enabled ? 'text-violet-300' : 'text-slate-500'} />
               </div>
-              <p className="mt-2 text-2xl font-black text-slate-200">{limitsActive}<span className="text-sm text-slate-500 font-bold">/{LIMIT_FIELDS.length}</span></p>
-              <p className="text-[11px] text-slate-500">perfiles con tope</p>
+              <p className={`mt-2 text-lg font-black ${aria.enabled ? 'text-violet-200' : 'text-slate-300'}`}>{aria.enabled ? 'Con límite' : 'Sin límite'}</p>
+              <p className="text-[11px] text-slate-500">{aria.enabled ? `${aria.maxMessages || '∞'} msg / ${aria.windowHours}h` : 'IA de padres'}</p>
             </div>
           </div>
 
-          {/* Modo mantenimiento */}
+          {/* Población del sistema — conteos reales desde la base */}
           <section className="ctl-card p-5">
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-center justify-center"><Power size={15} className="text-amber-400" /></div>
-              <h2 className="font-bold text-[15px] text-white">Modo mantenimiento</h2>
-              <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full border ${maintenance ? 'bg-amber-500/10 border-amber-400/30 text-amber-300' : 'bg-white/5 border-white/10 text-slate-400'}`}>
-                {maintenance ? 'ACTIVO' : 'APAGADO'}
-              </span>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center"><Users size={15} className="text-emerald-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Población del sistema</h2>
+              <span className="ml-auto text-[10px] font-bold font-mono text-slate-500">en vivo desde la base</span>
             </div>
-            <p className="text-xs text-slate-400 mb-3 ml-[42px]">
-              Cuando está activo, todos (menos tú) ven el mensaje de soporte y no pueden usar la app. Tú sí sigues entrando.
-            </p>
-            <textarea
-              value={maintMsg}
-              onChange={e => setMaintMsg(e.target.value)}
-              rows={2}
-              placeholder="Mensaje para los usuarios (opcional). Ej: Estamos realizando mejoras…"
-              className="ctl-input w-full text-sm rounded-xl px-3 py-2.5 mb-3 transition-shadow"
-            />
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => saveMaintenance(!maintenance)} disabled={busy === 'maint'}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${maintenance ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/40'}`}>
-                {busy === 'maint' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
-                {maintenance ? 'Desactivar mantenimiento' : 'Activar mantenimiento'}
-              </button>
-              <button onClick={saveMsg} disabled={busy === 'maint'}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
-                <Save size={14} /> Guardar mensaje
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {LIMIT_FIELDS.map(f => {
+                const actual = counts[f.key] ?? 0
+                const lim = parseInt(limits[f.key] || '0', 10) || 0
+                return (
+                  <div key={f.key} className="rounded-xl bg-white/[0.02] border border-white/5 p-3.5">
+                    <p className="text-[11px] font-semibold text-slate-400 leading-tight">{f.label}</p>
+                    <p className="mt-1.5 text-2xl font-black text-white">{actual}{lim > 0 && <span className="text-sm text-slate-500 font-bold"> / {lim}</span>}</p>
+                    <p className={`text-[10px] ${lim > 0 && actual >= lim ? 'text-rose-400' : 'text-slate-500'}`}>{lim > 0 ? (actual >= lim ? 'límite alcanzado' : 'dentro del límite') : 'sin tope'}</p>
+                  </div>
+                )
+              })}
             </div>
           </section>
+
+          {/* Mantenimiento + ARIA — lado a lado en pantallas grandes */}
+          <div className="grid lg:grid-cols-2 gap-5 items-start">
+            {/* Modo mantenimiento */}
+            <section className="ctl-card p-5">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-center justify-center"><Power size={15} className="text-amber-400" /></div>
+                <h2 className="font-bold text-[15px] text-white">Modo mantenimiento</h2>
+                <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full border ${maintenance ? 'bg-amber-500/10 border-amber-400/30 text-amber-300' : 'bg-white/5 border-white/10 text-slate-400'}`}>
+                  {maintenance ? 'ACTIVO' : 'APAGADO'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mb-3 ml-[42px]">
+                Cuando está activo, todos (menos tú) ven el mensaje de soporte y no pueden usar la app. Tú sí sigues entrando.
+              </p>
+              <textarea
+                value={maintMsg}
+                onChange={e => setMaintMsg(e.target.value)}
+                rows={2}
+                placeholder="Mensaje para los usuarios (opcional). Ej: Estamos realizando mejoras…"
+                className="ctl-input w-full text-sm rounded-xl px-3 py-2.5 mb-3 transition-shadow"
+              />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => saveMaintenance(!maintenance)} disabled={busy === 'maint'}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${maintenance ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/40'}`}>
+                  {busy === 'maint' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
+                  {maintenance ? 'Desactivar mantenimiento' : 'Activar mantenimiento'}
+                </button>
+                <button onClick={saveMsg} disabled={busy === 'maint'}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
+                  <Save size={14} /> Guardar mensaje
+                </button>
+              </div>
+            </section>
+
+            {/* ARIA · IA de padres */}
+            <section className="ctl-card p-5">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-400/20 flex items-center justify-center"><Bot size={15} className="text-violet-300" /></div>
+                <h2 className="font-bold text-[15px] text-white">ARIA · IA de padres</h2>
+                <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full border ${aria.enabled ? 'bg-violet-500/10 border-violet-400/30 text-violet-200' : 'bg-white/5 border-white/10 text-slate-400'}`}>
+                  {aria.enabled ? 'LÍMITE ACTIVO' : 'SIN LÍMITE'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mb-4 ml-[42px]">Limita cuántas consultas puede hacer cada familia a ARIA dentro de una ventana de tiempo. Al pasarse, ven un aviso y deben esperar.</p>
+              <div className="flex flex-wrap items-end gap-4">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"><MessageSquare size={12} /> Máx. mensajes</span>
+                  <input type="number" min={0} inputMode="numeric" value={aria.maxMessages}
+                    onChange={e => setAria(a => ({ ...a, maxMessages: e.target.value.replace(/[^0-9]/g, '') }))}
+                    placeholder="∞" className="ctl-input w-28 text-sm rounded-lg px-3 py-2 font-mono" />
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"><Clock size={12} /> Cada (horas)</span>
+                  <input type="number" min={1} inputMode="numeric" value={aria.windowHours}
+                    onChange={e => setAria(a => ({ ...a, windowHours: e.target.value.replace(/[^0-9]/g, '') }))}
+                    placeholder="5" className="ctl-input w-28 text-sm rounded-lg px-3 py-2 font-mono" />
+                </label>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-4">
+                <button onClick={() => saveAria(!aria.enabled)} disabled={busy === 'aria'}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${aria.enabled ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/40' : 'bg-violet-600 hover:bg-violet-500 shadow-violet-900/40'}`}>
+                  {busy === 'aria' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
+                  {aria.enabled ? 'Desactivar límite' : 'Activar límite'}
+                </button>
+                <button onClick={() => saveAria()} disabled={busy === 'aria'}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
+                  <Save size={14} /> Guardar
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-3">Ejemplo: 20 mensajes cada 5 horas por familia. Vacío o 0 = sin tope.</p>
+            </section>
+          </div>
 
           {/* Límites de perfiles */}
           <section className="ctl-card p-5">
             <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 flex items-center justify-center"><Users size={15} className="text-sky-400" /></div>
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 flex items-center justify-center"><Gauge size={15} className="text-sky-400" /></div>
               <h2 className="font-bold text-[15px] text-white">Límites de perfiles</h2>
             </div>
-            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Cantidad máxima por tipo. Vacío o 0 = sin límite. <span className="text-slate-500">(Por ahora solo advierte al crear.)</span></p>
-            <div className="grid sm:grid-cols-2 gap-2.5">
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Tope máximo por tipo (el badge muestra cuántos hay ahora). Vacío o 0 = sin límite. <span className="text-slate-500">Padres se bloquea al registrar; el resto avisa.</span></p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {LIMIT_FIELDS.map(f => (
                 <label key={f.key} className="flex items-center justify-between gap-3 text-sm rounded-xl bg-white/[0.02] border border-white/5 px-3 py-2.5">
-                  <span className="text-slate-300 font-semibold">{f.label}</span>
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="text-slate-300 font-semibold truncate">{f.label}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400 shrink-0">{counts[f.key] ?? 0} ahora</span>
+                  </span>
                   <input
                     type="number" min={0} inputMode="numeric"
                     value={limits[f.key] ?? ''}
                     onChange={e => setLimits(s => ({ ...s, [f.key]: e.target.value.replace(/[^0-9]/g, '') }))}
                     placeholder="∞"
-                    className="ctl-input w-20 text-sm rounded-lg px-2 py-1.5 text-right font-mono transition-shadow"
+                    className="ctl-input w-20 text-sm rounded-lg px-2 py-1.5 text-right font-mono transition-shadow shrink-0"
                   />
                 </label>
               ))}
@@ -321,44 +407,6 @@ export default function ControlPage() {
               className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white disabled:opacity-50 transition-colors shadow-lg shadow-sky-900/40">
               {busy === 'limits' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Guardar límites
             </button>
-          </section>
-
-          {/* ARIA · IA de padres */}
-          <section className="ctl-card p-5">
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-400/20 flex items-center justify-center"><Bot size={15} className="text-violet-300" /></div>
-              <h2 className="font-bold text-[15px] text-white">ARIA · IA de padres</h2>
-              <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full border ${aria.enabled ? 'bg-violet-500/10 border-violet-400/30 text-violet-200' : 'bg-white/5 border-white/10 text-slate-400'}`}>
-                {aria.enabled ? 'LÍMITE ACTIVO' : 'SIN LÍMITE'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Limita cuántas consultas puede hacer cada familia a ARIA dentro de una ventana de tiempo. Al pasarse, ven un aviso y deben esperar.</p>
-            <div className="flex flex-wrap items-end gap-4">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"><MessageSquare size={12} /> Máx. mensajes</span>
-                <input type="number" min={0} inputMode="numeric" value={aria.maxMessages}
-                  onChange={e => setAria(a => ({ ...a, maxMessages: e.target.value.replace(/[^0-9]/g, '') }))}
-                  placeholder="∞" className="ctl-input w-28 text-sm rounded-lg px-3 py-2 font-mono" />
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"><Clock size={12} /> Cada (horas)</span>
-                <input type="number" min={1} inputMode="numeric" value={aria.windowHours}
-                  onChange={e => setAria(a => ({ ...a, windowHours: e.target.value.replace(/[^0-9]/g, '') }))}
-                  placeholder="5" className="ctl-input w-28 text-sm rounded-lg px-3 py-2 font-mono" />
-              </label>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <button onClick={() => saveAria(!aria.enabled)} disabled={busy === 'aria'}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${aria.enabled ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/40' : 'bg-violet-600 hover:bg-violet-500 shadow-violet-900/40'}`}>
-                {busy === 'aria' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
-                {aria.enabled ? 'Desactivar límite' : 'Activar límite'}
-              </button>
-              <button onClick={() => saveAria()} disabled={busy === 'aria'}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
-                <Save size={14} /> Guardar
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-3">Ejemplo: 20 mensajes cada 5 horas por familia. Vacío o 0 = sin tope.</p>
           </section>
 
           {/* Registro de errores */}

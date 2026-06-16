@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { profileLimitCheck } from '@/lib/profile-limits'
 
 // GET: List all users with their profiles
 export async function GET(request: NextRequest) {
@@ -58,6 +59,11 @@ export async function POST(request: NextRequest) {
       const validRoles = ['jefe', 'especialista', 'padre', 'admin', 'secretaria']
       if (!validRoles.includes(role)) {
         return NextResponse.json({ error: 'Rol no válido' }, { status: 400 })
+      }
+      // Bloqueo duro de límite (excluye al propio usuario que cambia de rol).
+      const lim = await profileLimitCheck(role, userId)
+      if (lim.blocked) {
+        return NextResponse.json({ error: `Límite de "${lim.key}" alcanzado (${lim.current}/${lim.limit}). Solo el programador puede ampliarlo.` }, { status: 409 })
       }
       const { error } = await supabaseAdmin
         .from('profiles')
@@ -122,6 +128,11 @@ export async function POST(request: NextRequest) {
       // Validar formato email básico
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return NextResponse.json({ error: 'El formato del email no es válido' }, { status: 400 })
+      }
+      // Bloqueo duro de límite de perfiles (lo define el programador).
+      const lim = await profileLimitCheck(role)
+      if (lim.blocked) {
+        return NextResponse.json({ error: `Límite de "${lim.key}" alcanzado (${lim.current}/${lim.limit}). Solo el programador puede ampliarlo.` }, { status: 409 })
       }
       const { data: newUser, error: createErr } = await supabaseAdmin.auth.admin.createUser({
         email,
