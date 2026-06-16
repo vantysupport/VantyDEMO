@@ -6,7 +6,10 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export type AriaRateResult = { allowed: boolean; message?: string; retryAfterMinutes?: number }
 
-export async function checkAriaRateLimit(key: string): Promise<AriaRateResult> {
+export async function checkAriaRateLimit(
+  key: string,
+  kind: 'padres' | 'staff' = 'padres',
+): Promise<AriaRateResult> {
   try {
     if (!key) return { allowed: true }
 
@@ -14,17 +17,19 @@ export async function checkAriaRateLimit(key: string): Promise<AriaRateResult> {
       .from('app_settings').select('aria_limits').eq('id', 1).maybeSingle()
     const lim = ((s as { aria_limits?: Record<string, unknown> } | null)?.aria_limits || {}) as Record<string, unknown>
 
-    const enabled = !!lim.enabled
-    const maxMessages = Math.floor(Number(lim.maxMessages) || 0)
-    const windowHours = Math.max(1, Math.floor(Number(lim.windowHours) || 5))
+    // Padres usan enabled/maxMessages/windowHours; staff usa staff*.
+    const enabled = kind === 'staff' ? !!lim.staffEnabled : !!lim.enabled
+    const maxMessages = Math.floor(Number(kind === 'staff' ? lim.staffMaxMessages : lim.maxMessages) || 0)
+    const windowHours = Math.max(1, Math.floor(Number(kind === 'staff' ? lim.staffWindowHours : lim.windowHours) || 5))
     // Desactivado o sin tope → sin límite.
     if (!enabled || maxMessages <= 0) return { allowed: true }
 
+    const rlKey = `${kind}:${key}` // prefijo para no mezclar contadores de padres y staff
     const now = Date.now()
     const windowMs = windowHours * 3600_000
 
     const { data: row } = await supabaseAdmin
-      .from('aria_usage').select('count, window_start').eq('rl_key', key).maybeSingle()
+      .from('aria_usage').select('count, window_start').eq('rl_key', rlKey).maybeSingle()
     let count = Number((row as { count?: number } | null)?.count || 0)
     const ws = (row as { window_start?: string } | null)?.window_start
     let windowStart = ws ? new Date(ws).getTime() : 0
@@ -49,7 +54,7 @@ export async function checkAriaRateLimit(key: string): Promise<AriaRateResult> {
 
     // Registrar el consumo de este mensaje.
     await supabaseAdmin.from('aria_usage').upsert({
-      rl_key: key,
+      rl_key: rlKey,
       count: count + 1,
       window_start: new Date(windowStart).toISOString(),
       updated_at: new Date(now).toISOString(),

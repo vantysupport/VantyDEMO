@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { vantyAgent } from '@/lib/vanty-agent'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { checkAriaRateLimit } from '@/lib/aria-rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,6 +11,13 @@ export async function POST(req: NextRequest) {
 
     if (!mensaje || !userId) {
       return NextResponse.json({ error: 'mensaje y userId son requeridos' }, { status: 400 })
+    }
+
+    // Rate limiting de ARIA para el personal (jefe/especialista), configurable en /control.
+    const rl = await checkAriaRateLimit(String(userId), 'staff')
+    if (!rl.allowed) {
+      // Sin "error" → el frontend muestra "respuesta" como mensaje de ARIA.
+      return NextResponse.json({ respuesta: rl.message, rateLimited: true, conversacionId: conversacionId || null })
     }
 
     const locale = req.headers.get('x-locale') || 'es'

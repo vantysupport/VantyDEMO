@@ -44,7 +44,10 @@ export async function POST(req: NextRequest) {
   let body: {
     action?: string; message?: string; detail?: string; source?: string; url?: string
     user_email?: string; on?: boolean; msg?: string; limits?: Record<string, number>
-    aria_limits?: { enabled?: boolean; maxMessages?: number; windowHours?: number }
+    aria_limits?: {
+      enabled?: boolean; maxMessages?: number; windowHours?: number
+      staffEnabled?: boolean; staffMaxMessages?: number; staffWindowHours?: number
+    }
   }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'JSON inválido' }, { status: 400 }) }
   const action = body?.action
@@ -100,6 +103,9 @@ export async function POST(req: NextRequest) {
       enabled: !!a.enabled,
       maxMessages: Math.max(0, Math.floor(Number(a.maxMessages) || 0)),
       windowHours: Math.max(1, Math.floor(Number(a.windowHours) || 5)),
+      staffEnabled: !!a.staffEnabled,
+      staffMaxMessages: Math.max(0, Math.floor(Number(a.staffMaxMessages) || 0)),
+      staffWindowHours: Math.max(1, Math.floor(Number(a.staffWindowHours) || 5)),
     }
     const { error } = await supabaseAdmin.from('app_settings').upsert(
       { id: 1, aria_limits, updated_at: new Date().toISOString() },
