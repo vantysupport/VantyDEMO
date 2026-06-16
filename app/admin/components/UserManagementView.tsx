@@ -12,6 +12,7 @@ import {
   ClipboardList, Trash2} from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { getControlStatus } from '@/lib/control'
+import { supabase } from '@/lib/supabase'
 
 const ROLES = [
   { value: 'jefe',        label: 'Director',      description: 'Acceso total al sistema',  icon: Crown,         dotColor: 'bg-sky-500', badgeClass: 'role-director'    },
@@ -218,6 +219,7 @@ export default function UserManagementView() {
   const [activeTab, setActiveTab] = useState<'jefe' | 'especialista' | 'padre' | 'secretaria' | 'todos'>('todos')
   const [profileLimits, setProfileLimits] = useState<Record<string, number>>({})
   const [deletingUser, setDeletingUser] = useState<string | null>(null)
+  const tokenRef = useRef('')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterSpecialty, setFilterSpecialty] = useState<string>('')
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
@@ -264,7 +266,8 @@ export default function UserManagementView() {
         if (prof) setCurrentUserRole(prof.role || '')
       }
 
-      const resUsers = await fetch('/api/admin/users')
+      const { data: { session } } = await sb.auth.getSession()
+      const resUsers = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${session?.access_token || ''}` } })
       const json = await resUsers.json()
       if (json.error) throw new Error(json.error)
       setUsers(json.data || [])
@@ -284,6 +287,11 @@ export default function UserManagementView() {
 
   useEffect(() => { cargarUsuarios() }, [cargarUsuarios])
   useEffect(() => { getControlStatus().then(st => setProfileLimits(st.limits || {})).catch(() => {}) }, [])
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => { tokenRef.current = data.session?.access_token || '' })
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => { tokenRef.current = session?.access_token || '' })
+    return () => sub.subscription.unsubscribe()
+  }, [])
 
   // Protección: director no puede cambiar rol de otro director
   // Solo un "super director" (el primero registrado / admin) puede hacerlo
@@ -327,7 +335,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'update_role', userId: user.id, role: newRole , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
@@ -354,7 +362,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
         body: JSON.stringify({ action: 'delete_user', userId: user.id }),
       })
       const json = await res.json()
@@ -376,7 +384,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'toggle_active', userId: user.id , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
@@ -396,7 +404,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'change_password', userId: changingPasswordFor.id, newPassword , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
@@ -413,7 +421,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'update_tokens', userId, tokens: newTokens , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
@@ -431,7 +439,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'update_profile', userId, specialty: newSpecialty.trim() }),
       })
       const json = await res.json()
@@ -448,7 +456,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'send_reset_email', email: user.email , locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
@@ -470,7 +478,7 @@ export default function UserManagementView() {
 
       const linkRes = await fetch('/api/admin/children', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
         body: JSON.stringify({ childId: selectedChildId, parentId: linkingParent.id })
       })
       const linkJson = await linkRes.json()
@@ -488,7 +496,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/children', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
         body: JSON.stringify({ childId, parentId: null })
       })
       const json = await res.json()
@@ -522,7 +530,7 @@ export default function UserManagementView() {
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' },
         body: JSON.stringify({ action: 'create_user', ...createForm, newPassword: createForm.password, locale: localStorage.getItem('vanty_locale') || 'es' }),
       })
       const json = await res.json()
@@ -831,7 +839,7 @@ export default function UserManagementView() {
                       {!user.email_confirmed && (
                         <button onClick={async () => {
                           try {
-                            const res = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' }, body: JSON.stringify({ action: 'confirm_email', userId: user.id }) })
+                            const res = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}`, 'x-locale': typeof window !== 'undefined' ? (localStorage.getItem('vanty_locale') || 'es') : 'es' }, body: JSON.stringify({ action: 'confirm_email', userId: user.id }) })
                             const json = await res.json()
                             if (json.error) throw new Error(json.error)
                             toast.success('Email confirmado')

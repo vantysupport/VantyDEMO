@@ -2,9 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { profileLimitCheck } from '@/lib/profile-limits'
 
+// Solo jefe/admin/programador pueden gestionar usuarios. Se valida por token.
+const STAFF_ADMIN = ['jefe', 'admin', 'programador']
+async function requireAdmin(req: NextRequest): Promise<{ ok: boolean; reason: string }> {
+  const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
+  if (!token) return { ok: false, reason: 'sin token' }
+  const { data: u, error } = await supabaseAdmin.auth.getUser(token)
+  const uid = u?.user?.id
+  if (error || !uid) return { ok: false, reason: 'sesión inválida o expirada' }
+  const { data: prof } = await supabaseAdmin.from('profiles').select('role').eq('id', uid).maybeSingle()
+  const role = (prof as { role?: string } | null)?.role
+  if (!role || !STAFF_ADMIN.includes(role)) return { ok: false, reason: 'requiere rol jefe/admin' }
+  return { ok: true, reason: '' }
+}
+
 // GET: List all users with their profiles
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdmin(request)
+    if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
     const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers()
     if (authError) throw authError
 
@@ -34,6 +50,8 @@ export async function GET(request: NextRequest) {
 // POST: Manage users
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdmin(request)
+    if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
     const body = await request.json()
     const { action, userId, newPassword, tokens, email, role, specialty, full_name, is_active } = body
 
