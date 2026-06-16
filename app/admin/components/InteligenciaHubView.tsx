@@ -1,6 +1,7 @@
 'use client'
 
 import { useI18n } from '@/lib/i18n-context'
+import { adminFetch } from '@/lib/admin-fetch'
 // app/admin/components/InteligenciaHubView.tsx
 // 🧠 Hub de Inteligencia Artificial — Predicciones + Seguridad + Engagement Padres
 
@@ -1941,7 +1942,7 @@ export default function InteligenciaHubView() {
 
   useEffect(() => {
     // Usar API server-side que bypassa RLS de Supabase
-    fetch('/api/admin/children')
+    adminFetch('/api/admin/children')
       .then(r => r.json())
       .then(json => {
         const data = json.data || []

@@ -2,6 +2,7 @@
 
 import { useI18n } from '@/lib/i18n-context'
 import { toBCP47 } from '@/lib/i18n'
+import { adminFetch } from '@/lib/admin-fetch'
 import { useState, useEffect, useCallback } from 'react'
 import {
   Activity, Brain, Calendar, ChevronRight, Clock,
@@ -304,7 +305,7 @@ export default function DashboardHome({ navigateTo, navigateToPatient }: { navig
       // 3. Children map — usa /api/admin/children (supabaseAdmin, bypassa RLS)
       // FIX: No usar supabase browser client aquí porque la RLS de children filtra
       // solo los pacientes del usuario autenticado, ocultando pacientes de otros especialistas.
-      const childrenResp = await fetch('/api/admin/children')
+      const childrenResp = await adminFetch('/api/admin/children')
       const childrenData = childrenResp.ok ? await childrenResp.json() : { data: [] }
       const todosNinos: any[] = childrenData.data || []
       const ninosMap: Record<string, string> = {}

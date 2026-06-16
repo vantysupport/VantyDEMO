@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 // GET /api/admin/children — lista todos los pacientes usando service role (bypassa RLS)
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})`, data: [] }, { status: 403 })
   try {
     // Try full select first
     let { data, error } = await supabaseAdmin
@@ -28,6 +31,8 @@ export async function GET() {
 
 // PATCH /api/admin/children — actualiza parent_id + sincroniza parent_accounts
 export async function PATCH(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
   try {
     const { childId, parentId } = await req.json()
     if (!childId) return NextResponse.json({ error: 'childId requerido' }, { status: 400 })

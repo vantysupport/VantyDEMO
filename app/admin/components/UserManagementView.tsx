@@ -13,6 +13,7 @@ import {
 import { useToast } from '@/components/Toast'
 import { getControlStatus } from '@/lib/control'
 import { supabase } from '@/lib/supabase'
+import { adminFetch } from '@/lib/admin-fetch'
 
 const ROLES = [
   { value: 'jefe',        label: 'Director',      description: 'Acceso total al sistema',  icon: Crown,         dotColor: 'bg-sky-500', badgeClass: 'role-director'    },
@@ -256,25 +257,23 @@ export default function UserManagementView() {
   const cargarUsuarios = useCallback(async () => {
     setIsLoading(true)
     try {
-      const { createClient: cc } = await import('@supabase/supabase-js')
-      const sb = cc(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-      const { data: { user } } = await sb.auth.getUser()
+      // Usamos el cliente singleton (sesión real en cookies vía @supabase/ssr).
+      const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setCurrentUserId(user.id)
         // Obtener rol actual del usuario logueado
-        const { data: prof } = await sb.from('profiles').select('role').eq('id', user.id).single()
+        const { data: prof } = await supabase.from('profiles').select('role').eq('id', user.id).single()
         if (prof) setCurrentUserRole(prof.role || '')
       }
 
-      const { data: { session } } = await sb.auth.getSession()
-      const resUsers = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${session?.access_token || ''}` } })
+      const resUsers = await adminFetch('/api/admin/users')
       const json = await resUsers.json()
       if (json.error) throw new Error(json.error)
       setUsers(json.data || [])
 
       // Cargar niños usando API admin (bypassa RLS)
       try {
-        const kidsRes = await fetch('/api/admin/children')
+        const kidsRes = await adminFetch('/api/admin/children')
         const kidsJson = await kidsRes.json()
         if (kidsJson.data) setChildren(kidsJson.data)
       } catch (e) { console.error('[UserMgmt] children fetch failed:', e) }
@@ -476,7 +475,7 @@ export default function UserManagementView() {
       const child = children.find(c => c.id === selectedChildId)
       if (!child) throw new Error('Paciente no encontrado')
 
-      const linkRes = await fetch('/api/admin/children', {
+      const linkRes = await adminFetch('/api/admin/children', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
         body: JSON.stringify({ childId: selectedChildId, parentId: linkingParent.id })
@@ -494,7 +493,7 @@ export default function UserManagementView() {
 
   const handleUnlinkChild = async (childId: string) => {
     try {
-      const res = await fetch('/api/admin/children', {
+      const res = await adminFetch('/api/admin/children', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenRef.current}` },
         body: JSON.stringify({ childId, parentId: null })
@@ -855,7 +854,7 @@ export default function UserManagementView() {
                       {role === 'padre' && (
                         <button onClick={() => { setLinkingParent(user)
       // Recargar niños al abrir modal
-      fetch('/api/admin/children').then(r=>r.json()).then(j=>{
+      adminFetch('/api/admin/children').then(r=>r.json()).then(j=>{
         if(j.data) setChildren(j.data)
       }).catch(()=>{}); setSelectedChildId('') }}
                           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-80"

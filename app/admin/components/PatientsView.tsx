@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getControlStatus } from '@/lib/control'
+import { adminFetch } from '@/lib/admin-fetch'
 import { useToast } from '@/components/Toast'
 import { calcularEdadNumerica } from '../utils/helpers'
 import ProgramasABAView from './ProgramasABAView'
@@ -127,7 +128,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
   const handleLink = async (user: any) => {
     setLinking(true)
     try {
-      const res = await fetch('/api/admin/children', {
+      const res = await adminFetch('/api/admin/children', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ childId: nino.id, parentId: user.id }),
@@ -146,7 +147,7 @@ function LinkedAccountSection({ nino, onLinked }: { nino: any; onLinked: () => v
   const handleUnlink = async () => {
     setUnlinking(true)
     try {
-      const res = await fetch('/api/admin/children', {
+      const res = await adminFetch('/api/admin/children', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ childId: nino.id, parentId: null }),
