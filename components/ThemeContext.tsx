@@ -99,9 +99,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const toggleTheme = useCallback(() => {
-    // Ciclo: light → dark → system → light...
+    // Ciclo: light → dark → light... (solo dos estados, sin "system")
     setThemeState(prev => {
-      const next: ThemeMode = prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light'
+      const next: ThemeMode = prev === 'dark' ? 'light' : 'dark'
       try { localStorage.setItem(STORAGE_KEY, next) } catch {}
       return next
     })
@@ -118,14 +118,14 @@ export function useTheme() {
   return useContext(ThemeContext)
 }
 
-// ─── Botón de toggle con 3 estados visuales ──────────────────────────────────
+// ─── Botón de toggle con 2 estados: claro / oscuro ──────────────────────────
 export function ThemeToggleButton({ className = '' }: { className?: string }) {
   const { theme, toggleTheme, isDark } = useTheme()
 
   const tooltipMap: Record<ThemeMode, string> = {
     light:  'Modo claro · Click para oscuro',
-    dark:   'Modo oscuro · Click para seguir al sistema',
-    system: `Sigue al sistema (${isDark ? 'oscuro' : 'claro'}) · Click para claro`,
+    dark:   'Modo oscuro · Click para claro',
+    system: 'Modo claro · Click para oscuro',
   }
 
   return (
@@ -139,16 +139,8 @@ export function ThemeToggleButton({ className = '' }: { className?: string }) {
           : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
         } ${className}`}
     >
-      {theme === 'system' ? (
-        // Ícono "auto" — pantalla/monitor con punto que indica el modo activo
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="4" width="20" height="13" rx="2" ry="2"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-        </svg>
-      ) : theme === 'dark' ? (
-        // Sol (estás en oscuro, click iría a system)
+      {isDark ? (
+        // Sol (estás en oscuro, click va a claro)
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="4"/>
