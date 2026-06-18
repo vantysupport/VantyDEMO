@@ -1,7 +1,7 @@
 export const maxDuration = 60;
 
 import { NextResponse } from 'next/server';
-import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
+import { callGroqSimple, GROQ_MODELS, GroqExhaustedError } from '@/lib/groq-client'
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { buildAIContext } from '@/lib/ai-context-builder';
 
@@ -216,7 +216,13 @@ Responde SOLAMENTE con JSON válido (sin texto adicional, sin backticks, sin com
     return NextResponse.json(responseData);
 
   } catch (error: any) {
-    console.error("Error Gemini session report:", error);
-    return NextResponse.json({ error: "Error procesando el reporte: " + error.message }, { status: 500 });
+    console.error("Error generando reporte de sesión:", error);
+    if (error instanceof GroqExhaustedError) {
+      const friendly = error.isPerMinute
+        ? `ARIA está muy solicitada en este momento. Intenta de nuevo en ${error.retryAfterSeconds ? `~${error.retryAfterSeconds} segundos` : 'un minuto'}.`
+        : 'ARIA alcanzó su límite de uso por hoy. Va a estar disponible nuevamente mañana.'
+      return NextResponse.json({ error: friendly }, { status: 503 });
+    }
+    return NextResponse.json({ error: "No se pudo generar el reporte. Intenta de nuevo en unos minutos." }, { status: 500 });
   }
 }
