@@ -159,7 +159,8 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                 <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-xs text-slate-600 leading-relaxed">
                   <p>
                     ✅ Este código corresponde a un documento real emitido digitalmente por el sistema SANTI.
-                    La validez legal del documento queda condicionada a la firma manuscrita o digital del profesional responsable.
+                    Este documento clínico <strong>no reemplaza un certificado médico-legal</strong>.
+                    Su validez legal queda condicionada a la firma manuscrita o digital del profesional responsable.
                     Para consultar el contenido completo del informe, contacte al centro indicando el código.
                   </p>
                 </div>

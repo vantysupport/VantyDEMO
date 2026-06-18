@@ -63,7 +63,7 @@ export const COLOR = {
 export const FONT      = 'Calibri'
 export const TELEFONO  = '991 070 734'
 export const EMAIL_SANTI = 'info@santiterapias.com'
-export const DISCLAIMER = 'Este documento carece de valor médico-legal sin la firma del especialista'
+export const DISCLAIMER = 'Este documento clínico no reemplaza un certificado médico-legal · Carece de valor médico-legal sin la firma del especialista'
 
 const BD  = { style: BorderStyle.SINGLE, size: 4, color: COLOR.borde } as const
 export const BDR  = { top: BD, bottom: BD, left: BD, right: BD } as const
