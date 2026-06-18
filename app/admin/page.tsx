@@ -5,7 +5,7 @@ import { useI18n } from '@/lib/i18n-context'
 
 import { supabase } from '@/lib/supabase'
 import { releaseSessionNow } from '@/lib/session-lock'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -236,42 +236,67 @@ export default function AdminDashboard() {
     }
   }, [currentView, userId])
 
+  const chatChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }: { data: { user: any } }) => {
-      if (user?.email) {
-        setUserEmail(user.email)
-        setUserId(user.id)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-        if (profile) setUserProfile(profile)
+    let cancelled = false
 
-        const hace7dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        const { count } = await supabase
-          .from('chat_especialista_admin')
-          .select('id', { count: 'exact', head: true })
-          .eq('recipient_id', user.id)
-          .is('read_at', null)
-          .gte('created_at', hace7dias)
-        setChatUnread(count || 0)
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.email || cancelled) return
 
-        const channel = supabase
-          .channel('admin-chat-unread')
-          .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'chat_especialista_admin',
-            filter: `recipient_id=eq.${user.id}`,
-          }, () => {
-            setChatUnread(prev => prev + 1)
-          })
-          .subscribe()
-        return () => { supabase.removeChannel(channel) }
+      setUserEmail(user.email)
+      setUserId(user.id)
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (profile && !cancelled) setUserProfile(profile)
+
+      const hace7dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const { count } = await supabase
+        .from('chat_especialista_admin')
+        .select('id', { count: 'exact', head: true })
+        .eq('recipient_id', user.id)
+        .is('read_at', null)
+        .gte('created_at', hace7dias)
+      if (!cancelled) setChatUnread(count || 0)
+
+      // Remove any existing channel before creating a new one
+      if (chatChannelRef.current) {
+        await supabase.removeChannel(chatChannelRef.current)
+        chatChannelRef.current = null
       }
-    })
+
+      if (cancelled) return
+
+      const channel = supabase
+        .channel(`admin-chat-unread-${user.id}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_especialista_admin',
+          filter: `recipient_id=eq.${user.id}`,
+        }, () => {
+          if (!cancelled) setChatUnread(prev => prev + 1)
+        })
+        .subscribe()
+
+      chatChannelRef.current = channel
+    }
+
+    init()
     fetchNotifications()
+
+    return () => {
+      cancelled = true
+      if (chatChannelRef.current) {
+        supabase.removeChannel(chatChannelRef.current)
+        chatChannelRef.current = null
+      }
+    }
   }, [])
 
   const fetchNotifications = async () => {
