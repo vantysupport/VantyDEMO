@@ -266,6 +266,14 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
   const [prediccion, setPrediccion] = useState<Prediccion | null>(null)
   const [loading, setLoading] = useState(false)
   const [showMobileDetail, setShowMobileDetail] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+
+  const pacientesFiltrados = pacientes.filter(p => {
+    if (!busqueda.trim()) return true
+    const q = busqueda.trim().toLowerCase()
+    return (p.name || p.nombre || '').toLowerCase().includes(q)
+      || (p.diagnosis || '').toLowerCase().includes(q)
+  })
 
   const generarPrediccion = async (p: Paciente) => {
     setSelectedPaciente(p)
@@ -462,13 +470,24 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               <Users size={15} className="text-sky-500" /> {t('ui.generarPrediccion2')}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('hub.iaAnalizara')}</p>
+            <div className="relative mt-2.5">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+                placeholder="Buscar paciente..."
+                className="w-full pl-8 pr-3 py-2 rounded-lg text-xs border outline-none focus:ring-2 focus:ring-sky-500/40"
+                style={{ borderColor: 'var(--card-border)', background: 'var(--card)', color: 'var(--text-primary)' }}
+              />
+            </div>
           </div>
           <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
             
-          {pacientes.length === 0 && (
-            <p className="p-4 text-sm text-center" style={{ color: 'var(--text-muted)' }}>{t('ui.no_patients')}</p>
+          {pacientesFiltrados.length === 0 && (
+            <p className="p-4 text-sm text-center" style={{ color: 'var(--text-muted)' }}>{busqueda ? 'Sin resultados' : t('ui.no_patients')}</p>
           )}
-          {pacientes.map(p => (
+          {pacientesFiltrados.map(p => (
             <button key={p.id} onClick={() => generarPrediccion(p)}
               className="w-full text-left px-3.5 py-3 transition-colors flex items-center gap-3 border-b"
               style={{
@@ -507,13 +526,24 @@ function TabPredicciones({ pacientes }: { pacientes: Paciente[] }) {
               <Users size={15} className="text-sky-500" /> {t('ui.generarPrediccion2')}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('hub.iaAnalizara')}</p>
+            <div className="relative mt-2.5">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+                placeholder="Buscar paciente..."
+                className="w-full pl-8 pr-3 py-2 rounded-lg text-xs border outline-none focus:ring-2 focus:ring-sky-500/40"
+                style={{ borderColor: 'var(--card-border)', background: 'var(--card)', color: 'var(--text-primary)' }}
+              />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             
-          {pacientes.length === 0 && (
-            <p className="p-4 text-sm text-center" style={{ color: 'var(--text-muted)' }}>{t('ui.no_patients')}</p>
+          {pacientesFiltrados.length === 0 && (
+            <p className="p-4 text-sm text-center" style={{ color: 'var(--text-muted)' }}>{busqueda ? 'Sin resultados' : t('ui.no_patients')}</p>
           )}
-          {pacientes.map(p => (
+          {pacientesFiltrados.map(p => (
             <button key={p.id} onClick={() => generarPrediccion(p)}
               className="w-full text-left px-3.5 py-3 transition-colors flex items-center gap-3 border-b"
               style={{
