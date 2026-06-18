@@ -1935,7 +1935,7 @@ function TabReportes({ pacientes }: { pacientes: Paciente[] }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════════════════
-export default function InteligenciaHubView() {
+export default function InteligenciaHubView({ enabledTabs }: { enabledTabs?: Record<string, boolean> } = {}) {
   const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('predicciones')
   const [pacientes, setPacientes] = useState<Paciente[]>([])
@@ -1955,13 +1955,13 @@ export default function InteligenciaHubView() {
       .catch(e => console.error('Error cargando pacientes Hub IA:', e))
   }, [])
 
-  const tabs = [
-    { id: 'predicciones' as Tab, icon: Brain, label: t('hub.predicciones'), color: 'blue' },
-    { id: 'patrones' as Tab, icon: Activity, label: 'Patrones ABA', color: 'violet' },
-    { id: 'objetivos' as Tab, icon: Target, label: 'Objetivos IA', color: 'amber' },
-    { id: 'sugerencias' as Tab, icon: Sparkles, label: 'Alertas Proactivas', color: 'orange' },
-    { id: 'reportes' as Tab, icon: BookOpen, label: 'Reportes IA', color: 'teal' },
-  ]
+  const tabs = ([
+    { id: 'predicciones' as Tab, icon: Brain, label: t('hub.predicciones'), color: 'blue', featureKey: 'intel_predicciones' },
+    { id: 'patrones' as Tab, icon: Activity, label: 'Patrones ABA', color: 'violet', featureKey: 'intel_patrones' },
+    { id: 'objetivos' as Tab, icon: Target, label: 'Objetivos IA', color: 'amber', featureKey: 'intel_objetivos' },
+    { id: 'sugerencias' as Tab, icon: Sparkles, label: 'Alertas Proactivas', color: 'orange', featureKey: 'intel_sugerencias' },
+    { id: 'reportes' as Tab, icon: BookOpen, label: 'Reportes IA', color: 'teal', featureKey: 'intel_reportes' },
+  ] as const).filter(t => !enabledTabs || enabledTabs[t.featureKey] !== false)
 
   return (
     <div className="space-y-5">
@@ -2019,7 +2019,7 @@ export default function InteligenciaHubView() {
       {tab === 'objetivos' && <TabObjetivos pacientes={pacientes} />}
       {tab === 'sugerencias' && <TabSugerencias />}
       {tab === 'reportes' && <TabReportes pacientes={pacientes} />}
-      {tab === 'seguridad' && <TabSeguridad />}
+      {tab === 'seguridad' && (!enabledTabs || enabledTabs['intel_seguridad'] !== false) && <TabSeguridad />}
     </div>
   )
 }

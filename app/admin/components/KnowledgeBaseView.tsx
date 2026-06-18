@@ -15,11 +15,18 @@ import { useTheme } from '@/components/ThemeContext'
 type InputMode = 'archivo' | 'url' | 'texto' | 'buscar'
 type Tab = 'aprender' | 'biblioteca' | 'diagnosticos'
 
-export default function KnowledgeBaseView() {
+export default function KnowledgeBaseView({ enabledTabs }: { enabledTabs?: Record<string, boolean> } = {}) {
   const toast = useToast()
   const { t } = useI18n()
   const { isDark } = useTheme()
   const [tab, setTab] = useState<Tab>('aprender')
+  const cerebroTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'aprender',     label: 'Aprender',       icon: null },
+    { id: 'diagnosticos', label: 'Diagnósticos',   icon: null },
+    { id: 'biblioteca',   label: 'Biblioteca',     icon: null },
+  ].filter(t => !enabledTabs || enabledTabs[`cerebro_${t.id}`] !== false) as { id: Tab; label: string; icon: React.ReactNode }[]
+  // If active tab got disabled, jump to first available
+  const activeTab: Tab = cerebroTabs.find(t => t.id === tab) ? tab : (cerebroTabs[0]?.id ?? 'aprender')
   const [documentos, setDocumentos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -754,7 +761,7 @@ export default function KnowledgeBaseView() {
       </div>
 
       {/* ══ TAB: APRENDER ══ */}
-      {tab === 'aprender' && (
+      {activeTab === 'aprender' && (
         <div className="space-y-4">
 
           {/* Cómo funciona */}
@@ -953,7 +960,7 @@ export default function KnowledgeBaseView() {
       )}
 
       {/* ══ TAB: CIE-11 / DSM-5 ══ */}
-      {tab === 'diagnosticos' && (
+      {activeTab === 'diagnosticos' && (
         <div className="space-y-4">
           <div className={`rounded-2xl p-4 border ${isDark ? 'bg-sky-900/20 border-sky-800/30' : 'bg-sky-50 border-sky-100'}`}>
             <div className="flex items-center gap-2 mb-1">
@@ -969,7 +976,7 @@ export default function KnowledgeBaseView() {
       )}
 
       {/* ══ TAB: BIBLIOTECA ══ */}
-      {tab === 'biblioteca' && (
+      {activeTab === 'biblioteca' && (
         <div className="space-y-4">
           <button onClick={() => setShowForm(v => !v)}
             className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 text-sm transition">

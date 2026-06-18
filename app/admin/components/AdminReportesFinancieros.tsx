@@ -62,10 +62,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export default function AdminReportesFinancieros() {
+export default function AdminReportesFinancieros({ enabledTabs }: { enabledTabs?: Record<string, boolean> } = {}) {
   const toast = useToast()
   const [loading, setLoading]         = useState(true)
-  const [tab, setTab]                 = useState<'overview' | 'pacientes' | 'servicios'>('overview')
+  const [tab, setTab] = useState<'overview' | 'pacientes' | 'servicios'>('overview')
+  const reportesTabs = ([
+    { id: 'overview',  label: 'Ingresos',    Icon: TrendingUp },
+    { id: 'pacientes', label: 'Pacientes',   Icon: Users },
+    { id: 'servicios', label: 'Servicios',   Icon: Package },
+  ] as const).filter(t => !enabledTabs || enabledTabs[`reportes_${t.id}`] !== false)
+  type ReportesTab = 'overview' | 'pacientes' | 'servicios'
+  const activeTab: ReportesTab = reportesTabs.find(t => t.id === tab) ? tab : (reportesTabs[0]?.id ?? 'overview')
   const [anio, setAnio]               = useState(new Date().getFullYear())
   const [mesFilter, setMesFilter]     = useState<number | null>(null) // null = todo el año
 
@@ -255,11 +262,7 @@ export default function AdminReportesFinancieros() {
 
       {/* ── TABS ────────────────────────────────────────────────────────────── */}
       <div className="flex rounded-2xl p-1.5 border gap-1.5" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-        {[
-          { id: 'overview',    label: 'Ingresos',  Icon: TrendingUp },
-          { id: 'pacientes',   label: 'Pacientes', Icon: Users },
-          { id: 'servicios',   label: 'Servicios', Icon: Package },
-        ].map(t => (
+        {reportesTabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
             className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
             style={{
@@ -281,7 +284,7 @@ export default function AdminReportesFinancieros() {
       ) : (
         <>
           {/* ── OVERVIEW ── */}
-          {tab === 'overview' && (
+          {activeTab === 'overview' && (
             <div className="space-y-4">
 
               {/* Area chart — ingresos vs pendiente */}
@@ -474,7 +477,7 @@ export default function AdminReportesFinancieros() {
 
           {/* ── TERAPEUTAS ── */}
           {/* ── PACIENTES ── */}
-          {tab === 'pacientes' && (
+          {activeTab === 'pacientes' && (
             <div className="space-y-4">
               <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
@@ -511,7 +514,7 @@ export default function AdminReportesFinancieros() {
           )}
 
           {/* ── SERVICIOS ── */}
-          {tab === 'servicios' && (
+          {activeTab === 'servicios' && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>

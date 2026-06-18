@@ -19,11 +19,15 @@ type ErrLog = { id: string; message: string; detail: string; source: string; url
 
 type FeaturesConfig = {
   agenda: boolean; ninos: boolean; inteligencia: boolean; cerebro: boolean
-  pagos: boolean; reportes_financieros: boolean; recursos_adicionales: boolean
-  chat_especialistas: boolean
+  pagos: boolean; reportes_financieros: boolean; recursos_adicionales: boolean; chat_especialistas: boolean
   ninos_info: boolean; ninos_programas: boolean; ninos_evaluaciones: boolean
-  ninos_eval_inicial: boolean; ninos_historial: boolean; ninos_fichas: boolean
-  ninos_documentos: boolean
+  ninos_eval_inicial: boolean; ninos_historial: boolean; ninos_fichas: boolean; ninos_documentos: boolean
+  intel_predicciones: boolean; intel_patrones: boolean; intel_objetivos: boolean
+  intel_sugerencias: boolean; intel_reportes: boolean; intel_seguridad: boolean
+  cerebro_aprender: boolean; cerebro_diagnosticos: boolean; cerebro_biblioteca: boolean
+  pagos_dashboard: boolean; pagos_registros: boolean; pagos_agrupado: boolean; pagos_tarifas: boolean
+  reportes_overview: boolean; reportes_pacientes: boolean; reportes_servicios: boolean
+  recursos_recursos: boolean; recursos_tienda: boolean; recursos_terapias: boolean; recursos_fonemas: boolean
 }
 
 type RolesConfig = { jefe: boolean; especialista: boolean; secretaria: boolean; padre: boolean }
@@ -33,6 +37,12 @@ const DEFAULT_FEATURES: FeaturesConfig = {
   pagos: true, reportes_financieros: true, recursos_adicionales: true, chat_especialistas: true,
   ninos_info: true, ninos_programas: true, ninos_evaluaciones: true,
   ninos_eval_inicial: true, ninos_historial: true, ninos_fichas: true, ninos_documentos: true,
+  intel_predicciones: true, intel_patrones: true, intel_objetivos: true,
+  intel_sugerencias: true, intel_reportes: true, intel_seguridad: true,
+  cerebro_aprender: true, cerebro_diagnosticos: true, cerebro_biblioteca: true,
+  pagos_dashboard: true, pagos_registros: true, pagos_agrupado: true, pagos_tarifas: true,
+  reportes_overview: true, reportes_pacientes: true, reportes_servicios: true,
+  recursos_recursos: true, recursos_tienda: true, recursos_terapias: true, recursos_fonemas: true,
 }
 
 const DEFAULT_ROLES: RolesConfig = { jefe: true, especialista: true, secretaria: true, padre: true }
@@ -56,6 +66,41 @@ const PATIENT_TABS = [
   { key: 'ninos_historial', label: 'Historial & IA', icon: '🤖' },
   { key: 'ninos_fichas', label: 'Fichas clínicas', icon: '📄' },
   { key: 'ninos_documentos', label: 'Documentos', icon: '📁' },
+] as const
+
+const INTEL_TABS = [
+  { key: 'intel_predicciones', label: 'Predicciones IA', icon: '🧠' },
+  { key: 'intel_patrones', label: 'Patrones ABA', icon: '📊' },
+  { key: 'intel_objetivos', label: 'Objetivos IA', icon: '🎯' },
+  { key: 'intel_sugerencias', label: 'Alertas Proactivas', icon: '⚡' },
+  { key: 'intel_reportes', label: 'Reportes IA', icon: '📑' },
+  { key: 'intel_seguridad', label: 'Seguridad', icon: '🛡️' },
+] as const
+
+const CEREBRO_TABS = [
+  { key: 'cerebro_aprender', label: 'Aprender / Ingerir', icon: '📥' },
+  { key: 'cerebro_diagnosticos', label: 'Diagnósticos CIE-11', icon: '🔬' },
+  { key: 'cerebro_biblioteca', label: 'Biblioteca', icon: '📚' },
+] as const
+
+const PAGOS_TABS = [
+  { key: 'pagos_dashboard', label: 'Dashboard', icon: '📊' },
+  { key: 'pagos_registros', label: 'Registros', icon: '💳' },
+  { key: 'pagos_agrupado', label: 'Por paciente', icon: '👥' },
+  { key: 'pagos_tarifas', label: 'Tarifas', icon: '🏷️' },
+] as const
+
+const REPORTES_TABS = [
+  { key: 'reportes_overview', label: 'Ingresos', icon: '📈' },
+  { key: 'reportes_pacientes', label: 'Por paciente', icon: '👤' },
+  { key: 'reportes_servicios', label: 'Por servicio', icon: '🧩' },
+] as const
+
+const RECURSOS_TABS = [
+  { key: 'recursos_recursos', label: 'Recursos', icon: '📖' },
+  { key: 'recursos_tienda', label: 'Tienda', icon: '🛒' },
+  { key: 'recursos_terapias', label: 'Catálogo Terapias', icon: '✨' },
+  { key: 'recursos_fonemas', label: 'Fonemas', icon: '🎤' },
 ] as const
 
 const ROLE_OPTIONS = [
@@ -317,7 +362,8 @@ export default function ControlPage() {
   }
 
   const activeModules = MAIN_MODULES.filter(m => features[m.key as keyof FeaturesConfig]).length
-  const activeTabs = PATIENT_TABS.filter(t => features[t.key as keyof FeaturesConfig]).length
+  const ALL_SUB_TABS = [...PATIENT_TABS, ...INTEL_TABS, ...CEREBRO_TABS, ...PAGOS_TABS, ...REPORTES_TABS, ...RECURSOS_TABS]
+  const activeTabs = ALL_SUB_TABS.filter(t => features[t.key as keyof FeaturesConfig]).length
   const activeRoles = ROLE_OPTIONS.filter(r => rolesConfig[r.key as keyof RolesConfig]).length
 
   return (
@@ -380,11 +426,11 @@ export default function ControlPage() {
             </div>
             <div className="ctl-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Pacientes</span>
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Sub-módulos</span>
                 <Layers size={15} className="text-violet-400" />
               </div>
-              <p className="mt-2 text-2xl font-black text-white">{activeTabs}<span className="text-sm text-slate-500 font-bold"> / {PATIENT_TABS.length}</span></p>
-              <p className="text-[11px] text-slate-500">pestañas activas</p>
+              <p className="mt-2 text-2xl font-black text-white">{activeTabs}<span className="text-sm text-slate-500 font-bold"> / {ALL_SUB_TABS.length}</span></p>
+              <p className="text-[11px] text-slate-500">pestañas activas total</p>
             </div>
             <div className="ctl-card p-4">
               <div className="flex items-center justify-between">
@@ -419,32 +465,87 @@ export default function ControlPage() {
             </div>
           </section>
 
-          {/* ── SUB-MÓDULOS DE PACIENTES ─────────────────────────────────────── */}
-          <section className="ctl-card p-5">
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-400/20 flex items-center justify-center"><Layers size={15} className="text-violet-400" /></div>
-              <h2 className="font-bold text-[15px] text-white">Pestañas dentro de Pacientes</h2>
-              <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full border ${features.ninos ? 'bg-sky-500/10 border-sky-400/30 text-sky-300' : 'bg-white/5 border-white/10 text-slate-500'}`}>
-                {features.ninos ? 'módulo activo' : 'módulo desactivado'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Controla qué pestañas aparecen dentro del módulo de Pacientes. Requiere que el módulo "Pacientes" esté activo.</p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-              {PATIENT_TABS.map(t => {
-                const isOn = features[t.key as keyof FeaturesConfig]
-                const disabled = !features.ninos
-                return (
-                  <div key={t.key} className={`flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors
-                    ${disabled ? 'opacity-40' : ''}
-                    ${isOn && !disabled ? 'bg-violet-500/5 border-violet-400/20' : 'bg-white/[0.02] border-white/5'}`}>
-                    <span className="text-base leading-none">{t.icon}</span>
-                    <span className={`flex-1 text-sm font-semibold ${isOn && !disabled ? 'text-slate-200' : 'text-slate-500'}`}>{t.label}</span>
-                    <Toggle on={isOn} onChange={v => toggleFeature(t.key as keyof FeaturesConfig, v)} disabled={disabled} />
+          {/* ── SUB-MÓDULOS ─────────────────────────────────────────────────── */}
+
+          {/* Helper component for sub-module grids */}
+          {([
+            {
+              parentKey: 'ninos' as keyof FeaturesConfig,
+              parentLabel: 'Pacientes',
+              color: 'violet',
+              tabs: PATIENT_TABS,
+            },
+            {
+              parentKey: 'inteligencia' as keyof FeaturesConfig,
+              parentLabel: 'Inteligencia Hub',
+              color: 'sky',
+              tabs: INTEL_TABS,
+            },
+            {
+              parentKey: 'cerebro' as keyof FeaturesConfig,
+              parentLabel: 'Cerebro',
+              color: 'emerald',
+              tabs: CEREBRO_TABS,
+            },
+            {
+              parentKey: 'pagos' as keyof FeaturesConfig,
+              parentLabel: 'Pagos y Facturación',
+              color: 'amber',
+              tabs: PAGOS_TABS,
+            },
+            {
+              parentKey: 'reportes_financieros' as keyof FeaturesConfig,
+              parentLabel: 'Reportes Financieros',
+              color: 'rose',
+              tabs: REPORTES_TABS,
+            },
+            {
+              parentKey: 'recursos_adicionales' as keyof FeaturesConfig,
+              parentLabel: 'Recursos Adicionales',
+              color: 'teal',
+              tabs: RECURSOS_TABS,
+            },
+          ] as const).map(section => {
+            const parentOn = features[section.parentKey]
+            const colorMap: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+              violet: { bg: 'bg-violet-500/5', border: 'border-violet-400/20', text: 'text-violet-400', badge: 'bg-sky-500/10 border-sky-400/30 text-sky-300' },
+              sky:    { bg: 'bg-sky-500/5',    border: 'border-sky-400/20',    text: 'text-sky-400',    badge: 'bg-sky-500/10 border-sky-400/30 text-sky-300' },
+              emerald:{ bg: 'bg-emerald-500/5',border: 'border-emerald-400/20',text: 'text-emerald-400',badge: 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300' },
+              amber:  { bg: 'bg-amber-500/5',  border: 'border-amber-400/20',  text: 'text-amber-400',  badge: 'bg-amber-500/10 border-amber-400/30 text-amber-300' },
+              rose:   { bg: 'bg-rose-500/5',   border: 'border-rose-400/20',   text: 'text-rose-400',   badge: 'bg-rose-500/10 border-rose-400/30 text-rose-300' },
+              teal:   { bg: 'bg-teal-500/5',   border: 'border-teal-400/20',   text: 'text-teal-400',   badge: 'bg-teal-500/10 border-teal-400/30 text-teal-300' },
+            }
+            const c = colorMap[section.color]
+            return (
+              <section key={section.parentKey as string} className="ctl-card p-5">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className={`w-8 h-8 rounded-lg ${c.bg} border ${c.border} flex items-center justify-center`}>
+                    <Layers size={15} className={c.text} />
                   </div>
-                )
-              })}
-            </div>
-          </section>
+                  <h2 className="font-bold text-[15px] text-white">Pestañas: {section.parentLabel}</h2>
+                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full border ${parentOn ? c.badge : 'bg-white/5 border-white/10 text-slate-500'}`}>
+                    {parentOn ? 'módulo activo' : 'módulo desactivado'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mb-4 ml-[42px]">Controla qué pestañas aparecen dentro de este módulo.</p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                  {(section.tabs as readonly { key: string; label: string; icon: string }[]).map(t => {
+                    const isOn = features[t.key as keyof FeaturesConfig]
+                    const disabled = !parentOn
+                    return (
+                      <div key={t.key} className={`flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors
+                        ${disabled ? 'opacity-40' : ''}
+                        ${isOn && !disabled ? `${c.bg} ${c.border}` : 'bg-white/[0.02] border-white/5'}`}>
+                        <span className="text-base leading-none">{t.icon}</span>
+                        <span className={`flex-1 text-sm font-semibold ${isOn && !disabled ? 'text-slate-200' : 'text-slate-500'}`}>{t.label}</span>
+                        <Toggle on={isOn} onChange={v => toggleFeature(t.key as keyof FeaturesConfig, v)} disabled={disabled} />
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })}
 
           {/* ── ROLES DEL SISTEMA ────────────────────────────────────────────── */}
           <section className="ctl-card p-5">

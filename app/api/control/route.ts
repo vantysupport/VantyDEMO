@@ -13,18 +13,18 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
-/** Módulos de la barra lateral y sus sub-módulos (pestañas dentro de pacientes, etc.) */
+/** Módulos de la barra lateral y sus sub-módulos */
 export type FeaturesConfig = {
   // Módulos principales (sidebar)
   agenda: boolean
-  ninos: boolean        // pacientes
-  inteligencia: boolean // hub IA
+  ninos: boolean              // pacientes
+  inteligencia: boolean       // hub IA
   cerebro: boolean
   pagos: boolean
   reportes_financieros: boolean
   recursos_adicionales: boolean
   chat_especialistas: boolean
-  // Sub-módulos dentro de "Pacientes"
+  // Sub-módulos: Pacientes
   ninos_info: boolean
   ninos_programas: boolean
   ninos_evaluaciones: boolean
@@ -32,6 +32,31 @@ export type FeaturesConfig = {
   ninos_historial: boolean
   ninos_fichas: boolean
   ninos_documentos: boolean
+  // Sub-módulos: Inteligencia Hub
+  intel_predicciones: boolean
+  intel_patrones: boolean
+  intel_objetivos: boolean
+  intel_sugerencias: boolean
+  intel_reportes: boolean
+  intel_seguridad: boolean
+  // Sub-módulos: Cerebro (Knowledge Base)
+  cerebro_aprender: boolean
+  cerebro_diagnosticos: boolean
+  cerebro_biblioteca: boolean
+  // Sub-módulos: Pagos
+  pagos_dashboard: boolean
+  pagos_registros: boolean
+  pagos_agrupado: boolean
+  pagos_tarifas: boolean
+  // Sub-módulos: Reportes Financieros
+  reportes_overview: boolean
+  reportes_pacientes: boolean
+  reportes_servicios: boolean
+  // Sub-módulos: Recursos Adicionales
+  recursos_recursos: boolean
+  recursos_tienda: boolean
+  recursos_terapias: boolean
+  recursos_fonemas: boolean
 }
 
 /** Roles que existen en el sistema y son asignables desde el panel de usuarios */
@@ -43,21 +68,22 @@ export type RolesConfig = {
 }
 
 const DEFAULT_FEATURES: FeaturesConfig = {
-  agenda: true,
-  ninos: true,
-  inteligencia: true,
-  cerebro: true,
-  pagos: true,
-  reportes_financieros: true,
-  recursos_adicionales: true,
-  chat_especialistas: true,
-  ninos_info: true,
-  ninos_programas: true,
-  ninos_evaluaciones: true,
-  ninos_eval_inicial: true,
-  ninos_historial: true,
-  ninos_fichas: true,
-  ninos_documentos: true,
+  agenda: true, ninos: true, inteligencia: true, cerebro: true,
+  pagos: true, reportes_financieros: true, recursos_adicionales: true, chat_especialistas: true,
+  // Pacientes
+  ninos_info: true, ninos_programas: true, ninos_evaluaciones: true,
+  ninos_eval_inicial: true, ninos_historial: true, ninos_fichas: true, ninos_documentos: true,
+  // Inteligencia
+  intel_predicciones: true, intel_patrones: true, intel_objetivos: true,
+  intel_sugerencias: true, intel_reportes: true, intel_seguridad: true,
+  // Cerebro
+  cerebro_aprender: true, cerebro_diagnosticos: true, cerebro_biblioteca: true,
+  // Pagos
+  pagos_dashboard: true, pagos_registros: true, pagos_agrupado: true, pagos_tarifas: true,
+  // Reportes Financieros
+  reportes_overview: true, reportes_pacientes: true, reportes_servicios: true,
+  // Recursos Adicionales
+  recursos_recursos: true, recursos_tienda: true, recursos_terapias: true, recursos_fonemas: true,
 }
 
 const DEFAULT_ROLES_CONFIG: RolesConfig = {

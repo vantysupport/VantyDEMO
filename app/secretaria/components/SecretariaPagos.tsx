@@ -99,12 +99,20 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function SecretariaPagos({ profile }: { profile: any }) {
+export default function SecretariaPagos({ profile, enabledTabs }: { profile: any; enabledTabs?: Record<string, boolean> }) {
   const toast    = useToast()
   const rtRef    = useRef<any>(null)
   const listRef  = useRef<HTMLDivElement>(null)
 
-  const [tab, setTab]           = useState<'dashboard'|'registros'|'agrupado'|'tarifas'>('dashboard')
+  const [tab, setTab] = useState<'dashboard'|'registros'|'agrupado'|'tarifas'>('dashboard')
+  const pagosTabs = ([ 
+    { id: 'dashboard', label: 'Dashboard',    Icon: BarChart3 },
+    { id: 'registros', label: 'Registros',    Icon: CreditCard },
+    { id: 'agrupado',  label: 'Por paciente', Icon: Calendar },
+    { id: 'tarifas',   label: 'Tarifas',      Icon: Package },
+  ] as const).filter(t => !enabledTabs || enabledTabs[`pagos_${t.id}`] !== false)
+  type PagosTab = 'dashboard'|'registros'|'agrupado'|'tarifas'
+  const activeTab: PagosTab = pagosTabs.find(t => t.id === tab) ? tab : (pagosTabs[0]?.id ?? 'dashboard')
   const [payments, setPayments] = useState<any[]>([])
   const [children, setChildren] = useState<any[]>([])
   const [rates, setRates]       = useState<any[]>([])
@@ -422,12 +430,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
 
       {/* ── TABS ──────────────────────────────────────────────────────────────── */}
       <div className="flex rounded-2xl p-1.5 border gap-1.5" style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)' }}>
-        {[
-          { id: 'dashboard', label: 'Dashboard',    Icon: BarChart3 },
-          { id: 'registros', label: 'Registros',    Icon: CreditCard },
-          { id: 'agrupado',  label: 'Por paciente', Icon: Calendar },
-          { id: 'tarifas',   label: 'Tarifas',      Icon: Package },
-        ].map(t => (
+        {pagosTabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
             className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
             style={{
@@ -443,7 +446,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
       </div>
 
       {/* ── DASHBOARD ──────────────────────────────────────────────────────────── */}
-      {tab === 'dashboard' && !loading && (
+      {activeTab === 'dashboard' && !loading && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
@@ -524,7 +527,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
       )}
 
       {/* ── REGISTROS ──────────────────────────────────────────────────────────── */}
-      {tab === 'registros' && (
+      {activeTab === 'registros' && (
         <div className="space-y-4">
           {/* Toolbar */}
           <div className="flex flex-col sm:flex-row gap-2">
@@ -934,7 +937,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
       )}
 
       {/* ── AGRUPADO POR PACIENTE ──────────────────────────────────────────────── */}
-      {tab === 'agrupado' && (
+      {activeTab === 'agrupado' && (
         <div className="space-y-3">
           {loading ? (
             <div className="flex justify-center py-14"><Loader2 size={22} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
@@ -1023,7 +1026,7 @@ export default function SecretariaPagos({ profile }: { profile: any }) {
       )}
 
       {/* ── TARIFAS EDITABLES ──────────────────────────────────────────────────── */}
-      {tab === 'tarifas' && (
+      {activeTab === 'tarifas' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>

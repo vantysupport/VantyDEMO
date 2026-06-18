@@ -47,11 +47,15 @@ import FonemasAdminView from './components/FonemasAdminView'
 // ── Features & Roles types (mirrors control/route.ts) ────────────────────────
 type FeaturesConfig = {
   agenda: boolean; ninos: boolean; inteligencia: boolean; cerebro: boolean
-  pagos: boolean; reportes_financieros: boolean; recursos_adicionales: boolean
-  chat_especialistas: boolean
+  pagos: boolean; reportes_financieros: boolean; recursos_adicionales: boolean; chat_especialistas: boolean
   ninos_info: boolean; ninos_programas: boolean; ninos_evaluaciones: boolean
-  ninos_eval_inicial: boolean; ninos_historial: boolean; ninos_fichas: boolean
-  ninos_documentos: boolean
+  ninos_eval_inicial: boolean; ninos_historial: boolean; ninos_fichas: boolean; ninos_documentos: boolean
+  intel_predicciones: boolean; intel_patrones: boolean; intel_objetivos: boolean
+  intel_sugerencias: boolean; intel_reportes: boolean; intel_seguridad: boolean
+  cerebro_aprender: boolean; cerebro_diagnosticos: boolean; cerebro_biblioteca: boolean
+  pagos_dashboard: boolean; pagos_registros: boolean; pagos_agrupado: boolean; pagos_tarifas: boolean
+  reportes_overview: boolean; reportes_pacientes: boolean; reportes_servicios: boolean
+  recursos_recursos: boolean; recursos_tienda: boolean; recursos_terapias: boolean; recursos_fonemas: boolean
 }
 type RolesConfig = { jefe: boolean; especialista: boolean; secretaria: boolean; padre: boolean }
 
@@ -60,6 +64,12 @@ const DEFAULT_FEATURES: FeaturesConfig = {
   pagos: true, reportes_financieros: true, recursos_adicionales: true, chat_especialistas: true,
   ninos_info: true, ninos_programas: true, ninos_evaluaciones: true,
   ninos_eval_inicial: true, ninos_historial: true, ninos_fichas: true, ninos_documentos: true,
+  intel_predicciones: true, intel_patrones: true, intel_objetivos: true,
+  intel_sugerencias: true, intel_reportes: true, intel_seguridad: true,
+  cerebro_aprender: true, cerebro_diagnosticos: true, cerebro_biblioteca: true,
+  pagos_dashboard: true, pagos_registros: true, pagos_agrupado: true, pagos_tarifas: true,
+  reportes_overview: true, reportes_pacientes: true, reportes_servicios: true,
+  recursos_recursos: true, recursos_tienda: true, recursos_terapias: true, recursos_fonemas: true,
 }
 
 const ROLE_ICON: Record<string, any> = {
@@ -90,22 +100,30 @@ function SidebarLink({ icon: Icon, label, active, onClick, small, badge }: any) 
   )
 }
 
-function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
-  const [tab, setTab] = useState<'recursos' | 'tienda' | 'terapias' | 'fonemas'>('recursos')
+function RecursosAdicionalesView({ isDark, enabledTabs }: {
+  isDark: boolean
+  enabledTabs?: Record<string, boolean>
+}) {
+  const allTabs = [
+    { id: 'recursos', icon: BookOpen,   label: 'Recursos' },
+    { id: 'tienda',   icon: ShoppingBag,label: 'Tienda' },
+    { id: 'terapias', icon: Sparkles,   label: 'Catálogo Terapias' },
+    { id: 'fonemas',  icon: Mic,        label: 'Fonemas' },
+  ] as const
+  type RecursosTab = typeof allTabs[number]['id']
+  const visibleTabs = allTabs.filter(t => !enabledTabs || enabledTabs[`recursos_${t.id}`] !== false)
+  const [tab, setTab] = useState<RecursosTab>('recursos')
+  // If current tab got disabled, switch to first available
+  const activeTab = visibleTabs.find(t => t.id === tab) ? tab : (visibleTabs[0]?.id ?? 'recursos')
   return (
     <div className="flex flex-col gap-4">
       <div className={`flex gap-1 p-1 rounded-xl w-fit flex-wrap ${isDark ? 'bg-[#21262d]' : 'bg-slate-100'}`}>
-        {([
-          { id: 'recursos', icon: BookOpen, label: 'Recursos' },
-          { id: 'tienda',   icon: ShoppingBag, label: 'Tienda' },
-          { id: 'terapias', icon: Sparkles,   label: 'Catálogo Terapias' },
-          { id: 'fonemas',  icon: Mic,         label: 'Fonemas' },
-        ] as const).map(t => (
+        {visibleTabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all
-              ${tab === t.id
+              ${activeTab === t.id
                 ? 'bg-sky-600 text-white shadow-md'
                 : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -115,10 +133,10 @@ function RecursosAdicionalesView({ isDark }: { isDark: boolean }) {
           </button>
         ))}
       </div>
-      {tab === 'recursos' && <ResourcesManagementView />}
-      {tab === 'tienda'   && <StoreManagementView />}
-      {tab === 'terapias' && <CatalogoTerapiasView />}
-      {tab === 'fonemas'  && <FonemasAdminView />}
+      {activeTab === 'recursos' && <ResourcesManagementView />}
+      {activeTab === 'tienda'   && <StoreManagementView />}
+      {activeTab === 'terapias' && <CatalogoTerapiasView />}
+      {activeTab === 'fonemas'  && <FonemasAdminView />}
     </div>
   )
 }
@@ -561,7 +579,7 @@ export default function AdminDashboard() {
               {currentView === 'recursos'     && <ResourcesManagementView />}
               {currentView === 'tienda'       && <StoreManagementView />}
               {currentView === 'terapias'     && <CatalogoTerapiasView />}
-              {currentView === 'recursos-adicionales' && feat('recursos_adicionales') && <RecursosAdicionalesView isDark={isDark} />}
+              {currentView === 'recursos-adicionales' && feat('recursos_adicionales') && <RecursosAdicionalesView isDark={isDark} enabledTabs={features} />}
               {currentView === 'config'       && (
                 <ConfiguracionView onAvatarUpdate={(url) => setUserProfile((p: any) => ({ ...p, avatar_url: url }))} />
               )}
@@ -577,10 +595,10 @@ export default function AdminDashboard() {
                   <ARIAAgentChat userId={userId} />
                 </div>
               )}
-              {currentView === 'cerebro'      && feat('cerebro') && <KnowledgeBaseView />}
-              {currentView === 'inteligencia' && feat('inteligencia') && <InteligenciaHubView />}
-              {currentView === 'pagos'        && feat('pagos') && <AdminPagos profile={userProfile} />}
-              {currentView === 'reportes-financieros' && feat('reportes_financieros') && <AdminReportesFinancieros />}
+              {currentView === 'cerebro'      && feat('cerebro') && <KnowledgeBaseView enabledTabs={features} />}
+              {currentView === 'inteligencia' && feat('inteligencia') && <InteligenciaHubView enabledTabs={features} />}
+              {currentView === 'pagos'        && feat('pagos') && <AdminPagos profile={userProfile} enabledTabs={features} />}
+              {currentView === 'reportes-financieros' && feat('reportes_financieros') && <AdminReportesFinancieros enabledTabs={features} />}
               {currentView === 'mensajes' && <MensajesPendientesPanel />}
               {currentView === 'chat-especialistas' && feat('chat_especialistas') && (
                 <ChatEspecialistas
