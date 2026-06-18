@@ -150,6 +150,7 @@ export default function ControlPage() {
   const [errors, setErrors] = useState<ErrLog[]>([])
   const [openErr, setOpenErr] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [autoPurgeDays, setAutoPurgeDays] = useState<number>(7)  // auto-limpiar errores más viejos que N días
 
   const getToken = async () => {
     let token = (await supabase.auth.getSession()).data.session?.access_token || ''
@@ -210,6 +211,24 @@ export default function ControlPage() {
     } catch { /* noop */ }
   }, [])
 
+  /** Auto-purge: borra silenciosamente errores más viejos que autoPurgeDays días */
+  const purgeOldErrors = useCallback(async (days: number) => {
+    try {
+      const token = await getToken()
+      const r = await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'purge_old_errors', days }),
+      })
+      if (!r.ok) return
+      const j = await r.json()
+      if (j.deleted > 0) {
+        // Reload errors after purge so UI reflects the deletion
+        await loadErrors()
+      }
+    } catch { /* silent — purge failing doesn't matter */ }
+  }, [loadErrors])
+
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession()
@@ -221,8 +240,9 @@ export default function ControlPage() {
       await loadStatus()
       await loadErrors()
       await loadCounts()
+      await purgeOldErrors(autoPurgeDays) // auto-limpiar errores viejos al cargar
     })()
-  }, [router, loadStatus, loadErrors, loadCounts])
+  }, [router, loadStatus, loadErrors, loadCounts, purgeOldErrors, autoPurgeDays])
 
   const saveMaintenance = async (on: boolean) => {
     setBusy('maint'); setMaintenance(on)
@@ -342,6 +362,7 @@ export default function ControlPage() {
       setErrors([])
     } catch { /* noop */ } finally { setBusy(null) }
   }
+
 
   const logout = async () => { await supabase.auth.signOut(); router.replace('/login') }
 
@@ -707,9 +728,25 @@ export default function ControlPage() {
               <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-400/20 flex items-center justify-center"><Terminal size={15} className="text-rose-400" /></div>
               <h2 className="font-bold text-[15px] text-white">Errores del sistema</h2>
               <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">{errors.length}</span>
-              <div className="ml-auto flex gap-3">
+              <span className="text-[10px] text-slate-600 font-mono hidden sm:inline">· se auto-limpian errores &gt;{autoPurgeDays}d al cargar</span>
+              <div className="ml-auto flex items-center gap-3 flex-wrap">
+                {/* Auto-purge config */}
+                <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <Clock size={11} />
+                  Auto-limpiar tras
+                  <select
+                    value={autoPurgeDays}
+                    onChange={e => setAutoPurgeDays(Number(e.target.value))}
+                    className="ctl-input text-[11px] rounded-lg px-2 py-1 font-mono"
+                    style={{ width: '72px' }}
+                  >
+                    {[1, 3, 7, 14, 30].map(d => (
+                      <option key={d} value={d}>{d} día{d !== 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </label>
                 <button onClick={() => { loadErrors(); loadCounts() }} className="flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300"><RefreshCw size={13} /> Actualizar</button>
-                <button onClick={clearErrors} disabled={busy === 'clear'} className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 disabled:opacity-50"><Trash2 size={13} /> Limpiar</button>
+                <button onClick={clearErrors} disabled={busy === 'clear'} className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 disabled:opacity-50"><Trash2 size={13} /> Limpiar todo</button>
               </div>
             </div>
             {errors.length === 0 ? (

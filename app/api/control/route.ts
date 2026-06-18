@@ -293,5 +293,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
+  // purge_old_errors: elimina errores más antiguos que N días (default 7).
+  // Se llama automáticamente al cargar el panel del programador.
+  if (action === 'purge_old_errors') {
+    const days = Math.max(1, Math.floor(Number((body as any).days) || 7))
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+    const { error, count } = await supabaseAdmin
+      .from('error_logs')
+      .delete({ count: 'exact' })
+      .lt('created_at', cutoff)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true, deleted: count ?? 0, days, cutoff })
+  }
+
   return NextResponse.json({ error: 'Acción desconocida' }, { status: 400 })
 }
