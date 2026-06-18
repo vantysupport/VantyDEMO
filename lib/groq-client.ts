@@ -33,14 +33,43 @@ export interface GroqMessage {
   content: string
 }
 
-// Intentar un modelo específico — retorna null si hay rate limit (429)
+/** Info de un 429 — distingue límite por minuto (se resuelve solo en segundos) de límite diario. */
+type RateLimitInfo = {
+  rateLimited: true
+  model: string
+  rawMessage: string
+  /** true = TPM/RPM (por minuto, se resuelve rápido) · false = TPD/RPD (diario, se resetea a medianoche UTC) */
+  isPerMinute: boolean
+  /** segundos de espera reportados por Groq, si los incluyó */
+  retryAfterSeconds: number | null
+}
+
+function parseRateLimitInfo(model: string, rawMessage: string, retryAfterHeader: string | null): RateLimitInfo {
+  const isPerMinute = /\b(TPM|RPM)\b/i.test(rawMessage)
+
+  // Groq suele incluir algo como "Please try again in 6m11.52s" — lo parseamos a segundos.
+  let retryAfterSeconds: number | null = retryAfterHeader ? Number(retryAfterHeader) : null
+  if (retryAfterSeconds === null || Number.isNaN(retryAfterSeconds)) {
+    const match = rawMessage.match(/try again in\s+(?:([\d.]+)m)?(?:([\d.]+)s)?/i)
+    if (match) {
+      const mins = match[1] ? parseFloat(match[1]) : 0
+      const secs = match[2] ? parseFloat(match[2]) : 0
+      if (mins || secs) retryAfterSeconds = Math.ceil(mins * 60 + secs)
+    }
+  }
+
+  return { rateLimited: true, model, rawMessage, isPerMinute, retryAfterSeconds }
+}
+
+// Intentar un modelo específico — retorna { text } si funcionó, o RateLimitInfo si hubo 429/413
+// (para registrar y probar el siguiente modelo). Lanza solo en errores NO recuperables.
 async function tryModel(
   apiKey: string,
   model: string,
   messages: GroqMessage[],
   temperature: number,
   maxTokens: number,
-): Promise<string | null> {
+): Promise<{ text: string } | RateLimitInfo> {
   try {
     const res = await fetch(GROQ_API_URL, {
       method: 'POST',
@@ -53,16 +82,19 @@ async function tryModel(
 
     if (res.status === 429) {
       const err = await res.json().catch(() => ({}))
-      console.warn(`[Groq] Rate limit en ${model}: ${err?.error?.message || '429'}`)
-      return null // señal para probar el siguiente modelo
+      const rawMsg: string = err?.error?.message || ''
+      const info = parseRateLimitInfo(model, rawMsg, res.headers.get('retry-after'))
+      console.warn(`[Groq] Rate limit en ${model}: ${rawMsg || '429'}`)
+      return info
     }
 
     // 413 = Request too large — el modelo no acepta el tamaño del contexto.
     //       Probamos con el siguiente (puede tener más TPM o contexto).
     if (res.status === 413) {
       const err = await res.json().catch(() => ({}))
-      console.warn(`[Groq] Payload too large en ${model}: ${err?.error?.message || '413'}`)
-      return null
+      const rawMsg: string = err?.error?.message || '413'
+      console.warn(`[Groq] Payload too large en ${model}: ${rawMsg}`)
+      return { rateLimited: true, model, rawMessage: rawMsg, isPerMinute: false, retryAfterSeconds: null }
     }
 
     if (!res.ok) {
@@ -71,14 +103,28 @@ async function tryModel(
     }
 
     const data = await res.json()
-    return data.choices?.[0]?.message?.content || ''
+    return { text: data.choices?.[0]?.message?.content || '' }
   } catch (err: any) {
-    // Errores recuperables (429 / 413) → null para probar siguiente modelo
     const msg = String(err?.message || '')
     if (msg.includes('429') || msg.includes('rate limit') || msg.includes('413') || msg.includes('too large')) {
-      return null
+      return { rateLimited: true, model, rawMessage: msg, isPerMinute: /\b(TPM|RPM)\b/i.test(msg), retryAfterSeconds: null }
     }
     throw err
+  }
+}
+
+/** Error tipado para que las rutas /api puedan mostrar al usuario un mensaje amable y simple,
+ *  mientras el detalle técnico completo va al panel del programador (error_logs). */
+export class GroqExhaustedError extends Error {
+  /** true si TODOS los modelos chocaron con límite por minuto (se resuelve en breve) */
+  isPerMinute: boolean
+  /** segundos estimados hasta poder reintentar — null si es límite diario o desconocido */
+  retryAfterSeconds: number | null
+  constructor(isPerMinute: boolean, retryAfterSeconds: number | null, technicalMessage: string) {
+    super(technicalMessage)
+    this.name = 'GroqExhaustedError'
+    this.isPerMinute = isPerMinute
+    this.retryAfterSeconds = retryAfterSeconds
   }
 }
 
@@ -106,8 +152,10 @@ export async function callGroq(
   // Construir cadena de fallback: modelo preferido primero, luego los alternativos
   const modelsToTry = [model, ...FALLBACK_CHAIN.filter(m => m !== model)]
 
+  const rateLimitHits: RateLimitInfo[] = []
+
   for (const currentModel of modelsToTry) {
-    let result: string | null
+    let result: { text: string } | RateLimitInfo
     try {
       result = await tryModel(apiKey, currentModel, messages, temperature, maxTokens)
     } catch (err) {
@@ -115,20 +163,33 @@ export async function callGroq(
       await logServerError(`Groq error (${currentModel})`, (err as Error)?.stack || (err as Error)?.message || String(err), 'groq')
       throw err
     }
-    if (result !== null) {
+    if ('text' in result) {
       if (currentModel !== model) {
         console.info(`[Groq] Usando fallback: ${currentModel} (preferido: ${model})`)
       }
-      return result
+      return result.text
     }
-    // null = rate limit, probar siguiente
+    // Era rate limit / payload too large → registrar y probar el siguiente modelo
+    rateLimitHits.push(result)
   }
 
-  await logServerError('Groq: límite diario agotado en todos los modelos', `modelos probados: ${modelsToTry.join(', ')}`, 'groq')
-  throw new Error(
-    'Groq: límite de tokens diario agotado en todos los modelos disponibles. ' +
-    'Se restablece a medianoche (hora UTC). Puedes ampliar el límite en https://console.groq.com/settings/billing'
-  )
+  // Todos los modelos chocaron con límite. Determinar si es por-minuto (se resuelve solo)
+  // o diario (se resetea a medianoche UTC) para dar el mensaje correcto al programador y al usuario.
+  const allPerMinute = rateLimitHits.length > 0 && rateLimitHits.every(h => h.isPerMinute)
+  const bestRetry = rateLimitHits.reduce<number | null>((min, h) => {
+    if (h.retryAfterSeconds == null) return min
+    if (min == null) return h.retryAfterSeconds
+    return Math.min(min, h.retryAfterSeconds)
+  }, null)
+
+  const detail = rateLimitHits.map(h => `${h.model}: ${h.rawMessage || '(sin detalle)'}`).join('\n')
+  const summary = allPerMinute
+    ? `Groq: límite por minuto (TPM/RPM) alcanzado en todos los modelos${bestRetry ? ` — se libera en ~${bestRetry}s` : ''}`
+    : 'Groq: límite diario (TPD/RPD) agotado en todos los modelos — se restablece a medianoche (hora UTC)'
+
+  await logServerError(summary, detail, 'groq')
+
+  throw new GroqExhaustedError(allPerMinute, bestRetry, summary)
 }
 
 // Helper para prompt simple (sistema + usuario)
