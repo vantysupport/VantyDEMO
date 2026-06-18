@@ -1,7 +1,7 @@
 export const maxDuration = 60;
 
 import { NextResponse } from 'next/server';
-import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
+import { callGroqSimple, GROQ_MODELS, GroqExhaustedError } from '@/lib/groq-client'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
 import { buildAdminChatContext } from '@/lib/ai-context-builder';
 
@@ -654,6 +654,16 @@ Mi sugerencia concreta sería pedirle a la terapeuta una nota técnica de qué s
 
   } catch (error: any) {
     console.error("Error Admin Chat:", error);
-    return NextResponse.json({ text: "❌ Error analizando el historial clínico: " + error.message });
+
+    // Mensaje amable para el especialista — el detalle técnico ya quedó
+    // registrado en error_logs (lo ve el programador en /control).
+    if (error instanceof GroqExhaustedError) {
+      const friendly = error.isPerMinute
+        ? `⏳ ARIA está muy solicitada en este momento. Intenta de nuevo en ${error.retryAfterSeconds ? `~${error.retryAfterSeconds} segundos` : 'un minuto'}.`
+        : '⏳ ARIA alcanzó su límite de uso por hoy. Va a estar disponible nuevamente mañana. Si esto pasa seguido, avísale al equipo técnico.';
+      return NextResponse.json({ text: friendly });
+    }
+
+    return NextResponse.json({ text: '❌ ARIA no pudo procesar tu consulta en este momento. Intenta de nuevo en unos minutos.' });
   }
 }
