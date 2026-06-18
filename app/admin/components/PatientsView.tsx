@@ -1142,7 +1142,8 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
   }
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
-  const TABS = [
+  type TabId = 'info'|'programas'|'evaluaciones'|'eval-inicial'|'historial'|'fichas'|'documentos'
+  const ALL_TABS: { id: TabId; icon: React.ReactNode; label: string; short: string }[] = [
     { id:'info',         icon:<User size={14}/>,          label: t('pacientes.informacion'), short: 'Info'  },
     { id:'programas',    icon:<BarChart3 size={14}/>,     label: t('nav.programas'),          short: 'ABA'   },
     { id:'evaluaciones', icon:<ClipboardList size={14}/>, label: t('nav.evaluaciones'),       short: 'Eval.' },
@@ -1150,7 +1151,8 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
     { id:'historial',    icon:<Brain size={14}/>,         label: 'Historial & IA',            short: 'Hist.' },
     { id:'fichas',       icon:<FileText size={14}/>,      label: 'Fichas',                    short: 'Fichas'},
     { id:'documentos',   icon:<FolderOpen size={14}/>,    label: 'Documentos',                short: 'Docs'  },
-  ].filter(tb => !enabledTabs || enabledTabs[tb.id as keyof typeof enabledTabs] !== false) as const
+  ]
+  const TABS = ALL_TABS.filter(tb => !enabledTabs || enabledTabs[tb.id] !== false)
 
   // ── PANEL LISTA ───────────────────────────────────────────────────────────
   const ListPanel = (
