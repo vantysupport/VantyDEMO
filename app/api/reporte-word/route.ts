@@ -1204,6 +1204,12 @@ async function generarInformeClinicoSanti(
     .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ')
 
+  // Formato oficial: "APELLIDO1 APELLIDO2, Nombre" (apellidos primero, en mayúsculas)
+  const palabrasNombre = nombreCap.trim().split(/\s+/)
+  const nombreFormateado = palabrasNombre.length >= 2
+    ? `${palabrasNombre.slice(1).join(' ').toUpperCase()}, ${palabrasNombre[0]}`
+    : nombreCap.toUpperCase()
+
   let edadTexto = 'no registrada'
   if ((child as any)?.birth_date) {
     const nac = new Date((child as any).birth_date)
@@ -1677,11 +1683,22 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
   // ─── 7. Construir documento ─────────────────────────────────────────
   const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
 
+  // ── Especialista a cargo: tomado de la ficha clínica más reciente ──────
+  const especialistaNombre = (() => {
+    const fichaConNombre = fichasArr.find((f: any) => f.filler_name && String(f.filler_name).trim().length > 2)
+    if (fichaConNombre) {
+      const n = String(fichaConNombre.filler_name).trim()
+      const rol = fichaConNombre.filler_role ? ` (${fichaConNombre.filler_role})` : ''
+      return `${n}${rol}`
+    }
+    return 'Equipo Clínico SANTI'
+  })()
+
   // ── Generar QR async (necesita estar fuera del array spread) ─────────
   const sellosVerificacion = await tpl.selloQRVerificacionAsync({
     codigoDoc: docNum,
     fechaEmision: hoy,
-    especialista: 'Equipo Clínico SANTI',
+    especialista: especialistaNombre,
   })
 
   const sections: DocChild[] = [
@@ -1691,7 +1708,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       nombrePaciente: nombre,
       edadPaciente: edadTexto,
       diagnostico: (child as any)?.diagnosis || 'En evaluación clínica',
-      especialista: 'Equipo Clínico SANTI',
+      especialista: especialistaNombre,
       credenciales: 'Centro Especializado en Neuropsicología y Terapias',
       fechaEmision: hoy,
       periodoEval: periodoTexto,
@@ -1702,19 +1719,22 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
     // ── DATOS GENERALES ──
     tpl.tituloSeccion('I.  Datos Generales'),
     tpl.tablaDatosGenerales([
-      ['Apellidos y nombres', nombre],
+      ['Apellidos y nombres', nombreFormateado],
       ['Fecha de nacimiento', (child as any)?.birth_date
         ? new Date((child as any).birth_date).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })
         : '—'],
       ['Edad', edadTexto],
+      ['Institución educativa', (child as any)?.school_type || 'Regular'],
       ['Diagnóstico', (child as any)?.diagnosis || 'En evaluación'],
       ['Período de trabajo', periodoTexto],
       ['Total de sesiones realizadas', String(totalSesionesRealizadas)],
-      // Programas activos = los que NO cumplen criterio (siguen en intervención/línea base)
-      ['Programas activos', String(programasConDatos.filter(p => !programaCumpleCriterio(p.id)).length)],
-      ['Programas con criterio alcanzado', String(programasDominados.length)],
+      // Programas activos = todos los que tienen datos y NO cumplen criterio (en intervención)
+      ['Programas activos', String(progArr.filter((p: any) => !programaCumpleCriterio(p.id) && ['activo', 'intervencion', 'en_intervencion', ''].includes(p.estado ?? '')).length)],
+      // Programas con criterio alcanzado = dominados por estado, sesiones consecutivas, o TODOS sus sets dominados
+      ['Programas con criterio alcanzado', String(progArr.filter((p: any) => programaCumpleCriterio(p.id)).length)],
       ['Promedio global de logro', `${promedioGlobal}%`],
-      ['Documento N°', docNum],
+      ['N° de informe en la app', docNum],
+      ['Especialista a cargo', especialistaNombre],
       ['Fecha de entrega del informe', hoy],
     ]),
 

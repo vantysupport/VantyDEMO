@@ -502,8 +502,22 @@ export default function AdminDashboard() {
               </button>
             )}
 
+            <button
+              onClick={() => setFocusMode(f => !f)}
+              title="Pantalla completa"
+              className={`hidden md:flex p-2 rounded-lg transition-colors
+                ${focusMode
+                  ? (isDark ? 'bg-sky-900/30 text-sky-400' : 'bg-sky-50 text-sky-600')
+                  : (isDark ? 'hover:bg-[#21262d] text-slate-400' : 'hover:bg-slate-100 text-slate-500')
+                }`}
+            >
+              {focusMode
+                ? <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                : <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              }
+            </button>
+
             <LocaleSelector compact={true} />
-            <ThemeToggleButton />
 
             {/* Notifications */}
             <div className="relative">
