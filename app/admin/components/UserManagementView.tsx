@@ -55,9 +55,10 @@ function RoleBadge({ role }: { role: string }) {
   )
 }
 
-function RoleSelector({ currentRole, onSelect, disabled }: {
+function RoleSelector({ currentRole, onSelect, disabled, roles: rolesList }: {
   currentRole: string
   onSelect: (role: string) => void
+  roles?: typeof ROLES
   disabled?: boolean
 }) {
   const { t } = useI18n()
@@ -110,7 +111,7 @@ function RoleSelector({ currentRole, onSelect, disabled }: {
               width: '260px',
             }}
           >
-            {ROLES.map(r => {
+            {(rolesList ?? ROLES).map(r => {
               const RIcon = r.icon
               const isSelected = currentRole === r.value || (currentRole === 'admin' && r.value === 'jefe')
               return (
@@ -210,10 +211,22 @@ function PacientesVinculados({ userId, children, onUnlink }: {
   )
 }
 
-export default function UserManagementView() {
+export default function UserManagementView({ rolesConfig }: {
+  rolesConfig?: { jefe?: boolean; especialista?: boolean; secretaria?: boolean; padre?: boolean }
+}) {
   const { t } = useI18n()
   const toast = useToast()
   const [users, setUsers] = useState<UserData[]>([])
+
+  // ── Roles habilitados según configuración del programador ────────────────
+  const enabledRoles = {
+    jefe: rolesConfig?.jefe !== false,
+    especialista: rolesConfig?.especialista !== false,
+    secretaria: rolesConfig?.secretaria !== false,
+    padre: rolesConfig?.padre !== false,
+  }
+  const availableRoles = ROLES.filter(r => enabledRoles[r.value as keyof typeof enabledRoles] !== false)
+
   const [isLoading, setIsLoading] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserRole, setCurrentUserRole] = useState<string>('')
@@ -722,7 +735,8 @@ export default function UserManagementView() {
                   ) : (
                     <RoleSelector
                       currentRole={role}
-                      onSelect={(newRole) => handleChangeRole(user, newRole)}
+                      roles={availableRoles}
+                    onSelect={(newRole) => handleChangeRole(user, newRole)}
                       disabled={isSelf || isDirector}
                     />
                   )}

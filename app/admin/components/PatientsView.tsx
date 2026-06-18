@@ -1006,7 +1006,15 @@ function RellenarFichaConWord({ childId, childName, isDark }: {
   return <RellenarFicha childId={childId} childName={childName} isDark={isDark} onSaved={handleSaved} />
 }
 
-export default function PatientsView({ onPatientSelect, initialChildId, initialTab }: { onPatientSelect?: (id: string, name: string) => void; initialChildId?: string | null; initialTab?: string | null } = {}) {
+export default function PatientsView({ onPatientSelect, initialChildId, initialTab, enabledTabs }: {
+  onPatientSelect?: (id: string, name: string) => void
+  initialChildId?: string | null
+  initialTab?: string | null
+  enabledTabs?: {
+    info?: boolean; programas?: boolean; evaluaciones?: boolean
+    'eval-inicial'?: boolean; historial?: boolean; fichas?: boolean; documentos?: boolean
+  }
+} = {}) {
   const { t } = useI18n()
   const toast  = useToast()
 
@@ -1142,7 +1150,7 @@ export default function PatientsView({ onPatientSelect, initialChildId, initialT
     { id:'historial',    icon:<Brain size={14}/>,         label: 'Historial & IA',            short: 'Hist.' },
     { id:'fichas',       icon:<FileText size={14}/>,      label: 'Fichas',                    short: 'Fichas'},
     { id:'documentos',   icon:<FolderOpen size={14}/>,    label: 'Documentos',                short: 'Docs'  },
-  ] as const
+  ].filter(tb => !enabledTabs || enabledTabs[tb.id as keyof typeof enabledTabs] !== false) as const
 
   // ── PANEL LISTA ───────────────────────────────────────────────────────────
   const ListPanel = (

@@ -1,8 +1,10 @@
 'use client'
 // app/control/page.tsx — Panel del PROGRAMADOR (rol asignado solo en Supabase).
-//  • Modo mantenimiento (mensaje de soporte a todos menos al programador).
-//  • Límites de perfiles (solo advertir).
-//  • Registro de errores reales (DB/APIs) — solo visibles aquí.
+//  • Modo mantenimiento.
+//  • Módulos del sistema: activa/desactiva secciones y sub-secciones.
+//  • Roles: configura cuáles roles existen en el sistema.
+//  • Límites de perfiles y ARIA.
+//  • Registro de errores.
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -10,9 +12,58 @@ import { supabase } from '@/lib/supabase'
 import {
   ShieldCheck, Power, Users, AlertTriangle, RefreshCw, Trash2, Save, LogOut, Loader2,
   Activity, ChevronDown, Gauge, Terminal, Bot, Clock, MessageSquare,
+  ToggleLeft, ToggleRight, Puzzle, Crown, Stethoscope, Heart, ClipboardList, Layers,
 } from 'lucide-react'
 
 type ErrLog = { id: string; message: string; detail: string; source: string; url: string; user_email: string; created_at: string }
+
+type FeaturesConfig = {
+  agenda: boolean; ninos: boolean; inteligencia: boolean; cerebro: boolean
+  pagos: boolean; reportes_financieros: boolean; recursos_adicionales: boolean
+  chat_especialistas: boolean
+  ninos_info: boolean; ninos_programas: boolean; ninos_evaluaciones: boolean
+  ninos_eval_inicial: boolean; ninos_historial: boolean; ninos_fichas: boolean
+  ninos_documentos: boolean
+}
+
+type RolesConfig = { jefe: boolean; especialista: boolean; secretaria: boolean; padre: boolean }
+
+const DEFAULT_FEATURES: FeaturesConfig = {
+  agenda: true, ninos: true, inteligencia: true, cerebro: true,
+  pagos: true, reportes_financieros: true, recursos_adicionales: true, chat_especialistas: true,
+  ninos_info: true, ninos_programas: true, ninos_evaluaciones: true,
+  ninos_eval_inicial: true, ninos_historial: true, ninos_fichas: true, ninos_documentos: true,
+}
+
+const DEFAULT_ROLES: RolesConfig = { jefe: true, especialista: true, secretaria: true, padre: true }
+
+const MAIN_MODULES = [
+  { key: 'agenda', label: 'Agenda / Calendario', icon: '📅' },
+  { key: 'ninos', label: 'Pacientes', icon: '👥' },
+  { key: 'inteligencia', label: 'Inteligencia Hub (IA)', icon: '⚡' },
+  { key: 'cerebro', label: 'Cerebro (Base Conocimiento)', icon: '🧠' },
+  { key: 'pagos', label: 'Pagos y Facturación', icon: '💳' },
+  { key: 'reportes_financieros', label: 'Reportes Financieros', icon: '📊' },
+  { key: 'recursos_adicionales', label: 'Recursos Adicionales', icon: '📚' },
+  { key: 'chat_especialistas', label: 'Chat del Equipo', icon: '💬' },
+] as const
+
+const PATIENT_TABS = [
+  { key: 'ninos_info', label: 'Información del paciente', icon: '👤' },
+  { key: 'ninos_programas', label: 'Programas ABA', icon: '📈' },
+  { key: 'ninos_evaluaciones', label: 'Evaluaciones', icon: '📋' },
+  { key: 'ninos_eval_inicial', label: 'Evaluación Inicial', icon: '🔍' },
+  { key: 'ninos_historial', label: 'Historial & IA', icon: '🤖' },
+  { key: 'ninos_fichas', label: 'Fichas clínicas', icon: '📄' },
+  { key: 'ninos_documentos', label: 'Documentos', icon: '📁' },
+] as const
+
+const ROLE_OPTIONS = [
+  { key: 'jefe', label: 'Director / Jefe', desc: 'Acceso total — no se puede desactivar', icon: Crown, locked: true },
+  { key: 'especialista', label: 'Especialista', desc: 'Terapeuta / Clínico', icon: Stethoscope, locked: false },
+  { key: 'secretaria', label: 'Secretaria(o)', desc: 'Apoyo administrativo', icon: ClipboardList, locked: false },
+  { key: 'padre', label: 'Padre / Tutor', desc: 'Portal de familias', icon: Heart, locked: false },
+] as const
 
 const LIMIT_FIELDS = [
   { key: 'admin', label: 'Admins / Directores' },
@@ -22,6 +73,21 @@ const LIMIT_FIELDS = [
   { key: 'paciente', label: 'Pacientes' },
 ]
 
+// ── Toggle helper ─────────────────────────────────────────────────────────────
+function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <button
+      onClick={() => !disabled && onChange(!on)}
+      disabled={disabled}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed
+        ${on ? 'bg-sky-600' : 'bg-white/10'}`}
+    >
+      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-6' : 'translate-x-1'}`} />
+    </button>
+  )
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function ControlPage() {
   const router = useRouter()
   const [phase, setPhase] = useState<'loading' | 'denied' | 'ok'>('loading')
@@ -33,6 +99,8 @@ export default function ControlPage() {
     enabled: boolean; maxMessages: string; windowHours: string
     staffEnabled: boolean; staffMaxMessages: string; staffWindowHours: string
   }>({ enabled: false, maxMessages: '', windowHours: '5', staffEnabled: false, staffMaxMessages: '', staffWindowHours: '5' })
+  const [features, setFeatures] = useState<FeaturesConfig>(DEFAULT_FEATURES)
+  const [rolesConfig, setRolesConfig] = useState<RolesConfig>(DEFAULT_ROLES)
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [errors, setErrors] = useState<ErrLog[]>([])
   const [openErr, setOpenErr] = useState<string | null>(null)
@@ -64,6 +132,8 @@ export default function ControlPage() {
         staffMaxMessages: al.staffMaxMessages ? String(al.staffMaxMessages) : '',
         staffWindowHours: al.staffWindowHours ? String(al.staffWindowHours) : '5',
       })
+      if (j.features) setFeatures({ ...DEFAULT_FEATURES, ...j.features })
+      if (j.roles_config) setRolesConfig({ ...DEFAULT_ROLES, ...j.roles_config })
     } catch { /* noop */ }
   }, [])
 
@@ -110,8 +180,7 @@ export default function ControlPage() {
   }, [router, loadStatus, loadErrors, loadCounts])
 
   const saveMaintenance = async (on: boolean) => {
-    setBusy('maint')
-    setMaintenance(on)
+    setBusy('maint'); setMaintenance(on)
     try {
       const token = await getToken()
       const r = await fetch('/api/control', {
@@ -119,7 +188,7 @@ export default function ControlPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'set_maintenance', on, msg: maintMsg }),
       })
-      if (!r.ok) { const j = await r.json().catch(() => ({})); setMaintenance(!on); alert('No se pudo guardar: ' + (j.error || r.status)) }
+      if (!r.ok) { const j = await r.json().catch(() => ({})); setMaintenance(!on); alert('Error: ' + (j.error || r.status)) }
     } catch { setMaintenance(!on) } finally { setBusy(null) }
   }
 
@@ -127,13 +196,11 @@ export default function ControlPage() {
     setBusy('maint')
     try {
       const token = await getToken()
-      const r = await fetch('/api/control', {
+      await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'set_maintenance', on: maintenance, msg: maintMsg }),
       })
-      const j = await r.json().catch(() => ({}))
-      if (!r.ok) alert('No se pudo guardar el mensaje: ' + (j.error || r.status))
     } finally { setBusy(null) }
   }
 
@@ -152,9 +219,9 @@ export default function ControlPage() {
         body: JSON.stringify({ action: 'set_limits', limits: payload }),
       })
       const j = await res.json().catch(() => ({}))
-      if (!res.ok) alert('No se pudieron guardar los límites: ' + (j.error || res.status))
+      if (!res.ok) alert('Error al guardar límites: ' + (j.error || res.status))
       else await loadStatus()
-    } catch { alert('Error de red al guardar límites.') } finally { setBusy(null) }
+    } catch { alert('Error de red.') } finally { setBusy(null) }
   }
 
   const saveAria = async (override?: Partial<{ enabled: boolean; staffEnabled: boolean }>) => {
@@ -179,13 +246,46 @@ export default function ControlPage() {
         }),
       })
       const j = await res.json().catch(() => ({}))
-      if (!res.ok) alert('No se pudo guardar ARIA: ' + (j.error || res.status) + '\n(¿Corriste el SQL de control-programador con aria_limits?)')
+      if (!res.ok) alert('Error ARIA: ' + (j.error || res.status))
       else await loadStatus()
-    } catch { alert('Error de red al guardar ARIA.') } finally { setBusy(null) }
+    } catch { alert('Error de red.') } finally { setBusy(null) }
+  }
+
+  /** Toggle a single feature and persist immediately */
+  const toggleFeature = async (key: keyof FeaturesConfig, value: boolean) => {
+    const next = { ...features, [key]: value }
+    setFeatures(next)
+    try {
+      const token = await getToken()
+      const res = await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'set_features', features: { [key]: value } }),
+      })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) { setFeatures(features); alert('Error: ' + (j.error || res.status)) }
+    } catch { setFeatures(features); alert('Error de red.') }
+  }
+
+  /** Toggle a single role and persist immediately */
+  const toggleRole = async (key: keyof RolesConfig, value: boolean) => {
+    const next = { ...rolesConfig, [key]: value }
+    setRolesConfig(next)
+    try {
+      const token = await getToken()
+      const res = await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'set_roles_config', roles_config: { [key]: value } }),
+      })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) { setRolesConfig(rolesConfig); alert('Error: ' + (j.error || res.status)) }
+      else if (j.roles_config) setRolesConfig({ ...DEFAULT_ROLES, ...j.roles_config })
+    } catch { setRolesConfig(rolesConfig); alert('Error de red.') }
   }
 
   const clearErrors = async () => {
-    if (!confirm('¿Borrar todos los errores registrados?')) return
+    if (!confirm('¿Borrar todos los errores?')) return
     setBusy('clear')
     try {
       const token = await getToken()
@@ -209,12 +309,16 @@ export default function ControlPage() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 max-w-sm">
           <ShieldCheck size={28} className="text-rose-400 mx-auto mb-3" />
           <p className="text-slate-100 font-bold mb-1">Acceso restringido</p>
-          <p className="text-slate-400 text-sm mb-5">Esta sección es solo para el rol <span className="font-mono text-sky-400">programador</span>.</p>
-          <button onClick={() => router.replace('/login')} className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold transition-colors">Volver al inicio</button>
+          <p className="text-slate-400 text-sm mb-5">Solo para el rol <span className="font-mono text-sky-400">programador</span>.</p>
+          <button onClick={() => router.replace('/login')} className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold">Volver</button>
         </div>
       </div>
     )
   }
+
+  const activeModules = MAIN_MODULES.filter(m => features[m.key as keyof FeaturesConfig]).length
+  const activeTabs = PATIENT_TABS.filter(t => features[t.key as keyof FeaturesConfig]).length
+  const activeRoles = ROLE_OPTIONS.filter(r => rolesConfig[r.key as keyof RolesConfig]).length
 
   return (
     <div className="min-h-screen bg-[#0a0e1a] text-slate-200">
@@ -268,31 +372,110 @@ export default function ControlPage() {
             </div>
             <div className="ctl-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Errores</span>
-                <AlertTriangle size={15} className={errors.length ? 'text-rose-400' : 'text-slate-500'} />
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Módulos</span>
+                <Puzzle size={15} className="text-sky-400" />
               </div>
-              <p className={`mt-2 text-2xl font-black ${errors.length ? 'text-rose-300' : 'text-slate-200'}`}>{errors.length}</p>
-              <p className="text-[11px] text-slate-500">registrados</p>
+              <p className="mt-2 text-2xl font-black text-white">{activeModules}<span className="text-sm text-slate-500 font-bold"> / {MAIN_MODULES.length}</span></p>
+              <p className="text-[11px] text-slate-500">activos en sidebar</p>
             </div>
             <div className="ctl-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Mantenim.</span>
-                <Power size={15} className={maintenance ? 'text-amber-400' : 'text-slate-500'} />
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Pacientes</span>
+                <Layers size={15} className="text-violet-400" />
               </div>
-              <p className={`mt-2 text-lg font-black ${maintenance ? 'text-amber-300' : 'text-slate-300'}`}>{maintenance ? 'Activo' : 'Apagado'}</p>
-              <p className="text-[11px] text-slate-500">interruptor global</p>
+              <p className="mt-2 text-2xl font-black text-white">{activeTabs}<span className="text-sm text-slate-500 font-bold"> / {PATIENT_TABS.length}</span></p>
+              <p className="text-[11px] text-slate-500">pestañas activas</p>
             </div>
             <div className="ctl-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">ARIA</span>
-                <Bot size={15} className={aria.enabled ? 'text-violet-300' : 'text-slate-500'} />
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Roles</span>
+                <Users size={15} className="text-emerald-400" />
               </div>
-              <p className={`mt-2 text-lg font-black ${aria.enabled ? 'text-violet-200' : 'text-slate-300'}`}>{aria.enabled ? 'Con límite' : 'Sin límite'}</p>
-              <p className="text-[11px] text-slate-500">{aria.enabled ? `${aria.maxMessages || '∞'} msg / ${aria.windowHours}h` : 'IA de padres'}</p>
+              <p className="mt-2 text-2xl font-black text-white">{activeRoles}<span className="text-sm text-slate-500 font-bold"> / {ROLE_OPTIONS.length}</span></p>
+              <p className="text-[11px] text-slate-500">roles habilitados</p>
             </div>
           </div>
 
-          {/* Población del sistema — conteos reales desde la base */}
+          {/* ── MÓDULOS DEL SISTEMA ──────────────────────────────────────────── */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 flex items-center justify-center"><Puzzle size={15} className="text-sky-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Módulos del sistema</h2>
+              <span className="ml-auto text-[10px] font-bold font-mono text-slate-500">se aplica al instante</span>
+            </div>
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Activa o desactiva secciones enteras de la barra lateral. Los cambios se reflejan de inmediato para todos los usuarios.</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              {MAIN_MODULES.map(m => {
+                const isOn = features[m.key as keyof FeaturesConfig]
+                return (
+                  <div key={m.key} className={`flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors
+                    ${isOn ? 'bg-sky-500/5 border-sky-400/20' : 'bg-white/[0.02] border-white/5'}`}>
+                    <span className="text-lg leading-none">{m.icon}</span>
+                    <span className={`flex-1 text-sm font-semibold ${isOn ? 'text-slate-200' : 'text-slate-500'}`}>{m.label}</span>
+                    <Toggle on={isOn} onChange={v => toggleFeature(m.key as keyof FeaturesConfig, v)} />
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* ── SUB-MÓDULOS DE PACIENTES ─────────────────────────────────────── */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-400/20 flex items-center justify-center"><Layers size={15} className="text-violet-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Pestañas dentro de Pacientes</h2>
+              <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full border ${features.ninos ? 'bg-sky-500/10 border-sky-400/30 text-sky-300' : 'bg-white/5 border-white/10 text-slate-500'}`}>
+                {features.ninos ? 'módulo activo' : 'módulo desactivado'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Controla qué pestañas aparecen dentro del módulo de Pacientes. Requiere que el módulo "Pacientes" esté activo.</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+              {PATIENT_TABS.map(t => {
+                const isOn = features[t.key as keyof FeaturesConfig]
+                const disabled = !features.ninos
+                return (
+                  <div key={t.key} className={`flex items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors
+                    ${disabled ? 'opacity-40' : ''}
+                    ${isOn && !disabled ? 'bg-violet-500/5 border-violet-400/20' : 'bg-white/[0.02] border-white/5'}`}>
+                    <span className="text-base leading-none">{t.icon}</span>
+                    <span className={`flex-1 text-sm font-semibold ${isOn && !disabled ? 'text-slate-200' : 'text-slate-500'}`}>{t.label}</span>
+                    <Toggle on={isOn} onChange={v => toggleFeature(t.key as keyof FeaturesConfig, v)} disabled={disabled} />
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* ── ROLES DEL SISTEMA ────────────────────────────────────────────── */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center"><Users size={15} className="text-emerald-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Roles del sistema</h2>
+              <span className="ml-auto text-[10px] font-bold font-mono text-slate-500">afecta panel de usuarios</span>
+            </div>
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">
+              Define qué roles aparecen como opción al crear o editar usuarios. El rol <span className="font-mono text-sky-400">Director</span> siempre está activo.
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              {ROLE_OPTIONS.map(r => {
+                const RIcon = r.icon
+                const isOn = rolesConfig[r.key as keyof RolesConfig]
+                return (
+                  <div key={r.key} className={`flex items-start gap-3 rounded-xl border px-3.5 py-3.5 transition-colors
+                    ${isOn ? 'bg-emerald-500/5 border-emerald-400/20' : 'bg-white/[0.02] border-white/5'}`}>
+                    <RIcon size={15} className={`mt-0.5 shrink-0 ${isOn ? 'text-emerald-400' : 'text-slate-600'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-bold ${isOn ? 'text-slate-200' : 'text-slate-500'}`}>{r.label}</p>
+                      <p className="text-[11px] text-slate-500 leading-tight">{r.desc}</p>
+                    </div>
+                    <Toggle on={isOn} onChange={v => toggleRole(r.key as keyof RolesConfig, v)} disabled={r.locked} />
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* ── POBLACIÓN ───────────────────────────────────────────────────── */}
           <section className="ctl-card p-5">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center"><Users size={15} className="text-emerald-400" /></div>
@@ -314,9 +497,8 @@ export default function ControlPage() {
             </div>
           </section>
 
-          {/* Mantenimiento + ARIA — lado a lado en pantallas grandes */}
+          {/* ── MANTENIMIENTO + ARIA ─────────────────────────────────────────── */}
           <div className="grid lg:grid-cols-2 gap-5 items-start">
-            {/* Modo mantenimiento */}
             <section className="ctl-card p-5">
               <div className="flex items-center gap-2.5 mb-1">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-center justify-center"><Power size={15} className="text-amber-400" /></div>
@@ -325,38 +507,32 @@ export default function ControlPage() {
                   {maintenance ? 'ACTIVO' : 'APAGADO'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mb-3 ml-[42px]">
-                Cuando está activo, todos (menos tú) ven el mensaje de soporte y no pueden usar la app. Tú sí sigues entrando.
-              </p>
+              <p className="text-xs text-slate-400 mb-3 ml-[42px]">Cuando está activo, todos (menos tú) ven el mensaje y no pueden usar la app.</p>
               <textarea
                 value={maintMsg}
                 onChange={e => setMaintMsg(e.target.value)}
                 rows={2}
-                placeholder="Mensaje para los usuarios (opcional). Ej: Estamos realizando mejoras…"
+                placeholder="Mensaje para los usuarios (opcional)."
                 className="ctl-input w-full text-sm rounded-xl px-3 py-2.5 mb-3 transition-shadow"
               />
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => saveMaintenance(!maintenance)} disabled={busy === 'maint'}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${maintenance ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/40'}`}>
+                <button onClick={() => saveMaintenance(!maintenance)} disabled={busy === 'maint'}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-colors shadow-lg ${maintenance ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'}`}>
                   {busy === 'maint' ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
-                  {maintenance ? 'Desactivar mantenimiento' : 'Activar mantenimiento'}
+                  {maintenance ? 'Desactivar' : 'Activar mantenimiento'}
                 </button>
                 <button onClick={saveMsg} disabled={busy === 'maint'}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50 transition-colors">
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50">
                   <Save size={14} /> Guardar mensaje
                 </button>
               </div>
             </section>
 
-            {/* ARIA · IA — límites por audiencia */}
             <section className="ctl-card p-5">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-400/20 flex items-center justify-center"><Bot size={15} className="text-violet-300" /></div>
                 <h2 className="font-bold text-[15px] text-white">ARIA · IA</h2>
               </div>
-
-              {/* Padres / familias */}
               <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3.5 mb-3">
                 <div className="flex items-center gap-2 mb-2.5">
                   <span className="text-sm font-bold text-white">Padres / familias</span>
@@ -364,21 +540,19 @@ export default function ControlPage() {
                 </div>
                 <div className="flex flex-wrap items-end gap-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1"><MessageSquare size={11} /> Máx. mensajes</span>
-                    <input type="number" min={0} inputMode="numeric" value={aria.maxMessages} onChange={e => setAria(a => ({ ...a, maxMessages: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="∞" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide"><MessageSquare size={11} className="inline mr-1" />Máx. mensajes</span>
+                    <input type="number" min={0} value={aria.maxMessages} onChange={e => setAria(a => ({ ...a, maxMessages: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="∞" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1"><Clock size={11} /> Cada (horas)</span>
-                    <input type="number" min={1} inputMode="numeric" value={aria.windowHours} onChange={e => setAria(a => ({ ...a, windowHours: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="5" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide"><Clock size={11} className="inline mr-1" />Cada (horas)</span>
+                    <input type="number" min={1} value={aria.windowHours} onChange={e => setAria(a => ({ ...a, windowHours: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="5" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
                   </label>
                   <div className="flex gap-2 ml-auto">
-                    <button onClick={() => saveAria({ enabled: !aria.enabled })} disabled={busy === 'aria'} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-colors ${aria.enabled ? 'bg-rose-600 hover:bg-rose-500' : 'bg-violet-600 hover:bg-violet-500'}`}>{busy === 'aria' ? <Loader2 size={13} className="animate-spin" /> : <Power size={13} />}{aria.enabled ? 'Desactivar' : 'Activar'}</button>
+                    <button onClick={() => saveAria({ enabled: !aria.enabled })} disabled={busy === 'aria'} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50 ${aria.enabled ? 'bg-rose-600 hover:bg-rose-500' : 'bg-violet-600 hover:bg-violet-500'}`}>{busy === 'aria' ? <Loader2 size={13} className="animate-spin" /> : <Power size={13} />}{aria.enabled ? 'Desactivar' : 'Activar'}</button>
                     <button onClick={() => saveAria()} disabled={busy === 'aria'} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50"><Save size={13} /> Guardar</button>
                   </div>
                 </div>
               </div>
-
-              {/* Personal (jefe / especialista) */}
               <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3.5">
                 <div className="flex items-center gap-2 mb-2.5">
                   <span className="text-sm font-bold text-white">Personal (jefe / especialista)</span>
@@ -386,30 +560,29 @@ export default function ControlPage() {
                 </div>
                 <div className="flex flex-wrap items-end gap-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1"><MessageSquare size={11} /> Máx. mensajes</span>
-                    <input type="number" min={0} inputMode="numeric" value={aria.staffMaxMessages} onChange={e => setAria(a => ({ ...a, staffMaxMessages: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="∞" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide"><MessageSquare size={11} className="inline mr-1" />Máx. mensajes</span>
+                    <input type="number" min={0} value={aria.staffMaxMessages} onChange={e => setAria(a => ({ ...a, staffMaxMessages: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="∞" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1"><Clock size={11} /> Cada (horas)</span>
-                    <input type="number" min={1} inputMode="numeric" value={aria.staffWindowHours} onChange={e => setAria(a => ({ ...a, staffWindowHours: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="5" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide"><Clock size={11} className="inline mr-1" />Cada (horas)</span>
+                    <input type="number" min={1} value={aria.staffWindowHours} onChange={e => setAria(a => ({ ...a, staffWindowHours: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="5" className="ctl-input w-24 text-sm rounded-lg px-3 py-2 font-mono" />
                   </label>
                   <div className="flex gap-2 ml-auto">
-                    <button onClick={() => saveAria({ staffEnabled: !aria.staffEnabled })} disabled={busy === 'aria'} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-colors ${aria.staffEnabled ? 'bg-rose-600 hover:bg-rose-500' : 'bg-violet-600 hover:bg-violet-500'}`}>{busy === 'aria' ? <Loader2 size={13} className="animate-spin" /> : <Power size={13} />}{aria.staffEnabled ? 'Desactivar' : 'Activar'}</button>
+                    <button onClick={() => saveAria({ staffEnabled: !aria.staffEnabled })} disabled={busy === 'aria'} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50 ${aria.staffEnabled ? 'bg-rose-600 hover:bg-rose-500' : 'bg-violet-600 hover:bg-violet-500'}`}>{busy === 'aria' ? <Loader2 size={13} className="animate-spin" /> : <Power size={13} />}{aria.staffEnabled ? 'Desactivar' : 'Activar'}</button>
                     <button onClick={() => saveAria()} disabled={busy === 'aria'} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 disabled:opacity-50"><Save size={13} /> Guardar</button>
                   </div>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-500 mt-3">Ejemplo: 20 mensajes cada 5 horas. Vacío o 0 = sin tope. Aplica por persona.</p>
             </section>
           </div>
 
-          {/* Límites de perfiles */}
+          {/* ── LÍMITES DE PERFILES ──────────────────────────────────────────── */}
           <section className="ctl-card p-5">
             <div className="flex items-center gap-2.5 mb-1">
               <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 flex items-center justify-center"><Gauge size={15} className="text-sky-400" /></div>
               <h2 className="font-bold text-[15px] text-white">Límites de perfiles</h2>
             </div>
-            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Tope máximo por tipo (el badge muestra cuántos hay ahora). Vacío o 0 = sin límite. <span className="text-slate-500">Padres se bloquea al registrar; el resto avisa.</span></p>
+            <p className="text-xs text-slate-400 mb-4 ml-[42px]">Tope máximo por tipo. Vacío o 0 = sin límite.</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {LIMIT_FIELDS.map(f => (
                 <label key={f.key} className="flex items-center justify-between gap-3 text-sm rounded-xl bg-white/[0.02] border border-white/5 px-3 py-2.5">
@@ -417,31 +590,25 @@ export default function ControlPage() {
                     <span className="text-slate-300 font-semibold truncate">{f.label}</span>
                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400 shrink-0">{counts[f.key] ?? 0} ahora</span>
                   </span>
-                  <input
-                    type="number" min={0} inputMode="numeric"
-                    value={limits[f.key] ?? ''}
-                    onChange={e => setLimits(s => ({ ...s, [f.key]: e.target.value.replace(/[^0-9]/g, '') }))}
-                    placeholder="∞"
-                    className="ctl-input w-20 text-sm rounded-lg px-2 py-1.5 text-right font-mono transition-shadow shrink-0"
-                  />
+                  <input type="number" min={0} value={limits[f.key] ?? ''} onChange={e => setLimits(s => ({ ...s, [f.key]: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="∞" className="ctl-input w-20 text-sm rounded-lg px-2 py-1.5 text-right font-mono shrink-0" />
                 </label>
               ))}
             </div>
             <button onClick={saveLimits} disabled={busy === 'limits'}
-              className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white disabled:opacity-50 transition-colors shadow-lg shadow-sky-900/40">
+              className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white disabled:opacity-50 shadow-lg shadow-sky-900/40">
               {busy === 'limits' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Guardar límites
             </button>
           </section>
 
-          {/* Registro de errores */}
+          {/* ── ERRORES ──────────────────────────────────────────────────────── */}
           <section className="ctl-card p-5">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-400/20 flex items-center justify-center"><Terminal size={15} className="text-rose-400" /></div>
               <h2 className="font-bold text-[15px] text-white">Errores del sistema</h2>
               <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">{errors.length}</span>
               <div className="ml-auto flex gap-3">
-                <button onClick={loadErrors} className="flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"><RefreshCw size={13} /> Actualizar</button>
-                <button onClick={clearErrors} disabled={busy === 'clear'} className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 disabled:opacity-50 transition-colors"><Trash2 size={13} /> Limpiar</button>
+                <button onClick={() => { loadErrors(); loadCounts() }} className="flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300"><RefreshCw size={13} /> Actualizar</button>
+                <button onClick={clearErrors} disabled={busy === 'clear'} className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 disabled:opacity-50"><Trash2 size={13} /> Limpiar</button>
               </div>
             </div>
             {errors.length === 0 ? (

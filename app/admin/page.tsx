@@ -44,12 +44,23 @@ import AdminPagos from './components/AdminPagos'
 import AdminReportesFinancieros from './components/AdminReportesFinancieros'
 import FonemasAdminView from './components/FonemasAdminView'
 
-// Roles: 'jefe'|'admin' ven todo. 'especialista'/'terapeuta' NO ven agenda ni tienda.
+// ── Features & Roles types (mirrors control/route.ts) ────────────────────────
+type FeaturesConfig = {
+  agenda: boolean; ninos: boolean; inteligencia: boolean; cerebro: boolean
+  pagos: boolean; reportes_financieros: boolean; recursos_adicionales: boolean
+  chat_especialistas: boolean
+  ninos_info: boolean; ninos_programas: boolean; ninos_evaluaciones: boolean
+  ninos_eval_inicial: boolean; ninos_historial: boolean; ninos_fichas: boolean
+  ninos_documentos: boolean
+}
+type RolesConfig = { jefe: boolean; especialista: boolean; secretaria: boolean; padre: boolean }
 
-
-// MOBILE_NAV movido dentro del componente
-
-// SECONDARY_NAV movido dentro del componente
+const DEFAULT_FEATURES: FeaturesConfig = {
+  agenda: true, ninos: true, inteligencia: true, cerebro: true,
+  pagos: true, reportes_financieros: true, recursos_adicionales: true, chat_especialistas: true,
+  ninos_info: true, ninos_programas: true, ninos_evaluaciones: true,
+  ninos_eval_inicial: true, ninos_historial: true, ninos_fichas: true, ninos_documentos: true,
+}
 
 const ROLE_ICON: Record<string, any> = {
   jefe: Crown,
@@ -118,17 +129,33 @@ export default function AdminDashboard() {
   const { isDark } = useTheme()
   const { t } = useI18n()
 
+  // ── Features & Roles from control API ──────────────────────────────────────
+  const [features, setFeatures] = useState<FeaturesConfig>(DEFAULT_FEATURES)
+  const [rolesConfig, setRolesConfig] = useState<RolesConfig>({ jefe: true, especialista: true, secretaria: true, padre: true })
+
+  useEffect(() => {
+    fetch('/api/control', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(j => {
+        if (j.features) setFeatures({ ...DEFAULT_FEATURES, ...j.features })
+        if (j.roles_config) setRolesConfig(rc => ({ ...rc, ...j.roles_config }))
+      })
+      .catch(() => { /* silently fallback to defaults */ })
+  }, [])
+
+  // ── Nav items filtered by features ─────────────────────────────────────────
   const NAV_ITEMS = [
-    { id: 'inicio',       icon: LayoutDashboard, label: t('nav.inicio'),          roles: ['jefe','admin','especialista','terapeuta'] },
-    { id: 'agenda',       icon: Calendar,        label: t('nav.agenda'),          roles: ['jefe','admin'] },
-    { id: 'ninos',        icon: Users,           label: t('nav.pacientes'),       roles: ['jefe','admin','especialista','terapeuta'] },
-    { id: 'inteligencia', icon: Zap,             label: t('nav.hub'),             roles: ['jefe','admin','especialista'] },
-    { id: 'cerebro',      icon: Database,        label: t('nav.cerebro'),         roles: ['jefe','admin'] },
-    { id: 'pagos',        icon: DollarSign,      label: 'Pagos',                  roles: ['jefe','admin'] },
-    { id: 'reportes-financieros', icon: BarChart3, label: 'Reportes Financieros', roles: ['jefe'] },
-    { id: 'recursos-adicionales', icon: BookOpen, label: 'Recursos Adicionales',  roles: ['jefe','admin','especialista','terapeuta','secretaria'] },
-    { id: 'chat-especialistas', icon: MessageCircle, label: 'Chat Equipo', roles: ['jefe'] },
+    { id: 'inicio',       icon: LayoutDashboard, label: t('nav.inicio'),          roles: ['jefe','admin','especialista','terapeuta'], featureKey: null },
+    { id: 'agenda',       icon: Calendar,        label: t('nav.agenda'),          roles: ['jefe','admin'],                            featureKey: 'agenda' },
+    { id: 'ninos',        icon: Users,           label: t('nav.pacientes'),       roles: ['jefe','admin','especialista','terapeuta'], featureKey: 'ninos' },
+    { id: 'inteligencia', icon: Zap,             label: t('nav.hub'),             roles: ['jefe','admin','especialista'],             featureKey: 'inteligencia' },
+    { id: 'cerebro',      icon: Database,        label: t('nav.cerebro'),         roles: ['jefe','admin'],                            featureKey: 'cerebro' },
+    { id: 'pagos',        icon: DollarSign,      label: 'Pagos',                  roles: ['jefe','admin'],                            featureKey: 'pagos' },
+    { id: 'reportes-financieros', icon: BarChart3, label: 'Reportes Financieros', roles: ['jefe'],                                   featureKey: 'reportes_financieros' },
+    { id: 'recursos-adicionales', icon: BookOpen, label: 'Recursos Adicionales',  roles: ['jefe','admin','especialista','terapeuta','secretaria'], featureKey: 'recursos_adicionales' },
+    { id: 'chat-especialistas', icon: MessageCircle, label: 'Chat Equipo',        roles: ['jefe'],                                   featureKey: 'chat_especialistas' },
   ]
+
   const MOBILE_NAV = [
     { id: 'inicio',       icon: LayoutDashboard, label: t('nav.inicio') },
     { id: 'ninos',        icon: Users,           label: t('nav.pacientes') },
@@ -150,7 +177,6 @@ export default function AdminDashboard() {
     pagos: 'Pagos y Facturación', 'reportes-financieros': 'Reportes Financieros',
     'chat-especialistas': 'Chat Equipo', config: 'Mi Perfil',
   }
-
 
   const [currentView, setCurrentView] = useState('inicio')
   const [showAnalytics, setShowAnalytics] = useState(false)
@@ -174,6 +200,7 @@ export default function AdminDashboard() {
   const [activeChild, setActiveChild] = useState<{id: string, name: string} | null>(null)
   const [pendingChildId, setPendingChildId] = useState<string | null>(null)
   const [pendingChildTab, setPendingChildTab] = useState<string | null>(null)
+
   // Clear patient context when leaving patients view
   useEffect(() => { if (currentView !== 'ninos') setActiveChild(null) }, [currentView])
 
@@ -181,7 +208,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (currentView === 'chat-especialistas') {
       setChatUnread(0)
-      // Mark all as read in DB
       if (userId) {
         supabase.from('chat_especialista_admin')
           .update({ read_at: new Date().toISOString() })
@@ -204,7 +230,6 @@ export default function AdminDashboard() {
           .maybeSingle()
         if (profile) setUserProfile(profile)
 
-        // Load initial unread count — solo mensajes recientes no leídos
         const hace7dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
         const { count } = await supabase
           .from('chat_especialista_admin')
@@ -214,7 +239,6 @@ export default function AdminDashboard() {
           .gte('created_at', hace7dias)
         setChatUnread(count || 0)
 
-        // Realtime: new messages → increment badge if not in chat
         const channel = supabase
           .channel('admin-chat-unread')
           .on('postgres_changes', {
@@ -250,7 +274,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      await releaseSessionNow() // libera la sesión única ANTES de salir
+      await releaseSessionNow()
       await supabase.auth.signOut()
       router.push('/login')
     } catch { toast.error('Error al cerrar sesión') }
@@ -270,15 +294,25 @@ export default function AdminDashboard() {
   }
 
   const navigateTo = (view: string) => { setCurrentView(view); setSidebarOpen(false) }
-  const navigateToPatient = (childId: string, tab?: string) => { setPendingChildId(childId); setPendingChildTab(tab || null); setCurrentView('ninos'); setSidebarOpen(false) }
-
-  // PAGE_TITLES ya definido arriba con t()
+  const navigateToPatient = (childId: string, tab?: string) => {
+    setPendingChildId(childId); setPendingChildTab(tab || null); setCurrentView('ninos'); setSidebarOpen(false)
+  }
 
   const role = userProfile?.role || 'admin'
   const RoleIcon = ROLE_ICON[role] || User
   const roleName = role === 'jefe' || role === 'admin' ? 'Jefe' : role === 'especialista' ? 'Especialista' : 'Usuario'
   const userName = userProfile?.full_name || 'Usuario'
   const userInitial = userName.charAt(0).toUpperCase()
+
+  // ── Helper: check if a feature is enabled ──────────────────────────────────
+  const feat = (key: keyof FeaturesConfig) => features[key] !== false
+
+  // ── Filtered nav items (by role AND feature flag) ──────────────────────────
+  const visibleNavItems = NAV_ITEMS.filter(item => {
+    const roleOk = item.roles.includes(role) || role === 'admin' || role === 'jefe'
+    const featureOk = !item.featureKey || feat(item.featureKey as keyof FeaturesConfig)
+    return roleOk && featureOk
+  })
 
   return (
     <>
@@ -317,10 +351,9 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-
-        {/* Main nav */}
+        {/* Main nav — filtered by features */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
-          {NAV_ITEMS.filter(item => item.roles.includes(role) || role === 'admin' || role === 'jefe').map(item => (
+          {visibleNavItems.map(item => (
             <SidebarLink
               key={item.id}
               icon={item.icon}
@@ -332,8 +365,7 @@ export default function AdminDashboard() {
           ))}
 
           <div className={`pt-4 mt-2 border-t ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-            <p className={`text-[10px] font-bold px-3 mb-2
-              ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+            <p className={`text-[10px] font-bold px-3 mb-2 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
               Sistema
             </p>
             {SECONDARY_NAV.filter((item: any) => !item.hidden && (!item.roles || item.roles.includes(role))).map(item => (
@@ -383,7 +415,6 @@ export default function AdminDashboard() {
 
       {/* MAIN */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Focus Mode toggle button — visible solo en PC cuando focusMode está activo */}
         {focusMode && (
           <button
             onClick={() => setFocusMode(false)}
@@ -395,6 +426,7 @@ export default function AdminDashboard() {
             Salir de pantalla completa
           </button>
         )}
+
         {/* Topbar */}
         <header className={`h-14 md:h-16 flex items-center justify-between px-3 md:px-6 flex-shrink-0 border-b transition-all duration-300
           ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200'}
@@ -418,7 +450,6 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Analytics shortcut */}
             {currentView === 'reportes' && selectedChildReport && (
               <button
                 onClick={() => setShowAnalytics(true)}
@@ -428,10 +459,9 @@ export default function AdminDashboard() {
               </button>
             )}
 
-            {/* Focus Mode button — solo en PC */}
             <button
               onClick={() => setFocusMode(f => !f)}
-              title="Pantalla completa (ocultar paneles)"
+              title="Pantalla completa"
               className={`hidden md:flex p-2 rounded-lg transition-colors
                 ${focusMode
                   ? (isDark ? 'bg-sky-900/30 text-sky-400' : 'bg-sky-50 text-sky-600')
@@ -443,10 +473,8 @@ export default function AdminDashboard() {
                 : <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
               }
             </button>
-            {/* Language selector */}
-            <LocaleSelector compact={true} />
 
-            {/* Dark mode toggle */}
+            <LocaleSelector compact={true} />
             <ThemeToggleButton />
 
             {/* Notifications */}
@@ -465,21 +493,13 @@ export default function AdminDashboard() {
                 <div className={`absolute right-0 top-11 w-72 rounded-2xl shadow-2xl border p-4 z-50 animate-scale-in
                   ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <p className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                      Notificaciones
-                    </p>
-                    <button onClick={() => setShowNotifications(false)}>
-                      <X size={16} className="text-slate-400" />
-                    </button>
+                    <p className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Notificaciones</p>
+                    <button onClick={() => setShowNotifications(false)}><X size={16} className="text-slate-400" /></button>
                   </div>
-
                   <div className="space-y-2 max-h-72 overflow-y-auto">
-                    {/* Mensajes no leídos */}
                     {chatUnread > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                          Chat Equipo
-                        </p>
+                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Chat Equipo</p>
                         <button
                           onClick={() => { navigateTo('chat-especialistas'); setShowNotifications(false) }}
                           className={`w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors
@@ -491,29 +511,18 @@ export default function AdminDashboard() {
                         </button>
                       </div>
                     )}
-
-                    {/* Citas de hoy */}
                     {notifications.length > 0 && (
                       <div className="space-y-1.5">
-                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                          Citas de hoy
-                        </p>
+                        <p className={`text-[10px] font-bold px-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Citas de hoy</p>
                         {notifications.map(n => (
-                          <div key={n.id} className={`flex items-start gap-3 p-3 rounded-xl
-                            ${isDark ? 'bg-sky-900/20' : 'bg-sky-50'}`}>
+                          <div key={n.id} className={`flex items-start gap-3 p-3 rounded-xl ${isDark ? 'bg-sky-900/20' : 'bg-sky-50'}`}>
                             <div className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 flex-shrink-0" />
-                            <p className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                              {n.detalle}
-                            </p>
+                            <p className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{n.detalle}</p>
                           </div>
                         ))}
                       </div>
                     )}
-
-                    {/* Aprobaciones pendientes — eliminado, flujo no utilizado */}
-
-                    {/* Sin notificaciones */}
-                    {notifications.length === 0 && (
+                    {notifications.length === 0 && chatUnread === 0 && (
                       <p className="text-xs text-slate-400 text-center py-4">{t('ui.no_appts_today')}</p>
                     )}
                   </div>
@@ -527,27 +536,40 @@ export default function AdminDashboard() {
         <div className={`flex-1 overflow-y-auto transition-colors flex flex-col admin-content
           ${currentView === 'ninos' || currentView === 'agenda' || currentView === 'chat-especialistas' ? 'p-0 overflow-hidden' : 'p-3 md:p-4 pb-28 md:pb-8'}
           ${isDark ? 'bg-[#0d1117]' : 'bg-slate-50'}`}>
-          {/* Views that scroll normally */}
           {currentView !== 'usuarios' && (
             <div className={`flex-1 ${currentView === 'ninos' || currentView === 'chat-especialistas' ? 'min-h-0 h-full flex flex-col overflow-hidden' : ''}`}>
               {currentView === 'inicio'       && <DashboardHome navigateTo={navigateTo} navigateToPatient={navigateToPatient} />}
-              {currentView === 'agenda'       && <CalendarView />}
-              {currentView === 'ninos'        && <PatientsView initialChildId={pendingChildId} initialTab={pendingChildTab} onPatientSelect={(id: string, name: string) => { setActiveChild({ id, name }); setPendingChildId(null); setPendingChildTab(null) }} />}
-              {/* evaluaciones integradas en PatientsView → tab Evaluaciones */}
+              {currentView === 'agenda'       && feat('agenda') && <CalendarView />}
+              {currentView === 'ninos'        && feat('ninos') && (
+                <PatientsView
+                  initialChildId={pendingChildId}
+                  initialTab={pendingChildTab}
+                  onPatientSelect={(id: string, name: string) => { setActiveChild({ id, name }); setPendingChildId(null); setPendingChildTab(null) }}
+                  // Pass feature flags down so PatientsView can hide disabled tabs
+                  enabledTabs={{
+                    info: feat('ninos_info'),
+                    programas: feat('ninos_programas'),
+                    evaluaciones: feat('ninos_evaluaciones'),
+                    'eval-inicial': feat('ninos_eval_inicial'),
+                    historial: feat('ninos_historial'),
+                    fichas: feat('ninos_fichas'),
+                    documentos: feat('ninos_documentos'),
+                  }}
+                />
+              )}
               {currentView === 'reportes'     && <AIReportView onChildSelect={setSelectedChildReport} />}
               {currentView === 'recursos'     && <ResourcesManagementView />}
               {currentView === 'tienda'       && <StoreManagementView />}
               {currentView === 'terapias'     && <CatalogoTerapiasView />}
-              {currentView === 'recursos-adicionales' && <RecursosAdicionalesView isDark={isDark} />}
+              {currentView === 'recursos-adicionales' && feat('recursos_adicionales') && <RecursosAdicionalesView isDark={isDark} />}
               {currentView === 'config'       && (
                 <ConfiguracionView onAvatarUpdate={(url) => setUserProfile((p: any) => ({ ...p, avatar_url: url }))} />
               )}
               {currentView === 'programas'    && (
                 <div className="max-w-4xl mx-auto">
                   <div className="mb-4 p-4 bg-sky-50 border border-sky-200 rounded-2xl text-sm text-sky-700">
-                    💡 Selecciona un paciente desde <button onClick={() => navigateTo('ninos')} className="font-bold underline">{t('nav.pacientes')}</button> para ver sus programas ABA. O usa esta vista general.
+                    💡 Selecciona un paciente desde <button onClick={() => navigateTo('ninos')} className="font-bold underline">{t('nav.pacientes')}</button> para ver sus programas ABA.
                   </div>
-
                 </div>
               )}
               {currentView === 'vadi'         && (
@@ -555,28 +577,30 @@ export default function AdminDashboard() {
                   <ARIAAgentChat userId={userId} />
                 </div>
               )}
-              {currentView === 'cerebro'      && <KnowledgeBaseView />}
-              {currentView === 'inteligencia' && <InteligenciaHubView />}
-              {currentView === 'pagos'        && <AdminPagos profile={userProfile} />}
-              {currentView === 'reportes-financieros' && <AdminReportesFinancieros />}
-
+              {currentView === 'cerebro'      && feat('cerebro') && <KnowledgeBaseView />}
+              {currentView === 'inteligencia' && feat('inteligencia') && <InteligenciaHubView />}
+              {currentView === 'pagos'        && feat('pagos') && <AdminPagos profile={userProfile} />}
+              {currentView === 'reportes-financieros' && feat('reportes_financieros') && <AdminReportesFinancieros />}
               {currentView === 'mensajes' && <MensajesPendientesPanel />}
-              {currentView === 'chat-especialistas' && (
-                <ChatEspecialistas userId={userId} userName={userProfile?.full_name || 'Admin'} userAvatarUrl={userProfile?.avatar_url} onAvatarUpdate={(url) => setUserProfile((p: any) => ({ ...p, avatar_url: url }))} />
+              {currentView === 'chat-especialistas' && feat('chat_especialistas') && (
+                <ChatEspecialistas
+                  userId={userId}
+                  userName={userProfile?.full_name || 'Admin'}
+                  userAvatarUrl={userProfile?.avatar_url}
+                  onAvatarUpdate={(url) => setUserProfile((p: any) => ({ ...p, avatar_url: url }))}
+                />
               )}
               {currentView === 'importar'     && <ExcelImportView />}
             </div>
           )}
-          {/* Usuarios: flex container que maneja su propio scroll interno */}
           {currentView === 'usuarios' && (
             <div className="flex-1 min-h-0">
-              <UserManagementView />
+              {/* Pass rolesConfig so UserManagementView only shows enabled roles */}
+              <UserManagementView rolesConfig={rolesConfig} />
             </div>
           )}
         </div>
       </main>
-
-
 
       {/* Change Password Modal */}
       {showChangePassword && (
@@ -584,11 +608,8 @@ export default function AdminDashboard() {
           <div className={`rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in
             ${isDark ? 'bg-[#161b22] border border-[#30363d]' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className={`text-lg font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                Cambiar Contraseña
-              </h2>
-              <button onClick={() => setShowChangePassword(false)}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+              <h2 className={`text-lg font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Cambiar Contraseña</h2>
+              <button onClick={() => setShowChangePassword(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
                 <X size={18} className="text-slate-400" />
               </button>
             </div>
@@ -596,13 +617,11 @@ export default function AdminDashboard() {
               <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
                 {...{placeholder: t('ui.new_password')}}
                 className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-sky-500
-                  ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-200 placeholder-slate-600'
-                    : 'bg-slate-50 border-slate-200 text-slate-800'}`} />
+                  ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-200 placeholder-slate-600' : 'bg-slate-50 border-slate-200 text-slate-800'}`} />
               <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                 {...{placeholder: t('ui.confirm_password')}}
                 className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-sky-500
-                  ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-200 placeholder-slate-600'
-                    : 'bg-slate-50 border-slate-200 text-slate-800'}`} />
+                  ${isDark ? 'bg-[#21262d] border-[#30363d] text-slate-200 placeholder-slate-600' : 'bg-slate-50 border-slate-200 text-slate-800'}`} />
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowChangePassword(false)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
@@ -626,7 +645,7 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* ── ARIA FLOTANTE ── (oculta en las vistas de chat, donde no hace falta y tapa el input) */}
+      {/* ARIA Flotante */}
       {ariaOpen && currentView !== 'chat-especialistas' && (
         <div className={`fixed bottom-6 md:bottom-6 right-4 md:right-6 z-[90] w-[calc(100vw-2rem)] rounded-3xl shadow-2xl overflow-hidden border flex flex-col transition-all duration-300
           ${isDark ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}
@@ -634,7 +653,6 @@ export default function AdminDashboard() {
             maxWidth: ariaExpanded ? '900px' : '448px',
             height: ariaMinimized ? '54px' : ariaExpanded ? '860px' : '560px',
           }}>
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sky-600 to-cyan-600 flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -651,8 +669,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-white font-bold text-sm leading-tight flex items-center gap-2">
-                  ARIA
-                  <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-bold">IA</span>
+                  ARIA <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[9px] font-bold">IA</span>
                 </p>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"/>
@@ -661,21 +678,17 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setAriaMinimized(m => !m)}
-                className="p-1.5 hover:bg-white/20 rounded-xl transition-all" title={ariaMinimized ? 'Restaurar' : 'Minimizar'}>
+              <button onClick={() => setAriaMinimized(m => !m)} className="p-1.5 hover:bg-white/20 rounded-xl transition-all" title={ariaMinimized ? 'Restaurar' : 'Minimizar'}>
                 <Minus size={15} className="text-white"/>
               </button>
-              <button onClick={() => { setAriaExpanded(x => !x); setAriaMinimized(false) }}
-                className="p-1.5 hover:bg-white/20 rounded-xl transition-all" title={ariaExpanded ? 'Reducir' : 'Ampliar'}>
+              <button onClick={() => { setAriaExpanded(x => !x); setAriaMinimized(false) }} className="p-1.5 hover:bg-white/20 rounded-xl transition-all" title={ariaExpanded ? 'Reducir' : 'Ampliar'}>
                 {ariaExpanded ? <Minimize2 size={15} className="text-white"/> : <Maximize2 size={15} className="text-white"/>}
               </button>
-              <button onClick={() => { setAriaOpen(false); setAriaExpanded(false); setAriaMinimized(false) }}
-                className="p-1.5 hover:bg-white/20 rounded-xl transition-all" title="Cerrar">
+              <button onClick={() => { setAriaOpen(false); setAriaExpanded(false); setAriaMinimized(false) }} className="p-1.5 hover:bg-white/20 rounded-xl transition-all" title="Cerrar">
                 <X size={16} className="text-white"/>
               </button>
             </div>
           </div>
-          {/* Chat */}
           {!ariaMinimized && (
           <div className="flex-1 min-h-0">
             <ARIAAgentChat userId={userId} compact={true}
@@ -687,7 +700,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Botón flotante robot (oculto en las vistas de chat) */}
+      {/* Botón flotante ARIA */}
       {!ariaOpen && currentView !== 'chat-especialistas' && (
         <button
           onClick={() => setAriaOpen(true)}
