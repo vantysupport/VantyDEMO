@@ -6,7 +6,7 @@ export const maxDuration = 60;
 // ==============================================================================
 
 import { NextResponse } from 'next/server';
-import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
+import { callGroqSimple, GROQ_MODELS, GroqExhaustedError } from '@/lib/groq-client'
 import { buildAIContext } from '@/lib/ai-context-builder';
 
 // Definimos interfaces para tipado básico
@@ -71,11 +71,17 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("❌ Error en el análisis de IA:", error);
+    if (error instanceof GroqExhaustedError) {
+      const friendly = error.isPerMinute
+        ? `ARIA está muy solicitada en este momento. Intenta de nuevo en ${error.retryAfterSeconds ? `~${error.retryAfterSeconds} segundos` : 'un minuto'}.`
+        : 'ARIA alcanzó su límite de uso por hoy. Va a estar disponible nuevamente mañana.'
+      return NextResponse.json({ error: friendly }, { status: 429 });
+    }
     const isQuota = error.message === 'CUOTA_AGOTADA' || error.message?.includes('429')
     return NextResponse.json({ 
       error: isQuota 
         ? 'Cuota de IA agotada. Por favor espera unos minutos e intenta nuevamente.' 
-        : (error.message || "Error desconocido procesando la evaluación clínica.")
+        : "No se pudo procesar la evaluación clínica. Intenta de nuevo en unos minutos."
     }, { status: isQuota ? 429 : 500 });
   }
 }
