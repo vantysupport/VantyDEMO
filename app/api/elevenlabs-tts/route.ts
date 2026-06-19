@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logServerError } from '@/lib/log-server-error'
+import { synthesizeEdgeTTS } from '@/lib/edge-tts'
 
-// Voice ID: configura ELEVENLABS_VOICE_ID en tus env vars de Vercel
-// Para obtenerlo: ElevenLabs → tu voz → copiar el ID desde la URL o la página de la voz
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'yM93hbw8Qtvdma2wCnJG'
-const ELEVENLABS_MODEL    = process.env.ELEVENLABS_MODEL    || 'eleven_multilingual_v2'
+// Voz de ARIA. GRATIS vía Microsoft Edge TTS — sin API key.
+// El audio se genera al momento y NO se almacena en ningún lado.
+// (La ruta conserva el nombre "elevenlabs-tts" por compatibilidad con los
+//  componentes que ya la consumen; internamente ya NO usa ElevenLabs.)
+export const runtime = 'nodejs'
+
+const DEFAULT_VOICE = process.env.EDGE_TTS_VOICE || 'es-PE-CamilaNeural'
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, language } = await req.json()
+    const { text, language, voice } = await req.json()
 
     if (!text?.trim()) {
       return NextResponse.json({ error: 'Texto requerido' }, { status: 400 })
-    }
-
-    const apiKey = process.env.ELEVENLABS_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'ELEVENLABS_API_KEY no configurada' }, { status: 500 })
     }
 
     // Limpiar el texto de markdown y emojis antes de enviarlo
@@ -29,58 +28,35 @@ export async function POST(req: NextRequest) {
       .replace(/\n{2,}/g, '. ')
       .replace(/•/g, '')
       .trim()
-      // Limitar a 4000 caracteres para evitar latencia excesiva (ElevenLabs soporta hasta 5000)
       .slice(0, 4000)
 
-    // Si el cliente pide un idioma (p. ej. fonemas en español), usamos un modelo
-    // que permite FORZAR el idioma (language_code), para que no pronuncie en
-    // inglés ni deletree sílabas cortas como "rra".
-    const model = language ? 'eleven_flash_v2_5' : ELEVENLABS_MODEL
-    const payload: Record<string, unknown> = {
-      text: clean,
-      model_id: model,
-      voice_settings: {
-        stability: 0.45,          // Algo de variación para sonar natural
-        similarity_boost: 0.80,   // Fiel a la voz original
-        style: 0.30,              // Estilo expresivo moderado
-        use_speaker_boost: true,
-      },
-      output_format: 'mp3_44100_128',
-    }
-    if (language) payload.language_code = String(language)
-
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`,
-      {
-        method: 'POST',
-        headers: {
-          'xi-api-key': apiKey,
-          'Content-Type': 'application/json',
-          'Accept': 'audio/mpeg',
-        },
-        body: JSON.stringify(payload),
-      }
-    )
-
-    if (!response.ok) {
-      const err = await response.text()
-      // Registramos el error REAL (con la voz/estado) para el programador, pero
-      // al cliente solo le devolvemos un mensaje genérico (no filtrar detalle).
-      await logServerError(`ElevenLabs ${response.status}`, `voice: ${ELEVENLABS_VOICE_ID}\n${err}`, 'api:elevenlabs-tts')
-      return NextResponse.json({ error: 'No se pudo generar el audio. Intenta de nuevo.' }, { status: response.status })
+    if (!clean) {
+      return NextResponse.json({ error: 'Texto vacío tras limpieza' }, { status: 400 })
     }
 
-    // Pasar el stream de audio directamente al cliente
-    const audioBuffer = await response.arrayBuffer()
-    return new NextResponse(audioBuffer, {
+    // El acento lo define la voz. Si el cliente envía un locale completo
+    // (p. ej. "es-MX") lo respetamos; un simple "es" usa el acento de la voz.
+    const lang = typeof language === 'string' && language.includes('-') ? language : undefined
+
+    const audio = await synthesizeEdgeTTS(clean, {
+      voice: voice || DEFAULT_VOICE,
+      lang,
+    })
+
+    if (!audio || audio.length === 0) {
+      await logServerError('Edge TTS audio vacío', `voz: ${voice || DEFAULT_VOICE}`, 'api:tts')
+      return NextResponse.json({ error: 'No se pudo generar el audio. Intenta de nuevo.' }, { status: 502 })
+    }
+
+    return new NextResponse(new Uint8Array(audio), {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'no-store',
+        'Cache-Control': 'no-store',  // nada se guarda — voz solo al momento
       },
     })
 
   } catch (error: any) {
-    await logServerError('Error en /api/elevenlabs-tts', error?.stack || error?.message || String(error), 'api:elevenlabs-tts')
+    await logServerError('Error en /api/elevenlabs-tts (Edge TTS)', error?.stack || error?.message || String(error), 'api:tts')
     return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
 }
