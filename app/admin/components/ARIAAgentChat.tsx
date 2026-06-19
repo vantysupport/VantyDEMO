@@ -15,6 +15,30 @@ interface Message {
   fuentes?: string[]
 }
 
+// Divide un texto en segmentos cortos por frases, agrupando hasta ~180 caracteres.
+// El primer segmento se mantiene corto para que la voz empiece a sonar cuanto antes.
+function splitEnFrases(text: string, maxLen = 180): string[] {
+  const limpio = text.replace(/\s+/g, ' ').trim()
+  if (!limpio) return []
+  const frases = limpio.match(/[^.!?¿¡\n]+[.!?]*/g) || [limpio]
+  const chunks: string[] = []
+  let actual = ''
+  for (const f of frases) {
+    const frase = f.trim()
+    if (!frase) continue
+    // El primer chunk se cierra antes (más corto) para arrancar rápido
+    const limite = chunks.length === 0 ? Math.min(maxLen, 90) : maxLen
+    if (actual && (actual.length + frase.length + 1) > limite) {
+      chunks.push(actual.trim())
+      actual = frase
+    } else {
+      actual = actual ? `${actual} ${frase}` : frase
+    }
+  }
+  if (actual.trim()) chunks.push(actual.trim())
+  return chunks.length > 0 ? chunks : [limpio]
+}
+
 interface ARIAAgentChatProps {
   userId: string
   childId?: string
@@ -105,30 +129,55 @@ export default function ARIAAgentChat({
     } catch { setSpeaking(false) }
   }, [])
 
-  // Voz neuronal de ARIA — generada al momento, sin guardar nada
+  // Voz neuronal de ARIA — generada al momento, sin guardar nada.
+  // Se divide el texto en frases y se reproduce la primera apenas está lista,
+  // mientras se generan las siguientes en segundo plano (baja la latencia inicial).
   const speak = useCallback(async (text: string) => {
     const limpio = (text || '').trim()
     if (!limpio) return
     stopSpeaking()
     const myToken = ++speakTokenRef.current
     setSpeaking(true)
-    try {
+
+    const segmentos = splitEnFrases(limpio)
+
+    const fetchAudio = async (seg: string): Promise<string> => {
       const res = await fetch('/api/elevenlabs-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: limpio }),
+        body: JSON.stringify({ text: seg }),
       })
       if (!res.ok) throw new Error('tts')
       const blob = await res.blob()
-      if (myToken !== speakTokenRef.current) return
-      const url = URL.createObjectURL(blob)
+      return URL.createObjectURL(blob)
+    }
+
+    const playUrl = (url: string) => new Promise<void>((resolve) => {
       const a = new Audio(url)
       audioRef.current = a
-      a.onended = () => { setSpeaking(false); URL.revokeObjectURL(url) }
-      a.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url) }
-      await a.play()
+      a.onended = () => resolve()
+      a.onerror = () => resolve()
+      a.play().catch(() => resolve())
+    })
+
+    try {
+      // Pipeline: mientras suena un segmento, ya se va pidiendo el siguiente
+      let siguiente = fetchAudio(segmentos[0])
+      for (let i = 0; i < segmentos.length; i++) {
+        const url = await siguiente
+        if (myToken !== speakTokenRef.current) { URL.revokeObjectURL(url); return }
+        // prefetch del próximo segmento en paralelo a la reproducción del actual
+        siguiente = i + 1 < segmentos.length
+          ? fetchAudio(segmentos[i + 1]).catch(() => '')
+          : Promise.resolve('')
+        await playUrl(url)
+        URL.revokeObjectURL(url)
+        if (myToken !== speakTokenRef.current) return
+      }
     } catch {
       if (myToken === speakTokenRef.current) speakBrowser(limpio)
+    } finally {
+      if (myToken === speakTokenRef.current) setSpeaking(false)
     }
   }, [stopSpeaking, speakBrowser])
 
