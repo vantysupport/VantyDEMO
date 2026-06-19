@@ -18,7 +18,7 @@ import {
   Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
   AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat,
   HeadingLevel, PageNumber, PageBreak, Footer, Header, VerticalAlign,
-  VerticalMergeType, TabStopType, TabStopPosition,
+  VerticalMergeType, TabStopType, TabStopPosition, TableLayoutType,
 } from 'docx'
 import QRCode from 'qrcode'
 
@@ -838,8 +838,10 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
         })],
   })
 
-  // Celda de OBJETIVO/SET: puede tener objetivo + set combinados en la misma celda
-  const objetivoSetCell = (f: HabilidadFila) => {
+  // Celda de OBJETIVO/SET. Para filas de solo objetivo (sin SET) se une con la
+  // columna ESTADO (columnSpan: 2) para que el texto del objetivo/criterio se
+  // extienda a lo ancho. Las filas de SET mantienen su celda normal.
+  const objetivoSetCell = (f: HabilidadFila, columnSpan?: number) => {
     const isSet = !!f.set
     const paragraphs: Paragraph[] = []
 
@@ -861,7 +863,8 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
 
     return new TableCell({
       borders: BDR,
-      width: { size: 4040, type: WidthType.DXA },
+      width: { size: columnSpan === 2 ? 6800 : 5000, type: WidthType.DXA },
+      columnSpan,
       margins: { top: 90, bottom: 90, left: 140, right: 100 },
       verticalAlign: VerticalAlign.CENTER,
       children: paragraphs,
@@ -870,24 +873,29 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
 
   return new Table({
     width: { size: 9360, type: WidthType.DXA },
-    columnWidths: [1560, 1960, 4040, 1800],
+    layout: TableLayoutType.FIXED,
+    columnWidths: [1100, 1460, 5000, 1800],
     rows: [
-      new TableRow({ tableHeader: true, children: [hCell('ÁREA', 1560), hCell('SUBÁREA', 1960), hCell('OBJETIVO / SET', 4040), hCell('ESTADO', 1800)] }),
+      new TableRow({ tableHeader: true, children: [hCell('ÁREA', 1100), hCell('SUBÁREA', 1460), hCell('OBJETIVO / SET', 5000), hCell('ESTADO', 1800)] }),
       ...filas.map(f => {
         const isSet     = !!f.set
         const hasSubarea = !!(f.subarea?.trim())
         const areaMerge = f.area?.trim() ? 'restart' : 'continue'
         const subMerge  = hasSubarea ? 'restart' : 'continue'
         const ec        = estadoColor(f.estado)
-        return new TableRow({ children: [
-          dCell(f.area || '', 1560, { bold: true, size: 15, color: COLOR.azulDark, merge: areaMerge as any }),
-          dCell(f.subarea || '', 1960, { size: 15, merge: subMerge as any }),
-          objetivoSetCell(f),
-          // Solo las filas SET muestran el badge de estado; filas de solo objetivo quedan vacías
-          isSet
-            ? dCell(estadoTexto(f), 1800, { align: AlignmentType.CENTER, bold: true, size: 15, color: ec.text, bg: ec.bg })
-            : dCell('', 1800, {}),
-        ]})
+        const cells = [
+          dCell(f.area || '', 1100, { bold: true, size: 15, color: COLOR.azulDark, merge: areaMerge as any }),
+          dCell(f.subarea || '', 1460, { size: 15, merge: subMerge as any }),
+        ]
+        if (isSet) {
+          // Fila de SET: celda OBJETIVO/SET normal + celda ESTADO con badge
+          cells.push(objetivoSetCell(f))
+          cells.push(dCell(estadoTexto(f), 1800, { align: AlignmentType.CENTER, bold: true, size: 15, color: ec.text, bg: ec.bg }))
+        } else {
+          // Fila de solo objetivo/criterio: celda unida con ESTADO (columnSpan: 2)
+          cells.push(objetivoSetCell(f, 2))
+        }
+        return new TableRow({ children: cells })
       }),
     ],
   })
