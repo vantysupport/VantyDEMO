@@ -929,8 +929,8 @@ export function glosarioAyudas(): Paragraph[] {
 // ─── Bloque de Recomendaciones tripartito ─────────────────────────────────────
 export type RecomendacionesBloque = { menor?: string[]; familia?: string[]; escuela?: string[] }
 
-export function recomendaciones(rec: RecomendacionesBloque): Paragraph[] {
-  const out: Paragraph[] = [tituloSeccion('Recomendaciones')]
+export function recomendaciones(rec: RecomendacionesBloque, titulo = 'Recomendaciones'): Paragraph[] {
+  const out: Paragraph[] = [tituloSeccion(titulo)]
   const subLabel = (txt: string) => new Paragraph({
     spacing: { before: 200, after: 60 },
     children: [new TextRun({ text: txt, bold: true, size: 20, font: FONT, color: COLOR.azulDark })],

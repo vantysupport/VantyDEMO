@@ -2589,8 +2589,8 @@ function CrearProgramaModal({ childId, onClose, onCreated }: any) {
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">🎯 Objetivo a largo plazo *</label>
                 <textarea value={form.objetivo_lp} onChange={e => set('objetivo_lp', e.target.value)}
-                  rows={2} placeholder="Con un criterio de éxito de 90% en 2 sesiones consecutivas, el estudiante..."
-                  className="w-full p-3 rounded-xl text-sm resize-none outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px' }} />
+                  rows={5} placeholder="Con un criterio de éxito de 90% en 2 sesiones consecutivas, el estudiante..."
+                  className="w-full p-3 rounded-xl text-sm resize-y outline-none transition-all" style={{ background: 'var(--input-bg)', border: '1.5px solid var(--input-border)', color: 'var(--text-primary)', padding: '10px 14px', minHeight: '120px' }} />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1.5">Fase inicial</label>

@@ -1563,7 +1563,7 @@ async function generarInformeClinicoSanti(
     ? `\n\nEVALUACIONES COMPLEMENTARIAS REGISTRADAS (contexto adicional para tu análisis clínico, no las cites como secciones del informe):\n${evalCtxParts.join('\n\n')}`
     : ''
 
-  const [textoResumenEjecutivo, textoAnalisisGlobal, textoPlanTerapeutico, textoRecomendacionesIA] = await Promise.all([
+  const [textoResumenEjecutivo, textoAnalisisGlobal, textoPlanTerapeutico, textoRecomendacionesIA, textoLimitaciones] = await Promise.all([
     callGroqSimple(
       'Eres neuropsicóloga clínica senior de SANTI. Prosa formal, sin emojis, sin bullets en el body.',
       `Redacta el RESUMEN EJECUTIVO del informe clínico de ${nombreCap} (${edadTexto}, ${(child as any)?.diagnosis || 'en evaluación'}).
@@ -1631,6 +1631,21 @@ Contexto del paciente:
 ${resumenProgramas}
 ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.5, maxTokens: 900 },
+    ),
+
+    callGroqSimple(
+      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis, sin bullets.',
+      `Redacta la sección de LIMITACIONES del informe clínico de ${nombreCap}.
+Aquí se redactan las dificultades que se han tenido durante el período de intervención, por ejemplo: presencia de conductas interferentes o disruptivas que no han dejado avanzar (p. ej. que el menor muerda, se levante, etc.), el tiempo limitado de las sesiones o de los padres para practicar los programas en casa, algún problema de salud recurrente, inasistencias, u otros factores que han condicionado el progreso.
+
+REGLA DE TIEMPO VERBAL: usa SIEMPRE pasado perfecto compuesto ("se han observado", "ha presentado", "han dificultado", "ha limitado").
+
+Basate ÚNICAMENTE en los datos reales del caso que aparecen abajo; si no hay evidencia de una limitación específica, NO la inventes — redacta en términos generales y prudentes. 1 párrafo de máximo 120 palabras. Sin emojis, sin bullets.
+
+Datos del caso:
+${resumenProgramas}
+${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
+      { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 400 },
     ),
   ])
 
@@ -1809,13 +1824,22 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
   sections.push(tpl.tituloSeccion('VII.  Plan Terapéutico 30 / 60 / 90 días'))
   sections.push(...parsearProsaConSubsecciones(textoPlanTerapeutico))
 
+  // Limitaciones — dificultades encontradas durante la intervención
+  sections.push(tpl.tituloSeccion('VIII.  Limitaciones'))
+  const limitacionesLimpio = (textoLimitaciones || '').trim()
+  if (limitacionesLimpio) {
+    sections.push(...limitacionesLimpio.split('\n').map(l => l.trim()).filter(Boolean).map(l => tpl.parrafo(l)))
+  } else {
+    sections.push(tpl.parrafo('Durante el período evaluado no se han registrado limitaciones significativas que hayan condicionado el progreso terapéutico.'))
+  }
+
   // Recomendaciones
-  sections.push(...tpl.recomendaciones(recomObj))
+  sections.push(...tpl.recomendaciones(recomObj, 'IX.  Recomendaciones'))
 
   // ─── VIII. FUENTE DE DATOS Y TRAZABILIDAD ──────────────────────────
   //   Esto permite al lector verificar cada número del informe contra
   //   los datos reales del expediente. Cero datos sintéticos.
-  sections.push(tpl.tituloSeccion('IX.  Fuente de Datos y Trazabilidad'))
+  sections.push(tpl.tituloSeccion('X.  Fuente de Datos y Trazabilidad'))
 
   sections.push(tpl.parrafo(
     `Todos los porcentajes, conteos y análisis de este informe se calculan en tiempo real a partir de los datos registrados en la plataforma Vanty ABA para este paciente. No se incluyen valores predeterminados, simulados ni inferidos. Las fuentes consultadas son:`
