@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
             children: [new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  ${nombrePlantilla} — ${nombrePaciente}  ·  `, size: 16, font: 'Arial', color: '9CA3AF' }),
+                new TextRun({ text: `Neuropsicología y Terapias SANTI · Vanty ABA  ·  ${nombrePlantilla} — ${nombrePaciente}  ·  `, size: 16, font: 'Arial', color: '9CA3AF' }),
                 new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Arial', color: '9CA3AF' }),
               ],
             })],

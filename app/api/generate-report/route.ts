@@ -581,6 +581,13 @@ REGLAS DE FORMATO DEL INFORME:
 - Las conclusiones deben ser accionables y específicas
 - Extensión mínima: 700 palabras para mantener profundidad clínica
 - Fecha del informe: ${fechaHoy}
+- Cuando menciones la plataforma de gestión clínica, refiere siempre a "Vanty ABA"
+
+REGLA OBLIGATORIA DE TIEMPO VERBAL — PASADO PERFECTO COMPUESTO:
+Todos los verbos del informe deben estar en pretérito perfecto compuesto (pasado perfecto).
+CORRECTO: "ha logrado", "se ha observado", "ha demostrado", "se han trabajado", "ha alcanzado", "ha presentado", "ha realizado", "se ha registrado", "ha respondido", "ha mostrado"
+INCORRECTO (nunca uses): presente simple ("logra", "observa", "demuestra") ni pasado simple ("logró", "observó", "demostró")
+Esta regla aplica a TODAS las secciones sin excepción.
 
 SECCIONES A DESARROLLAR (usar exactamente este formato para los títulos):
 ${config.secciones.map((s, i) => `${i + 1}. ${s}`).join('\n')}
@@ -603,7 +610,8 @@ Redacta el informe completo con TODAS las secciones indicadas. Usa EXACTAMENTE e
 "I. NOMBRE DE LA SECCIÓN" (número romano + punto + espacio + nombre en mayúsculas).
 Sé específico con los datos proporcionados. Si algún dato no está disponible, indica "Pendiente de evaluación".
 El informe debe poder entregarse directamente a padres, médicos o colegios sin edición adicional.
-Usa **negrita** para resaltar diagnósticos, puntajes clave y conclusiones importantes.`
+Usa **negrita** para resaltar diagnósticos, puntajes clave y conclusiones importantes.
+RECUERDA: usa SIEMPRE pasado perfecto compuesto en todos los verbos ("ha logrado", "se ha observado", "ha realizado", etc.).`
 
   const contenido = await callGroqSimple(systemPrompt + getLangInstruction(userLocale),userPrompt, {
     model: GROQ_MODELS.SMART,
@@ -614,17 +622,25 @@ Usa **negrita** para resaltar diagnósticos, puntajes clave y conclusiones impor
   return contenido
 }
 
-// ── Generar DOCX en base64 — v2 (diseño SANTI profesional) ──────────────────
+// ── Generar DOCX en base64 — v2 (diseño Vanty ABA profesional) ──────────────
 //
 // Usa santi-report-template para producir documentos que superan el estilo
 // CentralReach: header institucional, títulos con fondo azul, tabla de datos
 // con franjas alternas, badges semánticos de logro y pie paginado completo.
+interface CamposExtra {
+  grado?: string
+  periodo?: string
+  supervisor?: string
+  setsAlcanzados?: string
+}
+
 async function generarDocx(
   tipo: string,
   childName: string,
   childAge: number | undefined,
   contenidoReporte: string,
-  locale = 'es'
+  locale = 'es',
+  extra: CamposExtra = {}
 ): Promise<string> {
   const config = REPORTE_CONFIG[tipo] || REPORTE_CONFIG.aba
   const fechaHoy = formatearFechaHoy()
@@ -693,6 +709,11 @@ async function generarDocx(
       ['Tipo de evaluación', config.subtitulo],
       ['Fecha del informe', fechaHoy],
       ['Centro', 'Neuropsicología y Terapias SANTI'],
+      ['Plataforma', 'Vanty ABA'],
+      ...(extra.grado       ? [['Grado (estudiantil)', extra.grado]] as [string, string][]       : []),
+      ...(extra.periodo     ? [['Periodo de trabajo',  extra.periodo]] as [string, string][]     : []),
+      ...(extra.supervisor  ? [['Supervisor encargado', extra.supervisor]] as [string, string][] : []),
+      ...(extra.setsAlcanzados ? [['Sets con criterio alcanzado', extra.setsAlcanzados]] as [string, string][] : []),
     ]),
     new Paragraph({ spacing: { before: 0, after: 200 }, children: [new TextRun({ text: '' })] }),
     new Paragraph({ children: [new PageBreak()], spacing: { after: 0 } })
@@ -764,9 +785,9 @@ async function generarDocx(
 
   // ── Construir documento ───────────────────────────────────────────────────
   const doc = new Document({
-    creator: 'SANTI — Plataforma de Neuropsicología Infantil',
+    creator: 'Vanty ABA — Plataforma de Neuropsicología Infantil',
     title: `${config.titulo} — ${childName}`,
-    description: `Informe clínico SANTI. Paciente: ${childName}. Fecha: ${fechaHoy}`,
+    description: `Informe clínico Vanty ABA. Paciente: ${childName}. Fecha: ${fechaHoy}`,
     styles: DOC_STYLES as any,
     numbering: {
       config: [{
@@ -801,6 +822,13 @@ export async function POST(request: NextRequest) {
       childAge,
       reportData,
       evaluationId,
+    } = body
+
+    const {
+      grado,
+      periodo,
+      supervisor,
+      setsAlcanzados,
     } = body
 
     if (!reportType || !childName) {
@@ -906,7 +934,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Convertir a DOCX profesional
-    const fileData = await generarDocx(reportType, childName, childAge, contenido, userLocale)
+    const fileData = await generarDocx(reportType, childName, childAge, contenido, userLocale, { grado, periodo, supervisor, setsAlcanzados })
     const fileName = getTituloArchivo(reportType, childName)
 
     return NextResponse.json({

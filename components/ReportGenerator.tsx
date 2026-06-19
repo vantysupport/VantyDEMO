@@ -83,6 +83,10 @@ export default function ReportGenerator({
   const [isLoadingReportes, setIsLoadingReportes] = useState(true)
   const [error, setError]                   = useState<string | null>(null)
   const [justGenerated, setJustGenerated]   = useState<string | null>(null)  // id del último generado
+  const [grado, setGrado]                   = useState('')
+  const [periodo, setPeriodo]               = useState('')
+  const [supervisor, setSupervisor]         = useState('')
+  const [setsAlcanzados, setSetsAlcanzados] = useState('')
 
   const colores = TIPO_COLORES[evaluationType] || TIPO_COLORES.aba
 
@@ -128,6 +132,10 @@ export default function ReportGenerator({
           childId,           // ← CRÍTICO: pasar childId explícito para enriquecer datos
           reportData:   { ...evaluationData, child_id: childId },
           evaluationId,
+          grado,
+          periodo,
+          supervisor,
+          setsAlcanzados,
         }),
       })
 
@@ -147,7 +155,7 @@ export default function ReportGenerator({
           file_data:        result.fileData,
           mime_type:        result.mimeType,
           tamano_bytes:     Math.round(result.fileData.length * 0.75),
-          generado_por:     'Directora',
+          generado_por:     supervisor || 'Directora',
           fecha_generacion: new Date().toISOString(),
         }])
         .select('id')
@@ -157,6 +165,8 @@ export default function ReportGenerator({
 
       // 3. Marcar como recién generado y descargar
       setJustGenerated(savedReport?.id || null)
+      // Actualizar generado_por con el supervisor ingresado
+
       downloadFile(result.fileData, result.fileName)
 
       // 4. Actualizar lista
@@ -306,6 +316,60 @@ export default function ReportGenerator({
             </button>
           </div>
         )}
+
+        {/* ── CAMPOS ADICIONALES DEL REPORTE ──────────────────────────── */}
+        <div className="space-y-3">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Datos del reporte</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Grado (estudiantil)</label>
+              <input
+                type="text"
+                value={grado}
+                onChange={e => setGrado(e.target.value)}
+                placeholder="Ej: 1° Primaria, Kínder..."
+                className="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-300 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Periodo de trabajo</label>
+              <select
+                value={periodo}
+                onChange={e => setPeriodo(e.target.value)}
+                className="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+              >
+                <option value="">Seleccionar periodo...</option>
+                <option value="Primer Periodo">Primer Periodo</option>
+                <option value="Segundo Periodo">Segundo Periodo</option>
+                <option value="Tercer Periodo">Tercer Periodo</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Supervisor encargado</label>
+              <input
+                type="text"
+                value={supervisor}
+                onChange={e => setSupervisor(e.target.value)}
+                placeholder="Nombre del supervisor..."
+                className="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-300 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Sets con criterio alcanzado</label>
+              <input
+                type="text"
+                value={setsAlcanzados}
+                onChange={e => setSetsAlcanzados(e.target.value)}
+                placeholder="Ej: Set 1, Set 3, Set 5..."
+                className="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-300 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* ── BOTÓN GENERAR ────────────────────────────────────────────── */}
         <div>

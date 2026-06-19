@@ -122,13 +122,14 @@ export async function POST(req: NextRequest) {
     const edadAnios = (child as any)?.age
 
     // ── Generar reporte con IA ─────────────────────────────────────────────────
-    const promptPadres = `Eres ARIA, el asistente de comunicación familiar del Centro Neuropsicología y Terapias SANTI. Tu tarea es escribir un REPORTE MENSUAL PARA PADRES sobre el progreso de su hijo/a.
+    const promptPadres = `Eres ARIA, el asistente de comunicación familiar del Centro Neuropsicología y Terapias SANTI, gestionado a través de la plataforma Vanty ABA. Tu tarea es escribir un REPORTE MENSUAL PARA PADRES sobre el progreso de su hijo/a.
 
 REGLAS CRÍTICAS:
 - Lenguaje SIMPLE, CÁLIDO y POSITIVO. Los padres no son especialistas.
 - CELEBRA cada avance, por pequeño que sea.
 - Nunca uses jerga técnica (no digas ABA, BCBA, schedule de reforzamiento, etc.)
-- Habla directamente a los padres: "Esta semana Juan logró..."
+- Habla directamente a los padres usando SIEMPRE pasado perfecto: "Esta semana Juan ha logrado...", "ha demostrado...", "ha alcanzado..."
+- NUNCA uses presente simple ni pasado simple para describir logros. SIEMPRE pasado perfecto compuesto.
 - Máximo 450 palabras en el texto narrativo.
 - Sé ESPECÍFICO con los datos que tienes, no genérico.
 
