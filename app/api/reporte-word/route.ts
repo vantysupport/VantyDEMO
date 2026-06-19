@@ -1469,8 +1469,15 @@ async function generarInformeClinicoSanti(
         })
         areaMostrada = true
       } else {
-        // Con SETs → el objetivo va combinado en el primer SET; filas siguientes son SET puro
-        let primeraFila = true
+        // Con SETs → objetivo en su propia fila (sin badge), luego cada SET en su propia fila
+        habilidades.push({
+          area: areaMostrada ? '' : areaName,
+          subarea: p.titulo,
+          objetivo: objetivoTxt,
+          estado: estadoProgr,
+        })
+        areaMostrada = true
+
         for (const s of p.sets) {
           const sesSet = sesProgArr.filter((ses: any) => {
             if (ses.programa_id !== p.id) return false
@@ -1493,26 +1500,12 @@ async function generarInformeClinicoSanti(
               : 'no_iniciado'
           }
 
-          if (primeraFila) {
-            // Primera fila del grupo: lleva área, subárea y objetivo combinado con el SET
-            habilidades.push({
-              area: areaMostrada ? '' : areaName,
-              subarea: p.titulo,
-              objetivo: objetivoTxt,   // se muestra encima del SET en la misma celda
-              set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
-              estado: estadoSet,
-            })
-            areaMostrada = true
-            primeraFila = false
-          } else {
-            // Filas siguientes: solo el SET (sin área ni subárea → merge visual)
-            habilidades.push({
-              area: '',
-              subarea: '',
-              set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
-              estado: estadoSet,
-            })
-          }
+          habilidades.push({
+            area: '',
+            subarea: '',
+            set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
+            estado: estadoSet,
+          })
         }
       }
     }
