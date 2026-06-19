@@ -5,7 +5,7 @@ import { useI18n } from '@/lib/i18n-context'
 import { toBCP47 } from '@/lib/i18n'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
-  Send, Loader2, User, Brain, BookOpen, Trash2
+  Send, Loader2, User, Brain, BookOpen, Trash2, Volume2, VolumeX
 } from 'lucide-react'
 
 interface Message {
@@ -74,6 +74,70 @@ export default function ARIAAgentChat({
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const prevKeyRef = useRef<string>(STORAGE_KEY)
+
+  // ── Voz de ARIA (Edge TTS, con respaldo a la voz del navegador) ──
+  const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [speaking, setSpeaking]         = useState(false)
+  const audioRef        = useRef<HTMLAudioElement | null>(null)
+  const speakTokenRef   = useRef(0)
+  const voiceEnabledRef = useRef(voiceEnabled)
+  useEffect(() => { voiceEnabledRef.current = voiceEnabled }, [voiceEnabled])
+
+  const stopSpeaking = useCallback(() => {
+    speakTokenRef.current++
+    try { audioRef.current?.pause(); audioRef.current = null } catch {}
+    try { if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel() } catch {}
+    setSpeaking(false)
+  }, [])
+
+  const speakBrowser = useCallback((text: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) { setSpeaking(false); return }
+    try {
+      window.speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance(text)
+      u.lang = 'es-ES'; u.rate = 1; u.pitch = 1.05
+      const es = window.speechSynthesis.getVoices().find(v => v.lang?.toLowerCase().startsWith('es'))
+      if (es) u.voice = es
+      u.onstart = () => setSpeaking(true)
+      u.onend   = () => setSpeaking(false)
+      u.onerror = () => setSpeaking(false)
+      window.speechSynthesis.speak(u)
+    } catch { setSpeaking(false) }
+  }, [])
+
+  // Voz neuronal de ARIA — generada al momento, sin guardar nada
+  const speak = useCallback(async (text: string) => {
+    const limpio = (text || '').trim()
+    if (!limpio) return
+    stopSpeaking()
+    const myToken = ++speakTokenRef.current
+    setSpeaking(true)
+    try {
+      const res = await fetch('/api/elevenlabs-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: limpio }),
+      })
+      if (!res.ok) throw new Error('tts')
+      const blob = await res.blob()
+      if (myToken !== speakTokenRef.current) return
+      const url = URL.createObjectURL(blob)
+      const a = new Audio(url)
+      audioRef.current = a
+      a.onended = () => { setSpeaking(false); URL.revokeObjectURL(url) }
+      a.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url) }
+      await a.play()
+    } catch {
+      if (myToken === speakTokenRef.current) speakBrowser(limpio)
+    }
+  }, [stopSpeaking, speakBrowser])
+
+  const toggleVoice = useCallback(() => {
+    setVoiceEnabled(v => { if (v) stopSpeaking(); return !v })
+  }, [stopSpeaking])
+
+  // Cortar la voz al desmontar
+  useEffect(() => () => stopSpeaking(), [stopSpeaking])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -172,6 +236,7 @@ export default function ARIAAgentChat({
         timestamp: new Date().toISOString(),
         fuentes: data.fuentesUsadas,
       }])
+      if (voiceEnabledRef.current) speak(data.respuesta)
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -182,7 +247,7 @@ export default function ARIAAgentChat({
       setLoading(false)
       inputRef.current?.focus()
     }
-  }, [input, loading, childId, userId, conversacionId, contexto])
+  }, [input, loading, childId, userId, conversacionId, contexto, locale, speak])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
@@ -290,14 +355,29 @@ export default function ARIAAgentChat({
         <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
           {messages.length > 1 ? `${messages.length - 1} mensaje${messages.length > 2 ? 's' : ''} guardado${messages.length > 2 ? 's' : ''}` : 'Conversación nueva'}
         </span>
-        <button
-          onClick={() => { if (window.confirm('¿Borrar todo el historial de ARIA? Esta acción no se puede deshacer.')) clearHistory() }}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all text-red-500 hover:text-white hover:bg-red-500 border border-red-500/30 hover:border-red-500"
-          title="Borrar historial del chat"
-        >
-          <Trash2 size={12} />
-          Borrar chat
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={toggleVoice}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all"
+            style={{
+              background: voiceEnabled ? 'rgba(134,239,172,0.18)' : 'var(--muted-bg)',
+              color: voiceEnabled ? '#16a34a' : 'var(--text-muted)',
+              border: `1px solid ${voiceEnabled ? 'rgba(22,163,74,0.35)' : 'var(--card-border)'}`,
+            }}
+            title={voiceEnabled ? 'Desactivar voz de ARIA' : 'Activar voz de ARIA'}
+          >
+            {voiceEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+            {speaking ? 'Hablando…' : voiceEnabled ? 'Voz ON' : 'Voz OFF'}
+          </button>
+          <button
+            onClick={() => { if (window.confirm('¿Borrar todo el historial de ARIA? Esta acción no se puede deshacer.')) clearHistory() }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all text-red-500 hover:text-white hover:bg-red-500 border border-red-500/30 hover:border-red-500"
+            title="Borrar historial del chat"
+          >
+            <Trash2 size={12} />
+            Borrar chat
+          </button>
+        </div>
       </div>
 
       {/* Input */}
