@@ -778,12 +778,13 @@ export function tablaDatosGenerales(filas: [string, string][]): Table {
 export type EstadoLogro = 'logrado' | 'casi_logrado' | 'en_proceso' | 'no_iniciado'
 
 export type HabilidadFila = {
-  area?:       string
-  subarea?:    string
-  objetivo:    string
-  set?:        string
-  estado:      EstadoLogro
-  porcentaje?: number
+  area?:           string
+  subarea?:        string
+  /** Texto del criterio/objetivo — si está presente junto a `set`, se muestra encima del SET en la misma celda */
+  objetivo?:       string
+  /** Texto del SET. Si está presente, esta fila es una fila de SET */
+  set?:            string
+  estado:          EstadoLogro
 }
 
 function estadoTexto(f: HabilidadFila): string {
@@ -837,21 +838,52 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
         })],
   })
 
+  // Celda de OBJETIVO/SET: puede tener objetivo + set combinados en la misma celda
+  const objetivoSetCell = (f: HabilidadFila) => {
+    const isSet = !!f.set
+    const paragraphs: Paragraph[] = []
+
+    if (f.objetivo?.trim()) {
+      paragraphs.push(new Paragraph({
+        spacing: { before: 0, after: isSet ? 80 : 0 },
+        children: [new TextRun({ text: f.objetivo, size: 15, font: FONT, color: COLOR.grisMed, italics: true })],
+      }))
+    }
+
+    if (isSet) {
+      paragraphs.push(new Paragraph({
+        spacing: { before: f.objetivo?.trim() ? 40 : 0, after: 0 },
+        children: [new TextRun({ text: f.set!, bold: true, size: 15, font: FONT, color: COLOR.azulDark })],
+      }))
+    }
+
+    if (paragraphs.length === 0) paragraphs.push(new Paragraph({ children: [] }))
+
+    return new TableCell({
+      borders: BDR,
+      width: { size: 4040, type: WidthType.DXA },
+      margins: { top: 90, bottom: 90, left: 140, right: 100 },
+      verticalAlign: VerticalAlign.CENTER,
+      children: paragraphs,
+    })
+  }
+
   return new Table({
     width: { size: 9360, type: WidthType.DXA },
     columnWidths: [1560, 1960, 4040, 1800],
     rows: [
       new TableRow({ tableHeader: true, children: [hCell('ÁREA', 1560), hCell('SUBÁREA', 1960), hCell('OBJETIVO / SET', 4040), hCell('ESTADO', 1800)] }),
       ...filas.map(f => {
-        const isSet     = !f.subarea || f.subarea.trim() === ''
+        const isSet     = !!f.set
+        const hasSubarea = !!(f.subarea?.trim())
         const areaMerge = f.area?.trim() ? 'restart' : 'continue'
-        const subMerge  = isSet ? 'continue' : 'restart'
+        const subMerge  = hasSubarea ? 'restart' : 'continue'
         const ec        = estadoColor(f.estado)
         return new TableRow({ children: [
           dCell(f.area || '', 1560, { bold: true, size: 15, color: COLOR.azulDark, merge: areaMerge as any }),
           dCell(f.subarea || '', 1960, { size: 15, merge: subMerge as any }),
-          dCell(isSet ? (f.set || '') : f.objetivo, 4040, { size: 15 }),
-          // Solo las filas SET muestran el badge de estado; las filas de objetivo quedan vacías
+          objetivoSetCell(f),
+          // Solo las filas SET muestran el badge de estado; filas de solo objetivo quedan vacías
           isSet
             ? dCell(estadoTexto(f), 1800, { align: AlignmentType.CENTER, bold: true, size: 15, color: ec.text, bg: ec.bg })
             : dCell('', 1800, {}),

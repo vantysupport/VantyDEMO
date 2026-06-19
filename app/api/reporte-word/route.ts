@@ -1450,8 +1450,8 @@ async function generarInformeClinicoSanti(
         objetivoTxt = `Con un criterio de éxito del ${p.criterio}% en dos sesiones consecutivas, el/la estudiante deberá alcanzar el dominio del programa "${p.titulo}".`
       }
 
-      // Fila HEADER del programa (objetivo general, sin set)
-      // Considera: estado oficial, criterio automático, O sets dominados manualmente
+      // Si el programa tiene SETs, el texto del criterio va dentro del primer SET (celda combinada).
+      // Si no tiene SETs, se usa una fila de objetivo independiente.
       const cumpleCriterio = programaCumpleCriterio(p.id)
       const estadoProgr: any =
         cumpleCriterio ? 'logrado'
@@ -1459,42 +1459,61 @@ async function generarInformeClinicoSanti(
         : (p.promedio_reciente != null && p.promedio_reciente > 0) ? 'en_proceso'
         : 'no_iniciado'
 
-      habilidades.push({
-        area: areaMostrada ? '' : areaName,
-        subarea: p.titulo,
-        objetivo: objetivoTxt,
-        estado: estadoProgr,
-      })
-      areaMostrada = true
-
-      // Filas SET (si hay objetivos_cp definidos)
-      for (const s of p.sets) {
-        const sesSet = sesProgArr.filter((ses: any) => {
-          if (ses.programa_id !== p.id) return false
-          const fase = String(ses.fase || '').toLowerCase()
-          return fase.includes(`set ${s.numero_set}`) || fase.includes(`set${s.numero_set}`) || fase === String(s.numero_set)
-        })
-        const pctsSet = sesSet.map((ses: any) => parseNivelLogro(ses.porcentaje_exito))
-          .filter((v: number | null): v is number => v !== null)
-        const promSet = pctsSet.length > 0 ? avg(pctsSet) : null
-
-        const estadoObj = (s.estado || '').toLowerCase()
-        let estadoSet: any = 'en_proceso'
-        if (['dominado', 'logrado', 'criterio_alcanzado'].includes(estadoObj)) estadoSet = 'logrado'
-        else if (estadoObj === 'casi_logrado') estadoSet = 'casi_logrado'
-        else if (['no_iniciado', 'pendiente'].includes(estadoObj)) estadoSet = 'no_iniciado'
-        else if (promSet != null) {
-          estadoSet = promSet >= p.criterio ? 'logrado'
-            : promSet >= 80 ? 'casi_logrado'
-            : promSet > 0 ? 'en_proceso'
-            : 'no_iniciado'
-        }
-
+      if (p.sets.length === 0) {
+        // Sin SETs → fila de objetivo sola (comportamiento original)
         habilidades.push({
-          area: '', subarea: '', objetivo: '',
-          set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
-          estado: estadoSet,
+          area: areaMostrada ? '' : areaName,
+          subarea: p.titulo,
+          objetivo: objetivoTxt,
+          estado: estadoProgr,
         })
+        areaMostrada = true
+      } else {
+        // Con SETs → el objetivo va combinado en el primer SET; filas siguientes son SET puro
+        let primeraFila = true
+        for (const s of p.sets) {
+          const sesSet = sesProgArr.filter((ses: any) => {
+            if (ses.programa_id !== p.id) return false
+            const fase = String(ses.fase || '').toLowerCase()
+            return fase.includes(`set ${s.numero_set}`) || fase.includes(`set${s.numero_set}`) || fase === String(s.numero_set)
+          })
+          const pctsSet = sesSet.map((ses: any) => parseNivelLogro(ses.porcentaje_exito))
+            .filter((v: number | null): v is number => v !== null)
+          const promSet = pctsSet.length > 0 ? avg(pctsSet) : null
+
+          const estadoObj = (s.estado || '').toLowerCase()
+          let estadoSet: any = 'en_proceso'
+          if (['dominado', 'logrado', 'criterio_alcanzado'].includes(estadoObj)) estadoSet = 'logrado'
+          else if (estadoObj === 'casi_logrado') estadoSet = 'casi_logrado'
+          else if (['no_iniciado', 'pendiente'].includes(estadoObj)) estadoSet = 'no_iniciado'
+          else if (promSet != null) {
+            estadoSet = promSet >= p.criterio ? 'logrado'
+              : promSet >= 80 ? 'casi_logrado'
+              : promSet > 0 ? 'en_proceso'
+              : 'no_iniciado'
+          }
+
+          if (primeraFila) {
+            // Primera fila del grupo: lleva área, subárea y objetivo combinado con el SET
+            habilidades.push({
+              area: areaMostrada ? '' : areaName,
+              subarea: p.titulo,
+              objetivo: objetivoTxt,   // se muestra encima del SET en la misma celda
+              set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
+              estado: estadoSet,
+            })
+            areaMostrada = true
+            primeraFila = false
+          } else {
+            // Filas siguientes: solo el SET (sin área ni subárea → merge visual)
+            habilidades.push({
+              area: '',
+              subarea: '',
+              set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
+              estado: estadoSet,
+            })
+          }
+        }
       }
     }
   }
@@ -1724,13 +1743,11 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       ['Edad', edadTexto],
       ['Institución educativa', (child as any)?.school_type || 'Regular'],
       ['Diagnóstico', (child as any)?.diagnosis || 'En evaluación'],
-      ['Período de trabajo', periodoTexto],
       ['Total de sesiones realizadas', String(totalSesionesRealizadas)],
       // Programas activos = todos los que tienen datos y NO cumplen criterio (en intervención)
       ['Programas activos', String(progArr.filter((p: any) => !programaCumpleCriterio(p.id) && ['activo', 'intervencion', 'en_intervencion', ''].includes(p.estado ?? '')).length)],
       // Programas con criterio alcanzado = dominados por estado, sesiones consecutivas, o TODOS sus sets dominados
       ['Programas con criterio alcanzado', String(progArr.filter((p: any) => programaCumpleCriterio(p.id)).length)],
-      ['Promedio global de logro', `${promedioGlobal}%`],
       ['N° de informe en la app', docNum],
       ['Especialista a cargo', especialistaNombre],
       ['Fecha de entrega del informe', hoy],
@@ -1752,14 +1769,32 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
     tpl.tablaHabilidades(habilidades),
     ...tpl.glosarioAyudas(),
 
+    // ── SETS CON CRITERIO ALCANZADO ──
+    tpl.tituloSeccion('IV.  Sets con Criterio Alcanzado'),
+    ...(() => {
+      const setsLogrados = habilidades.filter(f => f.set && f.estado === 'logrado')
+      if (setsLogrados.length === 0) {
+        return [tpl.parrafo('No se registran sets con criterio alcanzado en el período evaluado.', '64748B')]
+      }
+      return [
+        tpl.parrafo(
+          `Se registran ${setsLogrados.length} set${setsLogrados.length !== 1 ? 's' : ''} con criterio de dominio alcanzado durante el período de intervención:`,
+          '334155'
+        ),
+        tpl.tablaDatosGenerales(
+          setsLogrados.map(f => [f.set!.replace(/^SET \d+:\s*/, 'SET ').split(':')[0], f.set!.replace(/^SET \d+:\s*/, '')])
+        ),
+      ]
+    })(),
+
     // ── ANÁLISIS POR ÁREA ──
-    tpl.tituloSeccion('IV.  Análisis Clínico por Área'),
+    tpl.tituloSeccion('V.  Análisis Clínico por Área'),
     ...parsearProsaConSubsecciones(textoAnalisisGlobal),
   ]
 
   // Gráficos
   if (datosGraficoArea.length > 0) {
-    sections.push(tpl.tituloSeccion('V.  Representación Gráfica del Progreso'))
+    sections.push(tpl.tituloSeccion('VI.  Representación Gráfica del Progreso'))
     sections.push(new Paragraph({
       spacing: { before: 100, after: 100 },
       children: [new TextRun({ text: 'Promedio de logro por área de intervención (sesiones recientes):', size: 19, font: 'Arial', color: '475569', italics: true })],
@@ -1775,7 +1810,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
   }
 
   // Plan terapéutico
-  sections.push(tpl.tituloSeccion('VI.  Plan Terapéutico 30 / 60 / 90 días'))
+  sections.push(tpl.tituloSeccion('VII.  Plan Terapéutico 30 / 60 / 90 días'))
   sections.push(...parsearProsaConSubsecciones(textoPlanTerapeutico))
 
   // Recomendaciones
@@ -1784,10 +1819,10 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
   // ─── VIII. FUENTE DE DATOS Y TRAZABILIDAD ──────────────────────────
   //   Esto permite al lector verificar cada número del informe contra
   //   los datos reales del expediente. Cero datos sintéticos.
-  sections.push(tpl.tituloSeccion('VIII.  Fuente de Datos y Trazabilidad'))
+  sections.push(tpl.tituloSeccion('IX.  Fuente de Datos y Trazabilidad'))
 
   sections.push(tpl.parrafo(
-    `Todos los porcentajes, conteos y análisis de este informe se calculan en tiempo real a partir de los datos registrados en la plataforma SANTI para este paciente. No se incluyen valores predeterminados, simulados ni inferidos. Las fuentes consultadas son:`
+    `Todos los porcentajes, conteos y análisis de este informe se calculan en tiempo real a partir de los datos registrados en la plataforma Vanty ABA para este paciente. No se incluyen valores predeterminados, simulados ni inferidos. Las fuentes consultadas son:`
   ))
 
   sections.push(...tpl.items([
