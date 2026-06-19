@@ -787,11 +787,10 @@ export type HabilidadFila = {
 }
 
 function estadoTexto(f: HabilidadFila): string {
-  const pct = f.porcentaje != null ? ` (${f.porcentaje}%)` : ''
   switch (f.estado) {
-    case 'logrado':      return 'Criterio alcanzado' + pct
-    case 'casi_logrado': return 'Casi alcanzado' + pct
-    case 'en_proceso':   return 'En proceso' + pct
+    case 'logrado':      return 'Criterio alcanzado'
+    case 'casi_logrado': return 'En proceso'
+    case 'en_proceso':   return 'En proceso'
     case 'no_iniciado':  return 'No iniciado'
     default:             return ''
   }
@@ -852,7 +851,10 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
           dCell(f.area || '', 1560, { bold: true, size: 15, color: COLOR.azulDark, merge: areaMerge as any }),
           dCell(f.subarea || '', 1960, { size: 15, merge: subMerge as any }),
           dCell(isSet ? (f.set || '') : f.objetivo, 4040, { size: 15 }),
-          dCell(estadoTexto(f), 1800, { align: AlignmentType.CENTER, bold: true, size: 15, color: ec.text, bg: ec.bg }),
+          // Solo las filas SET muestran el badge de estado; las filas de objetivo quedan vacías
+          isSet
+            ? dCell(estadoTexto(f), 1800, { align: AlignmentType.CENTER, bold: true, size: 15, color: ec.text, bg: ec.bg })
+            : dCell('', 1800, {}),
         ]})
       }),
     ],

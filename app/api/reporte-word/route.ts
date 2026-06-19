@@ -1464,7 +1464,6 @@ async function generarInformeClinicoSanti(
         subarea: p.titulo,
         objetivo: objetivoTxt,
         estado: estadoProgr,
-        porcentaje: p.promedio_reciente ?? p.promedio ?? undefined,
       })
       areaMostrada = true
 
@@ -1495,7 +1494,6 @@ async function generarInformeClinicoSanti(
           area: '', subarea: '', objetivo: '',
           set: `SET ${s.numero_set}: ${s.descripcion || 'Sin descripción'}`,
           estado: estadoSet,
-          porcentaje: promSet ?? undefined,
         })
       }
     }
