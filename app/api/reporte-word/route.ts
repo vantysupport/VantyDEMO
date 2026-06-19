@@ -1469,7 +1469,8 @@ async function generarInformeClinicoSanti(
         })
         areaMostrada = true
       } else {
-        // Con SETs → objetivo en su propia fila (sin badge), luego cada SET en su propia fila
+        // Con SETs → el bloque criterio+objetivo va en su PROPIA fila (ESTADO vacío),
+        //            y cada SET ocupa su propia fila debajo con su badge de estado.
         habilidades.push({
           area: areaMostrada ? '' : areaName,
           subarea: p.titulo,
@@ -1500,6 +1501,7 @@ async function generarInformeClinicoSanti(
               : 'no_iniciado'
           }
 
+          // Fila de solo SET → su celda OBJETIVO/SET muestra únicamente el SET, con su badge
           habilidades.push({
             area: '',
             subarea: '',
