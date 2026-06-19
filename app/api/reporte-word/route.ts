@@ -1822,12 +1822,12 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
   ))
 
   sections.push(...tpl.items([
-    `Tabla "programas_aba" — ${progArr.length} programas registrados para ${nombreCap}.`,
-    `Tabla "sesiones_datos_aba" — ${sesProgArr.length} sesiones registradas en el período del ${fechaInicio} al ${fechaFin}.`,
-    `Tabla "objetivos_cp" — ${objetivosArr.length} sets (objetivos a corto plazo) asociados a los programas activos.`,
-    evalIni ? `Tabla "evaluaciones_iniciales" — evaluación inicial registrada (estado: ${(evalIni as any).estado}).` : 'Tabla "evaluaciones_iniciales" — sin evaluación inicial registrada.',
-    `Tabla "patient_documents" — ${docsArr.length} documentos con texto extraído por IA.`,
-    `Tabla "clinical_template_responses" — ${fichasArr.length} fichas clínicas registradas.`,
+    `Programas de intervención — ${progArr.length} programas registrados para ${nombreCap}.`,
+    `Registro de sesiones — ${sesProgArr.length} sesiones registradas en el período del ${fechaInicio} al ${fechaFin}.`,
+    `Objetivos a corto plazo (sets) — ${objetivosArr.length} sets asociados a los programas activos.`,
+    evalIni ? `Evaluación inicial — evaluación inicial registrada (estado: ${(evalIni as any).estado}).` : 'Evaluación inicial — sin evaluación inicial registrada.',
+    `Documentos del expediente — ${docsArr.length} documentos con texto extraído por IA.`,
+    `Fichas clínicas — ${fichasArr.length} fichas clínicas registradas.`,
   ]))
 
   sections.push(new Paragraph({
