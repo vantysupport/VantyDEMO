@@ -3,7 +3,7 @@ import React from 'react'
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  User, Lock, Bell, Palette, Shield, Eye, EyeOff,
+  User, Lock, Palette, Shield, Eye, EyeOff,
   Save, Loader2, CheckCircle, Camera, Mail, Phone,
   Globe, LogOut, AlertTriangle, HardDrive, Database, RefreshCw,
   Crown, ArrowUpRight,
@@ -12,7 +12,6 @@ import { useTheme } from '@/components/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { releaseSessionNow } from '@/lib/session-lock'
 import { useToast } from '@/components/Toast'
-import WhatsAppConfigView from './WhatsAppConfigView'
 import { GestorPlantillas } from './PlantillasClinicas'
 
 // ── Card genérica ─────────────────────────────────────────────────────────────
@@ -363,30 +362,6 @@ function SeccionSeguridad() {
   )
 }
 
-// ── Sección: Notificaciones ───────────────────────────────────────────────────
-function SeccionNotificaciones() {
-  const { isDark } = useTheme()
-  return (
-    <div className="space-y-4">
-      <SectionTitle label="Notificaciones" />
-      <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-[#161b22] border-[#21262d]' : 'bg-white border-slate-200/80 shadow-sm'}`}>
-        <div className={`px-6 py-5 border-b flex items-center gap-4 ${isDark ? 'border-[#21262d]' : 'border-slate-100'}`}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-            <Bell size={18} className="text-white" />
-          </div>
-          <div>
-            <h3 className={`text-sm font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>WhatsApp & Notificaciones</h3>
-            <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Configuración de mensajería con las familias</p>
-          </div>
-        </div>
-        <div className="p-6">
-          <WhatsAppConfigView />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Sección: Almacenamiento ───────────────────────────────────────────────────
 function formatBytes(bytes: number): string {
   if (!bytes || bytes < 0) return '0 MB'
@@ -652,7 +627,6 @@ export default function ConfiguracionView({ onAvatarUpdate }: { onAvatarUpdate?:
       <SeccionPerfil onAvatarUpdate={onAvatarUpdate} />
       <SeccionAlmacenamiento />
       <SeccionSeguridad />
-      <SeccionNotificaciones />
       <SeccionApariencia />
       <SeccionCuenta />
     </div>
