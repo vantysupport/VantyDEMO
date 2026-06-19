@@ -845,14 +845,14 @@ export function tablaHabilidades(filas: HabilidadFila[]): Table {
 
     if (f.objetivo?.trim()) {
       paragraphs.push(new Paragraph({
-        spacing: { before: 0, after: isSet ? 80 : 0 },
+        spacing: { before: 0, after: 0 },
         children: [new TextRun({ text: f.objetivo, size: 15, font: FONT, color: COLOR.grisMed, italics: true })],
       }))
     }
 
     if (isSet) {
       paragraphs.push(new Paragraph({
-        spacing: { before: f.objetivo?.trim() ? 40 : 0, after: 0 },
+        spacing: { before: f.objetivo?.trim() ? 80 : 0, after: 0 },
         children: [new TextRun({ text: f.set!, bold: true, size: 15, font: FONT, color: COLOR.azulDark })],
       }))
     }

@@ -1748,6 +1748,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       ['Programas activos', String(progArr.filter((p: any) => !programaCumpleCriterio(p.id) && ['activo', 'intervencion', 'en_intervencion', ''].includes(p.estado ?? '')).length)],
       // Programas con criterio alcanzado = dominados por estado, sesiones consecutivas, o TODOS sus sets dominados
       ['Programas con criterio alcanzado', String(progArr.filter((p: any) => programaCumpleCriterio(p.id)).length)],
+      ['Sets con criterio alcanzado', String(habilidades.filter(f => f.set && f.estado === 'logrado').length)],
       ['N° de informe en la app', docNum],
       ['Especialista a cargo', especialistaNombre],
       ['Fecha de entrega del informe', hoy],
