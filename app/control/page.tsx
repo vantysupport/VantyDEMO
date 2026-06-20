@@ -13,7 +13,26 @@ import {
   ShieldCheck, Power, Users, AlertTriangle, RefreshCw, Trash2, Save, LogOut, Loader2,
   Activity, ChevronDown, Gauge, Terminal, Bot, Clock, MessageSquare,
   ToggleLeft, ToggleRight, Puzzle, Crown, Stethoscope, Heart, ClipboardList, Layers,
+  Building2, Plus, PowerOff, CalendarClock, Pencil,
 } from 'lucide-react'
+
+type Center = {
+  id: string
+  email: string
+  full_name?: string | null
+  center_name?: string | null
+  demo_active: boolean
+  demo_expires_at: string | null
+  created_at: string
+  active_session_at?: string | null
+}
+
+/** Días restantes a partir de una fecha ISO (puede ser negativo → vencido). */
+function daysLeft(expiresAt: string | null): number | null {
+  if (!expiresAt) return null
+  const ms = new Date(expiresAt).getTime() - Date.now()
+  return Math.ceil(ms / (24 * 60 * 60 * 1000))
+}
 
 type ErrLog = { id: string; message: string; detail: string; source: string; url: string; user_email: string; created_at: string }
 
@@ -152,6 +171,10 @@ export default function ControlPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [autoPurgeDays, setAutoPurgeDays] = useState<number>(7)  // auto-limpiar errores más viejos que N días
 
+  // ── Centros demo ──────────────────────────────────────────────────────────
+  const [centers, setCenters] = useState<Center[]>([])
+  const [newCenter, setNewCenter] = useState({ name: '', email: '', password: '', days: '15' })
+
   const getToken = async () => {
     let token = (await supabase.auth.getSession()).data.session?.access_token || ''
     if (!token) {
@@ -211,6 +234,63 @@ export default function ControlPage() {
     } catch { /* noop */ }
   }, [])
 
+  // ── Centros demo: carga + acciones ────────────────────────────────────────
+  const ctlPost = useCallback(async (payload: Record<string, unknown>) => {
+    const token = await getToken()
+    return fetch('/api/control', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    })
+  }, [])
+
+  const loadCenters = useCallback(async () => {
+    try {
+      const r = await ctlPost({ action: 'list_centers' })
+      if (!r.ok) return
+      const j = await r.json()
+      setCenters(j.centers || [])
+    } catch { /* noop */ }
+  }, [ctlPost])
+
+  const createCenter = useCallback(async () => {
+    const name = newCenter.name.trim()
+    const email = newCenter.email.trim()
+    const password = newCenter.password
+    const days = parseInt(newCenter.days || '15', 10) || 15
+    if (!email || !password) { alert('Completá correo y contraseña.'); return }
+    setBusy('center-create')
+    try {
+      const r = await ctlPost({ action: 'create_center', center_name: name, email, password, days })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) { alert('Error: ' + (j.error || r.status)); return }
+      setNewCenter({ name: '', email: '', password: '', days: '15' })
+      await loadCenters()
+    } catch { alert('Error de red.') } finally { setBusy(null) }
+  }, [ctlPost, newCenter, loadCenters])
+
+  const updateCenter = useCallback(async (id: string, patch: Record<string, unknown>, key: string) => {
+    setBusy(key)
+    try {
+      const r = await ctlPost({ action: 'update_center', id, ...patch })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) { alert('Error: ' + (j.error || r.status)); return }
+      await loadCenters()
+    } catch { alert('Error de red.') } finally { setBusy(null) }
+  }, [ctlPost, loadCenters])
+
+  const deleteCenter = useCallback(async (c: Center) => {
+    const label = c.center_name || c.email
+    if (!confirm(`¿Eliminar el centro "${label}" y su cuenta por completo?\n\nEsta acción no se puede deshacer.`)) return
+    setBusy('center-del-' + c.id)
+    try {
+      const r = await ctlPost({ action: 'delete_center', id: c.id })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) { alert('Error: ' + (j.error || r.status)); return }
+      await loadCenters()
+    } catch { alert('Error de red.') } finally { setBusy(null) }
+  }, [ctlPost, loadCenters])
+
   /** Auto-purge: borra silenciosamente errores más viejos que autoPurgeDays días */
   const purgeOldErrors = useCallback(async (days: number) => {
     try {
@@ -240,9 +320,10 @@ export default function ControlPage() {
       await loadStatus()
       await loadErrors()
       await loadCounts()
+      await loadCenters()
       await purgeOldErrors(autoPurgeDays) // auto-limpiar errores viejos al cargar
     })()
-  }, [router, loadStatus, loadErrors, loadCounts, purgeOldErrors, autoPurgeDays])
+  }, [router, loadStatus, loadErrors, loadCounts, loadCenters, purgeOldErrors, autoPurgeDays])
 
   const saveMaintenance = async (on: boolean) => {
     setBusy('maint'); setMaintenance(on)
@@ -617,6 +698,90 @@ export default function ControlPage() {
                 )
               })}
             </div>
+          </section>
+
+          {/* ── CENTROS DEMO ─────────────────────────────────────────────────── */}
+          <section className="ctl-card p-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center"><Building2 size={15} className="text-indigo-400" /></div>
+              <h2 className="font-bold text-[15px] text-white">Centros demo</h2>
+              <span className="ml-auto text-[10px] font-bold font-mono text-slate-500">{centers.length} centro{centers.length === 1 ? '' : 's'}</span>
+            </div>
+
+            {/* Crear centro */}
+            <div className="rounded-xl bg-white/[0.02] border border-white/5 p-4 mb-4">
+              <p className="text-[11px] font-bold text-slate-300 mb-3 flex items-center gap-1.5"><Plus size={13} className="text-indigo-400" /> Crear cuenta de demo (admin)</p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                <input value={newCenter.name} onChange={e => setNewCenter(c => ({ ...c, name: e.target.value }))}
+                  placeholder="Nombre del centro" className="ctl-input text-sm rounded-lg px-3 py-2 lg:col-span-1" />
+                <input value={newCenter.email} onChange={e => setNewCenter(c => ({ ...c, email: e.target.value }))}
+                  placeholder="Correo" type="email" autoComplete="off" className="ctl-input text-sm rounded-lg px-3 py-2 lg:col-span-1" />
+                <input value={newCenter.password} onChange={e => setNewCenter(c => ({ ...c, password: e.target.value }))}
+                  placeholder="Contraseña" autoComplete="new-password" className="ctl-input text-sm rounded-lg px-3 py-2 lg:col-span-1" />
+                <div className="flex items-center gap-1.5">
+                  <input value={newCenter.days} onChange={e => setNewCenter(c => ({ ...c, days: e.target.value.replace(/\D/g, '') }))}
+                    placeholder="15" inputMode="numeric" className="ctl-input text-sm rounded-lg px-3 py-2 w-20 text-center" />
+                  <span className="text-[11px] text-slate-500 font-semibold">días</span>
+                </div>
+                <button onClick={createCenter} disabled={busy === 'center-create'}
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-3 py-2 text-xs font-bold text-white transition-colors">
+                  {busy === 'center-create' ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Crear
+                </button>
+              </div>
+            </div>
+
+            {/* Lista de centros */}
+            {centers.length === 0 ? (
+              <p className="text-center text-xs text-slate-500 py-6">No hay centros demo todavía. Creá el primero arriba.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {centers.map(c => {
+                  const dl = daysLeft(c.demo_expires_at)
+                  const expired = dl != null && dl <= 0
+                  const off = !c.demo_active
+                  const stateColor = off ? 'text-slate-500' : expired ? 'text-rose-400' : dl != null && dl <= 3 ? 'text-amber-400' : 'text-emerald-400'
+                  const stateLabel = off ? 'Apagado' : expired ? 'Vencido' : dl == null ? 'Sin vencimiento' : `${dl} día${dl === 1 ? '' : 's'} restantes`
+                  const cid = 'center-' + c.id
+                  return (
+                    <div key={c.id} className="rounded-xl bg-white/[0.02] border border-white/5 p-3.5 flex flex-wrap items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold text-white truncate">{c.center_name || c.full_name || '(sin nombre)'}</p>
+                        <p className="text-[11px] text-slate-500 truncate">{c.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-[12px] font-black ${stateColor}`}>{stateLabel}</p>
+                        <p className="text-[10px] text-slate-600">desde {new Date(c.created_at).toLocaleDateString()}</p>
+                      </div>
+
+                      {/* Acciones */}
+                      <div className="flex items-center gap-1.5">
+                        <button title="+7 días" onClick={() => updateCenter(c.id, { add_days: 7 }, cid)} disabled={busy === cid}
+                          className="flex items-center gap-1 rounded-lg bg-white/5 hover:bg-white/10 px-2.5 py-1.5 text-[11px] font-bold text-slate-200 disabled:opacity-50">
+                          <CalendarClock size={12} /> +7d
+                        </button>
+                        <button title="Fijar días" onClick={() => {
+                            const v = prompt('¿Cuántos días de demo desde hoy?', String(dl != null && dl > 0 ? dl : 15))
+                            if (v == null) return
+                            const n = parseInt(v, 10); if (!Number.isFinite(n) || n <= 0) { alert('Número inválido.'); return }
+                            updateCenter(c.id, { days: n }, cid)
+                          }} disabled={busy === cid}
+                          className="flex items-center gap-1 rounded-lg bg-white/5 hover:bg-white/10 px-2.5 py-1.5 text-[11px] font-bold text-slate-200 disabled:opacity-50">
+                          <Pencil size={12} /> Días
+                        </button>
+                        <button title={off ? 'Encender' : 'Apagar'} onClick={() => updateCenter(c.id, { demo_active: off }, cid)} disabled={busy === cid}
+                          className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50 ${off ? 'bg-emerald-600/80 hover:bg-emerald-600 text-white' : 'bg-amber-600/80 hover:bg-amber-600 text-white'}`}>
+                          {off ? <Power size={12} /> : <PowerOff size={12} />} {off ? 'Encender' : 'Apagar'}
+                        </button>
+                        <button title="Eliminar centro" onClick={() => deleteCenter(c)} disabled={busy === 'center-del-' + c.id}
+                          className="flex items-center justify-center rounded-lg bg-rose-600/80 hover:bg-rose-600 p-1.5 text-white disabled:opacity-50">
+                          {busy === 'center-del-' + c.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </section>
 
           {/* ── MANTENIMIENTO + ARIA ─────────────────────────────────────────── */}

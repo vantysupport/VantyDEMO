@@ -1,6 +1,7 @@
 'use client'
 
 import PWAInstallButton from '@/components/PWAInstallButton'
+import DemoBanner from '@/components/DemoBanner'
 import { useI18n } from '@/lib/i18n-context'
 
 import { supabase } from '@/lib/supabase'
@@ -359,6 +360,7 @@ export default function AdminDashboard() {
   return (
     <>
     <PWAInstallButton />
+    <DemoBanner />
     <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-200
       ${isDark ? 'bg-[#0d1117]' : 'bg-slate-50'}`}>
 

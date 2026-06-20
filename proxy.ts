@@ -24,6 +24,7 @@ const PUBLIC_PATHS = [
   '/auth/callback',
   '/landing',
   '/mfa-required',               // página de enrollment 2FA (requiere sesión pero salta los role checks)
+  '/demo-finalizada',            // pantalla de demo apagada/vencida (centros demo)
 ]
 
 // Endpoints API públicos (verificación, webhooks, etc.)
@@ -160,6 +161,20 @@ export async function proxy(req: NextRequest) {
     .maybeSingle()
 
   const role = (profile as any)?.role || 'padre'
+
+  // 4·0. 🧪 CENTRO DEMO: si la cuenta es demo y está apagada o vencida, fuera.
+  //       El programador controla esto desde /control (efecto inmediato).
+  const demo = profile as { is_demo?: boolean; demo_active?: boolean; demo_expires_at?: string } | null
+  if (demo?.is_demo === true) {
+    const demoActive = demo.demo_active !== false
+    const expiresAt = demo.demo_expires_at
+    const expired = expiresAt ? new Date(expiresAt).getTime() < Date.now() : false
+    if (!demoActive || expired) {
+      const url = new URL('/demo-finalizada', req.url)
+      url.searchParams.set('reason', expired ? 'expired' : 'disabled')
+      return NextResponse.redirect(url)
+    }
+  }
 
   // 4a. 🔐 Forzar 2FA si el role lo requiere y el usuario aún no enroló
   //     (solo aplica si las columnas mfa_required / mfa_enrolled_at existen)

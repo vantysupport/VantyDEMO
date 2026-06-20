@@ -306,5 +306,118 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, deleted: count ?? 0, days, cutoff })
   }
 
+  // ── CENTROS DEMO ───────────────────────────────────────────────────────────
+  // Cada centro = una cuenta admin (role 'jefe') marcada is_demo=true.
+  // El programador la crea con N días; puede apagar/encender/extender/eliminar.
+
+  if (action === 'list_centers') {
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, full_name, center_name, demo_active, demo_expires_at, created_at, active_session_at, role')
+      .eq('is_demo', true)
+      .order('created_at', { ascending: false })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ centers: data || [] })
+  }
+
+  if (action === 'create_center') {
+    const b = body as Record<string, unknown>
+    const email = String(b.email || '').trim().toLowerCase()
+    const password = String(b.password || '')
+    const centerName = String(b.center_name || '').slice(0, 120).trim()
+    const days = Math.max(1, Math.floor(Number(b.days) || 15))
+    if (!email || !email.includes('@')) return NextResponse.json({ error: 'Correo inválido' }, { status: 400 })
+    if (password.length < 6) return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres' }, { status: 400 })
+
+    // 1) Crear el usuario en auth (email ya confirmado: es una demo).
+    const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { center_name: centerName },
+    })
+    if (cErr || !created?.user?.id) {
+      return NextResponse.json({ error: cErr?.message || 'No se pudo crear la cuenta' }, { status: 500 })
+    }
+    const uid = created.user.id
+    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+
+    // 2) Marcar el perfil como centro demo + admin. upsert por si un trigger ya lo creó.
+    const { error: pErr } = await supabaseAdmin.from('profiles').upsert({
+      id: uid,
+      email,
+      full_name: centerName || email,
+      center_name: centerName,
+      role: 'jefe',
+      is_demo: true,
+      demo_active: true,
+      demo_expires_at: expires,
+    }, { onConflict: 'id' })
+    if (pErr) {
+      // Rollback: si no pudimos marcar el perfil, borramos el usuario huérfano.
+      await supabaseAdmin.auth.admin.deleteUser(uid).catch(() => {})
+      return NextResponse.json({ error: pErr.message }, { status: 500 })
+    }
+    return NextResponse.json({ ok: true, id: uid, demo_expires_at: expires })
+  }
+
+  if (action === 'update_center') {
+    const b = body as Record<string, unknown>
+    const id = String(b.id || '')
+    if (!id) return NextResponse.json({ error: 'Falta el id del centro' }, { status: 400 })
+
+    const patch: Record<string, unknown> = {}
+    if (typeof b.demo_active === 'boolean') patch.demo_active = b.demo_active
+    if (typeof b.center_name === 'string') {
+      patch.center_name = (b.center_name as string).slice(0, 120).trim()
+      patch.full_name = patch.center_name
+    }
+    // Días: 'days' fija una NUEVA ventana desde ahora; 'add_days' extiende sobre lo existente.
+    if (b.days != null) {
+      const days = Math.max(1, Math.floor(Number(b.days) || 0))
+      patch.demo_expires_at = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+    } else if (b.add_days != null) {
+      const add = Math.floor(Number(b.add_days) || 0)
+      const { data: cur } = await supabaseAdmin.from('profiles').select('demo_expires_at').eq('id', id).maybeSingle()
+      const base = (cur as { demo_expires_at?: string } | null)?.demo_expires_at
+      const from = base && new Date(base).getTime() > Date.now() ? new Date(base).getTime() : Date.now()
+      patch.demo_expires_at = new Date(from + add * 24 * 60 * 60 * 1000).toISOString()
+    }
+    if (Object.keys(patch).length === 0) return NextResponse.json({ error: 'Nada que actualizar' }, { status: 400 })
+
+    const { error } = await supabaseAdmin.from('profiles').update(patch).eq('id', id).eq('is_demo', true)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Si lo apagamos, cortamos su sesión activa (logout en su próximo request igual lo bloquea).
+    if (patch.demo_active === false) {
+      await supabaseAdmin.from('profiles')
+        .update({ active_session_id: null, active_session_at: null })
+        .eq('id', id)
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  if (action === 'delete_center') {
+    const b = body as Record<string, unknown>
+    const id = String(b.id || '')
+    if (!id) return NextResponse.json({ error: 'Falta el id del centro' }, { status: 400 })
+
+    // Seguridad: solo se puede borrar una cuenta marcada is_demo.
+    const { data: target } = await supabaseAdmin
+      .from('profiles').select('id, is_demo').eq('id', id).maybeSingle()
+    if (!target || !(target as { is_demo?: boolean }).is_demo) {
+      return NextResponse.json({ error: 'Esa cuenta no es un centro demo (no se borra).' }, { status: 400 })
+    }
+
+    // Borrar el usuario de auth. Si profiles tiene FK on delete cascade, el perfil
+    // se va con él; si no, lo borramos explícito a continuación.
+    const { error: dErr } = await supabaseAdmin.auth.admin.deleteUser(id)
+    if (dErr && !/not found/i.test(dErr.message)) {
+      return NextResponse.json({ error: dErr.message }, { status: 500 })
+    }
+    await supabaseAdmin.from('profiles').delete().eq('id', id)
+    return NextResponse.json({ ok: true })
+  }
+
   return NextResponse.json({ error: 'Acción desconocida' }, { status: 400 })
 }
