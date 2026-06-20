@@ -1115,6 +1115,7 @@ create table if not exists public."profiles" (
   "calendar_provider" text,
   "google_calendar_refresh_token" text,
   "google_calendar_email" text,
+  "google_calendar_id" text,
   "microsoft_calendar_token" text,
   "microsoft_calendar_refresh_token" text,
   "microsoft_calendar_email" text,

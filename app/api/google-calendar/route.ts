@@ -10,6 +10,35 @@ const REDIRECT_URI         = process.env.NEXT_PUBLIC_APP_URL
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/google-calendar/callback`
   : 'http://localhost:3000/api/google-calendar/callback'
 
+// Con el scope calendar.app.created la app NO puede tocar el calendario principal:
+// crea (o reutiliza) un calendario secundario propio "Vanty ABA" por usuario y
+// guarda su id en profiles.google_calendar_id. Todos los eventos van ahí.
+const VANTY_CALENDAR_NAME = 'Vanty ABA'
+
+async function getOrCreateVantyCalendarId(userId: string, accessToken: string): Promise<string | null> {
+  // 1) ¿Ya tiene calendario creado?
+  const { data } = await supabaseAdmin
+    .from('profiles').select('google_calendar_id').eq('id', userId).single()
+  const stored = (data as { google_calendar_id?: string } | null)?.google_calendar_id
+  if (stored) return stored
+
+  // 2) Crear el calendario secundario "Vanty ABA".
+  const res = await fetch('https://www.googleapis.com/calendar/v3/calendars', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ summary: VANTY_CALENDAR_NAME, timeZone: 'America/Lima' }),
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    console.error('[GCal] No se pudo crear el calendario Vanty ABA:', res.status, err)
+    return null
+  }
+  const cal = await res.json()
+  await supabaseAdmin.from('profiles').update({ google_calendar_id: cal.id }).eq('id', userId)
+  console.log('[GCal] 📅 Calendario "Vanty ABA" creado:', cal.id)
+  return cal.id as string
+}
+
 // ─── GET: generate OAuth URL ─────────────────────────────────
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -18,7 +47,7 @@ export async function GET(req: NextRequest) {
   // Return OAuth URL for client to redirect to
   if (action === 'auth-url') {
     const scopes = [
-      'https://www.googleapis.com/auth/calendar.events',
+      'https://www.googleapis.com/auth/calendar.app.created',
     ].join(' ')
 
     const userId = searchParams.get('userId') || ''
@@ -62,7 +91,7 @@ export async function GET(req: NextRequest) {
 
     await supabaseAdmin
       .from('profiles')
-      .update({ google_calendar_token: null, google_calendar_refresh_token: null, google_calendar_email: null })
+      .update({ google_calendar_token: null, google_calendar_refresh_token: null, google_calendar_email: null, google_calendar_id: null })
       .eq('id', userId)
 
     return NextResponse.json({ ok: true })
@@ -201,8 +230,13 @@ export async function POST(req: NextRequest) {
         sendUpdates: attendees.some(a => a.displayName?.startsWith('Familia')) ? 'all' : 'none',
       }
 
+      const calId = await getOrCreateVantyCalendarId(userId, accessToken)
+      if (!calId) {
+        return NextResponse.json({ ok: false, error: 'No se pudo preparar el calendario Vanty ABA.' })
+      }
+
       const gcalRes = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=${event.sendUpdates}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?sendUpdates=${event.sendUpdates}`,
         {
           method: 'POST',
           headers: {
@@ -343,14 +377,15 @@ export async function POST(req: NextRequest) {
 
               console.log('[GCal] 🔄 Intentando crear evento en calendario del padre:', child.parent_id)
 
-              const parentRes = await fetch(
-                'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+              const parentCalId = await getOrCreateVantyCalendarId(child.parent_id, parentToken)
+              const parentRes = parentCalId ? await fetch(
+                `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(parentCalId)}/events`,
                 {
                   method: 'POST',
                   headers: { Authorization: `Bearer ${parentToken}`, 'Content-Type': 'application/json' },
                   body: JSON.stringify(parentEvent),
                 }
-              )
+              ) : new Response(null, { status: 500 })
 
               if (parentRes.ok) {
                 const parentData = await parentRes.json()
@@ -485,8 +520,11 @@ export async function POST(req: NextRequest) {
 
       const sendUpdates = notifyAttendees ? 'all' : 'none'
 
+      const calId = await getOrCreateVantyCalendarId(userId, accessToken)
+      if (!calId) return NextResponse.json({ ok: true, skipped: 'no calendar' })
+
       const patchRes = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}?sendUpdates=${sendUpdates}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events/${eventId}?sendUpdates=${sendUpdates}`,
         {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -540,8 +578,11 @@ export async function POST(req: NextRequest) {
         }
       } catch { /* use existing token */ }
 
+      const calId = await getOrCreateVantyCalendarId(userId, accessToken)
+      if (!calId) return NextResponse.json({ ok: true, skipped: 'no calendar' })
+
       const delRes = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events/${eventId}`,
         { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } }
       )
 
