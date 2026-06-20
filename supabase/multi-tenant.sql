@@ -120,3 +120,68 @@ begin
       t.relname, t.relname);
   end loop;
 end $$;
+
+-- ── 5) Límite de pacientes/familias POR CENTRO (no global) ──────────────────
+-- Reemplaza enforce_padre_limit para contar dentro del tenant. El tenant se
+-- deduce del que inserta (auth.uid) o del padre, porque este trigger corre
+-- ANTES que el que setea new.tenant_id.
+create or replace function public.enforce_padre_limit()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_role      text;
+  v_created   timestamptz;
+  v_limit     int;
+  v_before    int;
+  v_pac_limit int;
+  v_pac_count int;
+  v_is_staff  boolean;
+  v_tenant    uuid;
+begin
+  v_tenant := coalesce(
+    new.tenant_id,
+    (select tenant_id from public.profiles where id = auth.uid()),
+    (select tenant_id from public.profiles where id = new.parent_id));
+
+  -- 0) Tope de pacientes DEL CENTRO.
+  select coalesce(nullif(limits->>'paciente','')::int, 0) into v_pac_limit
+  from public.app_settings where id = 1;
+  if v_pac_limit is not null and v_pac_limit > 0 then
+    select count(*) into v_pac_count from public.children
+      where tenant_id is not distinct from v_tenant;
+    if v_pac_count >= v_pac_limit then
+      raise exception 'El centro alcanzó el número máximo de pacientes.'
+        using errcode = 'P0001';
+    end if;
+  end if;
+
+  v_is_staff := exists (
+    select 1 from public.profiles
+    where id = auth.uid()
+      and role in ('jefe','admin','especialista','terapeuta','secretaria','programador'));
+  if v_is_staff then return new; end if;
+
+  -- 1) Límite de cuentas de PADRES del centro (solo si el dueño es padre).
+  select role, created_at into v_role, v_created
+  from public.profiles where id = new.parent_id;
+  if v_role is distinct from 'padre' then return new; end if;
+
+  select coalesce(nullif(limits->>'padre','')::int, 0) into v_limit
+  from public.app_settings where id = 1;
+  if v_limit is null or v_limit <= 0 then return new; end if;
+
+  if exists (select 1 from public.children where parent_id = new.parent_id) then
+    return new;
+  end if;
+
+  select count(*) into v_before from public.profiles
+  where role = 'padre' and created_at < v_created
+    and tenant_id is not distinct from v_tenant;
+
+  if v_before >= v_limit then
+    raise exception 'El centro alcanzó el número máximo de cuentas de familias.'
+      using errcode = 'P0001';
+  end if;
+
+  return new;
+end;
+$$;
