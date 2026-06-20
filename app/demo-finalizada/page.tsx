@@ -2,12 +2,20 @@
 // Pantalla mostrada cuando un CENTRO DEMO está apagado o vencido.
 // El proxy redirige aquí; aquí cerramos su sesión para que no quede a medias.
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Clock, PowerOff } from 'lucide-react'
 
 export default function DemoFinalizadaPage() {
+  return (
+    <Suspense fallback={null}>
+      <DemoFinalizada />
+    </Suspense>
+  )
+}
+
+function DemoFinalizada() {
   const params = useSearchParams()
   const router = useRouter()
   const reason = params.get('reason') === 'expired' ? 'expired' : 'disabled'
