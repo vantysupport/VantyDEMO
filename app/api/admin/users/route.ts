@@ -4,16 +4,28 @@ import { profileLimitCheck } from '@/lib/profile-limits'
 
 // Solo jefe/admin/programador pueden gestionar usuarios. Se valida por token.
 const STAFF_ADMIN = ['jefe', 'admin', 'programador']
-async function requireAdmin(req: NextRequest): Promise<{ ok: boolean; reason: string }> {
+type Caller = { ok: boolean; reason: string; uid?: string; role?: string; tenantId?: string | null }
+
+async function requireAdmin(req: NextRequest): Promise<Caller> {
   const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
   if (!token) return { ok: false, reason: 'sin token' }
   const { data: u, error } = await supabaseAdmin.auth.getUser(token)
   const uid = u?.user?.id
   if (error || !uid) return { ok: false, reason: 'sesión inválida o expirada' }
-  const { data: prof } = await supabaseAdmin.from('profiles').select('role').eq('id', uid).maybeSingle()
+  const { data: prof } = await supabaseAdmin.from('profiles').select('role, tenant_id').eq('id', uid).maybeSingle()
   const role = (prof as { role?: string } | null)?.role
+  const tenantId = (prof as { tenant_id?: string | null } | null)?.tenant_id ?? null
   if (!role || !STAFF_ADMIN.includes(role)) return { ok: false, reason: 'requiere rol jefe/admin' }
-  return { ok: true, reason: '' }
+  return { ok: true, reason: '', uid, role, tenantId }
+}
+
+// Verifica que el usuario objetivo pertenezca al MISMO centro que quien llama.
+// (El programador con tenant null gestiona los de tenant null = legacy.)
+async function sameTenant(callerTenant: string | null | undefined, userId?: string): Promise<boolean> {
+  if (!userId) return true
+  const { data } = await supabaseAdmin.from('profiles').select('tenant_id').eq('id', userId).maybeSingle()
+  const target = (data as { tenant_id?: string | null } | null)?.tenant_id ?? null
+  return (callerTenant ?? null) === target
 }
 
 // GET: List all users with their profiles
@@ -40,8 +52,13 @@ export async function GET(request: NextRequest) {
         profile: profile || null,
       }
     })
+    // 🔒 Aislamiento por centro: cada admin ve SOLO los usuarios de su tenant.
+    // (tenant null = legacy/programador → ve los de tenant null.)
+    const callerTenant = auth.tenantId ?? null
+    const scoped = usersWithProfiles.filter(u =>
+      ((u.profile as { tenant_id?: string | null } | null)?.tenant_id ?? null) === callerTenant)
 
-    return NextResponse.json({ data: usersWithProfiles })
+    return NextResponse.json({ data: scoped })
   } catch (error: any) {
     return NextResponse.json({ error: process.env.NODE_ENV === "production" ? "Ocurrió un error. Intentá de nuevo." : error.message }, { status: 500 })
   }
@@ -54,6 +71,14 @@ export async function POST(request: NextRequest) {
     if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
     const body = await request.json()
     const { action, userId, newPassword, tokens, email, role, specialty, full_name, is_active } = body
+
+    // 🔒 Aislamiento: no se puede tocar un usuario de OTRO centro.
+    const USER_SCOPED = ['change_password', 'update_tokens', 'update_role', 'update_profile', 'toggle_active', 'confirm_email', 'delete_user']
+    if (USER_SCOPED.includes(action) && userId) {
+      if (!(await sameTenant(auth.tenantId, userId))) {
+        return NextResponse.json({ error: 'No autorizado: ese usuario pertenece a otro centro.' }, { status: 403 })
+      }
+    }
 
     if (action === 'change_password') {
       if (!userId || !newPassword || newPassword.length < 6) {
@@ -79,7 +104,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Rol no válido' }, { status: 400 })
       }
       // Bloqueo duro de límite (excluye al propio usuario que cambia de rol).
-      const lim = await profileLimitCheck(role, userId)
+      const lim = await profileLimitCheck(role, userId, auth.tenantId)
       if (lim.blocked) {
         return NextResponse.json({ error: `Límite de "${lim.key}" alcanzado (${lim.current}/${lim.limit}). Solo el programador puede ampliarlo.` }, { status: 409 })
       }
@@ -147,8 +172,8 @@ export async function POST(request: NextRequest) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return NextResponse.json({ error: 'El formato del email no es válido' }, { status: 400 })
       }
-      // Bloqueo duro de límite de perfiles (lo define el programador).
-      const lim = await profileLimitCheck(role)
+      // Bloqueo duro de límite de perfiles (lo define el programador), por centro.
+      const lim = await profileLimitCheck(role, undefined, auth.tenantId)
       if (lim.blocked) {
         return NextResponse.json({ error: `Límite de "${lim.key}" alcanzado (${lim.current}/${lim.limit}). Solo el programador puede ampliarlo.` }, { status: 409 })
       }
@@ -178,6 +203,7 @@ export async function POST(request: NextRequest) {
           tokens: 0,
           is_active: true,
           specialty: specialty || null,
+          tenant_id: auth.tenantId ?? null,   // 🔒 hereda el centro de quien lo crea
         }, { onConflict: 'id' })
       if (profileErr) {
         // Rollback: eliminar el usuario de auth para no dejar huérfanos

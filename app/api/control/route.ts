@@ -341,6 +341,7 @@ export async function POST(req: NextRequest) {
     }
     const uid = created.user.id
     const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+    const tenantId = crypto.randomUUID()   // 🔒 cada centro = su propio tenant aislado
 
     // 2) Marcar el perfil como centro demo + admin. upsert por si un trigger ya lo creó.
     const { error: pErr } = await supabaseAdmin.from('profiles').upsert({
@@ -352,6 +353,7 @@ export async function POST(req: NextRequest) {
       is_demo: true,
       demo_active: true,
       demo_expires_at: expires,
+      tenant_id: tenantId,
     }, { onConflict: 'id' })
     if (pErr) {
       // Rollback: si no pudimos marcar el perfil, borramos el usuario huérfano.

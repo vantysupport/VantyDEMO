@@ -2336,7 +2336,10 @@ alter table public.profiles
   add column if not exists is_demo         boolean     not null default false,
   add column if not exists demo_active     boolean     not null default true,
   add column if not exists demo_expires_at timestamptz,
-  add column if not exists center_name     text;
+  add column if not exists center_name     text,
+  add column if not exists google_calendar_id text,     -- calendario "Vanty ABA" (app.created)
+  add column if not exists tenant_id       uuid;        -- aislamiento por centro
 
 create index if not exists idx_profiles_is_demo
   on public.profiles (is_demo) where is_demo = true;
+create index if not exists idx_profiles_tenant on public.profiles (tenant_id);

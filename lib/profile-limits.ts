@@ -15,6 +15,7 @@ export function limitKeyForRole(role: string): string {
 export async function profileLimitCheck(
   role: string,
   excludeUserId?: string,
+  tenantId?: string | null,
 ): Promise<{ blocked: boolean; limit: number; current: number; key: string }> {
   const key = limitKeyForRole(role)
   try {
@@ -23,7 +24,11 @@ export async function profileLimitCheck(
     const limit = Math.floor(Number((s as { limits?: Record<string, number> } | null)?.limits?.[key] || 0))
     if (limit <= 0) return { blocked: false, limit: 0, current: 0, key }
 
-    const { data: profs } = await supabaseAdmin.from('profiles').select('id, role')
+    // El cupo se cuenta DENTRO del centro (tenant). Si no hay tenant (legacy),
+    // se cuenta global como antes.
+    let query = supabaseAdmin.from('profiles').select('id, role')
+    query = tenantId ? query.eq('tenant_id', tenantId) : query.is('tenant_id', null)
+    const { data: profs } = await query
     let current = 0
     for (const p of (profs || []) as { id: string; role?: string }[]) {
       if (excludeUserId && p.id === excludeUserId) continue
