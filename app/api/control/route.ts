@@ -111,7 +111,7 @@ async function authProgramador(req: NextRequest): Promise<{ ok: boolean; reason?
 
 // ── GET ───────────────────────────────────────────────────────────────────────
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const { data } = await supabaseAdmin
     .from('app_settings')
     .select('*')
@@ -120,22 +120,42 @@ export async function GET() {
 
   const raw = data as Record<string, unknown> | null
 
-  // Merge stored features with defaults (so new features default to true)
-  const storedFeatures = (raw?.features && typeof raw.features === 'object')
-    ? raw.features as Partial<FeaturesConfig>
-    : {}
-  const features: FeaturesConfig = { ...DEFAULT_FEATURES, ...storedFeatures }
+  // ¿Quién pregunta? Si trae token y pertenece a un centro, devolvemos la config
+  // de ESE centro (overrides) mezclada sobre la global. Sin token → global.
+  let centerTenant: string | null = null
+  const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
+  if (token) {
+    const { data: ud } = await supabaseAdmin.auth.getUser(token)
+    const uid = ud?.user?.id
+    if (uid) {
+      const { data: prof } = await supabaseAdmin.from('profiles').select('tenant_id').eq('id', uid).maybeSingle()
+      centerTenant = (prof as { tenant_id?: string | null } | null)?.tenant_id ?? null
+    }
+  }
+  let center: Record<string, unknown> = {}
+  if (centerTenant) {
+    const { data: cs } = await supabaseAdmin
+      .from('center_settings').select('*').eq('tenant_id', centerTenant).maybeSingle()
+    center = (cs as Record<string, unknown> | null) || {}
+  }
 
-  const storedRoles = (raw?.roles_config && typeof raw.roles_config === 'object')
-    ? raw.roles_config as Partial<RolesConfig>
-    : {}
-  const roles_config: RolesConfig = { ...DEFAULT_ROLES_CONFIG, ...storedRoles }
+  const obj = (v: unknown) => (v && typeof v === 'object' ? v as Record<string, unknown> : {})
+
+  // Merge: defaults → global → centro.
+  const features: FeaturesConfig = {
+    ...DEFAULT_FEATURES, ...obj(raw?.features), ...obj(center.features),
+  } as FeaturesConfig
+  const roles_config: RolesConfig = {
+    ...DEFAULT_ROLES_CONFIG, ...obj(raw?.roles_config), ...obj(center.roles_config),
+  } as RolesConfig
+  const limits = { ...obj(raw?.limits), ...obj(center.limits) } as Record<string, number>
+  const aria_limits = { ...obj(raw?.aria_limits), ...obj(center.aria_limits) }
 
   return NextResponse.json({
-    maintenance: !!raw?.maintenance,
+    maintenance: !!raw?.maintenance,        // mantenimiento sigue siendo global
     maintenance_msg: (raw?.maintenance_msg as string) || '',
-    limits: (raw?.limits as Record<string, number>) || {},
-    aria_limits: (raw?.aria_limits as Record<string, unknown>) || {},
+    limits,
+    aria_limits,
     features,
     roles_config,
   })
@@ -153,6 +173,7 @@ export async function POST(req: NextRequest) {
     }
     features?: Partial<FeaturesConfig>
     roles_config?: Partial<RolesConfig>
+    tenantId?: string   // si viene → la config se guarda para ESE centro (override)
   }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'JSON inválido' }, { status: 400 }) }
   const action = body?.action
@@ -178,6 +199,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
   }
 
+  // ── Config GLOBAL (app_settings id=1) vs POR CENTRO (center_settings tenant) ──
+  const cfgTenant = typeof body.tenantId === 'string' && body.tenantId ? body.tenantId : null
+  const objc = (v: unknown) => (v && typeof v === 'object' ? v as Record<string, unknown> : {})
+  const loadCenterCol = async (col: string): Promise<Record<string, unknown>> => {
+    if (!cfgTenant) return {}
+    const { data } = await supabaseAdmin.from('center_settings').select(col).eq('tenant_id', cfgTenant).maybeSingle()
+    return (data as Record<string, unknown> | null) || {}
+  }
+  const loadGlobalCol = async (col: string): Promise<Record<string, unknown>> => {
+    const { data } = await supabaseAdmin.from('app_settings').select(col).eq('id', 1).maybeSingle()
+    return (data as Record<string, unknown> | null) || {}
+  }
+  const saveCfg = (patch: Record<string, unknown>) => cfgTenant
+    ? supabaseAdmin.from('center_settings').upsert({ tenant_id: cfgTenant, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'tenant_id' })
+    : supabaseAdmin.from('app_settings').upsert({ id: 1, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+
   if (action === 'set_maintenance') {
     const { error } = await supabaseAdmin.from('app_settings').upsert(
       { id: 1, maintenance: !!body.on, maintenance_msg: String(body.msg || '').slice(0, 300), updated_at: new Date().toISOString() },
@@ -194,10 +231,7 @@ export async function POST(req: NextRequest) {
       const n = Number(raw[k])
       limits[k] = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0
     }
-    const { error } = await supabaseAdmin.from('app_settings').upsert(
-      { id: 1, limits, updated_at: new Date().toISOString() },
-      { onConflict: 'id' },
-    )
+    const { error } = await saveCfg({ limits })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })
   }
@@ -212,55 +246,57 @@ export async function POST(req: NextRequest) {
       staffMaxMessages: Math.max(0, Math.floor(Number(a.staffMaxMessages) || 0)),
       staffWindowHours: Math.max(1, Math.floor(Number(a.staffWindowHours) || 5)),
     }
-    const { error } = await supabaseAdmin.from('app_settings').upsert(
-      { id: 1, aria_limits, updated_at: new Date().toISOString() },
-      { onConflict: 'id' },
-    )
+    const { error } = await saveCfg({ aria_limits })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })
   }
 
-  // ── set_features: activa/desactiva módulos y sub-módulos ──────────────────
+  // ── set_features: activa/desactiva módulos y sub-módulos (global o por centro) ─
   if (action === 'set_features') {
     const incoming = body.features && typeof body.features === 'object' ? body.features : {}
-    // Only allow known keys
     const features: Partial<FeaturesConfig> = {}
     for (const k of Object.keys(DEFAULT_FEATURES) as (keyof FeaturesConfig)[]) {
       if (k in incoming) features[k] = !!incoming[k]
     }
-    // Merge with existing stored features
-    const { data: existing } = await supabaseAdmin
-      .from('app_settings').select('features').eq('id', 1).maybeSingle()
-    const prev = ((existing as Record<string, unknown> | null)?.features as Partial<FeaturesConfig>) || {}
-    const merged = { ...DEFAULT_FEATURES, ...prev, ...features }
-    const { error } = await supabaseAdmin.from('app_settings').upsert(
-      { id: 1, features: merged, updated_at: new Date().toISOString() },
-      { onConflict: 'id' },
-    )
+    // Base = defaults → global → lo que ya tenga el centro → el cambio entrante.
+    const globalF = objc((await loadGlobalCol('features')).features)
+    const prev = objc((await loadCenterCol('features')).features)
+    const merged = { ...DEFAULT_FEATURES, ...globalF, ...prev, ...features }
+    const { error } = await saveCfg({ features: merged })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true, features: merged })
   }
 
-  // ── set_roles_config: activa/desactiva qué roles existen en el sistema ────
+  // ── set_roles_config: qué roles existen (global o por centro) ─────────────
   if (action === 'set_roles_config') {
     const incoming = body.roles_config && typeof body.roles_config === 'object' ? body.roles_config : {}
     const roles_config: Partial<RolesConfig> = {}
     for (const k of Object.keys(DEFAULT_ROLES_CONFIG) as (keyof RolesConfig)[]) {
       if (k in incoming) roles_config[k] = !!incoming[k]
     }
-    // Merge with existing
-    const { data: existing } = await supabaseAdmin
-      .from('app_settings').select('roles_config').eq('id', 1).maybeSingle()
-    const prev = ((existing as Record<string, unknown> | null)?.roles_config as Partial<RolesConfig>) || {}
-    const merged = { ...DEFAULT_ROLES_CONFIG, ...prev, ...roles_config }
-    // Always keep jefe enabled (safety: at least one admin role must exist)
-    merged.jefe = true
-    const { error } = await supabaseAdmin.from('app_settings').upsert(
-      { id: 1, roles_config: merged, updated_at: new Date().toISOString() },
-      { onConflict: 'id' },
-    )
+    const globalR = objc((await loadGlobalCol('roles_config')).roles_config)
+    const prev = objc((await loadCenterCol('roles_config')).roles_config)
+    const merged = { ...DEFAULT_ROLES_CONFIG, ...globalR, ...prev, ...roles_config } as RolesConfig
+    merged.jefe = true   // siempre al menos un rol admin
+    const { error } = await saveCfg({ roles_config: merged })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true, roles_config: merged })
+  }
+
+  // ── get_center_settings: config efectiva de UN centro (para editar en /control) ─
+  if (action === 'get_center_settings') {
+    const tid = typeof body.tenantId === 'string' ? body.tenantId : ''
+    if (!tid) return NextResponse.json({ error: 'falta tenantId' }, { status: 400 })
+    const { data: g } = await supabaseAdmin.from('app_settings').select('features, roles_config, limits, aria_limits').eq('id', 1).maybeSingle()
+    const { data: c } = await supabaseAdmin.from('center_settings').select('*').eq('tenant_id', tid).maybeSingle()
+    const gg = (g as Record<string, unknown> | null) || {}
+    const cc = (c as Record<string, unknown> | null) || {}
+    return NextResponse.json({
+      features:     { ...DEFAULT_FEATURES, ...objc(gg.features), ...objc(cc.features) },
+      roles_config: { ...DEFAULT_ROLES_CONFIG, ...objc(gg.roles_config), ...objc(cc.roles_config) },
+      limits:       { ...objc(gg.limits), ...objc(cc.limits) },
+      aria_limits:  { ...objc(gg.aria_limits), ...objc(cc.aria_limits) },
+    })
   }
 
   if (action === 'get_counts') {
@@ -313,7 +349,7 @@ export async function POST(req: NextRequest) {
   if (action === 'list_centers') {
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, email, full_name, center_name, demo_active, demo_expires_at, created_at, active_session_at, role')
+      .select('id, email, full_name, center_name, demo_active, demo_expires_at, created_at, active_session_at, role, tenant_id')
       .eq('is_demo', true)
       .order('created_at', { ascending: false })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

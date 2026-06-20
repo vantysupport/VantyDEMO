@@ -25,6 +25,7 @@ type Center = {
   demo_expires_at: string | null
   created_at: string
   active_session_at?: string | null
+  tenant_id?: string | null
 }
 
 /** Días restantes a partir de una fecha ISO (puede ser negativo → vencido). */
@@ -173,6 +174,7 @@ export default function ControlPage() {
 
   // ── Centros demo ──────────────────────────────────────────────────────────
   const [centers, setCenters] = useState<Center[]>([])
+  const [cfgTenant, setCfgTenant] = useState<string>('')   // '' = global (por defecto); o tenant_id de un centro
   const [newCenter, setNewCenter] = useState({ name: '', email: '', password: '', days: '15' })
 
   const getToken = async () => {
@@ -362,7 +364,7 @@ export default function ControlPage() {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'set_limits', limits: payload }),
+        body: JSON.stringify({ action: 'set_limits', limits: payload, tenantId: cfgTenant || undefined }),
       })
       const j = await res.json().catch(() => ({}))
       if (!res.ok) alert('Error al guardar límites: ' + (j.error || res.status))
@@ -381,6 +383,7 @@ export default function ControlPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           action: 'set_aria_limits',
+          tenantId: cfgTenant || undefined,
           aria_limits: {
             enabled: next.enabled,
             maxMessages: parseInt(next.maxMessages || '0', 10) || 0,
@@ -406,7 +409,7 @@ export default function ControlPage() {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'set_features', features: { [key]: value } }),
+        body: JSON.stringify({ action: 'set_features', features: { [key]: value }, tenantId: cfgTenant || undefined }),
       })
       const j = await res.json().catch(() => ({}))
       if (!res.ok) { setFeatures(features); alert('Error: ' + (j.error || res.status)) }
@@ -422,13 +425,34 @@ export default function ControlPage() {
       const res = await fetch('/api/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'set_roles_config', roles_config: { [key]: value } }),
+        body: JSON.stringify({ action: 'set_roles_config', roles_config: { [key]: value }, tenantId: cfgTenant || undefined }),
       })
       const j = await res.json().catch(() => ({}))
       if (!res.ok) { setRolesConfig(rolesConfig); alert('Error: ' + (j.error || res.status)) }
       else if (j.roles_config) setRolesConfig({ ...DEFAULT_ROLES, ...j.roles_config })
     } catch { setRolesConfig(rolesConfig); alert('Error de red.') }
   }
+
+  /** Cambia el CENTRO que se está configurando y carga su config efectiva. */
+  const selectCfgTarget = useCallback(async (tenant: string) => {
+    setCfgTenant(tenant)
+    if (!tenant) { await loadStatus(); return }   // '' = global
+    try {
+      const r = await ctlPost({ action: 'get_center_settings', tenantId: tenant })
+      if (!r.ok) return
+      const j = await r.json()
+      if (j.features) setFeatures({ ...DEFAULT_FEATURES, ...j.features })
+      if (j.roles_config) setRolesConfig({ ...DEFAULT_ROLES, ...j.roles_config })
+      const lim: Record<string, string> = {}
+      for (const f of LIMIT_FIELDS) lim[f.key] = j.limits?.[f.key] ? String(j.limits[f.key]) : ''
+      setLimits(lim)
+      const al = j.aria_limits || {}
+      setAria({
+        enabled: !!al.enabled, maxMessages: al.maxMessages ? String(al.maxMessages) : '', windowHours: al.windowHours ? String(al.windowHours) : '5',
+        staffEnabled: !!al.staffEnabled, staffMaxMessages: al.staffMaxMessages ? String(al.staffMaxMessages) : '', staffWindowHours: al.staffWindowHours ? String(al.staffWindowHours) : '5',
+      })
+    } catch { /* noop */ }
+  }, [ctlPost, loadStatus])
 
   const clearErrors = async () => {
     if (!confirm('¿Borrar todos los errores?')) return
@@ -543,6 +567,32 @@ export default function ControlPage() {
               <p className="text-[11px] text-slate-500">roles habilitados</p>
             </div>
           </div>
+
+          {/* ── SELECTOR: a qué centro aplica la config de abajo ──────────────── */}
+          <section className="ctl-card p-4 border-indigo-400/30">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center"><Building2 size={15} className="text-indigo-400" /></div>
+              <div className="min-w-0">
+                <p className="font-bold text-[14px] text-white">Configurando módulos / roles / límites de:</p>
+                <p className="text-[11px] text-slate-400">Lo de abajo (módulos, pestañas, roles, límites, ARIA) se guarda para el centro elegido.</p>
+              </div>
+              <select
+                value={cfgTenant}
+                onChange={e => selectCfgTarget(e.target.value)}
+                className="ml-auto ctl-input text-sm rounded-lg px-3 py-2 min-w-[220px] cursor-pointer"
+              >
+                <option value="">🌐 Global (por defecto, todos)</option>
+                {centers.filter(c => c.tenant_id).map(c => (
+                  <option key={c.id} value={c.tenant_id as string}>🏢 {c.center_name || c.email}</option>
+                ))}
+              </select>
+            </div>
+            {cfgTenant && (
+              <p className="mt-2 text-[11px] text-amber-300/90">
+                ⚠️ Estás editando UN centro. Lo que cambies acá solo afecta a ese centro, no al resto.
+              </p>
+            )}
+          </section>
 
           {/* ── MÓDULOS DEL SISTEMA ──────────────────────────────────────────── */}
           <section className="ctl-card p-5">

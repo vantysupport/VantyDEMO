@@ -152,13 +152,20 @@ export default function AdminDashboard() {
   const [rolesConfig, setRolesConfig] = useState<RolesConfig>({ jefe: true, especialista: true, secretaria: true, padre: true })
 
   useEffect(() => {
-    fetch('/api/control', { cache: 'no-store' })
-      .then(r => r.json())
-      .then(j => {
-        if (j.features) setFeatures({ ...DEFAULT_FEATURES, ...j.features })
-        if (j.roles_config) setRolesConfig(rc => ({ ...rc, ...j.roles_config }))
+    (async () => {
+      // Mandamos el token para que /api/control devuelva la config de NUESTRO centro.
+      const token = (await supabase.auth.getSession()).data.session?.access_token || ''
+      fetch('/api/control', {
+        cache: 'no-store',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      .catch(() => { /* silently fallback to defaults */ })
+        .then(r => r.json())
+        .then(j => {
+          if (j.features) setFeatures({ ...DEFAULT_FEATURES, ...j.features })
+          if (j.roles_config) setRolesConfig(rc => ({ ...rc, ...j.roles_config }))
+        })
+        .catch(() => { /* silently fallback to defaults */ })
+    })()
   }, [])
 
   // ── Nav items filtered by features ─────────────────────────────────────────
