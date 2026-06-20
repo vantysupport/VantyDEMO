@@ -605,10 +605,6 @@ export default function UserManagementView({ rolesConfig }: {
             style={{ background: 'var(--muted-bg)', color: 'var(--text-muted)' }}>
             <RefreshCw size={16} />
           </button>
-          <button onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
-            <Plus size={16} /> {t('usuarios.nuevo')}
-          </button>
         </div>
       </div>
 
