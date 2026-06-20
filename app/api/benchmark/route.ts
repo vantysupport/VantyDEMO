@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
 import { getLangInstruction, getLocaleFromRequest } from '@/lib/lang'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 // Estándares de la industria ABA (basados en literatura y Central Reach benchmarks)
 const BENCHMARKS_INDUSTRIA = {
@@ -29,6 +30,10 @@ function scorear(valor: number, benchmark: typeof BENCHMARKS_INDUSTRIA[keyof typ
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
+  const tid = auth.tenantId ?? null
+
   const { searchParams } = new URL(req.url)
   const dias = parseInt(searchParams.get('dias') || '30')
 
@@ -37,33 +42,33 @@ export async function GET(req: NextRequest) {
   const fechaInicioStr = fechaInicio.toISOString().split('T')[0]
 
   try {
-    // 1. Sesiones del período
-    const { data: sesiones } = await supabaseAdmin
-      .from('registro_aba')
-      .select('child_id, fecha_sesion, datos')
-      .gte('fecha_sesion', fechaInicioStr)
+    // 2. Pacientes del CENTRO (primero, para acotar el resto por sus IDs).
+    let pacQ = supabaseAdmin.from('children').select('id, name')
+    if (tid) pacQ = pacQ.eq('tenant_id', tid)
+    const { data: pacientes } = await pacQ
+    // 🔒 IDs del centro para acotar las tablas que cuelgan del paciente.
+    const childIds = (pacientes || []).map((p: any) => p.id)
+    const ids = childIds.length ? childIds : ['00000000-0000-0000-0000-000000000000']
 
-    // 2. Pacientes activos
-    const { data: pacientes } = await supabaseAdmin
-      .from('children')
-      .select('id, name')
+    // 1. Sesiones del período
+    let sesQ = supabaseAdmin.from('registro_aba').select('child_id, fecha_sesion, datos').gte('fecha_sesion', fechaInicioStr)
+    if (tid) sesQ = sesQ.in('child_id', ids)
+    const { data: sesiones } = await sesQ
 
     // 3. Citas programadas vs realizadas
-    const { data: citas } = await supabaseAdmin
-      .from('agenda_sesiones')
-      .select('estado, child_id')
-      .gte('fecha', fechaInicioStr)
+    let citQ = supabaseAdmin.from('agenda_sesiones').select('estado, child_id').gte('fecha', fechaInicioStr)
+    if (tid) citQ = citQ.in('child_id', ids)
+    const { data: citas } = await citQ
 
     // 4. Mensajes de padres (engagement)
-    const { data: mensajesPadres } = await supabaseAdmin
-      .from('chat_padres')
-      .select('parent_user_id, created_at')
-      .gte('created_at', fechaInicio.toISOString())
+    let msgQ = supabaseAdmin.from('chat_padres').select('parent_user_id, created_at, child_id').gte('created_at', fechaInicio.toISOString())
+    if (tid) msgQ = msgQ.in('child_id', ids)
+    const { data: mensajesPadres } = await msgQ
 
     // 5. Programas y objetivos
-    const { data: programas } = await supabaseAdmin
-      .from('programas_aba')
-      .select('id, estado, child_id')
+    let progQ = supabaseAdmin.from('programas_aba').select('id, estado, child_id')
+    if (tid) progQ = progQ.in('child_id', ids)
+    const { data: programas } = await progQ
 
     // ── Calcular métricas reales ─────────────────────────────────────────────
     const totalPacientes = pacientes?.length || 1

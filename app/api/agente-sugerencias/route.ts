@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { callGroqSimple, GROQ_MODELS } from '@/lib/groq-client'
 import { buildAIContext } from '@/lib/ai-context-builder'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 interface Sugerencia {
   tipo: 'objetivo_estancado' | 'cambio_fase' | 'reforzador' | 'conducta_desafiante' | 'logro_celebrar' | 'carga_sesiones'
@@ -241,6 +242,10 @@ function getLangInstruction(locale?: string | null): string {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})`, sugerencias: [] }, { status: 403 })
+  const tid = auth.tenantId ?? null
+
   const { searchParams } = new URL(req.url)
   const userLocale = searchParams.get('locale') || req.headers.get('x-locale') || 'es'
   const childId = searchParams.get('child_id')
@@ -251,12 +256,13 @@ export async function GET(req: NextRequest) {
     if (soloGuardadas) {
       let q = supabaseAdmin
         .from('sugerencias_terapeutas')
-        .select('*, children(name)')
+        .select('*, children!inner(name, tenant_id)')
         .eq('resuelta', false)
         .order('prioridad_orden', { ascending: true })
         .order('created_at', { ascending: false })
         .limit(50)
       if (childId) q = q.eq('child_id', childId)
+      if (tid) q = q.eq('children.tenant_id', tid)  // 🔒 solo del centro
       const { data } = await q
       return NextResponse.json({ sugerencias: data || [] })
     }
@@ -264,6 +270,7 @@ export async function GET(req: NextRequest) {
     // Generar en tiempo real
     let queryPacientes = supabaseAdmin.from('children').select('id, name')
     if (childId) queryPacientes = queryPacientes.eq('id', childId)
+    if (tid) queryPacientes = queryPacientes.eq('tenant_id', tid)  // 🔒 solo del centro
     const { data: pacientes } = await queryPacientes.limit(30)
 
     if (!pacientes || pacientes.length === 0) {
