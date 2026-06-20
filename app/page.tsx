@@ -18,7 +18,8 @@ export default function LoginPage(props: PageProps) {
   const searchParams = use(props.searchParams)
   const router = useRouter()
   const { t } = useI18n()
-  const [isSignUp, setIsSignUp] = useState(searchParams.mode === 'signup')
+  // Registro deshabilitado en la demo: solo el programador crea usuarios.
+  const [isSignUp] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -373,14 +374,6 @@ export default function LoginPage(props: PageProps) {
                 }
               </button>
             </form>
-
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <span style={{ fontSize: 14, color: '#6b7280' }}>{isSignUp ? '¿Ya tienes cuenta? ' : '¿Primera vez? '}</span>
-              <button onClick={() => { setIsSignUp(!isSignUp); setErrorMessage(''); setShowForgotInfo(false) }}
-                style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                {isSignUp ? 'Iniciar sesión' : 'Crear una cuenta'}
-              </button>
-            </div>
 
             <p style={{ textAlign: 'center', fontSize: 11, color: '#d1d5db', marginTop: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
               <Lock size={10} /> Acceso cifrado y protegido
