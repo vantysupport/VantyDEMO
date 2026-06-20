@@ -901,7 +901,7 @@ function TabCompetitividad() {
         {/* Mini comparativa visual */}
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-sky-200 w-28">Neuropsicología y Terapias SANTI</span>
+            <span className="text-sky-200 w-28">Vanty ABA</span>
             <div className="flex-1 bg-white/20 rounded-full h-2.5 overflow-hidden">
               <div className="h-full rounded-full bg-white transition-all duration-700" style={{ width: `${datos.scoreGlobal}%` }} />
             </div>

@@ -394,7 +394,7 @@ function createNeuroFormReport(data: any, childName: string, formType: string, a
     sep(),
     new Paragraph({ spacing: { before: 400 }, alignment: AlignmentType.CENTER, children: [
       new TextRun({ text: 'Informe generado con asistencia de IA · ', size: 18, italics: true, color: '999999', font: 'Calibri' }),
-      new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 18, bold: true, italics: true, color: '2E75B5', font: 'Calibri' }),
+      new TextRun({ text: 'Vanty ABA', size: 18, bold: true, italics: true, color: '2E75B5', font: 'Calibri' }),
       new TextRun({ text: ` · ${today}`, size: 18, italics: true, color: '999999', font: 'Calibri' })
     ]})
   )

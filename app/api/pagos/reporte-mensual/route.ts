@@ -91,9 +91,9 @@ function sectionTitle(ws: ExcelJS.Worksheet, row: number, cols: string, title: s
 async function getCenterInfo() {
   try {
     const { data } = await supabase.from('centro_instrucciones').select('*').limit(1).single()
-    if (data) return { nombre: data.nombre_centro || 'Neuropsicología y Terapias SANTI', ruc: data.ruc || '', direccion: data.direccion || '' }
+    if (data) return { nombre: data.nombre_centro || 'Vanty ABA', ruc: data.ruc || '', direccion: data.direccion || '' }
   } catch {}
-  return { nombre: 'Neuropsicología y Terapias SANTI', ruc: '', direccion: '' }
+  return { nombre: 'Vanty ABA', ruc: '', direccion: '' }
 }
 
 export async function GET(req: NextRequest) {

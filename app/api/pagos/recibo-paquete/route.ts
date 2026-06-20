@@ -26,9 +26,9 @@ function padNum(n: number) { return String(n).padStart(4, '0') }
 async function getCenterInfo() {
   try {
     const { data } = await supabase.from('centro_instrucciones').select('*').limit(1).single()
-    if (data) return { nombre: data.nombre_centro || 'Neuropsicología y Terapias SANTI', ruc: data.ruc || '', direccion: data.direccion || '', telefono: data.telefono || '', email: data.email || '' }
+    if (data) return { nombre: data.nombre_centro || 'Vanty ABA', ruc: data.ruc || '', direccion: data.direccion || '', telefono: data.telefono || '', email: data.email || '' }
   } catch {}
-  return { nombre: process.env.NEXT_PUBLIC_APP_NAME || 'Neuropsicología y Terapias SANTI', ruc: '', direccion: '', telefono: '', email: '' }
+  return { nombre: process.env.NEXT_PUBLIC_APP_NAME || 'Vanty ABA', ruc: '', direccion: '', telefono: '', email: '' }
 }
 
 export async function GET(req: NextRequest) {

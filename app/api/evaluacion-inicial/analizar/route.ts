@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const maxDuration = 60
 
-const SYSTEM_PROMPT = `Eres una neuropsicóloga clínica senior de SANTI (Neuropsicología y Terapias SANTI, Perú). Tu rol es analizar la ficha inicial (intake) que llenó un padre/madre sobre su hijo/a y recomendar entre:
+const SYSTEM_PROMPT = `Eres una neuropsicóloga clínica senior de SANTI (Vanty ABA, Perú). Tu rol es analizar la ficha inicial (intake) que llenó un padre/madre sobre su hijo/a y recomendar entre:
 
 1. **Evaluación Psicológica Emocional** — cuando el motivo principal son dificultades emocionales, conductuales o sociales (ansiedad, tristeza, irritabilidad, problemas vinculares, miedos, conflictos en casa o colegio, autoestima, regulación emocional, eventos vitales estresantes). Permite diseñar estrategias de acompañamiento y bienestar emocional.
 

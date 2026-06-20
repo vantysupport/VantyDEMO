@@ -4,7 +4,7 @@
 
 import { createTransport } from 'nodemailer'
 
-const CENTRO = process.env.CENTRO_NOMBRE || 'Neuropsicología y Terapias SANTI'
+const CENTRO = process.env.CENTRO_NOMBRE || 'Vanty ABA'
 
 function getTransporter() {
   const user = process.env.GMAIL_USER

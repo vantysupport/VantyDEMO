@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
       const locale = req.headers.get('x-locale') || 'es'
       analisisEstrategico = await callGroqSimple(
         'Eres un consultor estratégico especializado en centros terapéuticos ABA y competitividad frente a plataformas como Central Reach.' + getLangInstruction(locale),
-        `Centro Neuropsicología y Terapias SANTI — Análisis de Competitividad
+        `Centro Vanty ABA — Análisis de Competitividad
 Score Global: ${scoreGlobal}/100 vs Central Reach: ${centralReachScore}/100
 ${ventaja > 0 ? `✅ VENTAJA de ${ventaja} puntos sobre Central Reach` : `⚠️ BRECHA de ${Math.abs(ventaja)} puntos vs Central Reach`}
 

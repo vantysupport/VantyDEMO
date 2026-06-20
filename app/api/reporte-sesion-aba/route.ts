@@ -258,7 +258,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
     new Paragraph({
       spacing: { before: 320 },
       border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0', space: 8 } },
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI  ·  Equipo Clínico ABA', size: 20, font: 'Arial', color: '1E3A8A', bold: true })],
+      children: [new TextRun({ text: 'Vanty ABA  ·  Equipo Clínico ABA', size: 20, font: 'Arial', color: '1E3A8A', bold: true })],
     }),
     new Paragraph({
       spacing: { before: 40, after: 0 },

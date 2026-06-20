@@ -128,7 +128,7 @@ export async function addCalendarReminder(params: {
   const end = endH.toISOString().replace('Z', '')
 
   const title = `🧩 Sesión ABA — ${params.pacienteNombre}`
-  const desc  = `Sesión de terapia con ${params.terapeutaNombre}.<br/>Centro: Neuropsicología y Terapias SANTI`
+  const desc  = `Sesión de terapia con ${params.terapeutaNombre}.<br/>Centro: Vanty ABA`
 
   if (params.provider === 'google') {
     await addGoogleCalendarEvent({ accessToken: params.accessToken, title, description: desc, startDateTime: start, endDateTime: end })

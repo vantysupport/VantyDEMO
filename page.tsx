@@ -164,7 +164,7 @@ const CONTENT = {
       saturDayClosed: 'Sábado: Cerrado',
       sundayClosed: 'Domingo: Cerrado',
       serviceItems: ['Terapia ABA', 'Habilidades Sociales', 'Escuela para Padres', 'Evaluación Gratuita'],
-      copy: '© 2025 Neuropsicología y Terapias SANTI — Centro de Desarrollo Infantil · Pisco, Ica, Perú. Todos los derechos reservados.',
+      copy: '© 2025 Vanty ABA — Centro de Desarrollo Infantil · Pisco, Ica, Perú. Todos los derechos reservados.',
     },
     wa: { msg: 'Hola, vi su página web y me interesa conocer más sobre sus servicios de terapia para mi hijo/a.' },
   },
@@ -292,7 +292,7 @@ const CONTENT = {
       saturDayClosed: 'Saturday: Closed',
       sundayClosed: 'Sunday: Closed',
       serviceItems: ['ABA Therapy', 'Social Skills', 'Parent School', 'Free Assessment'],
-      copy: '© 2025 Neuropsicología y Terapias SANTI — Child Development Center · Pisco, Ica, Peru. All rights reserved.',
+      copy: '© 2025 Vanty ABA — Child Development Center · Pisco, Ica, Peru. All rights reserved.',
     },
     wa: { msg: "Hello, I saw your website and I'm interested in learning more about your therapy services for my child." },
   },
@@ -602,7 +602,7 @@ export default function LandingPage() {
               <Image src="/images/logo.png?v=2" alt="Logo" fill style={{ objectFit: 'contain' }} priority unoptimized />
             </div>
             <div>
-              <p style={{ fontFamily: "'Baloo 2',cursive", fontWeight: 800, fontSize: 16, color: '#1c1917', lineHeight: 1.1 }}>Neuropsicología y Terapias SANTI</p>
+              <p style={{ fontFamily: "'Baloo 2',cursive", fontWeight: 800, fontSize: 16, color: '#1c1917', lineHeight: 1.1 }}>Vanty ABA</p>
               <p style={{ fontSize: 10, color: '#a8a29e', fontWeight: 600 }}>
                 {'Centro de Desarrollo Infantil · Pisco'}
               </p>
@@ -936,7 +936,7 @@ export default function LandingPage() {
               <div style={{ position: 'relative', width: 40, height: 40 }}>
                 <Image src="/images/logo.png?v=2" alt="Logo" fill style={{ objectFit: 'contain' }} unoptimized />
               </div>
-              <span style={{ fontFamily: "'Baloo 2',cursive", color: '#fff', fontWeight: 800, fontSize: 17 }}>Neuropsicología y Terapias SANTI</span>
+              <span style={{ fontFamily: "'Baloo 2',cursive", color: '#fff', fontWeight: 800, fontSize: 17 }}>Vanty ABA</span>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.75, marginBottom: 18 }}>{t.footer.tagline}</p>
             <div>

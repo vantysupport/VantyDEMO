@@ -383,7 +383,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className={`font-bold text-[13px] leading-tight truncate tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
-              Neuropsicología y Terapias SANTI
+              Vanty ABA
             </p>
             <p className={`text-[10px] font-semibold tracking-wide ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>
               Panel {roleName}
@@ -488,7 +488,7 @@ export default function AdminDashboard() {
                 {PAGE_TITLES[currentView] || 'Panel'}
               </h1>
               <p className={`text-[10px] hidden sm:block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                Neuropsicología y Terapias SANTI · Gestión Integral
+                Vanty ABA · Gestión Integral
               </p>
             </div>
           </div>

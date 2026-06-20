@@ -1,5 +1,5 @@
 // ==============================================================================
-// FORMULARIOS CLÍNICOS ABA — Neuropsicología y Terapias SANTI
+// FORMULARIOS CLÍNICOS ABA — Vanty ABA
 // Organizados por categoría diagnóstica con análisis IA
 // ==============================================================================
 

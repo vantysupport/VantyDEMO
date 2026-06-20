@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         recurrencia ? `🔁 Cita recurrente (${recurrencia === 'weekly' ? 'Semanal' : 'Quincenal'}, ${recurrenciaSemanas} semanas)` : null,
         notes ? `📝 Notas: ${notes}` : null,
         esVirtual && videoLink ? `\n🔗 Link videollamada: ${videoLink}` : null,
-        '\n🏫 Centro Neuropsicología y Terapias SANTI',
+        '\n🏫 Centro Vanty ABA',
       ].filter(Boolean).join('\n')
 
       // Attendees: always include admin's Google email + parent email if available

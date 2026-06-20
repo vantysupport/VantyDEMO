@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     const edadAnios = (child as any)?.age
 
     // ── Generar reporte con IA ─────────────────────────────────────────────────
-    const promptPadres = `Eres ARIA, el asistente de comunicación familiar del Centro Neuropsicología y Terapias SANTI, gestionado a través de la plataforma Vanty ABA. Tu tarea es escribir un REPORTE MENSUAL PARA PADRES sobre el progreso de su hijo/a.
+    const promptPadres = `Eres ARIA, el asistente de comunicación familiar del Centro Vanty ABA, gestionado a través de la plataforma Vanty ABA. Tu tarea es escribir un REPORTE MENSUAL PARA PADRES sobre el progreso de su hijo/a.
 
 REGLAS CRÍTICAS:
 - Lenguaje SIMPLE, CÁLIDO y POSITIVO. Los padres no son especialistas.

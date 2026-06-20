@@ -289,7 +289,7 @@ export function portadaInstitucional(opts: PortadaOptions): (Paragraph | Table)[
 //     colegiatura: 'C.Ps.P. Nº 01234',
 //     especialidad: 'Neuropsicología Infantil y Análisis de Conducta Aplicado',
 //     fecha: '23 de mayo de 2026',
-//     centroNombre: 'Neuropsicología y Terapias SANTI',
+//     centroNombre: 'Vanty ABA',
 //   }))
 //
 export interface FirmaOptions {
@@ -308,7 +308,7 @@ export function firmaEspecialista(opts: FirmaOptions = {}): (Paragraph | Table)[
   const titulo = opts.titulo ?? 'Terapeuta Clínico'
   const colegiatura = opts.colegiatura ?? ''
   const especialidad = opts.especialidad ?? 'Neuropsicología y Terapias'
-  const centro = opts.centroNombre ?? 'Neuropsicología y Terapias SANTI'
+  const centro = opts.centroNombre ?? 'Vanty ABA'
 
   const out: (Paragraph | Table)[] = []
 
@@ -953,7 +953,7 @@ export function firmaEquipo(): Paragraph[] {
     new Paragraph({
       spacing: { before: 0, after: 0 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: FONT, color: COLOR.grisMed })],
+      children: [new TextRun({ text: 'Vanty ABA', size: 19, font: FONT, color: COLOR.grisMed })],
     }),
   ]
 }

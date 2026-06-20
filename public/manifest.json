@@ -1,8 +1,8 @@
 {
   "id": "/?app=santi",
-  "name": "Neuropsicología y Terapias SANTI",
+  "name": "Vanty ABA",
   "short_name": "SANTI",
-  "description": "Plataforma integral de gestión terapéutica para Neuropsicología y Terapias SANTI.",
+  "description": "Plataforma integral de gestión terapéutica para Vanty ABA.",
   "start_url": "/login?utm_source=pwa",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],

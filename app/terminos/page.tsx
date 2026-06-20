@@ -5,7 +5,7 @@ export default function TerminosPage() {
         <div style={{ width: 36, height: 36, background: '#4f46e5', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: '#fff', fontSize: 18 }}>🧩</span>
         </div>
-        <span style={{ fontWeight: 800, fontSize: 18, color: '#1e1b4b' }}>Neuropsicología y Terapias SANTI</span>
+        <span style={{ fontWeight: 800, fontSize: 18, color: '#1e1b4b' }}>Vanty ABA</span>
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1e1b4b', marginBottom: 8 }}>Términos de Servicio</h1>
@@ -13,19 +13,19 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>1. Aceptación de los términos</h2>
-        <p>Al crear una cuenta y usar la plataforma SANTI de Neuropsicología y Terapias SANTI, aceptás estos Términos de Servicio. Si no estás de acuerdo, por favor no uses la plataforma.</p>
+        <p>Al crear una cuenta y usar la plataforma SANTI de Vanty ABA, aceptás estos Términos de Servicio. Si no estás de acuerdo, por favor no uses la plataforma.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>2. Descripción del servicio</h2>
-        <p>SANTI es una plataforma digital de gestión clínica para el centro Neuropsicología y Terapias SANTI. Permite a los profesionales registrar y hacer seguimiento de programas ABA, y a las familias consultar el progreso de sus hijos, coordinar citas y comunicarse con el equipo terapéutico.</p>
+        <p>SANTI es una plataforma digital de gestión clínica para el centro Vanty ABA. Permite a los profesionales registrar y hacer seguimiento de programas ABA, y a las familias consultar el progreso de sus hijos, coordinar citas y comunicarse con el equipo terapéutico.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>3. Uso permitido</h2>
         <p>La plataforma es de uso exclusivo para:</p>
         <ul style={{ paddingLeft: 20, marginTop: 8 }}>
-          <li>Familias y pacientes activos del centro Neuropsicología y Terapias SANTI.</li>
+          <li>Familias y pacientes activos del centro Vanty ABA.</li>
           <li>Profesionales y terapeutas del equipo clínico.</li>
           <li>Personal administrativo autorizado.</li>
         </ul>
@@ -59,11 +59,11 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 48 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>9. Contacto</h2>
-        <p><strong>Neuropsicología y Terapias SANTI</strong><br/>Av. Brasil 2730, Pueblo Libre 15084<br/>📧 aprendizaje.santi@gmail.com<br/>📱 991 070 734</p>
+        <p><strong>Vanty ABA</strong><br/>Av. Brasil 2730, Pueblo Libre 15084<br/>📧 aprendizaje.santi@gmail.com<br/>📱 991 070 734</p>
       </section>
 
       <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <p style={{ fontSize: 12, color: '#9ca3af' }}>© 2025 Neuropsicología y Terapias SANTI · Todos los derechos reservados</p>
+        <p style={{ fontSize: 12, color: '#9ca3af' }}>© 2025 Vanty ABA · Todos los derechos reservados</p>
         <a href="/privacidad" style={{ fontSize: 12, color: '#4f46e5', textDecoration: 'none', fontWeight: 600 }}>Ver Política de Privacidad →</a>
       </div>
     </div>

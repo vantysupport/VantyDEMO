@@ -292,7 +292,7 @@ export async function POST(req: NextRequest) {
           }),
           new Paragraph({
             spacing: { before: 60, after: 0 },
-            children: [new TextRun({ text: `Neuropsicología y Terapias SANTI  ·  ${hoy}  ·  Documento clínico confidencial`, size: 16, font: 'Arial', color: '94A3B8', italics: true })],
+            children: [new TextRun({ text: `Vanty ABA  ·  ${hoy}  ·  Documento clínico confidencial`, size: 16, font: 'Arial', color: '94A3B8', italics: true })],
           }),
         ],
       }],

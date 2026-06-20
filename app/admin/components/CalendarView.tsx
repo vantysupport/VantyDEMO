@@ -523,7 +523,7 @@ function MonthlyCalendarView() {
           roomUrl={videoSession.roomUrl}
           sessionId={videoSession.sessionId}
           appointmentId={videoSession.appointmentId}
-          participantName="Terapeuta – Neuropsicología y Terapias SANTI"
+          participantName="Terapeuta – Vanty ABA"
           onClose={() => { setVideoSession(null); cargarCitas() }}
         />
       )}

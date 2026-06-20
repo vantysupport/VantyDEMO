@@ -14,7 +14,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          <strong>Neuropsicología y Terapias SANTI</strong> es un centro especializado en intervención
+          <strong>Vanty ABA</strong> es un centro especializado en intervención
           infantil ABA, TEA y TDAH ubicado en Av. Brasil 2730, Pueblo Libre 15084, Lima — Perú.
         </p>
         <p>
@@ -64,7 +64,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
       <>
         <p>La información puede ser compartida únicamente con:</p>
         <ul>
-          <li>El equipo clínico de Neuropsicología y Terapias SANTI directamente involucrado en la atención del paciente.</li>
+          <li>El equipo clínico de Vanty ABA directamente involucrado en la atención del paciente.</li>
           <li>Proveedores de infraestructura tecnológica (Supabase para base de datos, Vercel para alojamiento) bajo estrictas políticas de confidencialidad.</li>
           <li>Proveedores de inteligencia artificial (Anthropic, Groq) procesando consultas puntuales del Asistente ARIA. Los datos enviados se descartan tras generar la respuesta y no se usan para entrenar modelos.</li>
           <li>Autoridades sanitarias o judiciales, exclusivamente cuando la ley lo exija expresamente.</li>
@@ -198,7 +198,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
       <>
         <p>Para cualquier consulta sobre esta política o sobre tus datos personales:</p>
         <p style={{ marginTop: 8 }}>
-          <strong>Neuropsicología y Terapias SANTI</strong><br/>
+          <strong>Vanty ABA</strong><br/>
           Av. Brasil 2730, Pueblo Libre 15084 — Lima, Perú<br/>
           📧 <a href="mailto:aprendizaje.santi@gmail.com" className="vanty-link">aprendizaje.santi@gmail.com</a><br/>
           📱 <a href="tel:+51991070734" className="vanty-link">+51 991 070 734</a>
@@ -414,7 +414,7 @@ export default function PrivacidadPage() {
         <div className="vp-hero">
           <div className="vp-brand">
             <span className="vp-brand-icon">🧩</span>
-            <span>Vanty · Neuropsicología y Terapias SANTI</span>
+            <span>Vanty · Vanty ABA</span>
           </div>
           <h1 className="vp-title">Política de Privacidad</h1>
           <p className="vp-subtitle">Última actualización: abril 2025 · Pueblo Libre, Lima — Perú</p>
@@ -448,7 +448,7 @@ export default function PrivacidadPage() {
 
         {/* Footer */}
         <div className="vp-footer">
-          <p>© {new Date().getFullYear()} Neuropsicología y Terapias SANTI · Todos los derechos reservados</p>
+          <p>© {new Date().getFullYear()} Vanty ABA · Todos los derechos reservados</p>
           <a href="/terminos">Ver Términos de Servicio →</a>
         </div>
       </div>

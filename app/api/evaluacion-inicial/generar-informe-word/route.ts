@@ -482,7 +482,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
     seccionesDocx.push(
       tituloSeccion('Observaciones finales'),
       parrafo(`El presente informe fue generado a partir de la ficha de anamnesis ${tipoInforme.toLowerCase()} completada por la familia el ${hoy}. La información aquí consignada constituye una base preliminar para el proceso de evaluación clínica directa con el paciente y deberá ser corroborada, ampliada y contrastada por el equipo profesional a cargo del caso.`),
-      parrafo(`La información contenida en este documento es confidencial y de uso exclusivo del equipo clínico del Centro de Neuropsicología y Terapias SANTI, en el marco del proceso de atención del paciente.`),
+      parrafo(`La información contenida en este documento es confidencial y de uso exclusivo del equipo clínico del Centro de Vanty ABA, en el marco del proceso de atención del paciente.`),
       // ── Sello QR ──
       new Paragraph({ spacing: { before: 160, after: 40 }, children: [] }),
       ...sellosVerif,
@@ -499,7 +499,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
       new Paragraph({
         spacing: { before: 0, after: 0 },
         children: [new TextRun({
-          text: 'Neuropsicología y Terapias SANTI',
+          text: 'Vanty ABA',
           size: 18,
           font: 'Arial',
           color: '475569',

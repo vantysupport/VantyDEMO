@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
         recurrencia ? `🔁 Cita recurrente (${recurrencia === 'weekly' ? 'Semanal' : 'Quincenal'}, ${recurrenciaSemanas} semanas)` : null,
         notes ? `📝 Notas: ${notes}` : null,
         esVirtual && videoLink ? `<br/>🔗 <a href="${videoLink}">Unirse a la videollamada</a>` : null,
-        '<br/>🏫 Centro Neuropsicología y Terapias SANTI',
+        '<br/>🏫 Centro Vanty ABA',
       ].filter(Boolean).join('<br/>')
 
       const attendees = []
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
           contentType: 'HTML',
           content: `
             <b>${modality === 'virtual' ? '📹 Sesión Virtual' : '📍 Sesión Presencial'}</b><br/>
-            Centro: Neuropsicología y Terapias SANTI<br/>
+            Centro: Vanty ABA<br/>
             Paciente: ${patientName}<br/>
             ${notes ? `📝 ${notes}` : ''}
           `,

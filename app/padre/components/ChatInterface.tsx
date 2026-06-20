@@ -172,7 +172,7 @@ function getEmotionalPrefix(text: string): string {
   if (l.includes('no avanza') || l.includes('no mejora'))
     return '💙 El progreso en terapia ABA no siempre es lineal, pero sí real. Hay avances que se acumulan aunque no los veamos cada día.\n\n'
   if (l.includes('solo') || l.includes('sola') || l.includes('nadie entiende'))
-    return '💙 No estás solo/a. Todo el equipo de Neuropsicología y Terapias SANTI está aquí para acompañarte — a ti y a tu familia.\n\n'
+    return '💙 No estás solo/a. Todo el equipo de Vanty ABA está aquí para acompañarte — a ti y a tu familia.\n\n'
   return '💙 Escucho cómo te sientes, y es completamente válido. Estoy aquí.\n\n'
 }
 
@@ -423,7 +423,7 @@ function WelcomeScreen({ childName, onQuickSend }: { childName: string; onQuickS
       <h3 className="text-xl font-bold mb-1" style={{ color: "var(--c-text-primary)" }}>
         Hola, soy <span className="text-sky-600">ARIA</span>
       </h3>
-      <p className="text-sm mb-1" style={{ color: "var(--c-text-muted)" }}>Asistente clínico de Neuropsicología y Terapias SANTI</p>
+      <p className="text-sm mb-1" style={{ color: "var(--c-text-muted)" }}>Asistente clínico de Vanty ABA</p>
       <p className="text-xs mb-6 leading-relaxed max-w-[280px]" style={{ color: "var(--c-text-muted)" }}>
         He revisado el historial de <strong className="text-slate-600 dark:text-slate-300">{childName || 'tu hijo/a'}</strong>.
         Puedo explicarte sesiones, tareas para casa y mucho más.

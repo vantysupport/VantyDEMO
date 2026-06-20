@@ -408,7 +408,7 @@ export default function ParentDashboard() {
             <h1 className="text-xl font-bold text-slate-800 mb-2">Registro no disponible por ahora</h1>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
               El centro alcanzó el número máximo de cuentas de familias disponibles.
-              Para habilitar tu acceso, comunícate con <strong className="text-sky-600">Neuropsicología y Terapias SANTI</strong>.
+              Para habilitar tu acceso, comunícate con <strong className="text-sky-600">Vanty ABA</strong>.
             </p>
             <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-sky-200 hover:opacity-90 transition-opacity">
@@ -450,7 +450,7 @@ export default function ParentDashboard() {
               ¡Bienvenido/a, {profile?.full_name?.split(' ')[0]}! 🎉
             </h1>
             <p className="text-slate-500 text-base leading-relaxed mb-8">
-              Estamos felices de tenerte en <strong className="text-sky-600">Neuropsicología y Terapias SANTI</strong>.
+              Estamos felices de tenerte en <strong className="text-sky-600">Vanty ABA</strong>.
               Para comenzar, necesitamos registrar a tu hijo/a y podrás acceder a todo el sistema de seguimiento con IA.
             </p>
 
@@ -659,7 +659,7 @@ export default function ParentDashboard() {
                     <h1 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
                         {PAGE_TITLES_MOBILE[activeView as keyof typeof PAGE_TITLES_MOBILE] || 'Inicio'}
                     </h1>
-                    <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Neuropsicología y Terapias SANTI · Portal Familias</p>
+                    <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>Vanty ABA · Portal Familias</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <LocaleSelector compact={true} />
@@ -1406,7 +1406,7 @@ export default function ParentDashboard() {
                         </div>
 
                         <p className="text-[10px] text-center pt-1" style={{ color: 'var(--c-text-muted)' }}>
-                            Plataforma Vanty · Neuropsicología y Terapias SANTI · Pueblo Libre, Lima
+                            Plataforma Vanty · Vanty ABA · Pueblo Libre, Lima
                         </p>
                     </div>
                 </div>

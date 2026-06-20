@@ -280,7 +280,7 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
               </p>
             )}
             <p className="text-[10px] mt-2 font-bold" style={{ color:'rgba(255,255,255,.4)' }}>
-              Portal Familias · Neuropsicología y Terapias SANTI
+              Portal Familias · Vanty ABA
             </p>
           </div>
         </div>

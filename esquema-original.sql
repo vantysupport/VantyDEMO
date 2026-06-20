@@ -324,7 +324,7 @@ create table if not exists public."centro_instrucciones" (
   "embedding" vector(768),
   "created_at" timestamp with time zone default now(),
   "updated_at" timestamp with time zone default now(),
-  "nombre_centro" text default 'Neuropsicología y Terapias SANTI'::text,
+  "nombre_centro" text default 'Vanty ABA'::text,
   "ruc" text,
   "direccion" text default 'Av. Brasil 2730, Pueblo Libre 15084'::text,
   "telefono" text default '991 070 734'::text,

@@ -1895,7 +1895,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
     }),
     new Paragraph({
       spacing: { before: 0, after: 0 },
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+      children: [new TextRun({ text: 'Vanty ABA', size: 19, font: 'Arial', color: '475569' })],
     }),
     new Paragraph({
       spacing: { before: 80, after: 0 },
@@ -2212,7 +2212,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
     }),
     new Paragraph({
       spacing: { before: 60, after: 0 },
-      children: [new TextRun({ text: 'Equipo Clínico — Neuropsicología y Terapias SANTI', bold: true, size: 19, font: 'Arial', color: '475569' })],
+      children: [new TextRun({ text: 'Equipo Clínico — Vanty ABA', bold: true, size: 19, font: 'Arial', color: '475569' })],
     }),
   )
 
@@ -2591,7 +2591,7 @@ Datos:
     }),
     new Paragraph({
       spacing: { before: 0, after: 0 },
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+      children: [new TextRun({ text: 'Vanty ABA', size: 19, font: 'Arial', color: '475569' })],
     }),
   )
 
@@ -3093,7 +3093,7 @@ async function generarReporteProgramasFamilia(
     }),
     new Paragraph({
       spacing: { before: 0, after: 0 },
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+      children: [new TextRun({ text: 'Vanty ABA', size: 19, font: 'Arial', color: '475569' })],
     }),
   )
 
@@ -3289,7 +3289,7 @@ async function generarGuiaSetFamilia(
     }),
     new Paragraph({
       spacing: { before: 0, after: 0 },
-      children: [new TextRun({ text: 'Neuropsicología y Terapias SANTI', size: 19, font: 'Arial', color: '475569' })],
+      children: [new TextRun({ text: 'Vanty ABA', size: 19, font: 'Arial', color: '475569' })],
     }),
   )
 

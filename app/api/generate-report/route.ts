@@ -708,7 +708,7 @@ async function generarDocx(
       ['Edad', childAge ? `${childAge} años` : 'No especificada'],
       ['Tipo de evaluación', config.subtitulo],
       ['Fecha del informe', fechaHoy],
-      ['Centro', 'Neuropsicología y Terapias SANTI'],
+      ['Centro', 'Vanty ABA'],
       ['Plataforma', 'Vanty ABA'],
       ...(extra.grado       ? [['Grado (estudiantil)', extra.grado]] as [string, string][]       : []),
       ...(extra.periodo     ? [['Periodo de trabajo',  extra.periodo]] as [string, string][]     : []),

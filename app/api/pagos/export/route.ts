@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 
   // Build workbook
   const wb = new ExcelJS.Workbook()
-  wb.creator = 'Neuropsicología y Terapias SANTI'
+  wb.creator = 'Vanty ABA'
   wb.created = new Date()
 
   const ws = wb.addWorksheet('Pagos y Facturación', {
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   // ── Title row ──────────────────────────────────────────────────────────────
   ws.mergeCells('A1:F1')
   const titleCell = ws.getCell('A1')
-  titleCell.value = 'Pagos y Facturación — Neuropsicología y Terapias SANTI'
+  titleCell.value = 'Pagos y Facturación — Vanty ABA'
   titleCell.font = { bold: true, size: 14, color: { argb: 'FF1e3a5f' } }
   titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
   titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFf0f6ff' } }

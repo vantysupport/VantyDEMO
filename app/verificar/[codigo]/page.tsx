@@ -30,7 +30,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
               <path d="M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-slate-900">Neuropsicología y Terapias SANTI</h1>
+          <h1 className="text-xl font-bold text-slate-900">Vanty ABA</h1>
           <p className="text-xs text-slate-500 mt-1">Sistema de verificación de documentos</p>
         </div>
 
@@ -150,7 +150,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                       <dt className="text-xs font-bold text-slate-500 w-32 shrink-0 pt-1">Responsable</dt>
                       <dd className="text-base text-slate-700">
                         <span className="font-bold text-slate-900">{doc.especialista}</span>
-                        <p className="text-xs text-slate-500 italic mt-0.5">Centro de Neuropsicología y Terapias SANTI</p>
+                        <p className="text-xs text-slate-500 italic mt-0.5">Centro de Vanty ABA</p>
                       </dd>
                     </div>
                   )}
@@ -171,7 +171,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
 
         {/* Footer */}
         <div className="text-center mt-8 text-xs text-slate-500 space-y-1">
-          <p className="font-bold">Neuropsicología y Terapias SANTI · Centro Especializado en Neurodesarrollo</p>
+          <p className="font-bold">Vanty ABA · Centro Especializado en Neurodesarrollo</p>
           <p>
             <a href="https://wa.me/51991070734" className="hover:text-sky-700">📞 +51 991 070 734</a>
             <span className="mx-2">·</span>

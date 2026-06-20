@@ -140,7 +140,7 @@ export default function SecretariaDashboard() {
         <div className="w-14 h-14 rounded-2xl bg-sky-600 flex items-center justify-center shadow-lg">
           <ClipboardList size={26} className="text-white" />
         </div>
-        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Neuropsicología y Terapias SANTI</p>
+        <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Vanty ABA</p>
         <Loader2 size={18} className="animate-spin text-sky-500" />
       </div>
     </div>
@@ -169,7 +169,7 @@ export default function SecretariaDashboard() {
             <Image src="/images/logo.png" alt="Logo" fill className="object-contain" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-[13px] leading-tight" style={{ color: 'var(--text-primary)' }}>Neuropsicología y Terapias SANTI</p>
+            <p className="font-bold text-[13px] leading-tight" style={{ color: 'var(--text-primary)' }}>Vanty ABA</p>
             <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Panel Secretaría</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1" style={{ color: 'var(--text-muted)' }}>
@@ -221,7 +221,7 @@ export default function SecretariaDashboard() {
             </button>
             <div>
               <h1 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{PAGE_TITLES[activeView] || 'Panel'}</h1>
-              <p className="text-[10px] hidden sm:block" style={{ color: 'var(--text-muted)' }}>Neuropsicología y Terapias SANTI · Gestión Integral</p>
+              <p className="text-[10px] hidden sm:block" style={{ color: 'var(--text-muted)' }}>Vanty ABA · Gestión Integral</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">

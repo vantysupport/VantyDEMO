@@ -6,7 +6,7 @@
 // SETUP (3 minutos):
 //
 //  1. Abrir Telegram → buscar @BotFather → /newbot
-//     → Nombre del bot: "SANTI Neuropsicología y Terapias SANTI"
+//     → Nombre del bot: "SANTI Vanty ABA"
 //     → Username: vanty_santi_bot (o el que quieras)
 //     → BotFather te da el TOKEN → guardarlo
 //
@@ -45,7 +45,7 @@ export function telegramTemplate(
   locale: NotifLocale = 'es'
 ): string {
   const v = vars
-  const centro = process.env.CENTRO_NOMBRE || 'Neuropsicología y Terapias SANTI'
+  const centro = process.env.CENTRO_NOMBRE || 'Vanty ABA'
 
   const T: Record<NotifTipo, string> = {
     cita_confirmada:   `✅ *Cita confirmada*\n📅 ${v.fecha} a las ${v.hora}\n👤 Paciente: ${v.paciente}\n📍 ${v.tipo || 'Presencial'}\n\n_${centro} · SANTI_`,
