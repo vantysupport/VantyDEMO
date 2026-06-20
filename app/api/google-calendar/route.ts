@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   // Return OAuth URL for client to redirect to
   if (action === 'auth-url') {
     const scopes = [
-      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events',
     ].join(' ')
 
     const userId = searchParams.get('userId') || ''
