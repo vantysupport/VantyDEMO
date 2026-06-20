@@ -5,7 +5,7 @@ import webpush from 'web-push'
 export async function POST(request: NextRequest) {
   // Configure VAPID inside the handler so env vars are available at runtime
   webpush.setVapidDetails(
-    'mailto:hola@santi.app',
+    'mailto:vantysupport@gmail.com',
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
   )

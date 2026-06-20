@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { notifyAsync, notifyParentDirect } from '@/lib/notifications'
 import { sendEmail, buildEmailCita, buildEmailAdmin } from '@/lib/email'
 
-const CENTRO_EMAIL = 'contacto@santi.com'
+const CENTRO_EMAIL = 'vantysupport@gmail.com'
 const APP_URL      = process.env.NEXT_PUBLIC_APP_URL || 'https://taller-jugando-aprendo.vercel.app'
 
 // ── Sincronizar cita al calendario (Google o Microsoft) del admin ─────────────

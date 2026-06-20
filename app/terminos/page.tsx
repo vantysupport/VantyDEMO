@@ -9,7 +9,7 @@ export default function TerminosPage() {
       </div>
 
       <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1e1b4b', marginBottom: 8 }}>Términos de Servicio</h1>
-      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 40 }}>Última actualización: abril 2025 · Pueblo Libre, Lima</p>
+      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 40 }}>Última actualización: abril 2025 · Lima</p>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>1. Aceptación de los términos</h2>
@@ -44,7 +44,7 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>6. Cuentas de usuario</h2>
-        <p>Sos responsable de mantener la seguridad de tu contraseña y de todas las actividades realizadas desde tu cuenta. Si detectás acceso no autorizado, notificanos de inmediato a aprendizaje.santi@gmail.com.</p>
+        <p>Sos responsable de mantener la seguridad de tu contraseña y de todas las actividades realizadas desde tu cuenta. Si detectás acceso no autorizado, notificanos de inmediato a vantysupport@gmail.com.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -59,7 +59,7 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 48 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>9. Contacto</h2>
-        <p><strong>Vanty ABA</strong><br/>Av. Brasil 2730, Pueblo Libre 15084<br/>📧 aprendizaje.santi@gmail.com<br/>📱 991 070 734</p>
+        <p><strong>Vanty ABA</strong><br/>📧 vantysupport@gmail.com<br/>📱 994 196 916</p>
       </section>
 
       <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>

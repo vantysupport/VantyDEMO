@@ -97,7 +97,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
                 <p className="text-sm text-slate-500 mt-4">
                   Si recibió este código de una fuente legítima, le recomendamos contactar al centro:
                 </p>
-                <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
+                <a href="https://wa.me/51994196916" target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition">
                   💬 Contactar al centro
                 </a>
@@ -173,9 +173,9 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
         <div className="text-center mt-8 text-xs text-slate-500 space-y-1">
           <p className="font-bold">Vanty ABA · Centro Especializado en Neurodesarrollo</p>
           <p>
-            <a href="https://wa.me/51991070734" className="hover:text-sky-700">📞 +51 991 070 734</a>
+            <a href="https://wa.me/51994196916" className="hover:text-sky-700">📞 +51 994 196 916</a>
             <span className="mx-2">·</span>
-            <Link href="/" className="hover:text-sky-700">santiterapias.com</Link>
+            <Link href="/" className="hover:text-sky-700">vanty.xyz</Link>
           </p>
           <p className="text-slate-400 italic mt-3">
             Sistema de verificación oficial · Consultado el {new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}

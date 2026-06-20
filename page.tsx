@@ -431,7 +431,7 @@ export default function LandingPage() {
   useEffect(() => { setActiveAccordion(null) }, [lang])
 
   const waMsg = encodeURIComponent(t.wa.msg)
-  const waUrl = `https://wa.me/51991070734?text=${waMsg}`
+  const waUrl = `https://wa.me/51994196916?text=${waMsg}`
 
   const benefitIcons = [
     { icon: <ClipboardList size={20} color="#fff" />, bg: 'linear-gradient(135deg,#f97316,#fb923c)' },
@@ -916,10 +916,10 @@ export default function LandingPage() {
               <Clock size={15} color="#f97316" /><span><strong>{t.map.schedule}</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13, color: '#44403c' }}>
-              <Phone size={15} color="#25d366" /><span>+51 991 070 734</span>
+              <Phone size={15} color="#25d366" /><span>+51 994 196 916</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13, color: '#44403c' }}>
-              <Mail size={15} color="#f59e0b" /><span>contacto@santi.com</span>
+              <Mail size={15} color="#f59e0b" /><span>vantysupport@gmail.com</span>
             </div>
           </div>
           <a href="https://maps.app.goo.gl/fv9HhtWj5R45a5paA" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '12px', background: 'linear-gradient(135deg,#f97316,#ea580c)', color: '#fff', borderRadius: 99, fontFamily: "'Baloo 2',cursive", fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>

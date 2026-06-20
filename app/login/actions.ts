@@ -76,7 +76,7 @@ export async function login(formData: FormData) {
   // Revalidar y redirigir según el rol
   revalidatePath('/', 'layout')
   
-  if (profile?.role === 'jefe' || profile?.role === 'admin' || profile?.role === 'especialista' || email === 'admin@santi.com') {
+  if (profile?.role === 'jefe' || profile?.role === 'admin' || profile?.role === 'especialista' || email === 'vantysupport@gmail.com') {
     redirect('/admin')
   } else if (profile?.role === 'secretaria') {
     redirect('/secretaria')
@@ -206,5 +206,5 @@ export async function isAdmin() {
          user.profile?.role === 'admin' || 
          user.profile?.role === 'especialista' ||
          user.profile?.role === 'secretaria' ||
-         user.email === 'admin@santi.com'
+         user.email === 'vantysupport@gmail.com'
 }

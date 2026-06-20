@@ -61,8 +61,8 @@ export const COLOR = {
 } as const
 
 export const FONT      = 'Calibri'
-export const TELEFONO  = '991 070 734'
-export const EMAIL_SANTI = 'info@santiterapias.com'
+export const TELEFONO  = '994 196 916'
+export const EMAIL_SANTI = 'vantysupport@gmail.com'
 export const DISCLAIMER = 'Este documento clínico no reemplaza un certificado médico-legal · Carece de valor médico-legal sin la firma del especialista'
 
 const BD  = { style: BorderStyle.SINGLE, size: 4, color: COLOR.borde } as const
@@ -573,7 +573,7 @@ export function graficoCurvaLineal(titulo: string, valores: number[], etiquetas?
 // Uso:
 //   sections.push(...selloQRVerificacion({
 //     codigoDoc: 'VANTY-2026-0042',
-//     urlValidacion: 'https://santiterapias.com/verificar/VANTY-2026-0042',
+//     urlValidacion: 'https://vanty.xyz/verificar/VANTY-2026-0042',
 //     fechaEmision: '23 de mayo de 2026',
 //     especialista: 'Lic. María Fernández',
 //   }))
@@ -589,7 +589,7 @@ export interface SelloQROptions {
 //   Mantengo por retrocompatibilidad pero el ideal es usar `selloQRVerificacionAsync`
 export function selloQRVerificacion(opts: SelloQROptions): (Paragraph | Table)[] {
   const fecha = opts.fechaEmision ?? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
-  const url = opts.urlValidacion ?? `https://santiterapias.com/verificar/${opts.codigoDoc}`
+  const url = opts.urlValidacion ?? `https://vanty.xyz/verificar/${opts.codigoDoc}`
 
   return [
     new Table({
@@ -1060,7 +1060,7 @@ export const DOC_PAGE_PROPS = {
 //   cualquier app y abre la URL de verificación.
 export async function selloQRVerificacionAsync(opts: SelloQROptions): Promise<(Paragraph | Table)[]> {
   const fecha = opts.fechaEmision ?? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://centro-santi.vanty.xyz'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://vanty.xyz'
   const url = opts.urlValidacion ?? `${baseUrl}/verificar/${opts.codigoDoc}`
 
   // Generar QR como PNG buffer real

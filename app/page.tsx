@@ -304,7 +304,7 @@ export default function LoginPage(props: PageProps) {
               <Image src="/images/logo.png" alt="Logo" width={40} height={40} style={{ objectFit: 'contain', flexShrink: 0 }} />
               <div>
                 <p style={{ fontWeight: 800, color: '#0c4a6e', fontSize: 14, lineHeight: 1.2, margin: 0 }}>Vanty ABA</p>
-                <p style={{ color: '#6b7280', fontSize: 11, margin: 0 }}>Centro Terapéutico · Pueblo Libre</p>
+                <p style={{ color: '#6b7280', fontSize: 11, margin: 0 }}>Centro Terapéutico</p>
               </div>
             </div>
 
@@ -354,7 +354,7 @@ export default function LoginPage(props: PageProps) {
               {showForgotInfo && (
                 <div className="lp-forgot">
                   <p>Comunícate con <strong>Vanty ABA</strong> {t('auth.restablecen')}</p>
-                  <a href="https://wa.me/51991070734?text=Hola,%20olvidé%20mi%20contraseña." target="_blank" rel="noopener noreferrer">
+                  <a href="https://wa.me/51994196916?text=Hola,%20olvidé%20mi%20contraseña." target="_blank" rel="noopener noreferrer">
                     <MessageCircle size={14} /> Contactar por WhatsApp
                   </a>
                 </div>

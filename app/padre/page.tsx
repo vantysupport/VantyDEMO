@@ -410,7 +410,7 @@ export default function ParentDashboard() {
               El centro alcanzó el número máximo de cuentas de familias disponibles.
               Para habilitar tu acceso, comunícate con <strong className="text-sky-600">Vanty ABA</strong>.
             </p>
-            <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/51994196916" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-sky-600 to-cyan-600 text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-sky-200 hover:opacity-90 transition-opacity">
               <Phone size={16} /> Contactar al centro
             </a>
@@ -485,8 +485,8 @@ export default function ParentDashboard() {
           {/* Help contact */}
           <p className="text-center text-sm text-slate-400 mt-6">
             ¿Tienes dudas? Escríbenos:{' '}
-            <a href="https://wa.me/51991070734" className="text-sky-600 font-bold hover:underline">
-              +51 991 070 734
+            <a href="https://wa.me/51994196916" className="text-sky-600 font-bold hover:underline">
+              +51 994 196 916
             </a>
           </p>
         </div>
@@ -1366,8 +1366,8 @@ export default function ParentDashboard() {
                             </div>
                             <p className="text-[10px] mt-2.5" style={{ color: 'var(--c-text-muted)' }}>
                                 Para ejercer cualquier derecho:{' '}
-                                <a href="mailto:aprendizaje.santi@gmail.com" className="font-bold underline" style={{ color: '#0284c7' }}>
-                                    aprendizaje.santi@gmail.com
+                                <a href="mailto:vantysupport@gmail.com" className="font-bold underline" style={{ color: '#0284c7' }}>
+                                    vantysupport@gmail.com
                                 </a>
                             </p>
                         </div>
@@ -1397,7 +1397,7 @@ export default function ParentDashboard() {
                                 <ScrollText size={15}/> Leer Política Completa <ExternalLink size={12}/>
                             </a>
                             <a
-                                href="mailto:aprendizaje.santi@gmail.com?subject=Consulta%20sobre%20privacidad%20de%20datos"
+                                href="mailto:vantysupport@gmail.com?subject=Consulta%20sobre%20privacidad%20de%20datos"
                                 className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all hover:opacity-80"
                                 style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', color: 'var(--c-text-primary)' }}
                             >
@@ -1406,7 +1406,7 @@ export default function ParentDashboard() {
                         </div>
 
                         <p className="text-[10px] text-center pt-1" style={{ color: 'var(--c-text-muted)' }}>
-                            Plataforma Vanty · Vanty ABA · Pueblo Libre, Lima
+                            Plataforma Vanty · Vanty ABA · Lima
                         </p>
                     </div>
                 </div>
@@ -1454,10 +1454,10 @@ export default function ParentDashboard() {
                             </h4>
                             <div className="space-y-2 text-sm text-green-700">
                                 <p className="flex items-center gap-2">
-                                    <Mail size={14}/> <a href="mailto:contacto@santi.com" className="hover:underline">contacto@santi.com</a>
+                                    <Mail size={14}/> <a href="mailto:vantysupport@gmail.com" className="hover:underline">vantysupport@gmail.com</a>
                                 </p>
                                 <p className="flex items-center gap-2">
-                                    <Phone size={14}/> <a href="tel:+51991070734" className="hover:underline">+51 991 070 734</a>
+                                    <Phone size={14}/> <a href="tel:+51994196916" className="hover:underline">+51 994 196 916</a>
                                 </p>
                                 <p className="text-xs text-green-600 mt-2">Horario: Lun-Vie 8:00 AM - 6:00 PM</p>
                             </div>

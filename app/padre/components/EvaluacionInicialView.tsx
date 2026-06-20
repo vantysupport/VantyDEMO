@@ -1082,7 +1082,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
               </ul>
             </div>
           )}
-          <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/51994196916" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold border-2"
             style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}>
             <MessageCircle size={18} /> Contactar al centro mientras tanto
@@ -1126,7 +1126,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
             </div>
           )}
 
-          <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/51994196916" target="_blank" rel="noopener noreferrer"
             className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-green-600 text-white font-bold">
             <MessageCircle size={18} /> Coordinar primera cita
           </a>
@@ -1145,7 +1145,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
           <p className="text-amber-800 mb-5">
             Nuestro equipo se va a comunicar contigo para conversar sobre tu caso y resolver cualquier inquietud.
           </p>
-          <a href="https://wa.me/51991070734" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/51994196916" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-600 text-white font-bold">
             <MessageCircle size={18} /> Contactar ahora
           </a>

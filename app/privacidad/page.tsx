@@ -15,7 +15,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
       <>
         <p>
           <strong>Vanty ABA</strong> es un centro especializado en intervención
-          infantil ABA, TEA y TDAH ubicado en Av. Brasil 2730, Pueblo Libre 15084, Lima — Perú.
+          infantil ABA, TEA y TDAH ubicado en Lima — Perú.
         </p>
         <p>
           Operamos la plataforma digital <strong>Vanty</strong> para la gestión clínica y la comunicación
@@ -123,7 +123,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
         </ul>
         <p>
           Para ejercer cualquiera de estos derechos, escribinos a{' '}
-          <a href="mailto:aprendizaje.santi@gmail.com" className="vanty-link">aprendizaje.santi@gmail.com</a>.
+          <a href="mailto:vantysupport@gmail.com" className="vanty-link">vantysupport@gmail.com</a>.
           Respondemos en un plazo máximo de 10 días hábiles.
         </p>
       </>
@@ -199,9 +199,9 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
         <p>Para cualquier consulta sobre esta política o sobre tus datos personales:</p>
         <p style={{ marginTop: 8 }}>
           <strong>Vanty ABA</strong><br/>
-          Av. Brasil 2730, Pueblo Libre 15084 — Lima, Perú<br/>
-          📧 <a href="mailto:aprendizaje.santi@gmail.com" className="vanty-link">aprendizaje.santi@gmail.com</a><br/>
-          📱 <a href="tel:+51991070734" className="vanty-link">+51 991 070 734</a>
+          Lima, Perú<br/>
+          📧 <a href="mailto:vantysupport@gmail.com" className="vanty-link">vantysupport@gmail.com</a><br/>
+          📱 <a href="tel:+51994196916" className="vanty-link">+51 994 196 916</a>
         </p>
       </>
     ),
@@ -417,7 +417,7 @@ export default function PrivacidadPage() {
             <span>Vanty · Vanty ABA</span>
           </div>
           <h1 className="vp-title">Política de Privacidad</h1>
-          <p className="vp-subtitle">Última actualización: abril 2025 · Pueblo Libre, Lima — Perú</p>
+          <p className="vp-subtitle">Última actualización: abril 2025 · Lima — Perú</p>
           <div className="vp-badges">
             <span className="vp-badge">🔑 AES-256</span>
             <span className="vp-badge">⚙️ TLS 1.3</span>

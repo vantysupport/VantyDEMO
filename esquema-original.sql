@@ -326,9 +326,9 @@ create table if not exists public."centro_instrucciones" (
   "updated_at" timestamp with time zone default now(),
   "nombre_centro" text default 'Vanty ABA'::text,
   "ruc" text,
-  "direccion" text default 'Av. Brasil 2730, Pueblo Libre 15084'::text,
-  "telefono" text default '991 070 734'::text,
-  "email" text default 'aprendizaje.santi@gmail.com'::text
+  "direccion" text default ''::text,
+  "telefono" text default '994 196 916'::text,
+  "email" text default 'vantysupport@gmail.com'::text
 );
 
 create table if not exists public."chat_especialista_admin" (
