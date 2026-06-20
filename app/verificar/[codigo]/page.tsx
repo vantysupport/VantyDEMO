@@ -175,7 +175,7 @@ export default async function VerificarDocumento({ params }: { params: Promise<{
           <p>
             <a href="https://wa.me/51994196916" className="hover:text-sky-700">📞 +51 994 196 916</a>
             <span className="mx-2">·</span>
-            <Link href="/" className="hover:text-sky-700">vanty.xyz</Link>
+            <Link href="/" className="hover:text-sky-700">demo.vanty.xyz</Link>
           </p>
           <p className="text-slate-400 italic mt-3">
             Sistema de verificación oficial · Consultado el {new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}
