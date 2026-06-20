@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import ExcelJS from 'exceljs'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,6 +25,9 @@ const STATUS_COLORS: Record<string, { fill: string; font: string }> = {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
+
   const { searchParams } = new URL(req.url)
   const desde = searchParams.get('desde') || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
   const status = searchParams.get('status') || 'all'
@@ -36,6 +40,7 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(500)
 
+  if (auth.tenantId) query = query.eq('tenant_id', auth.tenantId)  // 🔒 por centro
   if (status !== 'all') query = query.eq('status', status)
 
   const { data: pays, error } = await query

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import ExcelJS from 'exceljs'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -97,6 +98,9 @@ async function getCenterInfo() {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
+
   const { searchParams } = new URL(req.url)
   const anio = Number(searchParams.get('anio') || new Date().getFullYear())
   const mes  = Number(searchParams.get('mes')  || new Date().getMonth() + 1) // 1-12
@@ -111,16 +115,15 @@ export async function GET(req: NextRequest) {
     : new Date(anio, mes, 0).toISOString().split('T')[0] // last day of month
 
   try {
-    const [{ data: pays }, center] = await Promise.all([
-      supabase.from('payments')
-        .select('*, children(name, id)')
-        .gte('created_at', inicio)
-        .lte('created_at', fin + 'T23:59:59')
-        .order('paid_at', { ascending: true })
-        .order('created_at', { ascending: true })
-        .limit(1000),
-      getCenterInfo(),
-    ])
+    let payQuery = supabase.from('payments')
+      .select('*, children(name, id)')
+      .gte('created_at', inicio)
+      .lte('created_at', fin + 'T23:59:59')
+      .order('paid_at', { ascending: true })
+      .order('created_at', { ascending: true })
+      .limit(1000)
+    if (auth.tenantId) payQuery = payQuery.eq('tenant_id', auth.tenantId)  // 🔒 por centro
+    const [{ data: pays }, center] = await Promise.all([payQuery, getCenterInfo()])
 
     const all   = pays || []
     const paid  = all.filter(p => p.status === 'paid')

@@ -14,6 +14,11 @@ alter table public.agenda_sesiones add column if not exists tenant_id uuid;
 alter table public.payments        add column if not exists tenant_id uuid;
 alter table public.facturas        add column if not exists tenant_id uuid;
 alter table public.evaluaciones_iniciales add column if not exists tenant_id uuid;
+-- Catálogos configurables por centro (cada centro arma sus servicios/precios/tienda):
+alter table public.terapias_catalogo            add column if not exists tenant_id uuid;
+alter table public.store_products               add column if not exists tenant_id uuid;
+alter table public.service_rates                add column if not exists tenant_id uuid;
+alter table public.evaluacion_servicios_catalogo add column if not exists tenant_id uuid;
 
 create index if not exists idx_profiles_tenant     on public.profiles (tenant_id);
 create index if not exists idx_children_tenant     on public.children (tenant_id);
@@ -36,7 +41,7 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['children','appointments','agenda_sesiones','payments','facturas','evaluaciones_iniciales']
+  foreach t in array array['children','appointments','agenda_sesiones','payments','facturas','evaluaciones_iniciales','terapias_catalogo','store_products','service_rates','evaluacion_servicios_catalogo']
   loop
     execute format('drop trigger if exists trg_set_tenant on public.%I', t);
     execute format('create trigger trg_set_tenant before insert on public.%I
