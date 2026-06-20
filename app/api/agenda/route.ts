@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { notifyAsync, notifyParentDirect } from '@/lib/notifications'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 // ─── GET: obtener agenda ──────────────────────────────────────
 export async function GET(req: NextRequest) {
@@ -13,6 +14,8 @@ export async function GET(req: NextRequest) {
   const childId     = searchParams.get('child_id')
   const estado      = searchParams.get('estado')
 
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})`, data: [] }, { status: 403 })
   try {
     let query = supabaseAdmin
       .from('agenda_sesiones')
@@ -24,6 +27,7 @@ export async function GET(req: NextRequest) {
       .order('fecha', { ascending: true })
       .order('hora_inicio', { ascending: true })
 
+    if (auth.tenantId) query = query.eq('tenant_id', auth.tenantId)  // 🔒 por centro
     if (fecha)        query = query.eq('fecha', fecha)
     if (fechaInicio)  query = query.gte('fecha', fechaInicio)
     if (fechaFin)     query = query.lte('fecha', fechaFin)
@@ -41,6 +45,8 @@ export async function GET(req: NextRequest) {
 
 // ─── POST: crear / actualizar sesión ─────────────────────────
 export async function POST(req: NextRequest) {
+  const auth = await requireRole(req, STAFF_ROLES)
+  if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
   try {
     const body = await req.json()
     const { action } = body
@@ -76,7 +82,7 @@ export async function POST(req: NextRequest) {
 
       const { data, error } = await supabaseAdmin
         .from('agenda_sesiones')
-        .insert({ child_id, terapeuta_id, fecha, hora_inicio, hora_fin, tipo, modalidad, notas, estado: 'programada', ...(meeting_link ? { meeting_link } : {}) })
+        .insert({ child_id, terapeuta_id, fecha, hora_inicio, hora_fin, tipo, modalidad, notas, estado: 'programada', ...(meeting_link ? { meeting_link } : {}), ...(auth.tenantId ? { tenant_id: auth.tenantId } : {}) })
         .select('*, children(name)')
         .single()
 
