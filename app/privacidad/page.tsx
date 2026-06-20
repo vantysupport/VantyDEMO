@@ -1,10 +1,10 @@
 // app/privacidad/page.tsx
-// Política de Privacidad completa de la plataforma Vanty · Centro SANTI.
+// Política de Privacidad completa de la plataforma Vanty · Centro Vanty ABA.
 // Diseñada para verse profesional en modo claro y modo oscuro.
 
 export const metadata = {
   title: 'Política de Privacidad · Vanty',
-  description: 'Cómo Vanty protege los datos clínicos de las familias del Centro SANTI.',
+  description: 'Cómo Vanty protege los datos clínicos de las familias del Centro Vanty ABA.',
 }
 
 const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
@@ -141,7 +141,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
         </p>
         <p>
           Si autorizás la sincronización con Google Calendar o Outlook Calendar, accedemos solo a la creación y
-          actualización de eventos relacionados con tus citas en SANTI. Podés revocar este permiso en cualquier momento
+          actualización de eventos relacionados con tus citas en Vanty ABA. Podés revocar este permiso en cualquier momento
           desde "Mi Perfil → Calendarios vinculados".
         </p>
       </>

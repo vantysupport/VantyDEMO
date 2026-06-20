@@ -103,7 +103,7 @@ function formatChunk(it: typeof ITEMS[0]): string {
 }
 
 async function main() {
-  console.log('🧠  SANTI · Cerebro IA — Importador de protocolos')
+  console.log('🧠  Vanty ABA · Cerebro IA — Importador de protocolos')
   console.log(`📚  Fuente: ${FUENTE}`)
   console.log(`📂  Área:   ${AREA}`)
   console.log(`📦  Ítems:  ${ITEMS.length}`)

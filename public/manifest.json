@@ -1,7 +1,7 @@
 {
   "id": "/?app=santi",
   "name": "Vanty ABA",
-  "short_name": "SANTI",
+  "short_name": "Vanty ABA",
   "description": "Plataforma integral de gestión terapéutica para Vanty ABA.",
   "start_url": "/login?utm_source=pwa",
   "display": "standalone",
@@ -48,7 +48,7 @@
       "sizes": "1200x630",
       "type": "image/jpeg",
       "form_factor": "wide",
-      "label": "Panel de gestión SANTI"
+      "label": "Panel de gestión Vanty ABA"
     }
   ]
 }

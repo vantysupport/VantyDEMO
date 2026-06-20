@@ -33,8 +33,8 @@ export function getDocLabels(locale: Locale) {
     evaluationType: 'TIPO DE EVALUACIÓN',
     ageUnit: 'años',
     notSpecified: 'No especificada',
-    footer: 'Este informe fue generado con el apoyo de inteligencia artificial clínica (ARIA - SANTI). Debe ser revisado y firmado por el profesional responsable antes de su entrega.',
-    generated: 'Generado por SANTI — Sistema de Gestión Clínica Neuropsicológica  |  Página ',
+    footer: 'Este informe fue generado con el apoyo de inteligencia artificial clínica (ARIA - Vanty ABA). Debe ser revisado y firmado por el profesional responsable antes de su entrega.',
+    generated: 'Generado por Vanty ABA — Sistema de Gestión Clínica Neuropsicológica  |  Página ',
     of: ' de ',
   }
 }

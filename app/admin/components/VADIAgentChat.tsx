@@ -51,7 +51,7 @@ export default function VADIAgentChat({
       role: 'assistant',
       content: childId
         ? `¡Hola! Soy **VADI**, tu asistente clínico. Estoy revisando el expediente de **${childName || 'tu paciente'}** y tengo acceso a todo su historial, programas ABA y evaluaciones previas.\n\n¿En qué te puedo ayudar hoy? Puedo analizar tendencias de progreso, sugerirte estrategias clínicas, o responder dudas sobre el caso.`
-        : `¡Hola! Soy **VADI**, el cerebro clínico de SANTI. Tengo acceso a todos los expedientes del sistema.\n\n¿Cómo puedo ayudarte hoy?`,
+        : `¡Hola! Soy **VADI**, el cerebro clínico de Vanty ABA. Tengo acceso a todos los expedientes del sistema.\n\n¿Cómo puedo ayudarte hoy?`,
       timestamp: new Date().toISOString(),
     }])
   }, [childId, childName])

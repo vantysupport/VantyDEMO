@@ -85,7 +85,7 @@ ${terapiasMd || '_(ninguna)_'}
 
 ---
 
-*Documento generado automáticamente — SANTI · ${fecha}*
+*Documento generado automáticamente — Vanty ABA · ${fecha}*
 `
 }
 

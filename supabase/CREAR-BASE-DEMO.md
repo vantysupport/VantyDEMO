@@ -1,7 +1,7 @@
 # Crear la base de datos DEMO (clon del proyecto original + extras)
 
 Objetivo: una base **nueva** e independiente para la demo, con las **mismas
-tablas/funciones** que el proyecto original (`JugandoAprendoWeb / Santi`) y
+tablas/funciones** que el proyecto original (`JugandoAprendoWeb / Vanty ABA`) y
 además las columnas de **centros demo** que se agregaron.
 
 ---
@@ -9,7 +9,7 @@ además las columnas de **centros demo** que se agregaron.
 ## Paso 1 — Sacar el esquema del proyecto ORIGINAL (un solo archivo)
 
 Necesitás la *connection string* del original:
-**Dashboard del proyecto Santi → botón `Connect` (arriba) → "Connection string" → URI**.
+**Dashboard del proyecto Vanty ABA → botón `Connect` (arriba) → "Connection string" → URI**.
 Copiá la que dice *Direct connection* (puerto 5432) y reemplazá `[YOUR-PASSWORD]`
 por la contraseña de la base (la definiste al crear el proyecto; si no la
 recordás, se resetea en Settings → Database).

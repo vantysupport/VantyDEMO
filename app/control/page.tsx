@@ -949,7 +949,7 @@ export default function ControlPage() {
             )}
           </section>
 
-          <p className="text-center text-[11px] text-slate-600 font-mono pb-2">SANTI · panel restringido · rol programador</p>
+          <p className="text-center text-[11px] text-slate-600 font-mono pb-2">Vanty ABA · panel restringido · rol programador</p>
         </div>
       </main>
     </div>

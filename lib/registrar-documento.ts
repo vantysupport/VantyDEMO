@@ -69,7 +69,7 @@ export async function registrarDocumentoEmitido(opts: RegistrarDocOptions): Prom
         paciente_nombre:    opts.pacienteNombre || null,
         paciente_iniciales: opts.pacienteIniciales || null,
         fecha_emision:      new Date().toISOString(),
-        especialista:       opts.especialista || 'Equipo Clínico SANTI',
+        especialista:       opts.especialista || 'Equipo Clínico Vanty ABA',
         generado_por:       opts.generadoPor || null,
         valido:             true,
         file_name:          opts.fileName || null,

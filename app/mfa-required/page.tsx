@@ -41,7 +41,7 @@ export default function MFARequiredPage() {
       }
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: `SANTI ${new Date().toLocaleDateString('es-PE')}`,
+        friendlyName: `Vanty ABA ${new Date().toLocaleDateString('es-PE')}`,
       })
       if (error) throw error
       setFactorId(data.id)

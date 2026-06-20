@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════════
--- ESQUEMA RECONSTRUIDO del proyecto original (Santi) — schema public
+-- ESQUEMA RECONSTRUIDO del proyecto original (Vanty ABA) — schema public
 -- Generado automáticamente. Correr en el SQL Editor del proyecto DEMO.
 -- ════════════════════════════════════════════════════════════════════
 

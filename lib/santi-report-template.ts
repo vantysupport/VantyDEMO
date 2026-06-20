@@ -1,9 +1,9 @@
 // lib/santi-report-template.ts
 //
-// Plantilla profesional SANTI v3 — supera el estilo CentralReach.
+// Plantilla profesional Vanty ABA v3 — supera el estilo CentralReach.
 //
 // NUEVAS CARACTERÍSTICAS v3:
-//   1. portadaInstitucional()   — portada completa con logo SANTI, datos del
+//   1. portadaInstitucional()   — portada completa con logo Vanty ABA, datos del
 //      paciente, especialista y fecha de emisión. Ocupa la primera página.
 //   2. firmaEspecialista()      — bloque de firma con nombre, credenciales,
 //      número de colegiatura y línea de firma manuscrita simulada.
@@ -84,7 +84,7 @@ export const NBDR = { top: NBDR_RAW, bottom: NBDR_RAW, left: NBDR_RAW, right: NB
 //     credenciales: 'BCBA · Colegiatura Nº 01234',
 //     fechaEmision: '23 de mayo de 2026',
 //     periodoEval: 'Mayo 2026',  // opcional
-//     codigoDoc: 'SANTI-2026-0042',  // opcional, para el QR
+//     codigoDoc: 'VANTY-2026-0042',  // opcional, para el QR
 //   })
 //   // portada es Paragraph[]  — insertar al inicio de sections[]
 //
@@ -116,7 +116,7 @@ export function portadaInstitucional(opts: PortadaOptions): (Paragraph | Table)[
     alignment: AlignmentType.CENTER,
     children: [
       new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS ', bold: true, size: 36, font: FONT, color: COLOR.azulDark }),
-      new TextRun({ text: 'SANTI', bold: true, size: 36, font: FONT, color: COLOR.acento }),
+      new TextRun({ text: 'Vanty ABA', bold: true, size: 36, font: FONT, color: COLOR.acento }),
     ],
   })
 
@@ -193,7 +193,7 @@ export function portadaInstitucional(opts: PortadaOptions): (Paragraph | Table)[
           margins: { top: 140, bottom: 60, left: 200, right: 120 },
           children: [
             new Paragraph({ children: [new TextRun({ text: 'Especialista', size: 16, font: FONT, color: '64748B' })] }),
-            new Paragraph({ children: [new TextRun({ text: opts.especialista ?? 'Equipo Clínico SANTI', bold: true, size: 22, font: FONT, color: COLOR.acento })] }),
+            new Paragraph({ children: [new TextRun({ text: opts.especialista ?? 'Equipo Clínico Vanty ABA', bold: true, size: 22, font: FONT, color: COLOR.acento })] }),
           ],
         }),
       ]}),
@@ -572,8 +572,8 @@ export function graficoCurvaLineal(titulo: string, valores: number[], etiquetas?
 //
 // Uso:
 //   sections.push(...selloQRVerificacion({
-//     codigoDoc: 'SANTI-2026-0042',
-//     urlValidacion: 'https://santiterapias.com/verificar/SANTI-2026-0042',
+//     codigoDoc: 'VANTY-2026-0042',
+//     urlValidacion: 'https://santiterapias.com/verificar/VANTY-2026-0042',
 //     fechaEmision: '23 de mayo de 2026',
 //     especialista: 'Lic. María Fernández',
 //   }))
@@ -615,7 +615,7 @@ export function selloQRVerificacion(opts: SelloQROptions): (Paragraph | Table)[]
           shading: { fill: 'EFF6FF', type: ShadingType.CLEAR },
           margins: { top: 120, bottom: 120, left: 200, right: 160 },
           children: [
-            new Paragraph({ children: [new TextRun({ text: 'DOCUMENTO VERIFICABLE — NEUROPSICOLOGÍA Y TERAPIAS SANTI', bold: true, size: 17, font: FONT, color: COLOR.azulDark })] }),
+            new Paragraph({ children: [new TextRun({ text: 'DOCUMENTO VERIFICABLE — NEUROPSICOLOGÍA Y TERAPIAS Vanty ABA', bold: true, size: 17, font: FONT, color: COLOR.azulDark })] }),
             new Paragraph({ spacing: { before: 80 }, children: [
               new TextRun({ text: 'Código de documento:  ', size: 16, font: FONT, color: COLOR.grisMed }),
               new TextRun({ text: opts.codigoDoc, bold: true, size: 16, font: 'Courier New', color: COLOR.acento }),
@@ -655,7 +655,7 @@ export function headerInstitucional(tipoInforme: string): Header {
         spacing: { after: 0 },
         tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
         children: [
-          new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS SANTI', bold: true, size: 18, font: FONT, color: COLOR.azulDark }),
+          new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS Vanty ABA', bold: true, size: 18, font: FONT, color: COLOR.azulDark }),
           new TextRun({ text: `\t${tipoInforme}`, size: 17, font: FONT, color: COLOR.grisMed }),
         ],
       }),
@@ -672,7 +672,7 @@ export function piePaginaOficial(): Footer {
         border: { top: { style: BorderStyle.SINGLE, size: 4, color: COLOR.borde, space: 4 } },
         spacing: { before: 40 },
         children: [
-          new TextRun({ text: `${DISCLAIMER}  ·  Equipo Clínico SANTI  ·  ${TELEFONO}  ·  Pág. `, size: 15, font: FONT, color: '94A3B8', italics: true }),
+          new TextRun({ text: `${DISCLAIMER}  ·  Equipo Clínico Vanty ABA  ·  ${TELEFONO}  ·  Pág. `, size: 15, font: FONT, color: '94A3B8', italics: true }),
           new TextRun({ children: [PageNumber.CURRENT], size: 15, font: FONT, color: '94A3B8' }),
           new TextRun({ text: ' / ', size: 15, font: FONT, color: '94A3B8' }),
           new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 15, font: FONT, color: '94A3B8' }),
@@ -1027,7 +1027,7 @@ export function generarCodigoDocumento(childId: string, tipoReporte: string): st
   const mes = String(hoy.getMonth() + 1).padStart(2, '0')
   const tipo = tipoReporte.substring(0, 3).toUpperCase()
   const hash = Math.abs(childId.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0)) % 9999
-  return `SANTI-${año}${mes}-${tipo}-${String(hash).padStart(4, '0')}`
+  return `VANTY-${año}${mes}-${tipo}-${String(hash).padStart(4, '0')}`
 }
 
 // ─── Configuración estándar de documento ─────────────────────────────────────
@@ -1115,7 +1115,7 @@ export async function selloQRVerificacionAsync(opts: SelloQROptions): Promise<(P
           verticalAlign: VerticalAlign.CENTER,
           children: [
             new Paragraph({ children: [new TextRun({
-              text: 'DOCUMENTO VERIFICABLE — NEUROPSICOLOGÍA Y TERAPIAS SANTI',
+              text: 'DOCUMENTO VERIFICABLE — NEUROPSICOLOGÍA Y TERAPIAS Vanty ABA',
               bold: true, size: 18, font: FONT, color: COLOR.azulDark,
             })] }),
             new Paragraph({ spacing: { before: 100 }, children: [
@@ -1136,7 +1136,7 @@ export async function selloQRVerificacionAsync(opts: SelloQROptions): Promise<(P
             ]}),
             new Paragraph({ spacing: { before: 80 }, children: [
               new TextRun({
-                text: 'Este documento fue generado digitalmente por el sistema SANTI. La autenticidad puede validarse escaneando el código QR o accediendo a la URL indicada. La validez legal queda condicionada a la firma manuscrita o digital del profesional responsable.',
+                text: 'Este documento fue generado digitalmente por el sistema Vanty ABA. La autenticidad puede validarse escaneando el código QR o accediendo a la URL indicada. La validez legal queda condicionada a la firma manuscrita o digital del profesional responsable.',
                 size: 14, font: FONT, color: '94A3B8', italics: true,
               }),
             ]}),

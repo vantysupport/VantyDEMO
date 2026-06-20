@@ -266,7 +266,7 @@ export default function LoginPage(props: PageProps) {
           {/* Logo arriba a la izquierda (fijo) */}
           <div style={{ position: 'absolute', zIndex: 10, top: 56, left: 64, display: 'flex', alignItems: 'center', gap: 15 }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Image src="/images/logo.png" alt="Logo SANTI" width={40} height={40} style={{ objectFit: 'contain' }} />
+              <Image src="/images/logo.png" alt="Logo Vanty ABA" width={40} height={40} style={{ objectFit: 'contain' }} />
             </div>
             <div>
               <p style={{ color: '#fff', fontWeight: 700, fontSize: 16.5, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Vanty ABA</p>

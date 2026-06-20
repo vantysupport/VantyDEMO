@@ -645,7 +645,7 @@ async function generarDocx(
   const config = REPORTE_CONFIG[tipo] || REPORTE_CONFIG.aba
   const fechaHoy = formatearFechaHoy()
 
-  // Importar docx + plantilla SANTI v2
+  // Importar docx + plantilla Vanty ABA v2
   const docx = await import('docx')
   const {
     Document, Packer, Paragraph, TextRun, AlignmentType,
@@ -683,7 +683,7 @@ async function generarDocx(
   // ── Cabecera del documento (antes del contenido IA) ─────────────────────
   const children: any[] = []
 
-  // Título principal estilo SANTI
+  // Título principal estilo Vanty ABA
   children.push(
     new Paragraph({
       spacing: { before: 0, after: 60 }, alignment: AlignmentType.CENTER,
@@ -733,7 +733,7 @@ async function generarDocx(
     const esMayusculas = t === t.toUpperCase() && t.length > 4 && t.length < 120 && /[A-ZÁÉÍÓÚÑ]{3,}/.test(t) && !t.match(/^\d/)
 
     if (mdHeading || esSeccionNumerada) {
-      // ── Título de sección con fondo azul (estilo SANTI) ──────────────────
+      // ── Título de sección con fondo azul (estilo Vanty ABA) ──────────────────
       const rawTxt = mdHeading ? mdHeading[2] : t
       children.push(tituloSeccion(rawTxt.replace(/\*\*/g, '')))
 

@@ -1,4 +1,4 @@
-// 🔒 Proxy / Middleware global de seguridad SANTI
+// 🔒 Proxy / Middleware global de seguridad Vanty ABA
 // ⚠️  Next.js 16+ con Turbopack: este archivo se llama proxy.ts (antes middleware.ts)
 // ════════════════════════════════════════════════════════════════════════════
 // Se ejecuta en EDGE antes de cualquier ruta y aplica 3 capas:

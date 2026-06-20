@@ -102,7 +102,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
   const sellosVerif = await selloQRVerificacionAsync({
     codigoDoc,
     fechaEmision: hoy,
-    especialista: 'Equipo Clínico SANTI',
+    especialista: 'Equipo Clínico Vanty ABA',
   })
 
   const children = [
@@ -111,7 +111,7 @@ async function buildDoc(d: any, childName: string, childAge: string, analisisIA:
       tipoInforme: 'REGISTRO DE SESIÓN ABA',
       nombrePaciente: childName,
       edadPaciente: childAge ? `${childAge} años` : '—',
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'Centro Especializado en Neuropsicología y Terapias',
       fechaEmision: hoy,
       codigoDoc,

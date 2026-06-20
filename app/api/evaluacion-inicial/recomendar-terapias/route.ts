@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const maxDuration = 60
 
-const SYSTEM_PROMPT = `Eres una neuropsicóloga clínica senior de SANTI (Perú). Vas a recomendar las terapias más adecuadas para un caso, eligiendo SOLO de la lista de terapias DISPONIBLES en nuestro centro (no inventes terapias que no estén en la lista).
+const SYSTEM_PROMPT = `Eres una neuropsicóloga clínica senior de Vanty ABA (Perú). Vas a recomendar las terapias más adecuadas para un caso, eligiendo SOLO de la lista de terapias DISPONIBLES en nuestro centro (no inventes terapias que no estén en la lista).
 
 CRITERIOS:
 - Prioriza máximo 4 terapias (idealmente 2-3).
@@ -118,13 +118,13 @@ ${fmtRespuestas(eval_.anamnesis_especifica)}
 
 ---
 
-# CATÁLOGO DE TERAPIAS DISPONIBLES EN SANTI
+# CATÁLOGO DE TERAPIAS DISPONIBLES EN Vanty ABA
 
 ${terapiasTxt}
 
 ---
 
-${knowledgeCtx ? `\n# 📚 PROTOCOLOS Y GUÍAS CLÍNICAS DE REFERENCIA (Cerebro IA SANTI)\n${knowledgeCtx}\n` : ''}
+${knowledgeCtx ? `\n# 📚 PROTOCOLOS Y GUÍAS CLÍNICAS DE REFERENCIA (Cerebro IA Vanty ABA)\n${knowledgeCtx}\n` : ''}
 
 Elige las 2-4 terapias del catálogo más adecuadas para este caso y devuelve el JSON solicitado. Usa los IDs EXACTOS de la lista de arriba. Si los protocolos clínicos arriba son relevantes para el caso (ABLLS-R, AFLS, etc.), úsalos para fundamentar tu razonamiento con criterios profesionales específicos.`
 

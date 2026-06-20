@@ -13,12 +13,12 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>1. Aceptación de los términos</h2>
-        <p>Al crear una cuenta y usar la plataforma SANTI de Vanty ABA, aceptás estos Términos de Servicio. Si no estás de acuerdo, por favor no uses la plataforma.</p>
+        <p>Al crear una cuenta y usar la plataforma Vanty ABA de Vanty ABA, aceptás estos Términos de Servicio. Si no estás de acuerdo, por favor no uses la plataforma.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>2. Descripción del servicio</h2>
-        <p>SANTI es una plataforma digital de gestión clínica para el centro Vanty ABA. Permite a los profesionales registrar y hacer seguimiento de programas ABA, y a las familias consultar el progreso de sus hijos, coordinar citas y comunicarse con el equipo terapéutico.</p>
+        <p>Vanty ABA es una plataforma digital de gestión clínica para el centro Vanty ABA. Permite a los profesionales registrar y hacer seguimiento de programas ABA, y a las familias consultar el progreso de sus hijos, coordinar citas y comunicarse con el equipo terapéutico.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -34,7 +34,7 @@ export default function TerminosPage() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1e1b4b', marginBottom: 8 }}>4. Naturaleza clínica del servicio</h2>
-        <p>La inteligencia artificial integrada en SANTI (ARIA) es una herramienta de apoyo clínico. Sus análisis y sugerencias son de carácter orientativo y <strong>no reemplazan el criterio del terapeuta certificado</strong>. Todas las decisiones clínicas son responsabilidad exclusiva del profesional a cargo.</p>
+        <p>La inteligencia artificial integrada en Vanty ABA (ARIA) es una herramienta de apoyo clínico. Sus análisis y sugerencias son de carácter orientativo y <strong>no reemplazan el criterio del terapeuta certificado</strong>. Todas las decisiones clínicas son responsabilidad exclusiva del profesional a cargo.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>

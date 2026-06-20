@@ -320,7 +320,7 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
   const sections: DocChild[] = [
     // ENCABEZADO C├üLIDO
     new Paragraph({ spacing:{before:0,after:20}, border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'7C3AED',space:8}},
-      children:[new TextRun({text:'­ƒîƒ  Neuropsicolog├¡a y Terapias SANTI',bold:true,size:38,font:'Arial',color:'5B21B6'}),
+      children:[new TextRun({text:'­ƒîƒ  Neuropsicolog├¡a y Terapias Vanty ABA',bold:true,size:38,font:'Arial',color:'5B21B6'}),
                 new TextRun({text:'  ┬À  Centro de Terapia ABA',size:22,font:'Arial',color:'9CA3AF'})] }),
     new Paragraph({ spacing:{before:180,after:60},
       children:[new TextRun({text:`Reporte de Progreso de ${nombreCorto}`,bold:true,size:44,font:'Arial',color:'4C1D95'})] }),
@@ -424,7 +424,7 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
 
     // CIERRE
     new Paragraph({spacing:{before:400},border:{top:{style:BorderStyle.SINGLE,size:2,color:'E2E8F0',space:8}},
-      children:[new TextRun({text:'Con cari├▒o, el equipo de Neuropsicolog├¡a y Terapias SANTI',size:20,font:'Arial',color:'7C3AED',bold:true,italics:true})]}),
+      children:[new TextRun({text:'Con cari├▒o, el equipo de Neuropsicolog├¡a y Terapias Vanty ABA',size:20,font:'Arial',color:'7C3AED',bold:true,italics:true})]}),
     new Paragraph({spacing:{before:40,after:0},
       children:[new TextRun({text:`${hoy}  ┬À  Este reporte es personal y confidencial`,size:16,font:'Arial',color:'94A3B8'})]}),
   ]
@@ -441,7 +441,7 @@ Reconoce el esfuerzo de los padres, proyecta optimismo realista, invita a seguir
       childName:    nombreCap,
       childAge:     String(edad),
       diagnosis:    diagnostico,
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'BCBA · Terapia ABA',
       periodoEval:  `${fechaInicio} – ${fechaFin}`,
       codigoDoc,
@@ -678,7 +678,7 @@ Incluye: (a) ajustes al plan actual de los programas m├ís relevantes, (b) obj
   const sections: DocChild[] = [
     // PORTADA
     new Paragraph({spacing:{before:0,after:20},border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'0F172A',space:8}},
-      children:[new TextRun({text:'NEUROPSICOLOG├ìA Y TERAPIAS SANTI',bold:true,size:38,font:'Arial',color:'0F172A'}),
+      children:[new TextRun({text:'NEUROPSICOLOG├ìA Y TERAPIAS Vanty ABA',bold:true,size:38,font:'Arial',color:'0F172A'}),
                 new TextRun({text:'  ┬À  Centro Especializado de Terapia ABA',size:22,font:'Arial',color:'64748B'})] }),
     new Paragraph({spacing:{before:180,after:60},
       children:[new TextRun({text:'AN├üLISIS COMPARATIVO DE PER├ìODOS',bold:true,size:44,font:'Arial',color:'0F172A'})] }),
@@ -822,7 +822,7 @@ Incluye: (a) ajustes al plan actual de los programas m├ís relevantes, (b) obj
       children:[new TextRun({text:'Nota metodol├│gica: ',bold:true,size:16,font:'Arial',color:'64748B'}),
                 new TextRun({text:confianzaNota,size:16,font:'Arial',color:'94A3B8',italics:true})]}),
     new Paragraph({spacing:{before:40,after:0},
-      children:[new TextRun({text:`Neuropsicolog├¡a y Terapias SANTI  ┬À  ${hoy}  ┬À  Documento N┬║ ${docNum}  ┬À  Uso confidencial`,size:16,font:'Arial',color:'94A3B8'})]}),
+      children:[new TextRun({text:`Neuropsicolog├¡a y Terapias Vanty ABA  ┬À  ${hoy}  ┬À  Documento N┬║ ${docNum}  ┬À  Uso confidencial`,size:16,font:'Arial',color:'94A3B8'})]}),
   ]
 
     const codigoDoc = generarCodigoDocumento(childId, 'comp')
@@ -837,7 +837,7 @@ Incluye: (a) ajustes al plan actual de los programas m├ís relevantes, (b) obj
       childName:    nombreCap,
       childAge:     String(edad),
       diagnosis:    diagnostico,
-      especialista: 'Equipo Cl\u00ednico SANTI',
+      especialista: 'Equipo Cl\u00ednico Vanty ABA',
       credenciales: 'BCBA \u00b7 Neuropsicolog\u00eda Infantil',
       periodoEval:  `${fechaInicio} \u2013 ${fechaFin}`,
       codigoDoc,
@@ -966,7 +966,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
   const sections: DocChild[] = [
     // PORTADA
     new Paragraph({ spacing:{before:0,after:20}, border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'1E40AF',space:8}},
-      children:[new TextRun({text:'NEUROPSICOLOG├ìA Y TERAPIAS SANTI',bold:true,size:38,font:'Arial',color:'1E293B'}),
+      children:[new TextRun({text:'NEUROPSICOLOG├ìA Y TERAPIAS Vanty ABA',bold:true,size:38,font:'Arial',color:'1E293B'}),
                 new TextRun({text:'  ┬À  Centro Especializado de Terapia ABA',size:22,font:'Arial',color:'64748B'})] }),
     new Paragraph({ spacing:{before:180,after:60},
       children:[new TextRun({text:'REPORTE NEUROPSICOL├ôGICO Y CL├ìNICO',bold:true,size:46,font:'Arial',color:'1E40AF'})] }),
@@ -983,7 +983,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
       kv('Diagn├│stico principal', diagnostico),
       kv('Clasificaci├│n CIE-10', cie),
       kv('Modalidad de intervenci├│n', 'An├ílisis Aplicado de la Conducta (ABA) ÔÇö Terapia Individual'),
-      kv('Centro terap├®utico', 'Neuropsicolog├¡a y Terapias SANTI ÔÇö Centro Especializado en Neurodesarrollo'),
+      kv('Centro terap├®utico', 'Neuropsicolog├¡a y Terapias Vanty ABA ÔÇö Centro Especializado en Neurodesarrollo'),
       kv('Inicio del tratamiento', fechaInicio),
       kv('├Ültima sesi├│n registrada', fechaFin),
       kv('Duraci├│n total del proceso', `${semanasTratamiento} semanas (${totalSesiones} sesiones)`),
@@ -1134,7 +1134,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
     // X. FIRMA
     h2('X.  ACREDITACI├ôN PROFESIONAL Y FIRMA'),
     new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[3200,6160],rows:[
-      kv('Centro terap├®utico','Neuropsicolog├¡a y Terapias SANTI ÔÇö Centro Especializado en Neurodesarrollo'),
+      kv('Centro terap├®utico','Neuropsicolog├¡a y Terapias Vanty ABA ÔÇö Centro Especializado en Neurodesarrollo'),
       kv('Especialidad','An├ílisis Aplicado de la Conducta (ABA)'),
       kv('Tipo de intervenci├│n','Terapia individual ÔÇö intervenci├│n temprana y desarrollo'),
       kv('Fecha de emisi├│n',hoy),
@@ -1143,13 +1143,13 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
       kv('Vigencia','6 meses a partir de la fecha de emisi├│n'),
     ]}),
     new Paragraph({spacing:{before:600,after:80},children:[new TextRun({text:'_'.repeat(50),size:20,font:'Arial',color:'1E293B'})]}),
-    new Paragraph({spacing:{before:0,after:20},children:[new TextRun({text:'Responsable del Tratamiento ÔÇö Neuropsicolog├¡a y Terapias SANTI',bold:true,size:18,font:'Arial',color:'1E293B'})]}),
+    new Paragraph({spacing:{before:0,after:20},children:[new TextRun({text:'Responsable del Tratamiento ÔÇö Neuropsicolog├¡a y Terapias Vanty ABA',bold:true,size:18,font:'Arial',color:'1E293B'})]}),
     new Paragraph({spacing:{before:0,after:40},children:[new TextRun({text:'Terapeuta ABA Certificado / Neuropsic├│logo Cl├¡nico',size:17,font:'Arial',color:'64748B',italics:true})]}),
 
     new Paragraph({spacing:{before:320},border:{top:{style:BorderStyle.SINGLE,size:2,color:'E2E8F0',space:8}},
       shading:{fill:'FFF7ED',type:ShadingType.CLEAR},
       children:[new TextRun({text:'ÔÜá  DOCUMENTO CONFIDENCIAL ÔÇö Uso exclusivo para tr├ímites m├®dico-legales con aseguradoras autorizadas. Prohibida su reproducci├│n parcial o total sin autorizaci├│n del centro emisor.',size:17,font:'Arial',color:'B45309',bold:true})]}),
-    new Paragraph({spacing:{before:40,after:0},children:[new TextRun({text:`Neuropsicolog├¡a y Terapias SANTI  ┬À  ${hoy}  ┬À  Documento N┬║ ${docNum}`,size:16,font:'Arial',color:'94A3B8'})]}),
+    new Paragraph({spacing:{before:40,after:0},children:[new TextRun({text:`Neuropsicolog├¡a y Terapias Vanty ABA  ┬À  ${hoy}  ┬À  Documento N┬║ ${docNum}`,size:16,font:'Arial',color:'94A3B8'})]}),
   ]
 
   const codigoDoc = generarCodigoDocumento(childId, 'seg')
@@ -1164,7 +1164,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
       childName:    nombreCap,
       childAge:     String(edad),
       diagnosis:    diagnostico,
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'C.Ps.P. · Neuropsicología Clínica',
       periodoEval:  `${fechaInicio} – ${fechaFin}`,
       codigoDoc,
@@ -1178,7 +1178,7 @@ async function generarReporteSeguro(childId: string, userLocale = 'es'): Promise
 // ┬─ Handler principal ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 // ═══════════════════════════════════════════════════════════════════════════
-// INFORME CLÍNICO PROFESIONAL — formato oficial SANTI (estilo LuTr)
+// INFORME CLÍNICO PROFESIONAL — formato oficial Vanty ABA (estilo LuTr)
 // ─ Diseñado para SUPERAR a Central Reach con:
 //   · Portada + datos generales + resumen ejecutivo IA
 //   · Tabla de Habilidades y Logros con vertical merge (ÁREA / SUBÁREA spanning)
@@ -1565,7 +1565,7 @@ async function generarInformeClinicoSanti(
 
   const [textoResumenEjecutivo, textoAnalisisGlobal, textoPlanTerapeutico, textoRecomendacionesIA, textoLimitaciones] = await Promise.all([
     callGroqSimple(
-      'Eres neuropsicóloga clínica senior de SANTI. Prosa formal, sin emojis, sin bullets en el body.',
+      'Eres neuropsicóloga clínica senior de Vanty ABA. Prosa formal, sin emojis, sin bullets en el body.',
       `Redacta el RESUMEN EJECUTIVO del informe clínico de ${nombreCap} (${edadTexto}, ${(child as any)?.diagnosis || 'en evaluación'}).
 
 Datos disponibles:
@@ -1585,7 +1585,7 @@ Escribe 2 párrafos densos (máximo 200 palabras total) que UN CLÍNICO senior p
     ),
 
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Prosa profesional, sin bullets, sin emojis.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Prosa profesional, sin bullets, sin emojis.',
       `Redacta el "ANÁLISIS CLÍNICO POR ÁREA" de ${nombreCap}. Devuelve un texto con SUBSECCIONES en negrita por cada área de trabajo. Por cada área:
 1. Nombre del área en **negrita**.
 2. 1-2 oraciones de prosa que interpreten clínicamente el desempeño (no listar números, interpretarlos: tendencia, hipótesis de variabilidad, generalización, etc.).
@@ -1599,7 +1599,7 @@ Sin bullets, sin emojis. Cada área 50-80 palabras. Total ≤ 450 palabras.`+get
     ),
 
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Prosa formal, sin emojis.',
       `Redacta el "PLAN TERAPÉUTICO" de ${nombreCap} para los próximos 30, 60 y 90 días. Tres párrafos cortos (máximo 60 palabras cada uno) con FOCOS específicos basados en los datos. Cita programas concretos por nombre. Sin emojis, sin bullets.
 
 Datos:
@@ -1615,7 +1615,7 @@ Estructura:
     ),
 
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Devolvé SOLO JSON válido, sin texto antes ni después.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Devolvé SOLO JSON válido, sin texto antes ni después.',
       `Generá las RECOMENDACIONES tripartitas para ${nombreCap} (${edadTexto}, ${(child as any)?.diagnosis || 'en evaluación'}).
 
 Devolvé JSON ESTRICTO:
@@ -1634,7 +1634,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
     ),
 
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis, sin bullets.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Prosa formal, sin emojis, sin bullets.',
       `Redacta la sección de LIMITACIONES del informe clínico de ${nombreCap}.
 Aquí se redactan las dificultades que se han tenido durante el período de intervención, por ejemplo: presencia de conductas interferentes o disruptivas que no han dejado avanzar (p. ej. que el menor muerda, se levante, etc.), el tiempo limitado de las sesiones o de los padres para practicar los programas en casa, algún problema de salud recurrente, inasistencias, u otros factores que han condicionado el progreso.
 
@@ -1718,7 +1718,7 @@ ${evalIniContexto}${evaluacionesCtx}`+getLangInstruction(userLocale),
       const rol = fichaConNombre.filler_role ? ` (${fichaConNombre.filler_role})` : ''
       return `${n}${rol}`
     }
-    return 'Equipo Clínico SANTI'
+    return 'Equipo Clínico Vanty ABA'
   })()
 
   // ── Generar QR async (necesita estar fuera del array spread) ─────────
@@ -2100,7 +2100,7 @@ async function generarReportePadresPro(
 
   const [bienvenida, celebracion, planCasa, mensajeCierre] = await Promise.all([
     callGroqSimple(
-      'Eres terapeuta ABA empática y cálida de SANTI. Escribís a familias con afecto, sin tecnicismos.',
+      'Eres terapeuta ABA empática y cálida de Vanty ABA. Escribís a familias con afecto, sin tecnicismos.',
       `Saluda a la familia de ${nombreCorto} (${edadTexto}). Hacé una bienvenida CORTA y cálida (1 párrafo, 50 palabras máximo) reconociendo el período de trabajo (${semanas} semanas, ${totalSesiones} sesiones) y celebrando la constancia de la familia.`+getLangInstruction(userLocale),
       { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 200 },
     ),
@@ -2132,7 +2132,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
 
   // QR
   const sellosVerif = await tpl.selloQRVerificacionAsync({
-    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico Vanty ABA',
   })
 
   // Datos del gráfico
@@ -2157,7 +2157,7 @@ Cada actividad como un párrafo corto: nombre + cómo hacerla (1-2 oraciones) + 
       nombrePaciente: nombre,
       edadPaciente: edadTexto,
       diagnostico: (child as any)?.diagnosis || 'En proceso',
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'Terapia ABA · Centro Especializado',
       fechaEmision: hoy,
       periodoEval: periodoTexto,
@@ -2416,7 +2416,7 @@ async function generarReporteComparativoPro(
 
   const [analisisComp, analisisPred, recomendacionesIA] = await Promise.all([
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Prosa formal, sin emojis, sin bullets.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Prosa formal, sin emojis, sin bullets.',
       `Redactá el "ANÁLISIS COMPARATIVO DE PERÍODOS" para ${nombreCap} (${edadTexto}, ${diagnostico}):
 
 Datos:
@@ -2430,7 +2430,7 @@ Explicá clínicamente qué significa esta evolución, qué factores pueden cont
       { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 600 },
     ),
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Prosa formal.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Prosa formal.',
       `Redactá el "ANÁLISIS DE PREDICCIÓN TERAPÉUTICA" para ${nombreCap}:
 
 Sesiones totales: ${total} · Logro actual: ${avg2}%
@@ -2445,7 +2445,7 @@ Interpretá qué esperar en cada horizonte, qué condiciones son necesarias, qu�
       { model: GROQ_MODELS.SMART, temperature: 0.4, maxTokens: 400 },
     ),
     callGroqSimple(
-      'Eres neuropsicóloga clínica de SANTI. Devolvé SOLO JSON válido.',
+      'Eres neuropsicóloga clínica de Vanty ABA. Devolvé SOLO JSON válido.',
       `Generá RECOMENDACIONES TERAPÉUTICAS para ${nombreCap} en formato JSON:
 
 {
@@ -2470,7 +2470,7 @@ Datos:
   } catch { /* usar defaults */ }
 
   const sellosVerif = await tpl.selloQRVerificacionAsync({
-    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico Vanty ABA',
   })
 
   const periodoTexto = fechasUnif.length > 1 ? `${fechaInicio} al ${fechaFin}` : (fechasUnif.length === 1 ? fechaInicio : '—')
@@ -2487,7 +2487,7 @@ Datos:
       nombrePaciente: nombre,
       edadPaciente: edadTexto,
       diagnostico,
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'BCBA · Neuropsicología Infantil',
       fechaEmision: hoy,
       periodoEval: periodoTexto,
@@ -2827,12 +2827,12 @@ async function generarReporteProgramasFamilia(
   try {
     const [bRes, cRes] = await Promise.all([
       callGroqSimple(
-        'Eres terapeuta ABA cálida y cercana de SANTI. Escribís a familias sin tecnicismos.',
+        'Eres terapeuta ABA cálida y cercana de Vanty ABA. Escribís a familias sin tecnicismos.',
         `Escribí una bienvenida CORTA y cálida (1 párrafo, máx 60 palabras) para la familia de ${nombreCorto}. Explicá que este documento resume los programas de terapia que estamos trabajando con su hijo/a y cómo va avanzando. Tono humano, esperanzador, sin tecnicismos, sin emojis.` + getLangInstruction(userLocale),
         { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 180 },
       ),
       callGroqSimple(
-        'Eres terapeuta ABA cálida de SANTI.',
+        'Eres terapeuta ABA cálida de Vanty ABA.',
         `Escribí un MENSAJE DE CIERRE corto (1 párrafo, máx 55 palabras) para la familia de ${nombreCorto}. Reconocé el esfuerzo de la familia, invitá a preguntar cualquier duda al especialista y proyectá optimismo realista. Sin tecnicismos, sin emojis.` + getLangInstruction(userLocale),
         { model: GROQ_MODELS.SMART, temperature: 0.7, maxTokens: 160 },
       ),
@@ -2844,7 +2844,7 @@ async function generarReporteProgramasFamilia(
   if (!cierre.trim()) cierre = `Agradecemos su compromiso y constancia, que son fundamentales para el progreso de ${nombreCorto}. Ante cualquier duda sobre este reporte, no duden en consultar con el especialista a cargo.`
 
   const sellosVerif = await tpl.selloQRVerificacionAsync({
-    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico Vanty ABA',
   })
 
   const limpiar = (t: string) => t.split('\n').filter(l => l.trim()).map(l => tpl.parrafo(l.replace(/\*\*/g, '').trim()))
@@ -2913,7 +2913,7 @@ async function generarReporteProgramasFamilia(
       nombrePaciente: nombre,
       edadPaciente: edadTexto,
       diagnostico,
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'Terapia ABA · Neuropsicología Infantil',
       fechaEmision: hoy,
       periodoEval: periodoTexto,
@@ -3198,7 +3198,7 @@ async function generarGuiaSetFamilia(
   const pasos = pasosRaw.filter(p => p.contenido)
 
   const sellosVerif = await tpl.selloQRVerificacionAsync({
-    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico SANTI',
+    codigoDoc, fechaEmision: hoy, especialista: 'Equipo Clínico Vanty ABA',
   })
 
   const sections: DocChild[] = [
@@ -3207,7 +3207,7 @@ async function generarGuiaSetFamilia(
       nombrePaciente: nombre,
       edadPaciente: edadTexto,
       diagnostico,
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
       credenciales: 'Terapia ABA · Neuropsicología Infantil',
       fechaEmision: hoy,
       periodoEval: tituloPrograma,
@@ -3341,7 +3341,7 @@ export async function POST(req: NextRequest) {
 
     if (!childId) return NextResponse.json({ error: 'childId requerido' }, { status: 400 })
 
-    // 'seguro' (botón "Informe Clínico" en el UI) → nuevo informe SANTI profesional
+    // 'seguro' (botón "Informe Clínico" en el UI) → nuevo informe Vanty ABA profesional
     if (tipo === 'seguro' || tipo === 'clinico' || tipo === 'tratamiento') result = await generarInformeClinicoSanti(childId, userLocale)
     else if (tipo === 'seguro_legacy') result = await generarReporteSeguro(childId, userLocale)
     // Versiones PRO (nivel profesional con portada + QR + IA + trazabilidad)

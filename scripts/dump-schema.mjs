@@ -15,7 +15,7 @@ const w = (s = '') => out.push(s)
 await client.connect()
 
 w('-- ════════════════════════════════════════════════════════════════════')
-w('-- ESQUEMA RECONSTRUIDO del proyecto original (Santi) — schema public')
+w('-- ESQUEMA RECONSTRUIDO del proyecto original (Vanty ABA) — schema public')
 w('-- Generado automáticamente. Correr en el SQL Editor del proyecto DEMO.')
 w('-- ════════════════════════════════════════════════════════════════════')
 w()

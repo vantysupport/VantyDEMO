@@ -102,7 +102,7 @@ export default function PWAInstallButton() {
 
           {/* Texto */}
           <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-sm leading-tight">Instalar SANTI</p>
+            <p className="text-white font-bold text-sm leading-tight">Instalar Vanty ABA</p>
             <p className="text-white/75 text-xs mt-0.5">
               {platform === 'ios' ? 'Añadir a pantalla de inicio' : 'Instalar como app'}
             </p>
@@ -140,7 +140,7 @@ export default function PWAInstallButton() {
                   <span className="text-white font-black text-lg">V</span>
                 </div>
                 <div>
-                  <p className="font-black text-slate-800">Instalar SANTI</p>
+                  <p className="font-black text-slate-800">Instalar Vanty ABA</p>
                   <p className="text-xs text-slate-500">en iPhone / iPad</p>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function PWAInstallButton() {
               </Step>
 
               <Step n={3} icon={<span className="text-lg">✅</span>}>
-                Toca <strong>"Añadir"</strong> — SANTI aparecerá en tu pantalla de inicio
+                Toca <strong>"Añadir"</strong> — Vanty ABA aparecerá en tu pantalla de inicio
               </Step>
             </div>
 

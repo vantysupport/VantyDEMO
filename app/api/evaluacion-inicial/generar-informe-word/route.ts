@@ -254,7 +254,7 @@ export async function POST(req: NextRequest) {
     const knowledgeCtx = await buildClinicalContext(queryKB, 10).catch(() => '')
 
     const analisisIA = await callGroqSimple(
-      `Eres neuropsicóloga clínica senior de SANTI (Perú). Vas a redactar el INFORME PROFESIONAL de una anamnesis ${tipoInforme.toLowerCase()} para incluir en el historial clínico del paciente. Lenguaje técnico riguroso, párrafos fluidos, sin bullets. Cita observaciones concretas de los datos.
+      `Eres neuropsicóloga clínica senior de Vanty ABA (Perú). Vas a redactar el INFORME PROFESIONAL de una anamnesis ${tipoInforme.toLowerCase()} para incluir en el historial clínico del paciente. Lenguaje técnico riguroso, párrafos fluidos, sin bullets. Cita observaciones concretas de los datos.
 
 FORMATO OBLIGATORIO (respétalo al pie de la letra para que el documento se vea profesional):
 - Estructura el informe en estas 5 secciones, EN ESTE ORDEN:
@@ -285,7 +285,7 @@ ${fmtPorSecciones()}
 - Tipo de evaluación recomendada: ${tipoInforme}
 - Razonamiento previo: ${eval_.recomendacion_razon || '—'}
 
-${knowledgeCtx ? `# 📚 PROTOCOLOS CLÍNICOS Y GUÍAS DE REFERENCIA (Cerebro IA SANTI)
+${knowledgeCtx ? `# 📚 PROTOCOLOS CLÍNICOS Y GUÍAS DE REFERENCIA (Cerebro IA Vanty ABA)
 ${knowledgeCtx}
 
 INSTRUCCIONES ADICIONALES:
@@ -415,7 +415,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
     const sellosVerif = await selloQRVerificacionAsync({
       codigoDoc: docNum,
       fechaEmision: hoy,
-      especialista: 'Equipo Clínico SANTI',
+      especialista: 'Equipo Clínico Vanty ABA',
     })
 
     const seccionesDocx: (Paragraph | Table)[] = [
@@ -425,7 +425,7 @@ Redacta el INFORME COMPLETO ahora siguiendo la estructura indicada.`,
         nombrePaciente: child.name || 'Paciente',
         edadPaciente: (child as any).age != null ? `${(child as any).age} años` : '—',
         diagnostico: (child as any).diagnosis || 'En evaluación clínica',
-        especialista: 'Equipo Clínico SANTI',
+        especialista: 'Equipo Clínico Vanty ABA',
         credenciales: 'Centro de Neuropsicología y Terapias',
         fechaEmision: hoy,
         codigoDoc: docNum,

@@ -301,7 +301,7 @@ function createCoverPage(reportType: string, childName: string, childAge?: numbe
     : { main: 'REPORTE PROFESIONAL', sub: 'Evaluación Clínica' })
 
   return [
-    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 2880, after: 720 }, children: [new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS SANTI', font: 'Calibri', size: 32, bold: true, color: '2E75B5' })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 2880, after: 720 }, children: [new TextRun({ text: 'NEUROPSICOLOGÍA Y TERAPIAS Vanty ABA', font: 'Calibri', size: 32, bold: true, color: '2E75B5' })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 1440 }, children: [new TextRun({ text: 'Taller de Desarrollo Infantil', font: 'Calibri', size: 22, color: '595959' })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 1440 }, border: { bottom: { color: '2E75B5', space: 1, value: BorderStyle.SINGLE, size: 12 } }, children: [new TextRun({ text: '' })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 720, after: 360 }, children: [new TextRun({ text: t.main, font: 'Calibri', size: 40, bold: true, color: '1F4D78' })] }),

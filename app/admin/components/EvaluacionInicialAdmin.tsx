@@ -818,7 +818,7 @@ export default function EvaluacionInicialAdmin({ childId, childName }: Props) {
               value={respuesta || evaluacion.respuesta_especialista || ''}
               onChange={e => setRespuesta(e.target.value)}
               rows={10}
-              placeholder={`Hola, soy [tu nombre], especialista de SANTI. He revisado el caso de ${childName} y…`}
+              placeholder={`Hola, soy [tu nombre], especialista de Vanty ABA. He revisado el caso de ${childName} y…`}
               className="w-full px-4 py-3 rounded-xl border outline-none focus:border-sky-500 resize-none text-sm"
               style={{ background: 'var(--muted-bg)', borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
             />

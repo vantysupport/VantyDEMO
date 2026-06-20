@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = JSON.stringify({
-      title: title || 'SANTI',
+      title: title || 'Vanty ABA',
       body: body || 'Tienes un nuevo mensaje',
       url: url || '/padre',
       icon: '/icons/icon-192x192.png',

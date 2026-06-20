@@ -41,7 +41,7 @@ type Pregunta =
 type Seccion = { titulo: string; descripcion?: string; icono: string; preguntas: Pregunta[] }
 
 // ─── Primera ficha: INTAKE — "Ficha inicial para papás" ────────────────
-// Estructura oficial SANTI: secciones que cubren datos del menor, padres,
+// Estructura oficial Vanty ABA: secciones que cubren datos del menor, padres,
 // motivo de consulta, historia escolar, diagnósticos, terapias previas,
 // dinámica familiar e información final / marketing.
 const SECCIONES_INTAKE: Seccion[] = [
@@ -117,7 +117,7 @@ const SECCIONES_INTAKE: Seccion[] = [
 ]
 
 // ─── Segunda ficha: ANAMNESIS PSICOLÓGICA / EMOCIONAL ───────────────────
-// Estructura oficial SANTI — 7 secciones (I a VII).
+// Estructura oficial Vanty ABA — 7 secciones (I a VII).
 const SECCIONES_PSICO: Seccion[] = [
   // ─── I. Datos Generales y Familiares ───────────────────────────────────
   {
@@ -293,7 +293,7 @@ const SECCIONES_PSICO: Seccion[] = [
 ]
 
 // ─── Segunda ficha: ANAMNESIS NEUROPSICOLÓGICA ──────────────────────────
-// Estructura oficial SANTI — 11 secciones (I a XI).
+// Estructura oficial Vanty ABA — 11 secciones (I a XI).
 // Las tablas dinámicas permiten al padre/madre agregar varias filas (familiares, accidentes, etc.).
 const SECCIONES_NEURO: Seccion[] = [
   // ─── I. Datos Familiares ───────────────────────────────────────────────
@@ -943,7 +943,7 @@ export default function EvaluacionInicialView({ child, profile }: Props) {
           <p className="text-white/95">
             {recomendadas.length > 0
               ? <>Revisamos con cuidado lo que nos contaste sobre <strong>{nombreCorto}</strong>. Más abajo verás <strong>nuestra recomendación personalizada</strong> y, debajo, <strong>todo nuestro catálogo</strong> por si quieres explorar otras opciones. Marca la(s) que te interese conocer más.</>
-              : <>Estas son las terapias que ofrecemos en SANTI. Marca la(s) que te interese conocer más. El especialista te contactará con la propuesta personalizada.</>
+              : <>Estas son las terapias que ofrecemos en Vanty ABA. Marca la(s) que te interese conocer más. El especialista te contactará con la propuesta personalizada.</>
             }
           </p>
         </div>

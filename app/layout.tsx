@@ -34,30 +34,30 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: " Terapias SANTI | Terapia ABA y Neurodivergencia en Pisco, Ica",
+  title: " Terapias Vanty ABA | Terapia ABA y Neurodivergencia en Pisco, Ica",
   description: "Centro especializado en terapia ABA y desarrollo infantil en Pisco, Ica. Atendemos niños con autismo, TEA, TDAH y neurodivergencia con metodología basada en evidencia e IA. +50 familias.",
   keywords: "terapeuta ABA Pisco, terapia autismo Ica, centro neurodivergencia Pisco, TEA Pisco, TDAH Pisco, desarrollo infantil Ica, terapia conductual niños Pisco",
-  authors: [{ name: "SANTI" }],
+  authors: [{ name: "Vanty ABA" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SANTI",
+    title: "Vanty ABA",
     startupImage: "/icons/apple-touch-icon.png",
   },
   formatDetection: { telephone: false },
   openGraph: {
-    title: " Terapias SANTI | Terapia ABA en Pisco, Ica",
+    title: " Terapias Vanty ABA | Terapia ABA en Pisco, Ica",
     description: "Centro especializado en neurodivergencia. Terapia ABA con IA para niños en Pisco, Ica, Perú.",
     type: "website",
     locale: "es_PE",
     url: "https://centro-santi.vercel.app",
-    siteName: "SANTI",
-    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: " Terapias SANTI - Terapia ABA Pisco" }],
+    siteName: "Vanty ABA",
+    images: [{ url: "/images/hero-image.jpg", width: 1200, height: 630, alt: " Terapias Vanty ABA - Terapia ABA Pisco" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: " Terapias SANTI | Terapia ABA en Pisco, Ica",
+    title: " Terapias Vanty ABA | Terapia ABA en Pisco, Ica",
     description: "Centro especializado en neurodivergencia. Terapia ABA + IA para niños.",
   },
   robots: { index: true, follow: true },
@@ -106,7 +106,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="SANTI" />
+        <meta name="apple-mobile-web-app-title" content="Vanty ABA" />
         <meta name="mobile-web-app-capable" content="yes" />
 
         {/*
