@@ -487,7 +487,7 @@ export default function ControlPage() {
             </div>
             <div>
               <h1 className="font-black text-[15px] leading-tight tracking-tight text-white">Panel del Programador</h1>
-              <p className="text-[11px] text-slate-500 font-mono">control.santi · sistema</p>
+              <p className="text-[11px] text-slate-500 font-mono">control.vanty · sistema</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
