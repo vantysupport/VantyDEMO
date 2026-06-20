@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { notifyAsync, notifyParentDirect } from '@/lib/notifications'
+import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 
 // Helper: notificar al padre de un paciente
 async function notificarPadre(childId: string, tipo: 'cita_confirmada' | 'cita_cancelada', vars: Record<string, string>) {
@@ -23,11 +24,17 @@ async function notificarPadre(childId: string, tipo: 'cita_confirmada' | 'cita_c
 
 export async function GET(request: NextRequest) {
   try {
-    const { data, error } = await supabaseAdmin
+    const auth = await requireRole(request, STAFF_ROLES)
+    if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})`, data: [] }, { status: 403 })
+
+    // 🔒 Aislamiento por centro.
+    let q = supabaseAdmin
       .from('appointments')
       .select('*, children(name, parent_id)')
       .order('appointment_date', { ascending: true })
       .order('appointment_time', { ascending: true })
+    q = auth.tenantId ? q.eq('tenant_id', auth.tenantId) : q.is('tenant_id', null)
+    const { data, error } = await q
 
     if (error) throw error
 
@@ -62,16 +69,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireRole(request, STAFF_ROLES)
+    if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})` }, { status: 403 })
+
     const body = await request.json()
     const appointments = Array.isArray(body) ? body : [body]
 
-    // Generar video_link para citas virtuales antes de insertar
+    // Generar video_link para citas virtuales + 🔒 sellar el centro (service_role
+    // no dispara el trigger de tenant, así que lo seteamos explícito).
     const appointmentsConLink = appointments.map((apt: any) => {
-      if (apt.modalidad === 'virtual' && !apt.video_link && !apt.videoLink) {
-        const tempId = `${apt.child_id}-${apt.appointment_date}-${(apt.appointment_time || '').replace(/:/g, '-')}`
-        return { ...apt, video_link: `https://meet.jit.si/SantiMeet-${tempId}` }
+      const withTenant = auth.tenantId ? { ...apt, tenant_id: auth.tenantId } : apt
+      if (withTenant.modalidad === 'virtual' && !withTenant.video_link && !withTenant.videoLink) {
+        const tempId = `${withTenant.child_id}-${withTenant.appointment_date}-${(withTenant.appointment_time || '').replace(/:/g, '-')}`
+        return { ...withTenant, video_link: `https://meet.jit.si/SantiMeet-${tempId}` }
       }
-      return apt
+      return withTenant
     })
 
     const { data, error } = await supabaseAdmin

@@ -6,19 +6,21 @@ import { requireRole, STAFF_ROLES } from '@/lib/require-staff'
 export async function GET(req: NextRequest) {
   const auth = await requireRole(req, STAFF_ROLES)
   if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})`, data: [] }, { status: 403 })
+  // 🔒 Aislamiento por centro: solo pacientes del tenant de quien llama.
+  const tid = auth.tenantId ?? null
   try {
     // Try full select first
-    let { data, error } = await supabaseAdmin
+    let q1 = supabaseAdmin
       .from('children')
       .select('id, name, diagnosis, age, birth_date, parent_id, created_at')
-      .order('name')
+    q1 = tid ? q1.eq('tenant_id', tid) : q1.is('tenant_id', null)
+    let { data, error } = await q1.order('name')
 
     // If error due to missing columns, fallback to minimal select
     if (error) {
-      const fallback = await supabaseAdmin
-        .from('children')
-        .select('id, name, parent_id')
-        .order('name')
+      let q2 = supabaseAdmin.from('children').select('id, name, parent_id')
+      q2 = tid ? q2.eq('tenant_id', tid) : q2.is('tenant_id', null)
+      const fallback = await q2.order('name')
       if (fallback.error) throw fallback.error
       data = fallback.data as any[]
     }
