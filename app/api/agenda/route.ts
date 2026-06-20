@@ -27,15 +27,27 @@ export async function GET(req: NextRequest) {
       .order('fecha', { ascending: true })
       .order('hora_inicio', { ascending: true })
 
+    const applyFilters = (qq: any) => {
+      if (fecha)        qq = qq.eq('fecha', fecha)
+      if (fechaInicio)  qq = qq.gte('fecha', fechaInicio)
+      if (fechaFin)     qq = qq.lte('fecha', fechaFin)
+      if (terapeutaId)  qq = qq.eq('terapeuta_id', terapeutaId)
+      if (childId)      qq = qq.eq('child_id', childId)
+      if (estado)       qq = qq.eq('estado', estado)
+      return qq
+    }
     if (auth.tenantId) query = query.eq('tenant_id', auth.tenantId)  // 🔒 por centro
-    if (fecha)        query = query.eq('fecha', fecha)
-    if (fechaInicio)  query = query.gte('fecha', fechaInicio)
-    if (fechaFin)     query = query.lte('fecha', fechaFin)
-    if (terapeutaId)  query = query.eq('terapeuta_id', terapeutaId)
-    if (childId)      query = query.eq('child_id', childId)
-    if (estado)       query = query.eq('estado', estado)
+    query = applyFilters(query)
 
-    const { data, error } = await query
+    let { data, error } = await query
+    // Migración pendiente (no existe tenant_id) → traer sin ese filtro.
+    if (error && /tenant_id/i.test(error.message || '')) {
+      const base = supabaseAdmin.from('agenda_sesiones')
+        .select(`*, children(id, name, diagnosis, age), terapeuta:terapeuta_id(id, email, raw_user_meta_data)`)
+        .order('fecha', { ascending: true }).order('hora_inicio', { ascending: true })
+      const r2 = await applyFilters(base)
+      data = r2.data; error = r2.error
+    }
     if (error) throw error
     return NextResponse.json({ data })
   } catch (e: any) {

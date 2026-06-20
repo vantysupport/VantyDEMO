@@ -26,9 +26,19 @@ export async function requireRole(
     } catch { /* sin cookies */ }
   }
   if (!uid) return { ok: false, reason: 'no autenticado' }
-  const { data: prof } = await supabaseAdmin.from('profiles').select('role, tenant_id').eq('id', uid).maybeSingle()
-  const role = (prof as { role?: string } | null)?.role
-  const tenantId = (prof as { tenant_id?: string | null } | null)?.tenant_id ?? null
+  // Resiliente: si la migración de multi-tenancy aún no corrió (no existe la
+  // columna tenant_id), caemos a leer solo el rol para no romper.
+  let role: string | undefined
+  let tenantId: string | null = null
+  const { data: prof, error: pe } = await supabaseAdmin
+    .from('profiles').select('role, tenant_id').eq('id', uid).maybeSingle()
+  if (pe) {
+    const { data: p2 } = await supabaseAdmin.from('profiles').select('role').eq('id', uid).maybeSingle()
+    role = (p2 as { role?: string } | null)?.role
+  } else {
+    role = (prof as { role?: string } | null)?.role
+    tenantId = (prof as { tenant_id?: string | null } | null)?.tenant_id ?? null
+  }
   if (!role || !allowed.includes(role)) return { ok: false, reason: 'requiere personal del centro' }
   return { ok: true, reason: '', role, uid, tenantId }
 }

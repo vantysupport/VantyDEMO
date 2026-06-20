@@ -27,15 +27,20 @@ export async function GET(request: NextRequest) {
     const auth = await requireRole(request, STAFF_ROLES)
     if (!auth.ok) return NextResponse.json({ error: `No autorizado (${auth.reason})`, data: [] }, { status: 403 })
 
-    // 🔒 Aislamiento por centro.
-    let q = supabaseAdmin
+    // 🔒 Aislamiento por centro (solo si hay tenant).
+    const baseSel = () => supabaseAdmin
       .from('appointments')
       .select('*, children(name, parent_id)')
       .order('appointment_date', { ascending: true })
       .order('appointment_time', { ascending: true })
-    q = auth.tenantId ? q.eq('tenant_id', auth.tenantId) : q.is('tenant_id', null)
-    const { data, error } = await q
-
+    let q = baseSel()
+    if (auth.tenantId) q = q.eq('tenant_id', auth.tenantId)
+    let { data, error } = await q
+    // Si la migración aún no corrió (no existe tenant_id), traer sin filtrar.
+    if (error && /tenant_id/i.test(error.message || '')) {
+      const r2 = await baseSel()
+      data = r2.data; error = r2.error
+    }
     if (error) throw error
 
     // Adjuntar info del especialista asignado a cada cita
