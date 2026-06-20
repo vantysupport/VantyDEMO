@@ -12,8 +12,6 @@ import {
 import { useToast } from '@/components/Toast'
 import VideoCallModal from '@/components/VideoCallModal'
 import { supabase } from '@/lib/supabase'
-import GoogleCalendarSync from './GoogleCalendarSync'
-import MicrosoftCalendarSync from './MicrosoftCalendarSync'
 import ReservasOnlinePanel from './ReservasOnlinePanel'
 import { CalendarClock } from 'lucide-react'
 
@@ -555,8 +553,6 @@ function MonthlyCalendarView() {
 
           {/* Controles — una sola fila */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <GoogleCalendarSync />
-            <MicrosoftCalendarSync />
             <div className="w-px h-6 bg-slate-200 dark:bg-[#30363d] hidden sm:block" />
             <button
               onClick={() => setShowReservas(true)}

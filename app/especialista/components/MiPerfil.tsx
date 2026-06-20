@@ -354,13 +354,6 @@ function SeccionPerfil({ onUpdate, onAvatarUpdate }: {
         {saving ? 'Guardando…' : 'Guardar cambios'}
       </button>
 
-      {/* Calendarios */}
-      <Card title="Calendarios" subtitle="Sincroniza tus citas con calendarios externos" icon={CalendarDays} iconColor="bg-gradient-to-br from-emerald-500 to-teal-600">
-        <div className="space-y-3">
-          {userId && <GoogleCalendarBlock userId={userId} isDark={isDark} />}
-          {userId && <OutlookCalendarBlock userId={userId} isDark={isDark} />}
-        </div>
-      </Card>
     </div>
   )
 }

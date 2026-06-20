@@ -235,12 +235,6 @@ export default function MiAgenda({ isDark = false }: { isDark?: boolean }) {
           </p>
         </div>
 
-        {userId && (
-          <div className="flex items-center gap-2">
-            <GoogleCalendarMini userId={userId} isDark={isDark} />
-            <MicrosoftCalendarMini userId={userId} isDark={isDark} />
-          </div>
-        )}
       </div>
 
       {/* ── Layout principal ── */}

@@ -306,16 +306,6 @@ function ProfileView({ profile, onLogout, onChangePass, onEditProfile, onPrivacy
         <MenuItem icon={<HelpCircle size={17} color="#10b981"/>} label="Centro de ayuda" sub="Guías y soporte" onClick={onHelp}/>
       </div>
 
-      {/* ── CALENDARIOS ── */}
-      <div className="pv-card bg-white dark:bg-[#0d1117] rounded-2xl border border-slate-100 dark:border-[#21262d] shadow-sm overflow-hidden">
-        <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--c-border)" }}>
-          <div className="w-1 h-4 bg-sky-500 rounded-full"/>
-          <p className="text-[10px] font-bold" style={{ color: "var(--c-text-muted)" }}>Calendarios vinculados</p>
-        </div>
-        <CalBtn label="Google Calendar" icon="📅" grad="linear-gradient(135deg,#4285f4,#1a73e8)" profile={profile} apiBase="google-calendar" paramKey="gcal"/>
-        <CalBtn label="Outlook Calendar" icon={<svg width="16" height="16" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>} grad="linear-gradient(135deg,#0078d4,#106ebe)" profile={profile} apiBase="microsoft-calendar" paramKey="mscal"/>
-      </div>
-
       {/* ── WHATSAPP ── */}
       <div className="pv-card">
         <WhatsAppSection profile={profile} onUpdated={onPhoneUpdated || (()=>{})}/>

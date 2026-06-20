@@ -374,57 +374,7 @@ export default function LoginPage(props: PageProps) {
               </button>
             </form>
 
-            <div className="lp-sep"><span>{t('auth.oContinua')}</span></div>
-
-            {/* Google OAuth */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 10, padding: '13px 20px', borderRadius: 14, border: '1.5px solid #e7e6f0',
-                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'inherit', marginBottom: 10, transition: 'all .2s',
-                boxShadow: '0 1px 2px rgba(30,27,75,.04)',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#0284c7'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(2,132,199,.14)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e7e6f0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(30,27,75,.04)' }}
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18">
-                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
-                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/>
-                <path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/>
-                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 6.294C4.672 4.167 6.656 3.58 9 3.58z"/>
-              </svg>
-              Continuar con Google
-            </button>
-
-            {/* Microsoft OAuth */}
-            <button
-              type="button"
-              onClick={handleMicrosoftLogin}
-              disabled={isLoading}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 10, padding: '13px 20px', borderRadius: 14, border: '1.5px solid #e7e6f0',
-                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'inherit', marginBottom: 12, transition: 'all .2s',
-                boxShadow: '0 1px 2px rgba(30,27,75,.04)',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#0078d4'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,120,212,.12)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e7e6f0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(30,27,75,.04)' }}
-            >
-              <svg width="18" height="18" viewBox="0 0 21 21">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-              </svg>
-              Continuar con Microsoft
-            </button>
-
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
               <span style={{ fontSize: 14, color: '#6b7280' }}>{isSignUp ? '¿Ya tienes cuenta? ' : '¿Primera vez? '}</span>
               <button onClick={() => { setIsSignUp(!isSignUp); setErrorMessage(''); setShowForgotInfo(false) }}
                 style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
